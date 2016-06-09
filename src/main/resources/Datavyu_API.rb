@@ -161,9 +161,14 @@ class RCell
 
   # Get value of a code
   # @param name [String] name of code
-  # @return [String] value of code
+  # @return [String, Integer] value of code
   def get_code(name)
-    return argvals[arglist.index(name)]
+    if %w(onset offset ordinal).include?(name) || @arglist.include?(name)
+      return self.send(name)
+    else
+      raise "Cell does not have code '#{name}'"
+    end
+    # return argvals[arglist.index(name)] if arglist.include?(name)
   end
   alias :get_arg :get_code
 
