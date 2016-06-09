@@ -178,7 +178,7 @@ class RCell
   # @return [nil]
   # @example
   #       trial = get_column("trial")
-  #       trial.cells[0].change_arg("onset", 1000)
+  #       trial.cells[0].change_code("onset", 1000)
   #       set_column(trial)
   def change_code(arg, val)
     arg = arg.gsub(/(\W)+/, "").downcase
@@ -188,12 +188,14 @@ class RCell
       @offset = val
     elsif arg == "ordinal"
       @ordinal = val
-    else
+    elsif @arglist.include?(arg)
       for i in 0..arglist.length-1
         if arglist[i] == arg and not arg.nil?
           argvals[i] = val.to_s
         end
       end
+    else
+      raise "Unable to change code '#{arg}'; no such code found."
     end
   end
   alias :change_arg :change_code
