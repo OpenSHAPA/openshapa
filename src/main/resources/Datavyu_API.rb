@@ -2351,7 +2351,7 @@ alias :getDatavyuVersion :get_datavyu_version
 # @param [String] maxVersion Maximum version. If unspecified, no upper bound is checked.
 # @return [true, false] true if min,max version check passes; false otherwise.
 def check_datavyu_version(minVersion, maxVersion = nil)
-  currentVersion = getDatavyuVersion()
+  currentVersion = get_datavyu_version()
   minCheck = (minVersion <=> currentVersion) <= 0
   maxCheck = (maxVersion.nil?)? true : (currentVersion <=> maxVersion) <= 0
 
