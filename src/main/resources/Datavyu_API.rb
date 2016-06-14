@@ -112,7 +112,7 @@ class RCell
   def get_codes(*codes)
     codes = self.arglist if codes.nil? || codes.empty?
     codes.flatten!
-    
+
     vals = codes.map do |cname|
       case(cname)
       when 'onset'
