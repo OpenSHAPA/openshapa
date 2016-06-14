@@ -2358,3 +2358,17 @@ def check_datavyu_version(minVersion, maxVersion = nil)
   return minCheck && maxCheck
 end
 alias :checkDatavyuVersion :check_datavyu_version
+
+# Return list of *.opf files from given directory.
+# @param [String] dir directory to check
+# @param [true, false] recurse true to check subfolders, false to only check given folder
+# @return [Array<String>] list containing names of .opf files.
+# @note When recurse is set true, names of Datavyu files in nested folders will be the relative path from the starting directory; e.g. 'folder1/folder2/my_datavyu_file.opf'
+# @example
+#   input_files = get_datavyu_files_from('~/Desktop/input', true)
+def get_datavyu_files_from(dir, recurse=false)
+  dir = File.expand_path(dir)
+  pat = recurse ? '**/*.opf' : '*.opf'
+  files = Dir.chdir(dir){ Dir.glob(pat) }
+  return files
+end
