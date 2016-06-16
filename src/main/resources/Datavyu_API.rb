@@ -304,7 +304,7 @@ class RCell
   # Gives the intersection region between self and given cell
   # @param [RCell] cell other cell
   # @return [Range] time range of intersection
-  def intersecting_region(cell)
+  def overlapping_region(cell)
     r = Range.new([self.onset, cell.onset].max, [self.offset, cell.offset].min)
     return r
   end
@@ -527,10 +527,10 @@ class RColumn
 
       # Map each to their intersecting region and find the one with the largest duration.
       sorted_by_intersection =  overlap_cells.sort do |x, y|
-        r1 = x.intersecting_region(ncell)
+        r1 = x.overlapping_region(ncell)
         d1 = r1.last - r1.first
 
-        r2 = y.intersecting_region(ncell)
+        r2 = y.overlapping_region(ncell)
         d2 = r2.last - r2.first
 
         d2 <=> d1 # largest first
