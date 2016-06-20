@@ -139,6 +139,7 @@ public final class DataControllerV extends DatavyuDialog
      */
     private static final DateFormat CLOCK_FORMAT;
     private static final DateFormat CLOCK_FORMAT_HTML;
+    private static int timeStampFontSize = 15;
     private static final String QT_URL = "http://www.datavyu.org/user-guide/guide/install.html";
     private static final String QT_IN_PAGE_HREF = "#software-requirements";
     // -------------------------------------------------------------------------
@@ -1130,7 +1131,6 @@ public final class DataControllerV extends DatavyuDialog
         tracksPanel = new javax.swing.JPanel(new MigLayout("fill"));
 
         final int fontSize = 11;
-        final int timeStampFontSize = 15;
 
         setTitle(resourceMap.getString("title"));
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -1184,7 +1184,15 @@ public final class DataControllerV extends DatavyuDialog
                 }
             }
         });
-
+        timestampLabel.addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                int count = e.getWheelRotation();
+                timeStampFontSize = Math.min(72, Math.max(10, timeStampFontSize + count));
+                timestampLabel.setFont(new Font("Tahoma", Font.BOLD, timeStampFontSize));
+                timestampLabel.repaint();
+            }
+        });
         timestampPanel.add(timestampLabel);
 
         jLabel1.setText("@");
