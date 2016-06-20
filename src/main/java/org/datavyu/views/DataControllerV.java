@@ -1160,7 +1160,7 @@ public final class DataControllerV extends DatavyuDialog
                 openVideoButtonActionPerformed(evt);
             }
         });
-        gridButtonPanel.add(addDataButton, "span 2, w 90!, h 25!");
+        gridButtonPanel.add(addDataButton, "span 2, w 90!, h 25!, wrap");
 
         // Timestamp panel
         JPanel timestampPanel = new JPanel(new MigLayout("",
@@ -1209,7 +1209,7 @@ public final class DataControllerV extends DatavyuDialog
         jLabel2.setText("x");
         timestampPanel.add(jLabel2);
 
-        gridButtonPanel.add(timestampPanel, "span 3, pushx, growx");
+        gridButtonPanel.add(timestampPanel, "span 5, pushx, growx");
 
         //placeholder at topleft: 'clear' or 'numlock' position
         gridButtonPanel.add(makePlaceholderButton(), NUMPAD_KEY_SIZE);
