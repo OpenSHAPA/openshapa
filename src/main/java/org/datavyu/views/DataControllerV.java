@@ -1209,7 +1209,7 @@ public final class DataControllerV extends DatavyuDialog
         jLabel2.setText("x");
         timestampPanel.add(jLabel2);
 
-        gridButtonPanel.add(timestampPanel, "span 5, pushx, growx");
+        gridButtonPanel.add(timestampPanel, "north");
 
         //placeholder at topleft: 'clear' or 'numlock' position
         gridButtonPanel.add(makePlaceholderButton(), NUMPAD_KEY_SIZE);
