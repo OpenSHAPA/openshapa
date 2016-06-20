@@ -1190,7 +1190,10 @@ public final class DataControllerV extends DatavyuDialog
                 int count = e.getWheelRotation();
                 timeStampFontSize = Math.min(72, Math.max(10, timeStampFontSize + count));
                 timestampLabel.setFont(new Font("Tahoma", Font.BOLD, timeStampFontSize));
+                gridButtonPanel.setMinimumSize(timestampPanel.getMinimumSize());
                 timestampLabel.repaint();
+                pack();
+                validate();
             }
         });
         timestampPanel.add(timestampLabel);
