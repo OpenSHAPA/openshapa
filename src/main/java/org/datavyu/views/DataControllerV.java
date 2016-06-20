@@ -139,6 +139,7 @@ public final class DataControllerV extends DatavyuDialog
      */
     private static final DateFormat CLOCK_FORMAT;
     private static final DateFormat CLOCK_FORMAT_HTML;
+    private static int timeStampFontSize = 15;
     private static final String QT_URL = "http://www.datavyu.org/user-guide/guide/install.html";
     private static final String QT_IN_PAGE_HREF = "#software-requirements";
     // -------------------------------------------------------------------------
@@ -1130,7 +1131,6 @@ public final class DataControllerV extends DatavyuDialog
         tracksPanel = new javax.swing.JPanel(new MigLayout("fill"));
 
         final int fontSize = 11;
-        final int timeStampFontSize = 15;
 
         setTitle(resourceMap.getString("title"));
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -1160,7 +1160,7 @@ public final class DataControllerV extends DatavyuDialog
                 openVideoButtonActionPerformed(evt);
             }
         });
-        gridButtonPanel.add(addDataButton, "span 2, w 90!, h 25!");
+        gridButtonPanel.add(addDataButton, "span 2, w 90!, h 25!, wrap");
 
         // Timestamp panel
         JPanel timestampPanel = new JPanel(new MigLayout("",
@@ -1184,7 +1184,18 @@ public final class DataControllerV extends DatavyuDialog
                 }
             }
         });
-
+        timestampLabel.addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                int count = e.getWheelRotation();
+                timeStampFontSize = Math.min(72, Math.max(10, timeStampFontSize + count));
+                timestampLabel.setFont(new Font("Tahoma", Font.BOLD, timeStampFontSize));
+                gridButtonPanel.setMinimumSize(timestampPanel.getMinimumSize());
+                timestampLabel.repaint();
+                pack();
+                validate();
+            }
+        });
         timestampPanel.add(timestampLabel);
 
         jLabel1.setText("@");
@@ -1201,7 +1212,7 @@ public final class DataControllerV extends DatavyuDialog
         jLabel2.setText("x");
         timestampPanel.add(jLabel2);
 
-        gridButtonPanel.add(timestampPanel, "span 3, pushx, growx");
+        gridButtonPanel.add(timestampPanel, "north");
 
         //placeholder at topleft: 'clear' or 'numlock' position
         gridButtonPanel.add(makePlaceholderButton(), NUMPAD_KEY_SIZE);
