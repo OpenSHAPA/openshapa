@@ -2253,7 +2253,7 @@ def check_valid_codes3(map, outfile = nil)
     header = (%w(COLUMN CELL_ORDINAL CODE VALUE)).join("\t")
     puts header
     puts errors
-    unless outfile == ''
+    unless outfile.nil?
       outfile.puts header
       outfile.puts errors
       outfile.close
