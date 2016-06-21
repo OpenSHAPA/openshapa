@@ -2123,7 +2123,6 @@ def check_valid_codes(var, dump_file, *arg_code_pairs)
 end
 alias :checkValidCodes :check_valid_codes
 
-
 # Check valid codes on cells in a column using regex. Backwards-compatible with checkValidCodes
 # @since 1.3.5
 # @param data [String, RColumn, Hash] When this parameter is a String or a column object from getVariable(), the function operates on codes within this column. If the parameter is a Hash (associative array), the function ignores the arg_code_pairs arguments and uses data from this Hash. The Hash must be structured as a nested mapping from columns (either as Strings or RColumns) to Hashes. These nested hashes must be mappings from code names (as Strings) to valid code values (as either lists (Arrays) or patterns (Regexp)).
@@ -2205,6 +2204,64 @@ def check_valid_codes2(data, outfile, *arg_filt_pairs)
 	unless errors
   	print_debug "No errors found."
 	end
+end
+alias :checkValidCodes2 :check_valid_codes2
+
+# Check valid codes on cells in a column using regex. Not backwards-compatible with check_valid_codes().
+# @since 1.3.5
+# @param [Hash] map The Hash must be structured as a nested mapping from columns (either as Strings or RColumns) to Hashes. These nested hashes must be mappings from code names (as Strings) to valid code values (as either lists (Arrays) or patterns (Regexp)).
+# @param outfile [String, File] The full path of the file to print output to. Omit to print only to console.
+# @return number of detected errors
+# @return a list containing all error messages
+def check_valid_codes3(map, outfile = nil)
+  # Open outfile if given
+  unless outfile.nil?
+    outfile = open(File.expand_path(outfile), 'a') if outfile.class == ''.class
+  end
+
+  errors = []
+  err_count = 0
+  # Iterate over key,entry (column, valid code mapping) in map
+  map.each_pair do |var, col_map|
+    var = getVariable(var) if var.class == String
+
+    # Iterate over cells in var and check each code's value
+  	var.cells.each do |cell|
+      col_map.each_pair do |code, filt|
+      	val = cell.get_code(code)
+        # Check whether value is valid — different functions depending on filter type
+        valid = case # note: we can't use case on filt.class because case uses === for comparison
+        when filt.class == Regexp
+        	!(filt.match(val).nil?)
+        when filt.class == Array
+          filt.include?(val)
+        else
+          raise "Unhandled filter type: #{filt.class}"
+        end
+
+        if !valid
+          err_count += 1
+          row = [var.name, cell.ordinal, code, val].join("\t")
+          errors << row
+        end
+      end
+  	end
+  end
+
+  if(err_count > 0)
+    print_debug "Found #{errors} errors."
+    header = (%w(COLUMN CELL_ORDINAL CODE VALUE)).join("\t")
+    puts header
+    puts errors
+    unless outfile == ''
+      outfile.puts header
+      outfile.puts errors
+    end
+	else
+  	print_debug "No errors found."
+	end
+
+  return [err_count, errors]
 end
 alias :checkValidCodes2 :check_valid_codes2
 
