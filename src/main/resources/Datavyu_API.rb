@@ -2256,9 +2256,8 @@ def check_valid_codes3(map, outfile = nil)
     unless outfile == ''
       outfile.puts header
       outfile.puts errors
+      outfile.close
     end
-	else
-  	print_debug "No errors found."
 	end
 
   return [err_count, errors]
