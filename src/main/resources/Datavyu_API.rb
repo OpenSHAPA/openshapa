@@ -2262,7 +2262,6 @@ def check_valid_codes3(map, outfile = nil)
 
   return [err_count, errors]
 end
-alias :checkValidCodes2 :check_valid_codes2
 
 # Return a list of columns from the current spreadsheet.
 # @return [Array]
