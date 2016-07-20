@@ -2236,7 +2236,7 @@ def check_valid_codes3(map, outfile = nil)
         when filt.class == Array
           filt.include?(val)
         when filt.class == Proc
-          filt.call(code)
+          filt.call(val)
         else
           raise "Unhandled filter type: #{filt.class}"
         end
