@@ -185,11 +185,14 @@ class RCell
   def change_code(arg, val)
     arg = arg.gsub(/(\W)+/, "").downcase
     if arg == "onset"
-      @onset = val.to_i
+      val = val.to_i if val.class == String
+      @onset = val
     elsif arg == "offset"
-      @offset = val.to_i
+      val = val.to_i if val.class == String
+      @offset = val
     elsif arg == "ordinal"
-      @ordinal = val.to_i
+      val = val.to_i if val.class == String
+      @ordinal = val
     elsif @arglist.include?(arg)
       for i in 0..arglist.length-1
         if arglist[i] == arg and not arg.nil?
