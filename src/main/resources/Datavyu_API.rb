@@ -1830,8 +1830,8 @@ alias :loadMacshapaDB :load_macshapa_db
 #  # Transfer column "idchange" from test.opf to the currently open spreadsheet in Datavyu. Do not delete "idchange" from test.opf.
 #  transfer_columns("/Users/username/Desktop/test.opf", "", true, "idchange")
 def transfer_columns(db1, db2, remove, *varnames)
-  # Save the current $db and $proj global variables
-  saved_db, saved_proj = $db, $proj
+  # Save the current $db and $pj global variables
+  saved_db, saved_proj = $db, $pj
 
   # If varnames was specified as a hash, flatten it to an array
   varnames.flatten!
@@ -1860,7 +1860,7 @@ def transfer_columns(db1, db2, remove, *varnames)
       print_debug("Loading source database from file : #{db1path}")
       from_db, from_proj = loadDB(db1path)
     else
-      from_db, from_proj = $db, $proj
+      from_db, from_proj = $db, $pj
     end
   rescue StandardError => e
     puts e.message
@@ -1879,9 +1879,9 @@ def transfer_columns(db1, db2, remove, *varnames)
       end
       print_debug("Loading destination database from file : #{db2path}")
       to_db, to_proj = loadDB(db2path)
-      #$db,$proj = loadDB(db2path)
+      #$db,$pj = loadDB(db2path)
     else
-      to_db, to_proj = $db, $proj
+      to_db, to_proj = $db, $pj
     end
   rescue StandardError => e
     puts e.message
@@ -1957,7 +1957,7 @@ def transfer_columns(db1, db2, remove, *varnames)
   end
 
   # Restore the saved database and project globals
-  $db, $proj = saved_db, saved_proj
+  $db, $pj = saved_db, saved_proj
 
   puts "Transfer completed successfully!"
 end
