@@ -324,6 +324,8 @@ public final class DataControllerV extends DatavyuDialog
     private String osModifier;
 
     private boolean highlightCells = false;
+
+    private boolean highlightAndFocus = false;
     // -------------------------------------------------------------------------
     // [initialization]
     //
@@ -2111,6 +2113,18 @@ public final class DataControllerV extends DatavyuDialog
 
     public boolean getCellHighlighting() {
         return highlightCells;
+    }
+
+    public void setCellHighlighting(boolean v) {
+        highlightCells = v;
+    }
+
+    public void toggleCellHighlightingAutoFocus() {
+        highlightAndFocus = !highlightAndFocus;
+    }
+
+    public boolean getCellHighlightAndFocus() {
+        return highlightAndFocus;
     }
 
     public void clearRegionOfInterestAction() {

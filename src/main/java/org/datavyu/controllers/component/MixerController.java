@@ -124,6 +124,7 @@ public final class MixerController implements PropertyChangeListener,
     private JSlider zoomSlide;
     private boolean isUpdatingZoomSlide = false;
     private JButton enableHighlight;
+    private JButton enableHighlightAndFocus;
 
     /**
      * Create a new MixerController.
@@ -214,6 +215,14 @@ public final class MixerController implements PropertyChangeListener,
         });
         enableHighlight.setName("enableHighlightButton");
 
+        enableHighlightAndFocus = new JButton("Enable Highlight and Focus");
+        enableHighlightAndFocus.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                enableHighlightAndFocusHandler(e);
+            }
+        });
+        enableHighlightAndFocus.setName("enableHighlightAndFocusButton");
+
         zoomSlide = new JSlider(JSlider.HORIZONTAL, 1, 1000, 1);
         zoomSlide.addChangeListener(new ChangeListener() {
             public void stateChanged(final ChangeEvent e) {
@@ -254,6 +263,7 @@ public final class MixerController implements PropertyChangeListener,
         tracksPanel.add(zoomRegionButton);
         tracksPanel.add(zoomSlide, "wrap");
         tracksPanel.add(enableHighlight);
+        tracksPanel.add(enableHighlightAndFocus);
         tracksPanel.add(clearRegion, "wrap");
 
         timescaleController = new TimescaleController(mixerModel);
@@ -818,6 +828,19 @@ public final class MixerController implements PropertyChangeListener,
             enableHighlight.setText("Enable Cell Highlighting");
         } else {
             enableHighlight.setText("Disable Cell Highlighting");
+        }
+
+        Datavyu.getProjectController().getSpreadsheetPanel().redrawCells();
+    }
+
+    private void enableHighlightAndFocusHandler(final ActionEvent e) {
+        Datavyu.getDataController().toggleCellHighlightingAutoFocus();
+        Datavyu.getDataController().setCellHighlighting(Datavyu.getDataController().getCellHighlightAndFocus());
+
+        if (!Datavyu.getDataController().getCellHighlighting()) {
+            enableHighlightAndFocus.setText("Enable Highlight and Focus");
+        } else {
+            enableHighlightAndFocus.setText("Disable Highlight and Focus");
         }
 
         Datavyu.getProjectController().getSpreadsheetPanel().redrawCells();

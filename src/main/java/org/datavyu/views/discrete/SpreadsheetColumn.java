@@ -20,6 +20,7 @@ import org.datavyu.Configuration;
 import org.datavyu.Datavyu;
 import org.datavyu.models.db.*;
 import org.datavyu.undoableedits.ChangeNameVariableEdit;
+import org.datavyu.util.ClockTimer;
 import org.datavyu.util.Constants;
 import org.datavyu.util.DragAndDrop.GhostGlassPane;
 import org.jdesktop.application.Action;
@@ -43,7 +44,8 @@ import java.util.ListIterator;
 public final class SpreadsheetColumn extends JLabel
         implements VariableListener,
         MouseListener,
-        MouseMotionListener {
+        MouseMotionListener,
+        ClockTimer.ClockListener {
 
     /**
      * Default column width.
@@ -171,6 +173,8 @@ public final class SpreadsheetColumn extends JLabel
         datapanel = new ColumnDataPanel(db, width, var, cellSelL);
         this.setVisible(!var.isHidden());
         datapanel.setVisible(!var.isHidden());
+
+        Datavyu.getDataController().getClock().registerListener(this);
     }
 
     /**
@@ -460,6 +464,37 @@ public final class SpreadsheetColumn extends JLabel
         return variable.getName();
     }
 
+    private void focusNextCell() {
+        long time = Datavyu.getDataController().getCurrentTime();
+        for(int i = 0; i < getCellsTemporally().size(); i++) {
+            SpreadsheetCell c = getCellsTemporally().get(i);
+            if(!c.getCell().isPastTimeWindow(time)) {
+                if(!c.isFocusOwner()) {
+
+                    if(c.getCell().getValue() instanceof MatrixValue) {
+                        int firstEmpty = -1;
+                        List<Value> args = ((MatrixValue) c.getCell().getValue()).getArguments();
+                        for(int j = 0; j < args.size(); j++) {
+                            if(args.get(j).isEmpty()) {
+                                firstEmpty = j;
+                                break;
+                            }
+                        }
+                        if(firstEmpty > -1) {
+                            c.requestFocus();
+                            c.getDataView().getEdTracker().setEditor(c.getDataView().getEdTracker().getEditorAtArgIndex(firstEmpty));
+                        }
+                    } else {
+                        if(c.getCell().getValue().isEmpty()) {
+                            c.requestFocus();
+                        }
+                    }
+                }
+                break;
+            }
+        }
+    }
+
     public void setColumnName(final String newName) throws UserWarningException {
         try {
             // Make sure this column name isn't already in the column
@@ -693,4 +728,32 @@ public final class SpreadsheetColumn extends JLabel
         }
     }
 
+    @Override
+    public void clockTick(long time) {
+        if(isSelected() && Datavyu.getDataController().getCellHighlightAndFocus()) {
+            focusNextCell();
+        }
+    }
+
+    @Override
+    public void clockStart(long time) {
+
+    }
+
+    @Override
+    public void clockStop(long time) {
+
+    }
+
+    @Override
+    public void clockRate(float rate) {
+
+    }
+
+    @Override
+    public void clockStep(long time) {
+        if(isSelected() && Datavyu.getDataController().getCellHighlightAndFocus()) {
+            focusNextCell();
+        }
+    }
 }

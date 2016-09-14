@@ -195,6 +195,18 @@ public final class EditorTracker
        return editors.get(i);
     }
 
+    public EditorComponent getEditorAtArgIndex (int pos) {
+        EditorComponent foundEd = NO_EDITOR;
+        int count = 0;
+        for (EditorComponent ed : editors) {
+            if (ed.isEditable()) {
+                if(count == pos) return ed;
+                count++;
+            }
+        }
+        return foundEd;
+    }
+
     /**
      * @return the first editor if found or NO_EDITOR
      */

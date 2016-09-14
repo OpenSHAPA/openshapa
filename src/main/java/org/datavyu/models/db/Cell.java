@@ -183,4 +183,6 @@ public interface Cell {
     void removeListener(final CellListener listener);
 
     boolean isInTimeWindow(long time);
+
+    boolean isPastTimeWindow(long time);
 }

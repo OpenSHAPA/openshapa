@@ -121,6 +121,7 @@ public class SpreadsheetCell extends JPanel
      */
     private JLabel ord;
     private Color timeHighlightColor = new Color(116, 242, 190);
+    private Color pastTimeHighlightColor = new Color(247, 153, 153);
     /**
      * The Onset display component.
      */
@@ -154,6 +155,8 @@ public class SpreadsheetCell extends JPanel
      */
     private boolean onsetProcessed = false;
     private boolean beingProcessed = false;
+
+    private SpreadsheetColumn parentColumn = null;
 
     public SpreadsheetCell(final Datastore cellDB,
                            final Cell cell,
@@ -250,7 +253,6 @@ public class SpreadsheetCell extends JPanel
         cellPanel.add(stretcher, BorderLayout.SOUTH);
 
         Datavyu.getDataController().getClock().registerListener(this);
-
 
         brandNew = true;
     }
@@ -478,7 +480,7 @@ public class SpreadsheetCell extends JPanel
 
             cellPanel.setBackground(Configuration.getInstance().getSSSelectedColour());
         } else {
-            dataPanel.select(0, 0);
+//            dataPanel.select(0, 0);
 
             if (cellOverlap) {
                 cellPanel.setBorder(OVERLAP_BORDER);
@@ -489,13 +491,22 @@ public class SpreadsheetCell extends JPanel
             cellPanel.setBackground(Configuration.getInstance().getSSBackgroundColour());
         }
 
-        if (model.isInTimeWindow(Datavyu.getDataController().getCurrentTime()) && Datavyu.getDataController().getCellHighlighting()) {
+        if (Datavyu.getDataController().getCellHighlightAndFocus()) {
+            if (model.isPastTimeWindow(Datavyu.getDataController().getCurrentTime())) {
+                cellPanel.setBackground(pastTimeHighlightColor);
+            } else if (cellPanel.getBackground() == pastTimeHighlightColor) {
+                cellPanel.setBackground(Configuration.getInstance().getSSBackgroundColour());
+            }
+        }
+
+        if (Datavyu.getDataController().getCellHighlighting() &&
+                model.isInTimeWindow(Datavyu.getDataController().getCurrentTime()) &&
+                cellPanel.getBackground() != timeHighlightColor) {
             cellPanel.setBackground(timeHighlightColor);
         } else if (cellPanel.getBackground() == timeHighlightColor) {
             cellPanel.setBackground(Configuration.getInstance().getSSBackgroundColour());
         }
 
-//        this.revalidate();
     }
 
     // *************************************************************************
@@ -635,12 +646,33 @@ public class SpreadsheetCell extends JPanel
         Datavyu.getView().getSpreadsheetPanel().validate();
         Datavyu.getView().getSpreadsheetPanel().reorientView(this);
 
+        if(parentColumn == null) {
+            for (SpreadsheetColumn col : Datavyu.getView().getSpreadsheetPanel().getColumns()) {
+                if (col.getVariable() == model.getVariable()) {
+                    parentColumn = col;
+                    break;
+                }
+            }
+        }
+
+        parentColumn.setSelected(true);
+
     }
 
     @Override
     public void focusLost(final FocusEvent e) {
         if (brandNew) model.setSelected(false);
         brandNew = false;
+
+        if(parentColumn == null) {
+            for (SpreadsheetColumn col : Datavyu.getView().getSpreadsheetPanel().getColumns()) {
+                if (col.getVariable() == model.getVariable()) {
+                    parentColumn = col;
+                    break;
+                }
+            }
+        }
+        parentColumn.setSelected(false);
     }
 
     @Override

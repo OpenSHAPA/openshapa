@@ -291,6 +291,15 @@ public class DatavyuCell implements Cell {
             return false;
         }
     }
+
+    @Override
+    public boolean isPastTimeWindow(long time) {
+        if (time > Math.max(getOnset(), getOffset())) {
+            return true;
+        } else {
+            return false;
+        }
+    }
     
     @Override
     /* Print string representation of this cell. */

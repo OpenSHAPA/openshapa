@@ -275,6 +275,7 @@ public final class SpreadsheetPanel extends JPanel
                 cell.updateSelectionDisplay();
             }
         }
+
     }
 
     /**
