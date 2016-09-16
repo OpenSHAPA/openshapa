@@ -2238,6 +2238,7 @@ public final class DatavyuView extends FrameView
         quickkeysMenuItem.setAction(actionMap.get("toggleQuickKeys"));
         quickkeysMenuItem.setName("quickkeysMenuItem");
         quickkeysMenuItem.setText("Enable Quick Key Mode");
+        quickkeysMenuItem.setToolTipText("Create new cells in selected column by hitting a single key, filling in the first argument with the key pressed.");
         spreadsheetMenu.add(quickkeysMenuItem);
 
         menuBar.add(spreadsheetMenu);
