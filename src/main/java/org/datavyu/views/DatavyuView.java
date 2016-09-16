@@ -170,6 +170,10 @@ public final class DatavyuView extends FrameView
     private javax.swing.JMenuItem zoomInMenuItem;
     private javax.swing.JMenu zoomMenu;
     private javax.swing.JMenuItem zoomOutMenuItem;
+    private javax.swing.JMenuItem quickkeysMenuItem;
+
+    private boolean quickKeyMode = false;
+
     private JTabbedPane tabbedPane;
     private JScrollPane fileScrollPane;
     private JSplitPane fileSplitPane;
@@ -919,6 +923,20 @@ public final class DatavyuView extends FrameView
         fileTree = new FileSystemTreeModel(new File(jd.getSelectedFile().getParent()));
         fileDrawer.setModel(fileTree);
         updateTitle();
+    }
+
+    @Action
+    public void toggleQuickKeys() {
+        quickKeyMode = !quickKeyMode;
+        if(quickKeyMode) {
+            quickkeysMenuItem.setText("Disable Quick Key Mode");
+        } else {
+            quickkeysMenuItem.setText("Enable Quick Key Mode");
+        }
+    }
+
+    public boolean isQuickKeyMode() {
+        return quickKeyMode;
     }
 
 
@@ -1959,6 +1977,7 @@ public final class DatavyuView extends FrameView
         guideMenuItem = new javax.swing.JMenuItem();
         citationMenuItem = new javax.swing.JMenuItem();
         hotkeysMenuItem = new javax.swing.JMenuItem();
+        quickkeysMenuItem = new javax.swing.JMenuItem();
 
         scriptMenuPermanentsList = new ArrayList();
 
@@ -2215,6 +2234,11 @@ public final class DatavyuView extends FrameView
         pullMenuItem.setAction(actionMap.get("pull"));
         pullMenuItem.setName("pullMenuItem");
         spreadsheetMenu.add(pullMenuItem);
+
+        quickkeysMenuItem.setAction(actionMap.get("toggleQuickKeys"));
+        quickkeysMenuItem.setName("quickkeysMenuItem");
+        quickkeysMenuItem.setText("Enable Quick Key Mode");
+        spreadsheetMenu.add(quickkeysMenuItem);
 
         menuBar.add(spreadsheetMenu);
 

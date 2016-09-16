@@ -14,6 +14,7 @@
  */
 package org.datavyu.views.discrete.datavalues;
 
+import org.datavyu.Datavyu;
 import org.datavyu.models.db.NominalValue;
 
 import javax.swing.text.JTextComponent;
@@ -79,7 +80,7 @@ public final class NominalDataValueEditor extends DataValueEditor {
         super.keyTyped(e);
 
         // Just a regular vanilla keystroke - insert it into nominal field.
-        if (!e.isConsumed() && !e.isMetaDown() && !e.isControlDown()
+        if (!Datavyu.getView().isQuickKeyMode() && !e.isConsumed() && !e.isMetaDown() && !e.isControlDown()
                 && !isReserved(e.getKeyChar())) {
             
             // Avoids a nasty bug that occurs if carraige return goes to editor. 'New cell' numpad enter still processed as always

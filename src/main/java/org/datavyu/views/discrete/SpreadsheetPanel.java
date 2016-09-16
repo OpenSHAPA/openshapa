@@ -540,6 +540,36 @@ public final class SpreadsheetPanel extends JPanel
 
                 return true;
             }
+        } else if (e.getID() == KeyEvent.KEY_PRESSED) {
+            if ((Datavyu.getView().isQuickKeyMode() &&
+                    (Character.isAlphabetic(e.getKeyChar()) || Character.isDigit(e.getKeyChar()))
+            )) {
+                // Find the currently selected column
+                SpreadsheetColumn col = null;
+                for(SpreadsheetColumn c : getVisibleColumns()) {
+                    if(c.isSelected()) {
+                        col = c;
+                        break;
+                    }
+                }
+                if(col != null) {
+                    Cell c = col.getVariable().createCell();
+                    Value v = c.getValue();
+                    if(v instanceof MatrixValue) {
+                        List<Value> vals = ((MatrixValue) v).getArguments();
+                        vals.get(0).set(String.valueOf(e.getKeyChar()));
+                    } else {
+                        v.set(String.valueOf(e.getKeyChar()));
+                    }
+                    c.setOnset(Datavyu.getDataController().getCurrentTime());
+                    c.setOffset(Datavyu.getDataController().getCurrentTime());
+                    Datavyu.getProjectController().getSpreadsheetPanel().redrawCells();
+                    e.consume();
+                }
+                // Add a cell to that column with this key in the first argument
+
+
+            }
         }
 
         return false;
