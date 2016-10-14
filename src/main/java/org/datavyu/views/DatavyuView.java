@@ -281,6 +281,8 @@ public final class DatavyuView extends FrameView
         redoSpreadSheetMenuItem.setAccelerator(KeyStroke.getKeyStroke(
                 KeyEvent.VK_Y, keyMask));
 
+        // Set enable quick key mode to keyMask + shift + 'K'
+        quickkeysMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_K, keyMask | InputEvent.SHIFT_MASK));
 
         if (panel != null) {
             panel.deregisterListeners();
@@ -813,8 +815,13 @@ public final class DatavyuView extends FrameView
             projectName = "untitled";
         }
 
+
         String title = rMap.getString("Application.title") + " - " + projectName + extension + postFix;
         String tabTitle = projectName + postFix;
+
+        if(isQuickKeyMode()) {
+            title = title + " <QUICK KEY MODE>";
+        }
 
         Datavyu.getProjectController().getProject().setDatabaseFileName(projectName + extension);
         mainFrame.setTitle(title);
@@ -930,9 +937,12 @@ public final class DatavyuView extends FrameView
         quickKeyMode = !quickKeyMode;
         if(quickKeyMode) {
             quickkeysMenuItem.setText("Disable Quick Key Mode");
+
         } else {
             quickkeysMenuItem.setText("Enable Quick Key Mode");
         }
+
+        updateTitle();
     }
 
     public boolean isQuickKeyMode() {

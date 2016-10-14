@@ -540,7 +540,7 @@ public final class SpreadsheetPanel extends JPanel
 
                 return true;
             }
-        } else if (e.getID() == KeyEvent.KEY_PRESSED) {
+        } else if (e.getID() == KeyEvent.KEY_PRESSED && !e.isMetaDown() && !e.isControlDown()) {
             if ((Datavyu.getView().isQuickKeyMode() &&
                     (Character.isAlphabetic(e.getKeyChar()) || Character.isDigit(e.getKeyChar()))
             )) {
