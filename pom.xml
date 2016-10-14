@@ -413,7 +413,7 @@
                 <dependency>
                     <groupId>org.datavyu</groupId>
                     <artifactId>libNativeOSXCanvas</artifactId>
-                    <version>0.91</version>
+                    <version>0.92</version>
                 </dependency>
 
                 <dependency>

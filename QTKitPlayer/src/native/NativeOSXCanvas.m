@@ -266,7 +266,7 @@ JNIEXPORT void JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_setRat
     
     JNF_COCOA_ENTER(env);
     
-    if(rate > 0.5 && rate < 2.0) {
+    if(rate > 0.0 && rate < 2.0) {
         for (AVPlayerItemTrack *track in GetQtMovie(movieId).currentItem.tracks)
         {
             if ([track.assetTrack.mediaType isEqual:AVMediaTypeAudio])

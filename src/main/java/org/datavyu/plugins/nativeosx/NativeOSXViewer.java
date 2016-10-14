@@ -256,7 +256,7 @@ public final class NativeOSXViewer extends BaseQuickTimeDataViewer {
                     prevSeekTime = position;
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
-//                            System.out.println("Seeking to " + position);
+                            System.out.println("Seeking to " + position);
                             boolean wasPlaying = isPlaying();
                             float prevRate = getPlaybackSpeed();
                             if (isPlaying()) {
