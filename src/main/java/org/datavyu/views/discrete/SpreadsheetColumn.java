@@ -470,7 +470,6 @@ public final class SpreadsheetColumn extends JLabel
             SpreadsheetCell c = getCellsTemporally().get(i);
             if(c.getCell().isInTimeWindow(time)) {
                 if(!c.isFocusOwner()) {
-
                     if(c.getCell().getValue() instanceof MatrixValue) {
                         int firstEmpty = -1;
                         List<Value> args = ((MatrixValue) c.getCell().getValue()).getArguments();
@@ -483,6 +482,8 @@ public final class SpreadsheetColumn extends JLabel
                         if(firstEmpty > -1) {
                             c.requestFocus();
                             c.getDataView().getEdTracker().setEditor(c.getDataView().getEdTracker().getEditorAtArgIndex(firstEmpty));
+                        } else {
+                            c.requestFocus();
                         }
                     } else {
                         if(c.getCell().getValue().isEmpty()) {

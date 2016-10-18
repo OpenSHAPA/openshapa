@@ -137,6 +137,9 @@ public abstract class EditorComponent implements ClipboardOwner {
      * @param fe The FocusEvent that triggered this action.
      */
     public void focusLost(final FocusEvent fe) {
+        if (parentComp != null) {
+            parentComp.select(0, 0);
+        }
     }
 
     /**
