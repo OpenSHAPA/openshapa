@@ -468,7 +468,7 @@ public final class SpreadsheetColumn extends JLabel
         long time = Datavyu.getDataController().getCurrentTime();
         for(int i = 0; i < getCellsTemporally().size(); i++) {
             SpreadsheetCell c = getCellsTemporally().get(i);
-            if(!c.getCell().isPastTimeWindow(time)) {
+            if(c.getCell().isInTimeWindow(time)) {
                 if(!c.isFocusOwner()) {
 
                     if(c.getCell().getValue() instanceof MatrixValue) {

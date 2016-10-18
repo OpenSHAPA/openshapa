@@ -465,7 +465,7 @@ public class SpreadsheetCell extends JPanel
     }
 
     public void updateSelectionDisplay() {
-        if (model.isHighlighted()) {
+        if (model.isHighlighted() && !Datavyu.getDataController().getCellHighlightAndFocus()) {
             if (cellOverlap) {
                 cellPanel.setBorder(HIGHLIGHT_OVERLAP_BORDER);
             } else {
