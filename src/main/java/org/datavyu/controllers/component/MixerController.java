@@ -833,7 +833,7 @@ public final class MixerController implements PropertyChangeListener,
         Datavyu.getProjectController().getSpreadsheetPanel().redrawCells();
     }
 
-    private void enableHighlightAndFocusHandler(final ActionEvent e) {
+    public void enableHighlightAndFocusHandler(final ActionEvent e) {
         Datavyu.getDataController().toggleCellHighlightingAutoFocus();
         Datavyu.getDataController().setCellHighlighting(Datavyu.getDataController().getCellHighlightAndFocus());
 

@@ -171,6 +171,7 @@ public final class DatavyuView extends FrameView
     private javax.swing.JMenu zoomMenu;
     private javax.swing.JMenuItem zoomOutMenuItem;
     private javax.swing.JMenuItem quickkeysMenuItem;
+    private javax.swing.JMenuItem highlightAndFocusMenuItem;
 
     private boolean quickKeyMode = false;
 
@@ -283,6 +284,7 @@ public final class DatavyuView extends FrameView
 
         // Set enable quick key mode to keyMask + shift + 'K'
         quickkeysMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_K, keyMask | InputEvent.SHIFT_MASK));
+        highlightAndFocusMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, keyMask | InputEvent.SHIFT_MASK));
 
         if (panel != null) {
             panel.deregisterListeners();
@@ -823,6 +825,10 @@ public final class DatavyuView extends FrameView
             title = title + " <QUICK KEY MODE>";
         }
 
+        if(isHighlightAndFocusMode()) {
+            title = title + " <HIGHLIGHT AND FOCUS MODE>";
+        }
+
         Datavyu.getProjectController().getProject().setDatabaseFileName(projectName + extension);
         mainFrame.setTitle(title);
         this.getSpreadsheetPanel().setName(tabTitle);
@@ -945,8 +951,29 @@ public final class DatavyuView extends FrameView
         updateTitle();
     }
 
+    @Action
+    public void toggleHighlightAndFocusMode() {
+        Datavyu.getDataController().getMixerController().enableHighlightAndFocusHandler(null);
+        if(Datavyu.getDataController().getCellHighlightAndFocus()) {
+            highlightAndFocusMenuItem.setText("Disable Highlight and Focus Mode");
+
+        } else {
+            highlightAndFocusMenuItem.setText("Enable Highlight and Focus Mode");
+        }
+
+        updateTitle();
+    }
+
     public boolean isQuickKeyMode() {
         return quickKeyMode;
+    }
+
+    public boolean isHighlightAndFocusMode() {
+        if(Datavyu.getDataController() != null) {
+            return Datavyu.getDataController().getCellHighlightAndFocus();
+        } else {
+            return false;
+        }
     }
 
 
@@ -1988,6 +2015,7 @@ public final class DatavyuView extends FrameView
         citationMenuItem = new javax.swing.JMenuItem();
         hotkeysMenuItem = new javax.swing.JMenuItem();
         quickkeysMenuItem = new javax.swing.JMenuItem();
+        highlightAndFocusMenuItem = new javax.swing.JMenuItem();
 
         scriptMenuPermanentsList = new ArrayList();
 
@@ -2249,7 +2277,14 @@ public final class DatavyuView extends FrameView
         quickkeysMenuItem.setName("quickkeysMenuItem");
         quickkeysMenuItem.setText("Enable Quick Key Mode");
         quickkeysMenuItem.setToolTipText("Create new cells in selected column by hitting a single key, filling in the first argument with the key pressed.");
+
+        highlightAndFocusMenuItem.setAction(actionMap.get("toggleHighlightAndFocusMode"));
+        highlightAndFocusMenuItem.setName("highlightAndFocusMenuItem");
+        highlightAndFocusMenuItem.setText("Enable Highlight and Focus Mode");
+        highlightAndFocusMenuItem.setToolTipText("For the selected column, highlight the cell that the video clock is displaying and select the first uncoded argument.");
+
         spreadsheetMenu.add(quickkeysMenuItem);
+        spreadsheetMenu.add(highlightAndFocusMenuItem);
 
         menuBar.add(spreadsheetMenu);
 
