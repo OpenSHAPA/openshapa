@@ -139,6 +139,8 @@ public final class SpreadsheetColumn extends JLabel
 
     private GhostGlassPane glassPane = (GhostGlassPane) Datavyu.getView().getFrame().getGlassPane();
 
+    private int previouslyFocusedCellIdx = -1;
+
     /**
      * Creates new SpreadsheetColumn.
      *
@@ -466,8 +468,9 @@ public final class SpreadsheetColumn extends JLabel
 
     private void focusNextCell() {
         long time = Datavyu.getDataController().getCurrentTime();
-        for(int i = 0; i < getCellsTemporally().size(); i++) {
-            SpreadsheetCell c = getCellsTemporally().get(i);
+        List<SpreadsheetCell> tempCells = getCellsTemporally();
+        for(int i = 0; i < tempCells.size(); i++) {
+            SpreadsheetCell c = tempCells.get(i);
             if(c.getCell().isInTimeWindow(time)) {
                 if(!c.isFocusOwner()) {
                     if(c.getCell().getValue() instanceof MatrixValue) {
@@ -490,6 +493,9 @@ public final class SpreadsheetColumn extends JLabel
                             c.requestFocus();
                         }
                     }
+                }
+                if(c.getCell().getOnset() > time) {
+                    break;
                 }
                 break;
             }
