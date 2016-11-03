@@ -1733,7 +1733,7 @@ def load_macshapa_db(filename, write_to_gui, *ignore_vars)
         print_debug id
         varname = id.slice(0, id.index("(")).gsub(/\W+/,'_')
         if getVariableList.include?(varname)
-          col = getVariable()
+          col = getVariable(varname)
         else
           puts "Column #{varname} not found. Skipping."
           next
