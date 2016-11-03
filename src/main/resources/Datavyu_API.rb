@@ -1708,7 +1708,11 @@ def load_macshapa_db(filename, write_to_gui, *ignore_vars)
       # Strip out the ordinal, onset, and offset.  These will be handled on a
       # cell by cell basis.
       if v != "<ord>" and v != "<onset>" and v != "<offset>"
-        args << v.sub("<", "").sub(">", "")
+        v1 = v.gsub(/\<|\>/, '').gsub('#', 'number').gsub('&', 'and')
+        v2 = RColumn.sanitize_codename(v1)
+        puts "Changing code #{v1} in column #{key} to: #{v2}" if(v2 != v1)
+        # args << v.sub("<", "").sub(">", "")
+        args << v2
       end
     }
 
