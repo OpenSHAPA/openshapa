@@ -2436,3 +2436,17 @@ def get_datavyu_files_from(dir, recurse=false)
   files = Dir.chdir(dir){ Dir.glob(pat) }
   return files
 end
+
+# Hide the given columns in the spreadsheet
+# @param [Array<String>] names of columns to hide
+def hide_columns(*names)
+  valid_names = names & get_column_list
+  valid_names.each{ |x| $db.getVariable(name).setHidden(true)}
+end
+
+# Show the given columns in the spreadsheet
+# @param [Array<String>] names of columns to show
+def show_columns(*names)
+  valid_names = names & get_column_list
+  valid_names.each{ |x| $db.getVariable(name).setHidden(false) }
+end
