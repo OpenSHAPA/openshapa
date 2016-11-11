@@ -1708,7 +1708,11 @@ def load_macshapa_db(filename, write_to_gui, *ignore_vars)
       # Strip out the ordinal, onset, and offset.  These will be handled on a
       # cell by cell basis.
       if v != "<ord>" and v != "<onset>" and v != "<offset>"
-        args << v.sub("<", "").sub(">", "")
+        v1 = v.gsub(/\<|\>/, '').gsub('#', 'number').gsub('&', 'and')
+        v2 = RColumn.sanitize_codename(v1)
+        puts "Changing code #{v1} in column #{key} to: #{v2}" if(v2 != v1)
+        # args << v.sub("<", "").sub(">", "")
+        args << v2
       end
     }
 
@@ -1729,7 +1733,7 @@ def load_macshapa_db(filename, write_to_gui, *ignore_vars)
         print_debug id
         varname = id.slice(0, id.index("(")).gsub(/\W+/,'_')
         if getVariableList.include?(varname)
-          col = getVariable()
+          col = getVariable(varname)
         else
           puts "Column #{varname} not found. Skipping."
           next
@@ -2431,4 +2435,18 @@ def get_datavyu_files_from(dir, recurse=false)
   pat = recurse ? '**/*.opf' : '*.opf'
   files = Dir.chdir(dir){ Dir.glob(pat) }
   return files
+end
+
+# Hide the given columns in the spreadsheet
+# @param [Array<String>] names of columns to hide
+def hide_columns(*names)
+  valid_names = names & get_column_list
+  valid_names.each{ |x| $db.getVariable(name).setHidden(true)}
+end
+
+# Show the given columns in the spreadsheet
+# @param [Array<String>] names of columns to show
+def show_columns(*names)
+  valid_names = names & get_column_list
+  valid_names.each{ |x| $db.getVariable(name).setHidden(false) }
 end
