@@ -283,7 +283,7 @@ public final class DatavyuView extends FrameView
                 KeyEvent.VK_Y, keyMask));
 
         // Set delete cells to keyMask + backspace
-        deleteCellMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, keyMask));
+        deleteCellMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SLASH, keyMask));
 
         // Set enable quick key mode to keyMask + shift + 'K'
         quickkeysMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_K, keyMask | InputEvent.SHIFT_MASK));

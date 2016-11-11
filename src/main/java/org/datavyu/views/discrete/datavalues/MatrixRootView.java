@@ -180,11 +180,13 @@ public final class MatrixRootView extends JTextArea implements FocusListener {
             Datavyu.getProjectController().setLastCreatedVariable(v);
             Datavyu.getProjectController().setLastSelectedCell(parentCell);
         }
+        parentCell.setSelected(true);
     }
 
     @Override
     public void focusLost(final FocusEvent fe) {
         // do nothing
+        parentCell.setSelected(false);
         if(!parentCell.getValueAsString().equals(oldValue)) {
             UndoableEdit edit = new ChangeValCellEdit(parentCell, oldValue, ChangeCellEdit.Granularity.COARSEGRAINED);
             Datavyu.getView().getUndoSupport().postEdit(edit);

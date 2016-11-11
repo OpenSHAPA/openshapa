@@ -14,6 +14,7 @@
  */
 package org.datavyu.views.discrete;
 
+import org.datavyu.Datavyu;
 import org.datavyu.views.discrete.datavalues.NoEditor;
 
 import javax.swing.text.JTextComponent;
@@ -338,6 +339,12 @@ public final class EditorTracker
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
 
+            case KeyEvent.VK_BACK_SLASH:
+                if((e.getModifiers() & KeyEvent.META_MASK) != 0) {
+                    Datavyu.getView().deleteCells();
+                    e.consume();
+                    break;
+                }
             case KeyEvent.VK_BACK_SPACE:
                 if (!gotKeyUp) {
                     resetEditorText();

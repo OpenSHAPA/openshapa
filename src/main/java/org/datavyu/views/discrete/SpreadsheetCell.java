@@ -639,10 +639,10 @@ public class SpreadsheetCell extends JPanel
     public void focusGained(final FocusEvent e) {
         model = model.getFreshCell();
 
-        if (model.isHighlighted() && (cellPanel.getBorder().equals(NORMAL_BORDER)
-                || cellPanel.getBorder().equals(OVERLAP_BORDER))) {
+//        if (model.isHighlighted() && (cellPanel.getBorder().equals(NORMAL_BORDER)
+//                || cellPanel.getBorder().equals(OVERLAP_BORDER))) {
             model.setSelected(true);
-        }
+//        }
         Datavyu.getView().getSpreadsheetPanel().validate();
         Datavyu.getView().getSpreadsheetPanel().reorientView(this);
 
