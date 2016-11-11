@@ -566,6 +566,12 @@ public final class SpreadsheetColumn extends JLabel
     @Override
     public void cellRemoved(final Cell deletedCell) {
         datapanel.deleteCell(deletedCell);
+        for(SpreadsheetCell c : getCellsTemporally()) {
+            if(c.getOnsetTicks() >= deletedCell.getOnset()) {
+                c.requestFocus();
+                break;
+            }
+        }
     }
 
     // *************************************************************************

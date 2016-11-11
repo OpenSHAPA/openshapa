@@ -282,6 +282,9 @@ public final class DatavyuView extends FrameView
         redoSpreadSheetMenuItem.setAccelerator(KeyStroke.getKeyStroke(
                 KeyEvent.VK_Y, keyMask));
 
+        // Set delete cells to keyMask + backspace
+        deleteCellMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, keyMask));
+
         // Set enable quick key mode to keyMask + shift + 'K'
         quickkeysMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_K, keyMask | InputEvent.SHIFT_MASK));
         highlightAndFocusMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, keyMask | InputEvent.SHIFT_MASK));
@@ -1828,6 +1831,7 @@ public final class DatavyuView extends FrameView
         UndoableEdit edit = new RemoveCellEdit(selectedCells);
         // perform the operation
         new DeleteCellC(selectedCells);
+
         // notify the listeners
         Datavyu.getView().getUndoSupport().postEdit(edit);
     }
