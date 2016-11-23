@@ -326,6 +326,8 @@ public final class DataControllerV extends DatavyuDialog
     private boolean highlightCells = false;
 
     private boolean highlightAndFocus = false;
+
+    private long lastSeekTime = 0L;
     // -------------------------------------------------------------------------
     // [initialization]
     //
@@ -595,7 +597,12 @@ public final class DataControllerV extends DatavyuDialog
                 for (DataViewer v : viewers) {
 
                     if ((time > v.getOffset()) && isWithinPlayRange(time, v)) {
-                        v.seekTo(time - v.getOffset());
+                        long now = System.currentTimeMillis();
+//                        if(now - lastSeekTime > 200) {
+                            v.seekTo(time - v.getOffset());
+                            lastSeekTime = now;
+//                        }
+
                     }
                 }
 
@@ -786,7 +793,7 @@ public final class DataControllerV extends DatavyuDialog
         // If rate is faster than two times - we need to fake playback to give
         // the illusion of 'smooth'. We do this by stopping the dataviewer and
         // doing many seekTo's to grab individual frames.
-        if (Math.abs(rate) > 2.0 || rate < 0) {
+        if (Math.abs(rate) > 2.0 || rate < -1) {
             playbackModel.setFakePlayback(true);
 
             for (DataViewer viewer : viewers) {
