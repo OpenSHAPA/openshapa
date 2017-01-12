@@ -249,8 +249,9 @@ public final class RunScriptC extends SwingWorker<Object, String> {
         } catch (IOException ioe) {
             System.out.println("IOEXCEPTION!!!! " + ioe.getMessage());
             ioe.printStackTrace();
+        } finally{
+            Datavyu.scriptRunning = false;
         }
-        Datavyu.scriptRunning = false;
         Datavyu.getView().getSpreadsheetPanel().redrawCells();
     }
     
