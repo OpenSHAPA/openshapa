@@ -1527,6 +1527,11 @@ end
 def merge_columns(name, *cols)
   # Handle degenerate cases
   return nil if cols.nil? || cols.size == 0
+
+  # Ensure cols contains RColumns
+  cols.map!{ |x| get_column(x) if cols.class == String }
+
+  # Do nothing if only one column given.
   return cols.first if cols.size == 1
 
 	# Concatenate arglists and cells.
