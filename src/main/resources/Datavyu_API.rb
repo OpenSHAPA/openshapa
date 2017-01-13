@@ -1546,7 +1546,7 @@ def merge_columns(name, *cols)
 
   # Convert point cells to have offsets = onset + 1
   all_cells.each{ |x| x.offset = x.onset + 1 if x.onset == x.offset }
-  
+
 	# Gather onsets and offsets and collect unique times into a single array
 	onsets = all_cells.map(&:onset)
 	offsets = all_cells.map(&:offset)
@@ -2503,12 +2503,12 @@ end
 # @param [Array<String>] names of columns to hide
 def hide_columns(*names)
   valid_names = names & get_column_list
-  valid_names.each{ |x| $db.getVariable(name).setHidden(true)}
+  valid_names.each{ |x| $db.getVariable(x).setHidden(true)}
 end
 
 # Show the given columns in the spreadsheet
 # @param [Array<String>] names of columns to show
 def show_columns(*names)
   valid_names = names & get_column_list
-  valid_names.each{ |x| $db.getVariable(name).setHidden(false) }
+  valid_names.each{ |x| $db.getVariable(x).setHidden(false) }
 end
