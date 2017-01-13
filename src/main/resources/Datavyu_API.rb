@@ -1529,7 +1529,7 @@ def merge_columns(name, *cols)
   return nil if cols.nil? || cols.size == 0
 
   # Ensure cols contains RColumns
-  cols.map!{ |x| get_column(x) if cols.class == String }
+  cols.map!{ |x| get_column(x) if x.class == String }
 
   # Do nothing if only one column given.
   return cols.first if cols.size == 1
