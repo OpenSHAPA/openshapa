@@ -1093,6 +1093,7 @@ alias :createNewColumn :new_column
 alias :createVariable :new_column
 alias :createNewVariable :new_column
 alias :create_column :new_column
+alias :createColumn :new_column
 
 
 # Makes a duration based reliability column
