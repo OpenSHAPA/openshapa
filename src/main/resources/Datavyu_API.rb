@@ -156,7 +156,7 @@ class RCell
   # @param name [String] name of code to remove
   # @return [nil]
   def remove_code(name)
-    argvals.delete(arglist.index(name))
+    @argvals.delete(arglist.index(name))
     @arglist.delete(name)
   end
   alias :remove_arg :remove_code
