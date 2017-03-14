@@ -107,8 +107,8 @@ public final class Datavyu extends SingleFrameApplication
             URL resource = Datavyu.class.getClassLoader().getResource("../");
             System.out.println(resource);
 
-            nlm.unpackNativePackage();
-            NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), tempDir + File.separator + "vlc" + File.separator + "lib");
+//            nlm.unpackNativePackage();
+//            NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), tempDir + File.separator + "vlc" + File.separator + "lib");
         } catch (Exception e) {
             e.printStackTrace();
         }

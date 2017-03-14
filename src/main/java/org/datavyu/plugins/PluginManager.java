@@ -347,6 +347,7 @@ public final class PluginManager {
                     && !cName.contains("ch.randelshofer")
                     && !cName.startsWith("junitx")) {
 
+                System.out.println("Loading " + cName);
                 Class<?> testClass = Class.forName(cName);
 
                 if (PLUGIN_CLASS.isAssignableFrom(testClass) && 
