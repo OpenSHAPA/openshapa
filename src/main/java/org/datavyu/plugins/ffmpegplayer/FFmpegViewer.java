@@ -57,6 +57,9 @@ public final class FFmpegViewer extends BaseQuickTimeDataViewer {
      */
     private Media visualMedia;
 
+    private long lastSeekTime = 0;
+    private boolean isSeeking = false;
+
     public FFmpegViewer(final Frame parent, final boolean modal) {
         super(parent, modal);
 
@@ -81,7 +84,7 @@ public final class FFmpegViewer extends BaseQuickTimeDataViewer {
      */
     @Override
     public long getDuration() {
-        return (long)movie.getEndTime();
+        return (long)(movie.getEndTime() * 1000);
     }
 
     @Override
@@ -124,6 +127,7 @@ public final class FFmpegViewer extends BaseQuickTimeDataViewer {
         return new Dimension(movie.getWidth(), movie.getHeight());
     }
 
+
     @Override
     protected float getQTFPS() {
 
@@ -134,6 +138,8 @@ public final class FFmpegViewer extends BaseQuickTimeDataViewer {
     @Override
     public void setPlaybackSpeed(final float rate) {
         super.setPlaybackSpeed(rate);
+        movie.setPlaybackSpeed(rate);
+        System.out.println(rate);
 //        try {
 //        EventQueue.invokeLater(new Runnable() {
 //            public void run() {
@@ -157,14 +163,7 @@ public final class FFmpegViewer extends BaseQuickTimeDataViewer {
         try {
 
             if (movie != null) {
-//                EventQueue.invokeLater(new Runnable() {
-//                    public void run() {
-////                        if (movie.getPlaybackSpeed() != 0) {
-////                            movie.stop(movie.id);
-////                        }
-                        movie.setPlaybackSpeed(getPlaybackSpeed());
-//                    }
-//                });
+                movie.play();
             }
         } catch (Exception e) {
             LOGGER.error("Unable to play", e);
@@ -179,19 +178,10 @@ public final class FFmpegViewer extends BaseQuickTimeDataViewer {
         super.stop();
 
         System.out.println("HIT STOP");
-        final double time = System.currentTimeMillis();
         try {
 
             if (movie != null) {
-//                EventQueue.invokeLater(new Runnable() {
-//                    public void run() {
-                        System.out.println("EXECUTING STOP");
-                        System.out.println(System.currentTimeMillis() - time);
-                        movie.stop();
-                        System.out.println("STOPPED");
-                        System.out.println(System.currentTimeMillis() - time);
-//                    }
-//                });
+                movie.stop();
             }
         } catch (Exception e) {
             LOGGER.error("Unable to stop", e);
@@ -201,29 +191,42 @@ public final class FFmpegViewer extends BaseQuickTimeDataViewer {
     /**
      * {@inheritDoc}
      */
+
     @Override
     public void seekTo(final long position) {
 
-        try {
-            if (movie != null && (prevSeekTime != position)) {
-                prevSeekTime = position;
-//                EventQueue.invokeLater(new Runnable() {
-//                    public void run() {
-                        boolean wasPlaying = isPlaying();
-                        float prevRate = getPlaybackSpeed();
-                        if (isPlaying())
-                            movie.stop();
-                        movie.setTime(position);
-                        if (wasPlaying) {
-                            movie.setPlaybackSpeed(prevRate);
-                        }
-//                    }
-//                });
+        long currentSeekTime = System.currentTimeMillis();
 
+//        if(currentSeekTime - lastSeekTime > 200) {
+        if(!isSeeking) {
+            try {
+                if (movie != null && (prevSeekTime != position)) {
+                    prevSeekTime = position;
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            isSeeking = true;
+                            boolean wasPlaying = isPlaying();
+                            float prevRate = getPlaybackSpeed();
+                            if (isPlaying())
+                                movie.stop();
+                            movie.setTime(position / 1000.0);
+                            movie.showNextFrame();
+                            movie.repaint();
+                            if (wasPlaying) {
+                                movie.setPlaybackSpeed(prevRate);
+                            }
+                            isSeeking = false;
+                        }
+                    });
+
+                }
+            } catch (Exception e) {
+                LOGGER.error("Unable to find", e);
             }
-        } catch (Exception e) {
-            LOGGER.error("Unable to find", e);
+            lastSeekTime = currentSeekTime;
+
         }
+
     }
 
     /**
@@ -233,7 +236,7 @@ public final class FFmpegViewer extends BaseQuickTimeDataViewer {
     public long getCurrentTime() {
 
         try {
-            return (long)movie.getCurrentTime();
+            return (long)(movie.getCurrentTime() * 1000);
         } catch (Exception e) {
             LOGGER.error("Unable to get time", e);
         }

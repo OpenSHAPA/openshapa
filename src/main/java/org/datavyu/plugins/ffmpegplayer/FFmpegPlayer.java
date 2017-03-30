@@ -1,7 +1,9 @@
 package org.datavyu.plugins.ffmpegplayer;
 
+import org.datavyu.Datavyu;
 import org.datavyu.util.NativeLoader;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.*;
@@ -9,12 +11,15 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.Hashtable;
 
-public class FFmpegPlayer extends Canvas {
+public class FFmpegPlayer extends JPanel {
 
     protected static int playerCount = 0;
+    private long lastFrameTime = 0;
+
+    private Thread playerThread = null;
 
     static {
-        // TODO put this into a package and load the native lib
+        // TODO make sure to
         try {
             // NOTE: This load order is important, do not change.
             NativeLoader.LoadNativeLib("avutil-55");
@@ -30,7 +35,7 @@ public class FFmpegPlayer extends Canvas {
     }
 
     private boolean playing;
-    File fileToLoad;
+    private File fileToLoad;
     private float playbackSpeed;
 
     public FFmpegPlayer() {
@@ -50,7 +55,6 @@ public class FFmpegPlayer extends Canvas {
         WritableRaster raster = WritableRaster.createWritableRaster(sm, dataBuffer, new Point(0,0));
         image = new BufferedImage(cm, raster, false, properties); // Create buffered image.
         setBounds(0, 0, width, height);
-
     }
 
 //    public void addNotify() {
@@ -256,6 +260,7 @@ public class FFmpegPlayer extends Canvas {
     public native void setTime(double time);
 
 
+
     public void update(Graphics g){
         paint(g); // Instead of resetting, paint directly.
     }
@@ -295,6 +300,8 @@ public class FFmpegPlayer extends Canvas {
      *
      * @return True if we could set the window.
      */
+
+    // TODO integrate drag and drop for this
     public boolean setView(int x0, int y0, int width, int height) {
         boolean viewOk = view(x0, y0, width, height);
 
@@ -321,17 +328,38 @@ public class FFmpegPlayer extends Canvas {
      * @return The number of frames loaded.
      */
     public int showNextFrame() {
-        int nFrame = loadNextFrame(); // Load the next frame(s). May skip frames.
-        if (nFrame == -1) {
-            return nFrame;
+        long currentFrameTime = System.currentTimeMillis();
+
+        if(currentFrameTime - lastFrameTime > 33) {
+            int nFrame = loadNextFrame(); // Load the next frame(s). May skip frames.
+            if (nFrame == -1) {
+                return nFrame;
+            }
+            buffer = getFrameBuffer(); // Get the buffer.
+            data = new byte[width * height * nChannel];    // Allocate the bytes in java.
+            buffer.get(data); // Copy from the native buffer into the java buffer.
+            DataBufferByte dataBuffer = new DataBufferByte(data, width * height); // Create data buffer.
+            WritableRaster raster = WritableRaster.createWritableRaster(sm, dataBuffer, new Point(0, 0)); // Create writable raster.
+            image = new BufferedImage(cm, raster, false, properties); // Create buffered image.
+            repaint();
+            lastFrameTime = currentFrameTime;
+            return nFrame; // Return the number of frames.
         }
-        buffer = getFrameBuffer(); // Get the buffer.
-        data = new byte[width*height*nChannel];	// Allocate the bytes in java.
-        buffer.get(data); // Copy from the native buffer into the java buffer.
-        DataBufferByte dataBuffer = new DataBufferByte(data, width*height); // Create data buffer.
-        WritableRaster raster = WritableRaster.createWritableRaster(sm, dataBuffer, new Point(0, 0)); // Create writable raster.
-        image = new BufferedImage(cm, raster, false, properties); // Create buffered image.
-        return nFrame; // Return the number of frames.
+
+        return -1; // Skipped because called too quickly
+    }
+
+    class PlayerThread extends Thread {
+        @Override
+        public void run() {
+//            System.out.println("Playing from thread");
+
+            while (playing) {
+//                System.out.println("Showing next frame");
+                showNextFrame();
+            }
+            System.out.println("returning");
+        }
     }
 
     /**
@@ -341,7 +369,7 @@ public class FFmpegPlayer extends Canvas {
      */
     public void open(String fileName) {
         // TODO: ADD the true version string here.
-        openMovie(fileName, "0.0.1");
+        openMovie(fileName, Datavyu.getApplication().toString());
         nChannel = getNumberOfChannels();
         width = getWidth();
         height = getHeight();
@@ -362,11 +390,29 @@ public class FFmpegPlayer extends Canvas {
 
 
     public void stop() {
-        setPlaybackSpeed(0);
+        playing = false;
+
+        // If we had another video playing ensure that the player has stopped
+        // before opening another file.
+        System.out.println(playing);
+        System.out.println("Stopping");
+        while (playerThread != null && playerThread.isAlive()) {
+            try {
+                playing = false;
+                Thread.sleep(50);
+//                System.out.println(playerThread.isAlive());
+            } catch (InterruptedException ie) {
+                ie.printStackTrace();
+            }
+        }
     }
 
     public void play() {
-        setPlaybackSpeed(playbackSpeed);
+        System.out.println("Playing...");
+//        setPlaybackSpeed(playbackSpeed);
+        playing = true;
+        playerThread = new PlayerThread();
+        playerThread.start();
     }
 
 //    public native void setTime(long time, int id);
