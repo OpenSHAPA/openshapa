@@ -1,3 +1,65 @@
+# Datavyu 1.3.6 release notes
+## 4/3/2017
+
+### New Features:
+* Highlight and focus mode
+    - Cells with highlight green when the playback timer is within a cell,
+and red when the playback timer is past a cell.
+    - Enables easy visualization of which cells are active and which are
+not at the current playback time.
+* Quick key mode
+    - Select a column and enable quick key mode. Now, whenever you press an
+alphanumeric key, a cell will be added to that column at the current time
+with the first code filled in with the key that you pressed.
+    - Makes doing quick passes over a column easier than ever!
+* Default OSX media player is now based on AVFoundation instead of QTKit,
+improves performance and allows GPU acceleration
+
+### Bug fixes:
+* Fixed some issues with playback speed on OSX when backwards shuttling
+* On old versions of OSX, the QTKit player will be loaded instead of the
+AVFoundation player to ensure that playback still works (pre-10.6).
+* Other small tweaks.
+
+# Ruby API 1.3.6 release notes
+## 4/3/2017
+
+* Added standalone functions:
+    - check_valid_codes2
+    - check_valid_codes3
+    - combine_columns
+    - compute_kappa
+    - get_datavyu_files_from
+    - get_datavyu_version
+    - hide_columns
+    - merge_columns
+    - show_columns
+* Added functions to RCell:
+    - get_codes
+    - overlapping_region
+    - overlaps
+    - overlaps_range
+    - spans
+* Added functions to RColumn:
+    - resample
+* Renamed RVariable to RColumn
+* Renamed 'arg' to 'code'
+* Renamed 'variable' to 'column'
+* Added CTable class (used for computing kappa score).
+* Renamed functions for internal consistency and to follow Ruby Style Guide.
+    * snake-case; e.g. new_column() instead of newColumn()
+    * Previous names should work as well. If they do not please report them
+on the support forum (datavyu.org/support) or e-mail info@datavyu.org
+
+See the reference page for more information (
+http://datavyu.com/user-guide/api/reference.html)
+
+### Bug fixes:
+  * create_mutually_exclusive prints a single line of output to scripting
+console instead of three lines
+  * load_macshapa_db sanitizes code names and substitutes '#' with 'number'
+and '&' with 'and'
+
 # Announcements
 ## 1/20/2015
 
