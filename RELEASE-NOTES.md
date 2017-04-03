@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Datavyu 1.3.6 release notes
 ## 4/3/2017
 
@@ -60,7 +59,7 @@ http://datavyu.com/user-guide/api/reference.html)
 console instead of three lines
   * load_macshapa_db sanitizes code names and substitutes '#' with 'number'
 and '&' with 'and'
-=======
+
 # Datavyu 1.3.3 Pre-Release Notes
 ## 07/14/2015
 
@@ -95,8 +94,6 @@ and '&' with 'and'
 ### Known issues 
 * Hitting undo after running a script causes the spreadsheet to delete data
 * Video lag might occur with high definition videos. Please try out the different video plugins to see which works best for your videos. 
-
->>>>>>> b2ad6ed3708874349ef41de3f08a1f3168fd40d9
 
 # Announcements
 ## 1/20/2015
