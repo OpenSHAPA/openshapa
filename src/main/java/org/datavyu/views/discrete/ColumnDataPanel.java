@@ -14,8 +14,8 @@
  */
 package org.datavyu.views.discrete;
 
-import com.usermetrix.jclient.Logger;
-import com.usermetrix.jclient.UserMetrix;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.models.db.Cell;
 import org.datavyu.models.db.Datastore;
 import org.datavyu.models.db.Variable;
@@ -33,40 +33,33 @@ import java.util.List;
  */
 public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher {
     /**
+     * The logger for this class.
+     */
+    private static final Logger LOGGER = LogManager.getLogger(ColumnDataPanel.class);
+    /**
      * Width of the column.
      */
     private int columnWidth;
-
     /**
      * Height of the column.
      */
     private int columnHeight;
-
     /**
      * The model that this variable represents.
      */
     private Variable model;
-
     /**
      * The cell selection listener used for cells in this column.
      */
     private CellSelectionListener cellSelectionL;
-
     /**
      * Collection of the SpreadsheetCells held in by this data panel.
      */
     private List<SpreadsheetCell> cells;
-
     /**
      * The mapping between the database and the spreadsheet cells.
      */
     private Map<Cell, SpreadsheetCell> viewMap;
-
-    /**
-     * The logger for this class.
-     */
-    private static final Logger LOGGER = UserMetrix.getLogger(ColumnDataPanel.class);
-
     /**
      * button for creating a new empty cell.
      */
@@ -194,7 +187,7 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
     /**
      * Insert a new SpreadsheetCell for a given cell.
      *
-     * @param db       The database holding the cell that is being inserted into this
+     * @param ds       The database holding the cell that is being inserted into this
      *                 column data panel.
      * @param cell     The cell to create and insert into this column data panel.
      * @param cellSelL SpreadsheetCellSelectionListener to notify of changes in
@@ -262,9 +255,11 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
         for (Cell c : model.getCellsTemporally()) {
             SpreadsheetCell sc = viewMap.get(c);
 //            sc.forceCellRefresh();
-            sc.setOrdinal(ord);
-            ord++;
-            result.add(sc);
+            if (sc != null) {
+                sc.setOrdinal(ord);
+                ord++;
+                result.add(sc);
+            }
         }
 
         return result;

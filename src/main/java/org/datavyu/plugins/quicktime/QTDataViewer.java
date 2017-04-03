@@ -14,8 +14,8 @@
  */
 package org.datavyu.plugins.quicktime;
 
-import com.usermetrix.jclient.Logger;
-import com.usermetrix.jclient.UserMetrix;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.util.Constants;
 import quicktime.QTException;
 import quicktime.QTSession;
@@ -31,6 +31,7 @@ import quicktime.std.movies.TimeInfo;
 import quicktime.std.movies.Track;
 import quicktime.std.movies.media.Media;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 
@@ -49,11 +50,12 @@ public final class QTDataViewer extends BaseQuickTimeDataViewer {
      * How many frames to check when correcting the FPS.
      */
     private static final int CORRECTIONFRAMES = 5;
+    public static boolean librariesFound = false;
     /**
      * The logger for this class.
      */
-    private static Logger LOGGER = UserMetrix.getLogger(QTDataViewer.class);
-    private static float FALLBACK_FRAME_RATE = 24.0f;
+    private static Logger LOGGER = LogManager.getLogger(QTDataViewer.class);
+    private static float FALLBACK_FRAME_RATE = 29.97f;
     /**
      * The quicktime movie this viewer is displaying.
      */
@@ -137,8 +139,11 @@ public final class QTDataViewer extends BaseQuickTimeDataViewer {
             // rendered as blank if the QT component is added before the window
             // is displayable/visible
             add(QTFactory.makeQTComponent(movie).asComponent());
+//            visualMedia.loadIntoRam(0, (int)getDuration()+500, StdQTConstants.unkeepInRam);
+            seekTo(0L);
         } catch (QTException e) {
-            LOGGER.error("Unable to setVideoFile", e);
+//            LOGGER.error("Unable to setVideoFile", e);
+            e.printStackTrace();
         }
     }
 
@@ -163,10 +168,14 @@ public final class QTDataViewer extends BaseQuickTimeDataViewer {
         try {
             if (visualMedia != null) {
 
-                fps = (float) visualMedia.getSampleCount()
-                        / visualMedia.getDuration() * visualMedia.getTimeScale();
+                try {
+                    fps = (float) visualMedia.getSampleCount()
+                            / visualMedia.getDuration() * visualMedia.getTimeScale();
+                } catch (Exception d) {
+                    System.err.println("Could not find fps the normal way, trying the fake route.");
+                }
                 if ((visualMedia.getSampleCount() == 1.0)
-                        || (visualMedia.getSampleCount() == 1)) {
+                        || (visualMedia.getSampleCount() == 1) || fps == 0) {
                     fps = correctFPS();
                 }
 
@@ -175,7 +184,7 @@ public final class QTDataViewer extends BaseQuickTimeDataViewer {
                 }
             }
         } catch (QTException e) {
-            LOGGER.error("Unable to calculate FPS, assuming " + FALLBACK_FRAME_RATE, e);
+//            LOGGER.error("Unable to calculate FPS, assuming " + FALLBACK_FRAME_RATE, e);
             assumedFPS = true;
             fps = FALLBACK_FRAME_RATE;
         }
@@ -223,15 +232,21 @@ public final class QTDataViewer extends BaseQuickTimeDataViewer {
     @Override
     public void play() {
         super.play();
-
-        try {
-
-            if (movie != null) {
-                movie.setRate(getPlaybackSpeed());
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (movie != null) {
+                        movie.setRate(getPlaybackSpeed());
+                    }
+                } catch (
+                        QTException e
+                        ) {
+                    LOGGER.error("Unable to play", e);
+                }
             }
-        } catch (QTException e) {
-            LOGGER.error("Unable to play", e);
-        }
+        });
+
     }
 
     /**
@@ -240,15 +255,20 @@ public final class QTDataViewer extends BaseQuickTimeDataViewer {
     @Override
     public void stop() {
         super.stop();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
 
-        try {
-
-            if (movie != null) {
-                movie.stop();
+                    if (movie != null) {
+                        movie.stop();
+//                movie.setRate(0);
+                    }
+                } catch (QTException e) {
+                    LOGGER.error("Unable to stop", e);
+                }
             }
-        } catch (QTException e) {
-            LOGGER.error("Unable to stop", e);
-        }
+        });
     }
 
     /**
@@ -259,7 +279,8 @@ public final class QTDataViewer extends BaseQuickTimeDataViewer {
 
         try {
 
-            if (movie != null) {
+            stop();
+            if (movie != null && position != getCurrentTime()) {
                 TimeRecord time = new TimeRecord(Constants.TICKS_PER_SECOND,
                         Math.min(Math.max(position, 0), getDuration() - 1));
                 movie.setTime(time);

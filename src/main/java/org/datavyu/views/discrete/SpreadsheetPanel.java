@@ -14,8 +14,8 @@
  */
 package org.datavyu.views.discrete;
 
-import com.usermetrix.jclient.Logger;
-import com.usermetrix.jclient.UserMetrix;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.Datavyu.Platform;
 import org.datavyu.controllers.NewVariableC;
@@ -49,10 +49,10 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 
 /**
@@ -67,89 +67,73 @@ public final class SpreadsheetPanel extends JPanel
         KeyEventDispatcher {
 
     /**
-     * The current project.
-     */
-    private ProjectController projectController;
-
-    private DataControllerV dataController;
-
-    /**
      * To use when navigating left.
      */
     static final int LEFT_DIR = -1;
-
     /**
      * To use when navigating right.
      */
     static final int RIGHT_DIR = 1;
-
+    /**
+     * The logger for this class.
+     */
+    private static final Logger LOGGER = LogManager.getLogger(SpreadsheetPanel.class);
+    private static int numNewSheets = 1;
+    /**
+     * List containing listeners interested in file drop events.
+     */
+    private final transient CopyOnWriteArrayList<FileDropEventListener> fileDropListeners;
+    /**
+     * The current project.
+     */
+    private ProjectController projectController;
+    
+    //WR WANT TO RIGHT JUSTIFY THIS
+    //private final SpringLayout.Constraints HIDDEN_VARS_CONSTRAINTS = SpringLayout.Constraints(Spring(SpringLayout.WEST),SpringLayout.VERTICAL_CENTER);
+    private DataControllerV dataController;
     /**
      * Scrollable view inserted into the JScrollPane.
      */
     private SpreadsheetView mainView;
-
     /**
      * View showing the Column titles.
      */
     private JPanel headerView;
-    
-    //WR WANT TO RIGHT JUSTIFY THIS
-    //private final SpringLayout.Constraints HIDDEN_VARS_CONSTRAINTS = SpringLayout.Constraints(Spring(SpringLayout.WEST),SpringLayout.VERTICAL_CENTER);
-
     /**
      * The Database being viewed.
      */
     private Datastore datastore;
-
     /**
      * Vector of the Spreadsheetcolumns added to the Spreadsheet.
      */
     private List<SpreadsheetColumn> columns;
-
-    /**
-     * The logger for this class.
-     */
-    private static final Logger LOGGER = UserMetrix.getLogger(SpreadsheetPanel.class);
-
     /**
      * Reference to the scrollPane.
      */
     private JScrollPane scrollPane;
-
     /**
      * New variable button to be added to the column header panel.
      */
     private JButton newVar = new JButton();
     private JLabel newVarSpacer = new JLabel();
-
+    ;
     /**
      * Hidden variables button to be added to the column header panel.
      */
     private JButton hiddenVars;
     private JLabel hiddenVarsSpacer = new JLabel();
-    ;
-
     /**
      * The currently highlighted cell.
      */
     private SpreadsheetCell highlightedCell;
-
     /**
      * Last selected cell - used as an end point for continuous selections.
      */
     private SpreadsheetCell lastSelectedCell;
-
     /**
      * The layout that is currently being used.
      */
     private SheetLayoutType currentLayoutType;
-
-    private static int numNewSheets = 1;
-
-    /**
-     * List containing listeners interested in file drop events.
-     */
-    private final transient CopyOnWriteArrayList<FileDropEventListener> fileDropListeners;
 
     //    public SpreadsheetPanel(final Datastore db, DVProgressBar progressBar) {
 //        ProjectController pc = new ProjectController(null, this);
@@ -223,8 +207,8 @@ public final class SpreadsheetPanel extends JPanel
 
 
         //layout the columns
-        buildColumns(progressBar);
         projectController = pc;
+        buildColumns(progressBar);
         pc.setSpreadsheetPanel(this);
 
         setName(datastore.getName());
@@ -240,6 +224,7 @@ public final class SpreadsheetPanel extends JPanel
         updateHiddenVars();
         headerView.add(hiddenVars);
 
+        projectController.getDB().markAsUnchanged();
     }
     
     private JButton makeHiddenVarsButton()
@@ -287,8 +272,10 @@ public final class SpreadsheetPanel extends JPanel
         for (SpreadsheetColumn col : getColumns()) {
             for (SpreadsheetCell cell : col.getCells()) {
                 cell.valueChange(cell.getCell().getValue());
+                cell.updateSelectionDisplay();
             }
         }
+
     }
 
     /**
@@ -445,6 +432,14 @@ public final class SpreadsheetPanel extends JPanel
     }
 
     /**
+     * @return the vector of Spreadsheet columns.
+     * Need for UISpec4J testing
+     */
+    public List<SpreadsheetColumn> getVisibleColumns() {
+        return columns.stream().filter(c -> c.isVisible()).collect(Collectors.toList());
+    }
+
+    /**
      * Deselect all selected items in the Spreadsheet.
      */
     public void deselectAll() {
@@ -544,6 +539,36 @@ public final class SpreadsheetPanel extends JPanel
                 e.consume();
 
                 return true;
+            }
+        } else if (e.getID() == KeyEvent.KEY_PRESSED && !e.isMetaDown() && !e.isControlDown()) {
+            if ((Datavyu.getView().isQuickKeyMode() &&
+                    (Character.isAlphabetic(e.getKeyChar()) || Character.isDigit(e.getKeyChar()))
+            )) {
+                // Find the currently selected column
+                SpreadsheetColumn col = null;
+                for(SpreadsheetColumn c : getVisibleColumns()) {
+                    if(c.isSelected()) {
+                        col = c;
+                        break;
+                    }
+                }
+                if(col != null) {
+                    Cell c = col.getVariable().createCell();
+                    Value v = c.getValue();
+                    if(v instanceof MatrixValue) {
+                        List<Value> vals = ((MatrixValue) v).getArguments();
+                        vals.get(0).set(String.valueOf(e.getKeyChar()));
+                    } else {
+                        v.set(String.valueOf(e.getKeyChar()));
+                    }
+                    c.setOnset(Datavyu.getDataController().getCurrentTime());
+                    c.setOffset(Datavyu.getDataController().getCurrentTime());
+                    Datavyu.getProjectController().getSpreadsheetPanel().redrawCells();
+                    e.consume();
+                }
+                // Add a cell to that column with this key in the first argument
+
+
             }
         }
 
@@ -666,30 +691,6 @@ public final class SpreadsheetPanel extends JPanel
         new NewVariableC();
     }
 
-    /**
-     * Moves a given column to the left by a certain number of positions.
-     *
-     * @param var       The variable for the column to move
-     * @param positions the number of positions to the left to move the given
-     *                  column.
-     */
-    public void moveColumnLeft(final Variable var, final int positions) {
-        LOGGER.event("move column left");
-
-        // What index does the given column sit at
-        int columnIndex = var.getOrderIndex();
-
-        if (columnIndex >= 0) {
-            int newIndex = columnIndex - positions;
-
-            if (newIndex < 0) {
-                newIndex = 0;
-            }
-//            updateColumnIndex();
-            shuffleColumn(columnIndex, newIndex);
-        }
-    }
-
     public void updateColumnIndex() {
         // What index does the given column sit at
 
@@ -703,22 +704,17 @@ public final class SpreadsheetPanel extends JPanel
      * Moves a given column to the right by a certain number of positions.
      *
      * @param var       The variable for the column to move
-     * @param positions the number for positions to the right to move the given
-     *                  column.
+     * @param swapVar   The variable we are swapping with
      */
-    public void moveColumnRight(final Variable var, final int positions) {
-        LOGGER.event("move column right");
+    public void moveColumn(final Variable var, final Variable swapVar) {
+        LOGGER.info("move column right");
 
         // What index does the column sit at
         int columnIndex = var.getOrderIndex();
+        int swapColumnIndex = swapVar.getOrderIndex();
 
-        if (columnIndex >= 0) {
-            int newIndex = columnIndex + positions;
-
-            if (newIndex < columns.size()) {
-//                updateColumnIndex();
-                shuffleColumn(columnIndex, newIndex);
-            }
+        if (columnIndex >= 0 && swapColumnIndex >= 0) {
+            shuffleColumn(columnIndex, swapColumnIndex);
         }
     }
 
@@ -739,37 +735,29 @@ public final class SpreadsheetPanel extends JPanel
         }
         System.out.println(source + ", " + destination);
 
-        // Reorder the columns vector
-        SpreadsheetColumn sourceColumn = columns.get(source);
-        columns.get(source).getVariable().setOrderIndex(destination);
-        columns.get(destination).getVariable().setOrderIndex(source);
-        columns.remove(source);
-        columns.add(destination, sourceColumn);
 
-        // Reorder the header components
-        List<Component> newHeaders = new ArrayList<Component>(Arrays.asList(headerView.getComponents()));
+        synchronized(this.getTreeLock()) {
+            // Reorder the columns vector
+            SpreadsheetColumn sourceColumn = columns.get(source);
+            columns.remove(source);
+            columns.add(destination, sourceColumn);
 
-        Component sourceHeaderComponent = newHeaders.get(source + 1);
-        newHeaders.remove(source + 1);
-        newHeaders.add(destination + 1, sourceHeaderComponent);
+            // Go through columns and setOrderIndex().
+//            updateColumnIndex();
+            for(int i = Math.min(source, destination); i<= Math.max(source, destination); i++){
+                columns.get(i).getVariable().setOrderIndex(i);
+            }
+            // Reorder the header components
+            Component comp = headerView.getComponent(source + 1);
+            headerView.remove(source + 1);
+            headerView.add(comp, destination + 1);
 
-        headerView.removeAll();
-        for (Component header : newHeaders) {
-            headerView.add(header);
+            // Reorder the data components
+            comp = mainView.getComponent(source);
+            mainView.remove(source);
+            mainView.add(comp, destination);
+
         }
-
-        // Reorder the data components
-        List<Component> newData = new ArrayList<Component>(Arrays.asList(mainView.getComponents()));
-        Component sourceDataComponent = newData.get(source);
-        newData.remove(source);
-        newData.add(destination, sourceDataComponent);
-
-        mainView.removeAll();
-        for (Component data : newData) {
-            mainView.add(data);
-        }
-
-//        updateColumnIndex();
         revalidate();
     }
 
@@ -864,6 +852,18 @@ public final class SpreadsheetPanel extends JPanel
         }
 
         lastSelectedCell = cell;
+    }
+
+    @Override
+    public void removeCellFromSelection(final SpreadsheetCell cell) {
+
+        if (highlightedCell != null) {
+            highlightedCell.getCell().setSelected(false);
+            highlightedCell.getCell().setHighlighted(false);
+            highlightedCell = null;
+        }
+
+//        lastSelectedCell = cell;
     }
 
     /**
@@ -984,6 +984,17 @@ public final class SpreadsheetPanel extends JPanel
                 listener.filesDropped(event);
             }
         }
+    }
+
+    public SpreadsheetCell getSpreadsheetCell(Cell c) {
+        for (SpreadsheetColumn v : getColumns()) {
+            for (SpreadsheetCell sc : v.getCells()) {
+                if (sc.getCell().getCellID().equals(c.getCellID())) {
+                    return sc;
+                }
+            }
+        }
+        return null;
     }
 
     /**

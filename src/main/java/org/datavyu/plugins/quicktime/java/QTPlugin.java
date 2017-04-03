@@ -18,6 +18,7 @@ import com.google.common.collect.Lists;
 import com.sun.jna.Platform;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
+import org.datavyu.Datavyu;
 import org.datavyu.plugins.DataViewer;
 import org.datavyu.plugins.Filter;
 import org.datavyu.plugins.FilterNames;
@@ -31,6 +32,8 @@ import java.util.List;
 
 
 public final class QTPlugin implements Plugin {
+
+    private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(Datavyu.Platform.WINDOWS);
 
     private static final Filter VIDEO_FILTER = new Filter() {
         final SuffixFileFilter ff;
@@ -97,11 +100,16 @@ public final class QTPlugin implements Plugin {
     @Override
     public Class<? extends DataViewer> getViewerClass() {
 
-        if (Platform.isMac() || Platform.isWindows()) {
+        if (Platform.isWindows()) {
             return QTDataViewer.class;
         }
 
         return null;
+    }
+
+    @Override
+    public List<Datavyu.Platform> getValidPlatforms() {
+        return VALID_OPERATING_SYSTEMS;
     }
 
 }

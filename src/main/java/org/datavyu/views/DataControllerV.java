@@ -14,10 +14,10 @@
  */
 package org.datavyu.views;
 
-import com.usermetrix.jclient.Logger;
-import com.usermetrix.jclient.UserMetrix;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.Datavyu.Platform;
 import org.datavyu.controllers.CreateNewCellC;
@@ -53,6 +53,8 @@ import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -137,6 +139,21 @@ public final class DataControllerV extends DatavyuDialog
      */
     private static final DateFormat CLOCK_FORMAT;
     private static final DateFormat CLOCK_FORMAT_HTML;
+    private static int timeStampFontSize = 15;
+    private static final String QT_URL = "http://www.datavyu.org/user-guide/guide/install.html";
+    private static final String QT_IN_PAGE_HREF = "#software-requirements";
+    // -------------------------------------------------------------------------
+    // [static]
+    //
+    private static final String QT_WARNING_MSG =
+            "<html><body>Quicktime's Java libraries are not found.<br />"
+                    + "You must install these libraries to load videos using Quicktime.<br />"
+                    + "Note that for Quicktime versions 7.7.5 or later under Windows, you must manually include the Java libraries under Custom install<br />"
+                    + "See the User Guide at <a href=\"" + QT_URL + QT_IN_PAGE_HREF + "\">" + QT_URL + "</a> for details.</body></html>";
+    /**
+     * The logger for this class.
+     */
+    private static Logger LOGGER = LogManager.getLogger(DataControllerV.class);
 
     // initialize standard date format for clock display.
     static {
@@ -158,23 +175,6 @@ public final class DataControllerV extends DatavyuDialog
         CLOCK_FORMAT_HTML.setTimeZone(new SimpleTimeZone(0, "NO_ZONE"));
     }
 
-    private static final String QT_URL = "http://www.datavyu.org/user-guide/guide/install.html";
-    private static final String QT_IN_PAGE_HREF = "#software-requirements";
-
-    // -------------------------------------------------------------------------
-    // [static]
-    //
-    private static final String QT_WARNING_MSG =
-            "<html><body>Quicktime's Java libraries are not found.<br />"
-                    + "You must install these libraries to load videos using Quicktime.<br />"
-                    + "Note that for Quicktime versions 7.7.5 or later under Windows, you must manually include the Java libraries under Custom install<br />"
-                    + "See the User Guide at <a href=\"" + QT_URL + QT_IN_PAGE_HREF + "\">" + QT_URL + "</a> for details.</body></html>";
-    /**
-     * The logger for this class.
-     */
-    private static Logger LOGGER = UserMetrix.getLogger(DataControllerV.class);
-    private boolean visible = false;
-
     // Initialize SHUTTLE_RATES
     static {
         SHUTTLE_RATES = new float[]{
@@ -186,6 +186,7 @@ public final class DataControllerV extends DatavyuDialog
         };
     }
 
+    private boolean visible = false;
     /**
      * Determines whether or not Shift is being held.
      */
@@ -322,6 +323,11 @@ public final class DataControllerV extends DatavyuDialog
 
     private String osModifier;
 
+    private boolean highlightCells = false;
+
+    private boolean highlightAndFocus = false;
+
+    private long lastSeekTime = 0L;
     // -------------------------------------------------------------------------
     // [initialization]
     //
@@ -350,6 +356,7 @@ public final class DataControllerV extends DatavyuDialog
 
         if (Datavyu.getPlatform() == Platform.MAC) {
             osModifier = "osx";
+            setJMenuBar(((JFrame) parent).getJMenuBar());
         } else {
             osModifier = "win";
         }
@@ -398,36 +405,116 @@ public final class DataControllerV extends DatavyuDialog
     /**
      * Handles opening a data source.
      *
-     * @param jd The file chooser used to open the data source.
+     * @param chooser The file chooser used to open the data source.
      */
     private void openVideo(final PluginChooser chooser) {
         Plugin plugin = chooser.getSelectedPlugin();
         File f = chooser.getSelectedFile();
 
-        if (plugin != null) {
+        new Thread(() -> {
+            if (plugin != null) {
 
-            try {
-                DataViewer dataViewer = plugin.getNewDataViewer(Datavyu
-                        .getApplication().getMainFrame(), false);
-                dataViewer.setIdentifier(IDController.generateIdentifier());
-                dataViewer.setDataFeed(f);
-                dataViewer.seekTo(clock.getTime());
-                dataViewer.setDatastore(Datavyu.getProjectController()
-                        .getDB());
-                addDataViewer(plugin.getTypeIcon(), dataViewer, f,
-                        dataViewer.getTrackPainter());
-                mixerController.bindTrackActions(dataViewer.getIdentifier(),
-                        dataViewer.getCustomActions());
-                dataViewer.addViewerStateListener(
-                        mixerController.getTracksEditorController()
-                                .getViewerStateListener(dataViewer.getIdentifier()));
-            } catch (Throwable t) {
-                LOGGER.error(t);
-                JOptionPane.showMessageDialog(null,
-                        "Could not open data source: " + t.getMessage());
-                t.printStackTrace();
+                try {
+                    DataViewer dataViewer = plugin.getNewDataViewer(Datavyu
+                            .getApplication().getMainFrame(), false);
+                    dataViewer.setIdentifier(IDController.generateIdentifier());
+                    dataViewer.setDataFeed(f);
+                    dataViewer.seekTo(clock.getTime());
+                    dataViewer.setDatastore(Datavyu.getProjectController()
+                            .getDB());
+                    addDataViewer(plugin.getTypeIcon(), dataViewer, f,
+                            dataViewer.getTrackPainter());
+                    mixerController.bindTrackActions(dataViewer.getIdentifier(),
+                            dataViewer.getCustomActions());
+                    dataViewer.addViewerStateListener(
+                            mixerController.getTracksEditorController()
+                                    .getViewerStateListener(dataViewer.getIdentifier()));
+
+                    /*
+                    "Warm up" the data controller... this is a really gross hack but seems to help controllers
+                    to get accurate positions for the first few frames.
+                     */
+//                    new Thread(() -> {
+//                        Datavyu.getDataController().playAction();
+//                        ArrayList<Float> volumes = new ArrayList<>();
+//                        for (DataViewer dv : Datavyu.getDataController().getDataViewers()) {
+//                            if (dv instanceof BaseQuickTimeDataViewer) {
+//                                volumes.add(((BaseQuickTimeDataViewer) dv).getVolume());
+//                                ((BaseQuickTimeDataViewer) dv).setVolume(0.0f);
+//                                dv.setDataViewerVisible(false);
+//                            }
+//                        }
+//                        try {
+//                            Thread.sleep(500);
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
+//                        Datavyu.getDataController().stopAction();
+//                        for (DataViewer dv : Datavyu.getDataController().getDataViewers()) {
+//                            if (dv instanceof BaseQuickTimeDataViewer) {
+//                                float v = volumes.remove(0);
+//                                ((BaseQuickTimeDataViewer) dv).setVolume(v);
+//                                dv.setDataViewerVisible(true);
+//                            }
+//                        }
+//                        try {
+//                            Thread.sleep(100);
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
+//                        Datavyu.getDataController().setCurrentTime(0);
+//
+//                    }).start();
+                } catch (Throwable t) {
+                    LOGGER.error(t);
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    t.printStackTrace(pw);
+                    // stack trace as a string
+
+                    if (plugin.getClassifier().contains("quicktime")) {
+                        JLabel label = new JLabel();
+                        Font font = label.getFont();
+
+                        // create some css from the label's font
+                        StringBuffer style = new StringBuffer("font-family:" + font.getFamily() + ";");
+                        style.append("font-weight:" + (font.isBold() ? "bold" : "normal") + ";");
+                        style.append("font-size:" + font.getSize() + "pt;");
+
+                        // html content
+                        JEditorPane ep = new JEditorPane("text/html", "<html><body style=\"" + style + "\">" //
+                                + "Error: Could not load Quicktime.  <a href=\"https://support.apple.com/kb/DL1822?locale=en_US\">Please install Quicktime 7.7.6 from here</a><br>" +
+                                "and when installing, select \"Custom Install\" and then left click on the [+] next to the red X<br>" +
+                                "next to \"Legacy options\", click on the red X next to Quicktime For Java and select <br>\"Will be installed to local harddrive\". Then click \"Next\" and install.<br>" +
+                                "Afterwards relaunch Datavyu to use the Quicktime plugin." //
+                                + "</body></html>");
+
+                        // handle link events
+                        ep.addHyperlinkListener(new HyperlinkListener() {
+                            @Override
+                            public void hyperlinkUpdate(HyperlinkEvent e) {
+                                if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
+                                    try {
+                                        Desktop.getDesktop().browse(e.getURL().toURI()); // roll your own link launcher or use Desktop if J6+
+                                    } catch (Exception u) {
+                                        u.printStackTrace();
+                                    }
+                                }
+                            }
+                        });
+                        ep.setEditable(false);
+                        ep.setBackground(label.getBackground());
+
+                        // show
+                        JOptionPane.showMessageDialog(null, ep);
+                    } else {
+                        JOptionPane.showMessageDialog(null,
+                                "This plugin could not load this file. Error message:\n" + t.getMessage());
+                    }
+                    t.printStackTrace();
+                }
             }
-        }
+        }).start();
     }
 
     /**
@@ -510,7 +597,12 @@ public final class DataControllerV extends DatavyuDialog
                 for (DataViewer v : viewers) {
 
                     if ((time > v.getOffset()) && isWithinPlayRange(time, v)) {
-                        v.seekTo(time - v.getOffset());
+                        long now = System.currentTimeMillis();
+//                        if(now - lastSeekTime > 200) {
+                            v.seekTo(time - v.getOffset());
+                            lastSeekTime = now;
+//                        }
+
                     }
                 }
 
@@ -532,7 +624,7 @@ public final class DataControllerV extends DatavyuDialog
                          */
 
                         if (!v.isPlaying() && isWithinPlayRange(time, v)) {
-                            v.seekTo(time - v.getOffset());
+                            //v.seekTo(time - v.getOffset());
                             v.play();
                         }
 
@@ -573,7 +665,7 @@ public final class DataControllerV extends DatavyuDialog
             if (time < windowPlayStart) {
                 setCurrentTime(windowPlayStart);
                 clock.stop();
-                clock.setTime(windowPlayStart);
+//                clock.setTime(windowPlayStart);
                 clockStop(windowPlayStart);
             }
 
@@ -583,7 +675,7 @@ public final class DataControllerV extends DatavyuDialog
             if ((time >= windowPlayEnd) && (clock.getRate() >= 0)) {
                 setCurrentTime(windowPlayEnd);
                 clock.stop();
-                clock.setTime(windowPlayEnd);
+//                clock.setTime(windowPlayEnd);
                 clockStop(windowPlayEnd);
 
                 return;
@@ -605,19 +697,86 @@ public final class DataControllerV extends DatavyuDialog
                 && (time < (view.getOffset() + view.getDuration()));
     }
 
+    /*
+        Method to sync the clock to the video
+     */
+    public void adjustClock(final long time) {
+        if (viewers.size() == 1 && (time < playbackModel.getWindowPlayEnd() && time > playbackModel.getWindowPlayStart())) {
+            // Using an iterator because viewers is a set
+            for (DataViewer viewer : viewers) {
+                try {
+                    long viewerTime = viewer.getCurrentTime();
+
+                    long stepSize = ((ONE_SECOND) / (long) playbackModel.getCurrentFPS());
+
+                     /* BugzID:1544 - Preserve precision - force jog to frame markers. */
+                    if (!clock.isStopped()) {
+                        long mod = (viewerTime % stepSize);
+
+                        if (mod != 0) {
+                            viewerTime = viewerTime + stepSize - mod;
+                        }
+                    }
+
+                    clock.setTimeDontNotify(viewerTime);
+                    resetSync();
+                    updateCurrentTimeLabel();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     /**
      * @param time Current clock time in milliseconds.
      */
     public void clockStop(final long time) {
         clock.stop();
         resetSync();
-        setCurrentTime(time);
 
-        for (DataViewer viewer : viewers) {
-            viewer.stop();
+        /*
+            This is the new style time reckoning where the timer gets updated from the video
+         */
+        if (viewers.size() == 1 && (time < playbackModel.getWindowPlayEnd()
+                && time > playbackModel.getWindowPlayStart())) {
+            // Using an iterator because viewers is a set
+            for (DataViewer viewer : viewers) {
+                if (viewer.isPlaying()) {
+                    viewer.stop();
+                    try {
+//                        long viewerTime = viewer.getCurrentTime();
+                        long viewerTime = time;
 
-            if (isWithinPlayRange(time, viewer)) {
-                viewer.seekTo(time - viewer.getOffset());
+                        long stepSize = ((ONE_SECOND) / (long) playbackModel.getCurrentFPS());
+
+                     /* BugzID:1544 - Preserve precision - force jog to frame markers. */
+                        long mod = (viewerTime % stepSize);
+
+                        if (mod != 0) {
+                            viewerTime = viewerTime + stepSize - mod;
+                        }
+
+                        viewer.seekTo(viewerTime);
+
+                        clock.setTimeDontNotify(viewerTime);
+                        resetSync();
+                        updateCurrentTimeLabel();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } else {
+            setCurrentTime(time);
+            for (DataViewer viewer : viewers) {
+                if (viewer.isPlaying()) {
+                    viewer.stop();
+                }
+
+                if (isWithinPlayRange(time, viewer)) {
+//                    viewer.seekTo(time - viewer.getOffset());
+                }
             }
         }
     }
@@ -634,7 +793,7 @@ public final class DataControllerV extends DatavyuDialog
         // If rate is faster than two times - we need to fake playback to give
         // the illusion of 'smooth'. We do this by stopping the dataviewer and
         // doing many seekTo's to grab individual frames.
-        if (Math.abs(rate) > 2.0 || rate < 0) {
+        if (Math.abs(rate) > 2.0 || rate < -1) {
             playbackModel.setFakePlayback(true);
 
             for (DataViewer viewer : viewers) {
@@ -669,9 +828,13 @@ public final class DataControllerV extends DatavyuDialog
 
         for (DataViewer viewer : viewers) {
 
-//            System.out.println(time);
-            if (isWithinPlayRange(time, viewer)) {
-                viewer.seekTo(time - viewer.getOffset());
+            System.out.println(time);
+            try {
+                if (isWithinPlayRange(time, viewer) && time != viewer.getCurrentTime()) {
+                    viewer.seekTo(time - viewer.getOffset());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
@@ -977,7 +1140,6 @@ public final class DataControllerV extends DatavyuDialog
         tracksPanel = new javax.swing.JPanel(new MigLayout("fill"));
 
         final int fontSize = 11;
-        final int timeStampFontSize = 15;
 
         setTitle(resourceMap.getString("title"));
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -1007,7 +1169,7 @@ public final class DataControllerV extends DatavyuDialog
                 openVideoButtonActionPerformed(evt);
             }
         });
-        gridButtonPanel.add(addDataButton, "span 2, w 90!, h 25!");
+        gridButtonPanel.add(addDataButton, "span 2, w 90!, h 25!, wrap");
 
         // Timestamp panel
         JPanel timestampPanel = new JPanel(new MigLayout("",
@@ -1031,7 +1193,18 @@ public final class DataControllerV extends DatavyuDialog
                 }
             }
         });
-
+        timestampLabel.addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                int count = e.getWheelRotation();
+                timeStampFontSize = Math.min(72, Math.max(10, timeStampFontSize + count));
+                timestampLabel.setFont(new Font("Tahoma", Font.BOLD, timeStampFontSize));
+                gridButtonPanel.setMinimumSize(timestampPanel.getMinimumSize());
+                timestampLabel.repaint();
+                pack();
+                validate();
+            }
+        });
         timestampPanel.add(timestampLabel);
 
         jLabel1.setText("@");
@@ -1048,7 +1221,7 @@ public final class DataControllerV extends DatavyuDialog
         jLabel2.setText("x");
         timestampPanel.add(jLabel2);
 
-        gridButtonPanel.add(timestampPanel, "span 3, pushx, growx");
+        gridButtonPanel.add(timestampPanel, "north");
 
         //placeholder at topleft: 'clear' or 'numlock' position
         gridButtonPanel.add(makePlaceholderButton(), NUMPAD_KEY_SIZE);
@@ -1323,7 +1496,7 @@ public final class DataControllerV extends DatavyuDialog
      */
     private void openVideoButtonActionPerformed(
             final java.awt.event.ActionEvent evt) {
-        LOGGER.event("Add data");
+        LOGGER.info("Add data");
 
         PluginChooser chooser = null;
 
@@ -1376,14 +1549,14 @@ public final class DataControllerV extends DatavyuDialog
                 DataControllerV.class);
 
         if (tracksPanelEnabled) {
-            LOGGER.event("Show tracks (" + button.getName() + ")");
+            LOGGER.info("Show tracks (" + button.getName() + ")");
 
             // Panel is being displayed, hide it
             button.setIcon(resourceMap.getIcon(button.getName() + ".show.icon." + osModifier));
             button.setPressedIcon(resourceMap.getIcon(button.getName() + "Selected.show.icon." + osModifier));
 
         } else {
-            LOGGER.event("Hide tracks (" + button.getName() + ")");
+            LOGGER.info("Hide tracks (" + button.getName() + ")");
 
             // Panel is hidden, show it
             button.setIcon(resourceMap.getIcon(button.getName() + ".hide.icon." + osModifier));
@@ -1496,7 +1669,8 @@ public final class DataControllerV extends DatavyuDialog
      */
     @Action
     public void setCellOnsetAction() {
-        LOGGER.event("Set cell onset");
+        LOGGER.info("Set cell onset");
+//        adjustClock(getCurrentTime());
         new SetSelectedCellStartTimeC(getCurrentTime());
         setOnsetField(getCurrentTime());
     }
@@ -1506,7 +1680,8 @@ public final class DataControllerV extends DatavyuDialog
      */
     @Action
     public void setCellOffsetAction() {
-        LOGGER.event("Set cell offset");
+        LOGGER.info("Set cell offset");
+//        adjustClock(getCurrentTime());
         new SetSelectedCellStopTimeC(getCurrentTime());
         setOffsetField(getCurrentTime());
     }
@@ -1785,7 +1960,7 @@ public final class DataControllerV extends DatavyuDialog
      */
     @Action
     public void playAction() {
-        LOGGER.event("Play");
+        LOGGER.info("Play");
         System.out.println("Play button...");
 
         // BugzID:464 - When stopped at the end of the region of interest.
@@ -1804,7 +1979,7 @@ public final class DataControllerV extends DatavyuDialog
      */
     @Action
     public void forwardAction() {
-        LOGGER.event("Fast forward");
+        LOGGER.info("Fast forward");
         playAt(FFORWARD_RATE);
     }
 
@@ -1813,7 +1988,7 @@ public final class DataControllerV extends DatavyuDialog
      */
     @Action
     public void rewindAction() {
-        LOGGER.event("Rewind");
+        LOGGER.info("Rewind");
         playAt(REWIND_RATE);
     }
 
@@ -1822,7 +1997,7 @@ public final class DataControllerV extends DatavyuDialog
      */
     @Action
     public void pauseAction() {
-        LOGGER.event("Pause");
+        LOGGER.info("Pause");
         System.out.println("Pause button...");
         System.out.println(System.currentTimeMillis());
 
@@ -1845,7 +2020,7 @@ public final class DataControllerV extends DatavyuDialog
      */
     @Action
     public void stopAction() {
-        LOGGER.event("Stop event");
+        LOGGER.info("Stop event");
         System.out.println("Stop button");
         System.out.println(System.currentTimeMillis());
         clock.stop();
@@ -1859,7 +2034,7 @@ public final class DataControllerV extends DatavyuDialog
      */
     @Action
     public void shuttleForwardAction() {
-        LOGGER.event("Shuttle forward");
+        LOGGER.info("Shuttle forward");
         shuttle(1);
     }
 
@@ -1868,7 +2043,7 @@ public final class DataControllerV extends DatavyuDialog
      */
     @Action
     public void shuttleBackAction() {
-        LOGGER.event("Shuttle back");
+        LOGGER.info("Shuttle back");
         shuttle(-1);
     }
 
@@ -1913,13 +2088,13 @@ public final class DataControllerV extends DatavyuDialog
      */
     @Action
     public void findAction() {
-        LOGGER.event("Find");
-
+        LOGGER.info("Find");
         if (shiftMask) {
             findOffsetAction();
         } else {
 
             try {
+                System.out.println("Finding to " + onsetTextField.getText() + " " + CLOCK_FORMAT.parse(onsetTextField.getText()).getTime());
                 jumpTo(CLOCK_FORMAT.parse(onsetTextField.getText()).getTime());
             } catch (ParseException e) {
                 LOGGER.error("unable to find within video", e);
@@ -1937,6 +2112,26 @@ public final class DataControllerV extends DatavyuDialog
         } catch (ParseException e) {
             LOGGER.error("unable to find within video", e);
         }
+    }
+
+    public void toggleCellHighlighting() {
+        highlightCells = !highlightCells;
+    }
+
+    public boolean getCellHighlighting() {
+        return highlightCells;
+    }
+
+    public void setCellHighlighting(boolean v) {
+        highlightCells = v;
+    }
+
+    public void toggleCellHighlightingAutoFocus() {
+        highlightAndFocus = !highlightAndFocus;
+    }
+
+    public boolean getCellHighlightAndFocus() {
+        return highlightAndFocus;
     }
 
     public void clearRegionOfInterestAction() {
@@ -1959,10 +2154,10 @@ public final class DataControllerV extends DatavyuDialog
                 final long newWindowPlayStart = findTextTime;
                 final long newWindowPlayEnd = (findOffsetTime > newWindowPlayStart)
                         ? findOffsetTime : newWindowPlayStart;
-                mixerController.getMixerModel().getRegionModel().setPlaybackRegion(
-                        newWindowPlayStart, newWindowPlayEnd);
                 mixerController.getMixerModel().getNeedleModel().setCurrentTime(
                         newWindowPlayStart);
+                mixerController.getMixerModel().getRegionModel().setPlaybackRegion(
+                        newWindowPlayStart, newWindowPlayEnd);
             } catch (ParseException e) {
                 LOGGER.error("Unable to set playback region of interest", e);
             }
@@ -1976,7 +2171,7 @@ public final class DataControllerV extends DatavyuDialog
     public void goBackAction() {
 
         try {
-            LOGGER.event("Go back");
+            LOGGER.info("Go back");
 
             long j = -CLOCK_FORMAT.parse(goBackTextField.getText()).getTime();
             jump(j);
@@ -1996,30 +2191,38 @@ public final class DataControllerV extends DatavyuDialog
      */
     @Action
     public void jogBackAction() {
-        LOGGER.event("Jog back");
+        LOGGER.info("Jog back");
 
-        int mul = 1;
+        if (!clock.isStopped()) {
+            clockStop(clock.getTime());
+        } else {
 
-        if (shiftMask) {
-            mul = SHIFTJOG;
-        }
+            int mul = 1;
 
-        if (ctrlMask) {
-            mul = CTRLJOG;
-        }
+            if (shiftMask) {
+                mul = SHIFTJOG;
+            }
 
-        long stepSize = ((-ONE_SECOND) / (long) playbackModel.getCurrentFPS());
-        long nextTime = (long) (mul * stepSize);
+            if (ctrlMask) {
+                mul = CTRLJOG;
+            }
 
-        /* BugzID:1544 - Preserve precision - force jog to frame markers. */
-        nextTime = nextTime - (clock.getTime() % stepSize);
+            long stepSize = ((-ONE_SECOND) / (long) playbackModel.getCurrentFPS());
+            long nextTime = (long) (mul * stepSize);
+
+            long mod = clock.getTime() % stepSize;
+
+            if (mod != 0) {
+                nextTime = -mod;
+            }
 
         /* BugzID:1361 - Disallow jog to skip past the region boundaries. */
-        if ((clock.getTime() + nextTime) > playbackModel.getWindowPlayStart()) {
-            stopAction();
-            jump(nextTime);
-        } else {
-            jumpTo(playbackModel.getWindowPlayStart());
+            if ((clock.getTime() + nextTime) > playbackModel.getWindowPlayStart()) {
+                stopAction();
+                jump(nextTime);
+            } else {
+                jumpTo(playbackModel.getWindowPlayStart());
+            }
         }
     }
 
@@ -2028,34 +2231,39 @@ public final class DataControllerV extends DatavyuDialog
      */
     @Action
     public void jogForwardAction() {
-        LOGGER.event("Jog forward");
+        LOGGER.info("Jog forward");
 
-        int mul = 1;
+        if (!clock.isStopped()) {
+            clockStop(clock.getTime());
+        } else {
 
-        if (shiftMask) {
-            mul = SHIFTJOG;
-        }
+            int mul = 1;
 
-        if (ctrlMask) {
-            mul = CTRLJOG;
-        }
+            if (shiftMask) {
+                mul = SHIFTJOG;
+            }
 
-        long stepSize = ((ONE_SECOND) / (long) playbackModel.getCurrentFPS());
-        long nextTime = (long) (mul * stepSize);
+            if (ctrlMask) {
+                mul = CTRLJOG;
+            }
+
+            long stepSize = ((ONE_SECOND) / (long) playbackModel.getCurrentFPS());
+            long nextTime = (long) (mul * stepSize);
 
         /* BugzID:1544 - Preserve precision - force jog to frame markers. */
-        long mod = (clock.getTime() % stepSize);
+            long mod = (clock.getTime() % stepSize);
 
-        if (mod != 0) {
-            nextTime = nextTime + stepSize - mod;
-        }
+            if (mod != 0) {
+                nextTime = nextTime + stepSize - mod;
+            }
 
         /* BugzID:1361 - Disallow jog to skip past the region boundaries. */
-        if ((clock.getTime() + nextTime) < playbackModel.getWindowPlayEnd()) {
-            stopAction();
-            jump(nextTime);
-        } else {
-            jumpTo(playbackModel.getWindowPlayEnd());
+            if ((clock.getTime() + nextTime) < playbackModel.getWindowPlayEnd()) {
+                stopAction();
+                jump(nextTime);
+            } else {
+                jumpTo(playbackModel.getWindowPlayEnd());
+            }
         }
     }
 
@@ -2072,7 +2280,7 @@ public final class DataControllerV extends DatavyuDialog
     }
 
     /**
-     * @param direction The required direction of the shuttle.
+     * @param shuttlejump The required rate/direction of the shuttle.
      */
     private void shuttle(final int shuttlejump) {
         float currentRate = clock.getRate();
@@ -2100,15 +2308,23 @@ public final class DataControllerV extends DatavyuDialog
      * @param step Milliseconds to jump.
      */
     private void jump(final long step) {
-        clock.stepTime(step);
+        if ((clock.getTime() + step) > playbackModel.getWindowPlayStart()) {
+//            stopAction();
+//            clock.stop();
+            clock.stepTime(step);
+        } else {
+            jumpTo(playbackModel.getWindowPlayStart());
+        }
     }
 
     /**
      * @param time Absolute time to jump to.
      */
     private void jumpTo(final long time) {
-        clock.stop();
-        clock.setTime(time);
+        synchronized (clock) {
+            clock.stop();
+            clock.setTime(time);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -2120,7 +2336,8 @@ public final class DataControllerV extends DatavyuDialog
      */
     @Action
     public void createNewCellAction() {
-        LOGGER.event("New cell");
+        LOGGER.info("New cell");
+        if (!clock.isStopped()) adjustClock(getCurrentTime());
         CreateNewCellC controller = new CreateNewCellC();
         controller.createDefaultCell(true);
     }
@@ -2130,7 +2347,8 @@ public final class DataControllerV extends DatavyuDialog
      */
     @Action
     public void createNewCellAndSetOffsetAction() {
-        LOGGER.event("New cell set offset");
+        LOGGER.info("New cell set offset");
+        if (!clock.isStopped()) adjustClock(getCurrentTime());
         new CreateNewCellC(getCurrentTime(), true);
     }
 
@@ -2139,8 +2357,9 @@ public final class DataControllerV extends DatavyuDialog
      */
     @Action
     public void pointCellAction() {
-        LOGGER.event("Set new cell offset");
+        LOGGER.info("Set new cell offset");
 
+        adjustClock(getCurrentTime());
         long time = getCurrentTime();
         new CreateNewCellC(time, false);
         new SetNewCellStopTimeC(time);
@@ -2172,5 +2391,9 @@ public final class DataControllerV extends DatavyuDialog
 
     public float getCurrentFPS() {
         return playbackModel.getCurrentFPS();
+    }
+
+    public ClockTimer getClock() {
+        return clock;
     }
 }

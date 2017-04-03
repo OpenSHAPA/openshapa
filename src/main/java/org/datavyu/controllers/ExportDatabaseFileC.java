@@ -14,8 +14,8 @@
  */
 package org.datavyu.controllers;
 
-import com.usermetrix.jclient.Logger;
-import com.usermetrix.jclient.UserMetrix;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.models.db.*;
 import org.datavyu.util.StringUtils;
@@ -39,7 +39,7 @@ public final class ExportDatabaseFileC {
     /**
      * The logger for this class.
      */
-    private static Logger LOGGER = UserMetrix.getLogger(ExportDatabaseFileC.class);
+    private static Logger LOGGER = LogManager.getLogger(ExportDatabaseFileC.class);
 
     /**
      * Saves the database to the specified destination in a CSV format.
@@ -127,16 +127,21 @@ public final class ExportDatabaseFileC {
             ps.println(header);
 
             int framenum = 1;
-            while (current_time <= last_time) {
+            while (current_time <= last_time + 1000.0 / framerate) {
                 // Update the currentIndex list
                 for (int i = 0; i < variables.size(); i++) {
-                    Cell c = cellCache.get(i).get(currentIndex[i]);
-                    if (current_time > c.getOffset()) {
-                        
-                        for (int j = currentIndex[i]; j < cellCache.get(i).size(); j++) {
-                            Cell nextCell = cellCache.get(i).get(j);
-                            if (current_time >= nextCell.getOnset()) {
-                                currentIndex[i] = j;
+                    if (!cellCache.get(i).isEmpty()) {
+                        Cell c = cellCache.get(i).get(currentIndex[i]);
+                        if (current_time > c.getOffset()) {
+
+                            if (current_time > 37300) {
+                                System.out.println("test");
+                            }
+                            for (int j = currentIndex[i]; j < cellCache.get(i).size(); j++) {
+                                Cell nextCell = cellCache.get(i).get(j);
+                                if (current_time >= nextCell.getOnset()) {
+                                    currentIndex[i] = j;
+                                }
                             }
                         }
                     }
@@ -147,58 +152,68 @@ public final class ExportDatabaseFileC {
                 String row = Integer.toString(framenum) + "," +
                         Long.toString(current_time) + ",";
                 for (int i = 0; i < variables.size(); i++) {
-                    Cell cell = cellCache.get(i).get(currentIndex[i]);
+                    if (!cellCache.get(i).isEmpty()) {
 
-                    if (cell.getOnset() <= current_time && cell.getOffset() >= current_time) {
-
-                        Value value = cell.getValue();
-
-                        // Print ordinal, onset, offset
-                        row += Integer.toString(currentIndex[i]+1) + "," +
-                                Long.toString(cell.getOnset()) + "," +
-                                Long.toString(cell.getOffset());
+                        Cell cell = cellCache.get(i).get(currentIndex[i]);
 
 
-                        if (value instanceof MatrixValue) {
-                            // Then this is a matrix value, get the sub arguments
-                            MatrixValue mv = (MatrixValue) value;
-                            for (Value v : mv.getArguments()) {
-                                // Loop over each value and print it with a comma
-                                // seperator
-                                row += "," + StringUtils.escapeCSVQuotes(v.toString());
+                        if ((cell.getOnset() <= current_time && cell.getOffset() >= current_time) ||
+                                (Math.abs(cell.getOffset() - cell.getOnset()) < 1000.0 / framerate &&
+                                        cell.getOnset() > current_time - 1000.0 / framerate + 1 &&
+                                        current_time >= cell.getOnset() &&
+                                        cell.getOnset() < current_time + 1000.0 / framerate - 1)) {
+
+                            Value value = cell.getValue();
+
+                            // Print ordinal, onset, offset
+                            row += Integer.toString(currentIndex[i] + 1) + "," +
+                                    Long.toString(cell.getOnset()) + "," +
+                                    Long.toString(cell.getOffset());
+
+
+                            if (value instanceof MatrixValue) {
+                                // Then this is a matrix value, get the sub arguments
+                                MatrixValue mv = (MatrixValue) value;
+                                for (Value v : mv.getArguments()) {
+                                    // Loop over each value and print it with a comma
+                                    // seperator
+                                    row += "," + StringUtils.escapeCSVQuotes(v.toString());
+                                }
+                            } else {
+                                // Otherwise just print the single argument
+                                row += "," + StringUtils.escapeCSVQuotes(cell.getValue().toString());
                             }
+                            row += ",";
+
                         } else {
-                            // Otherwise just print the single argument
-                            row += "," + StringUtils.escapeCSVQuotes(cell.getValue().toString());
-                        }
-                        row += ",";
-                        
-                    } else {
-                        // Figure out what to print if we don't have a cell here
-                        Value value = cell.getValue();
+                            // Figure out what to print if we don't have a cell here
+                            Value value = cell.getValue();
 
-                        // Print ordinal, onset, offset
-                        row += ",,";
+                            // Print ordinal, onset, offset
+                            row += ",,";
 
 
-                        if (value instanceof MatrixValue) {
-                            // Then this is a matrix value, get the sub arguments
-                            MatrixValue mv = (MatrixValue) value;
-                            for (Value v : mv.getArguments()) {
-                                // Loop over each value and print it with a comma
-                                // seperator
+                            if (value instanceof MatrixValue) {
+                                // Then this is a matrix value, get the sub arguments
+                                MatrixValue mv = (MatrixValue) value;
+                                for (Value v : mv.getArguments()) {
+                                    // Loop over each value and print it with a comma
+                                    // seperator
+                                    row += ",";
+                                }
+                            } else {
+                                // Otherwise just print the single argument
                                 row += ",";
                             }
-                        } else {
-                            // Otherwise just print the single argument
                             row += ",";
                         }
-                        row += ",";
                     }
+
                 }
                 ps.println(row);
                 current_time += 1000.0 / framerate;
                 ++framenum;
+
             }
 
             fos.close();
@@ -319,7 +334,7 @@ public final class ExportDatabaseFileC {
      */
     public void exportAsCSV(final OutputStream outStream, final Datastore ds)
             throws UserWarningException {
-        LOGGER.event("save database as CSV to stream");
+        LOGGER.info("save database as CSV to stream");
 
         // Dump out an identifier for the version of file.
         PrintStream ps = new PrintStream(outStream);

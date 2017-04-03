@@ -18,11 +18,12 @@ import com.google.common.collect.Lists;
 import com.sun.jna.Platform;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
+import org.datavyu.Datavyu;
 import org.datavyu.plugins.DataViewer;
 import org.datavyu.plugins.Filter;
 import org.datavyu.plugins.FilterNames;
 import org.datavyu.plugins.Plugin;
-import org.datavyu.plugins.quicktime.QTDataViewer;
+import org.datavyu.util.VersionRange;
 
 import javax.swing.*;
 import java.io.FileFilter;
@@ -31,6 +32,9 @@ import java.util.List;
 
 
 public final class QTKitPlugin implements Plugin {
+
+    private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(Datavyu.Platform.MAC);
+
 
     private static final Filter VIDEO_FILTER = new Filter() {
         final SuffixFileFilter ff;
@@ -81,7 +85,7 @@ public final class QTKitPlugin implements Plugin {
 
     @Override
     public String getClassifier() {
-        return "qtkit.video";
+        return "datavyu.video";
     }
 
     @Override
@@ -97,11 +101,20 @@ public final class QTKitPlugin implements Plugin {
     @Override
     public Class<? extends DataViewer> getViewerClass() {
 
-        if (Platform.isMac() || Platform.isWindows()) {
-            return QTDataViewer.class;
+        if (Platform.isMac()) {
+            return QTKitViewer.class;
         }
 
         return null;
     }
 
+    @Override
+    public List<Datavyu.Platform> getValidPlatforms() {
+        return VALID_OPERATING_SYSTEMS;
+    }
+
+    @Override
+    public VersionRange getValidVersions() {
+        return new VersionRange(0, 10); // Start with OS version 10, go to 99 for future
+    }
 }

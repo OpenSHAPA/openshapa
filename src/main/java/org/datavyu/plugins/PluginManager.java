@@ -15,9 +15,14 @@
 package org.datavyu.plugins;
 
 import com.google.common.collect.*;
-import com.usermetrix.jclient.Logger;
-import com.usermetrix.jclient.UserMetrix;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
+import org.datavyu.plugins.javafx.JavaFxPlugin;
+import org.datavyu.plugins.nativeosxplayer.NativeOSXPlayerFactory;
+import org.datavyu.plugins.quicktime.QTDataViewer;
+import org.datavyu.plugins.quicktime.java.QTPlugin;
+import org.datavyu.util.MacHandler;
 import org.jdesktop.application.LocalStorage;
 
 import javax.swing.filechooser.FileFilter;
@@ -45,25 +50,29 @@ public final class PluginManager {
     /**
      * A reference to the interface that plugins must override.
      */
+
+    /* WARNING: PLUGIN_CLASS, static { PLUGIN_CLASS }, and LOGGER and INSTANCE MUST APPEAR IN THIS ORDER */
     private static final Class<?> PLUGIN_CLASS;
+
+    //
+    //
+    // !!! WARNING: instance must be last static - or Datavyu will crash !!!
+    //
+    //
 
     static {
         PLUGIN_CLASS = Plugin.class;
     }
     /**
+     * The logger for this class.
+     */
+    private static Logger LOGGER = LogManager.getLogger(PluginManager.class.getName());
+    /**
      * The single instance of the PluginManager for Datavyu.
      */
     private static final PluginManager INSTANCE = new PluginManager();
 
-    //
-    //
-    // !!! WARNING: instance must be last static - or Datavyu will crash !!!
-    // 
-    //
-    /**
-     * The logger for this class.
-     */
-    private static Logger LOGGER = UserMetrix.getLogger(PluginManager.class);
+
     /**
      * Set of plugins.
      */
@@ -345,6 +354,17 @@ public final class PluginManager {
                 {
                     Plugin p = (Plugin) testClass.newInstance();
 
+                    if(!p.getValidPlatforms().contains(Datavyu.getPlatform())) {
+                        // Not valid for this operating system
+                        return;
+                    }
+
+                    if(Datavyu.getPlatform() == Datavyu.Platform.MAC) {
+                        if(!p.getValidVersions().checkInRange(MacHandler.getOSVersion())) {
+                            return;
+                        }
+                    }
+
                     String pluginName = p.getPluginName();
 
                     if (pluginNames.contains(p.getPluginName())) {
@@ -413,6 +433,14 @@ public final class PluginManager {
                 @Override
                 public int compare(final Plugin o1, final Plugin o2) {
 
+                    if ("Native OSX Video".equals(o1.getPluginName())) {
+                        return -1;
+                    }
+
+                    if ("Native OSX Video".equals(o2.getPluginName())) {
+                        return 1;
+                    }
+
                     if ("QTKit Video".equals(o1.getPluginName())) {
                         return -1;
                     }
@@ -425,7 +453,7 @@ public final class PluginManager {
                 }
             });
             for (int i = 0; i < p.size(); i++) {
-                if (p.get(i).getPluginName() == "QuickTime Video") {
+                if (p.get(i).getPluginName().equals("QuickTime Video") || p.get(i).getPluginName().equals("VLC Video")) {
                     p.remove(i);
                     break;
                 }
@@ -435,19 +463,29 @@ public final class PluginManager {
                 @Override
                 public int compare(final Plugin o1, final Plugin o2) {
 
-                    if ("QuickTime Video".equals(o1.getPluginName())) {
-                        return -1;
-                    }
+                    if(QTDataViewer.librariesFound) {
+                        if ("QuickTime Video".equals(o1.getPluginName())) {
+                            return -1;
+                        }
 
-                    if ("QuickTime Video".equals(o2.getPluginName())) {
-                        return 1;
+                        if ("QuickTime Video".equals(o2.getPluginName())) {
+                            return 1;
+                        }
+                    } else {
+                        if ("JavaFX Video".equals(o1.getPluginName())) {
+                            return -1;
+                        }
+
+                        if ("JavaFX Video".equals(o2.getPluginName())) {
+                            return 1;
+                        }
                     }
 
                     return o1.getPluginName().compareTo(o2.getPluginName());
                 }
             });
             for (int i = 0; i < p.size(); i++) {
-                if (p.get(i).getPluginName() == "QTKit Video") {
+                if (p.get(i).getPluginName().equals("QTKit Video")) {
                     p.remove(i);
                     break;
                 }
@@ -483,6 +521,21 @@ public final class PluginManager {
      */
     public Plugin getCompatiblePlugin(final String classifier,
                                       final File file) {
+
+        // Shortcircuit this for the preferred new plugins for Windows and OSX
+        if (classifier.equals("datavyu.video")) {
+            if (Datavyu.getPlatform() == Datavyu.Platform.MAC) {
+                return NativeOSXPlayerFactory.getNativeOSXPlugin();
+            }
+
+            if (Datavyu.getPlatform() == Datavyu.Platform.WINDOWS) {
+                return new QTPlugin();
+            }
+
+            if (Datavyu.getPlatform() == Datavyu.Platform.LINUX) {
+                return new JavaFxPlugin();
+            }
+        }
 
         for (Plugin candidate : pluginClassifiers.get(classifier)) {
 

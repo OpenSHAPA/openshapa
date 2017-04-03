@@ -1,7 +1,7 @@
 package org.datavyu.plugins.javafx;
 
 import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
+import javafx.scene.canvas.Canvas;
 import javafx.stage.Stage;
 import org.datavyu.models.db.Datastore;
 import org.datavyu.plugins.CustomActions;
@@ -76,6 +76,8 @@ public class JavaFXDataViewer extends BaseQuickTimeDataViewer {
 
     public JavaFXDataViewer(final Frame parent, final boolean modal) {
         super(parent, modal);
+        javafxapp = new JavaFXApplication(null);
+//        new JFXPanel();
 //        stateListeners = new ArrayList<ViewerStateListener>();
 
     }
@@ -85,29 +87,34 @@ public class JavaFXDataViewer extends BaseQuickTimeDataViewer {
             throw new NullPointerException("action");
 
         // run synchronously on JavaFX thread
+        System.out.println("AM I THE JAVAFX THREAD?:" + Platform.isFxApplicationThread());
         if (Platform.isFxApplicationThread()) {
             action.run();
             return;
         }
 
         // queue on JavaFX thread and wait for completion
-        final CountDownLatch doneLatch = new CountDownLatch(1);
+//        final CountDownLatch doneLatch = new CountDownLatch(1);
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
                 try {
+                    System.out.println("RUNNING ACTION");
+                    System.out.println("AM I THE JAVAFX THREAD?:" + Platform.isFxApplicationThread());
                     action.run();
+                    System.out.println("I RAN THE ACTION");
                 } finally {
-                    doneLatch.countDown();
+//                    doneLatch.countDown();
                 }
             }
         });
 
-        try {
-            doneLatch.await();
-        } catch (InterruptedException e) {
-            // ignore exception
-        }
+        System.out.println("TESTING WEHTEHR IT RETURNS");
+//        try {
+//            doneLatch.await();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Override
@@ -182,30 +189,48 @@ public class JavaFXDataViewer extends BaseQuickTimeDataViewer {
 
     @Override
     public void setDataFeed(final File dataFeed) {
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        System.out.println("Setting datafeed");
         data = dataFeed;
+        Platform.setImplicitExit(false);
 
-
-        // Needed to init JavaFX stuff
-        new JFXPanel();
         javafxapp = new JavaFXApplication(dataFeed);
+
+        System.out.println(SwingUtilities.isEventDispatchThread());
+        System.out.println(Platform.isFxApplicationThread());
 
         runAndWait(new Runnable() {
             @Override
             public void run() {
+
                 javafxapp.start(new Stage());
+                latch.countDown();
             }
         });
-
-
-        // Wait for javafx to initialize
-        while (!javafxapp.isInit()) {
+        try {
+            latch.await();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
+        while (!javafxapp.isInit()) {
+            try {
+                Thread.sleep(1000);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        System.out.println("Inited, going");
+        System.out.println(javafxapp.getDuration());
         // Hide our fake dialog box
         dialog.setVisible(false);
 
+
         // TODO Add in function to guess framerate
     }
+
 
     /**
      * Scales the video to the desired ratio.
@@ -275,7 +300,7 @@ public class JavaFXDataViewer extends BaseQuickTimeDataViewer {
 
     @Override
     public void setPlaybackSpeed(final float rate) {
-//        javafxapp.setRate(rate);
+        javafxapp.setRate(rate);
     }
 
     @Override

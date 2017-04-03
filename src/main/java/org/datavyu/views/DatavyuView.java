@@ -14,9 +14,10 @@
  */
 package org.datavyu.views;
 
-import com.usermetrix.jclient.Logger;
-import com.usermetrix.jclient.UserMetrix;
+import javafx.embed.swing.JFXPanel;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.Configuration;
 import org.datavyu.Datavyu;
 import org.datavyu.Datavyu.Platform;
@@ -32,6 +33,7 @@ import org.datavyu.undoableedits.RemoveVariableEdit;
 import org.datavyu.undoableedits.RunScriptEdit;
 import org.datavyu.undoableedits.SpreadsheetUndoManager;
 import org.datavyu.util.ArrayDirection;
+import org.datavyu.util.DragAndDrop.GhostGlassPane;
 import org.datavyu.util.FileFilters.*;
 import org.datavyu.util.FileSystemTreeModel;
 import org.datavyu.views.discrete.SpreadsheetColumn;
@@ -83,7 +85,7 @@ public final class DatavyuView extends FrameView
     /**
      * The logger for this class.
      */
-    private static Logger LOGGER = UserMetrix.getLogger(DatavyuView.class);
+    private static Logger LOGGER = LogManager.getLogger(DatavyuView.class);
     private static boolean redraw = true;
     private final Icon rubyIcon = new ImageIcon(getClass().getResource("/icons/ruby.png"));
     private final Icon opfIcon = new ImageIcon(getClass().getResource("/icons/datavyu.png"));
@@ -168,6 +170,11 @@ public final class DatavyuView extends FrameView
     private javax.swing.JMenuItem zoomInMenuItem;
     private javax.swing.JMenu zoomMenu;
     private javax.swing.JMenuItem zoomOutMenuItem;
+    private javax.swing.JMenuItem quickkeysMenuItem;
+    private javax.swing.JMenuItem highlightAndFocusMenuItem;
+
+    private boolean quickKeyMode = false;
+
     private JTabbedPane tabbedPane;
     private JScrollPane fileScrollPane;
     private JSplitPane fileSplitPane;
@@ -211,6 +218,11 @@ public final class DatavyuView extends FrameView
 
         // generated GUI builder code
         initComponents();
+        new JFXPanel();
+
+        this.getFrame().setGlassPane(new GhostGlassPane());
+        this.getFrame().setVisible(true);
+        this.getFrame().getGlassPane().setVisible(true);
 
         // BugzID:492 - Set the shortcut for new cell, so a keystroke that won't
         // get confused for the "carriage return". The shortcut for new cells
@@ -270,6 +282,12 @@ public final class DatavyuView extends FrameView
         redoSpreadSheetMenuItem.setAccelerator(KeyStroke.getKeyStroke(
                 KeyEvent.VK_Y, keyMask));
 
+        // Set delete cells to keyMask + backspace
+        deleteCellMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SLASH, keyMask));
+
+        // Set enable quick key mode to keyMask + shift + 'K'
+        quickkeysMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_K, keyMask | InputEvent.SHIFT_MASK));
+        highlightAndFocusMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, keyMask | InputEvent.SHIFT_MASK));
 
         if (panel != null) {
             panel.deregisterListeners();
@@ -334,6 +352,7 @@ public final class DatavyuView extends FrameView
                     if (Datavyu.getProjectController().getProject().getProjectDirectory() == null) {
                         baseDir = new File(System.getProperty("user.home")).getParent();
                     } else {
+//                        baseDir = new File(".").getParent();
                         baseDir = new File(Datavyu.getProjectController().getProject().getProjectDirectory()).getParent();
                     }
                     final File f = new File(baseDir + File.separator + path);
@@ -801,8 +820,17 @@ public final class DatavyuView extends FrameView
             projectName = "untitled";
         }
 
+
         String title = rMap.getString("Application.title") + " - " + projectName + extension + postFix;
         String tabTitle = projectName + postFix;
+
+        if(isQuickKeyMode()) {
+            title = title + " <QUICK KEY MODE>";
+        }
+
+        if(isHighlightAndFocusMode()) {
+            title = title + " <HIGHLIGHT AND FOCUS MODE>";
+        }
 
         Datavyu.getProjectController().getProject().setDatabaseFileName(projectName + extension);
         mainFrame.setTitle(title);
@@ -908,7 +936,47 @@ public final class DatavyuView extends FrameView
         if (result == JFileChooser.APPROVE_OPTION) {
             save(jd);
         }
+        fileTree = new FileSystemTreeModel(new File(jd.getSelectedFile().getParent()));
+        fileDrawer.setModel(fileTree);
         updateTitle();
+    }
+
+    @Action
+    public void toggleQuickKeys() {
+        quickKeyMode = !quickKeyMode;
+        if(quickKeyMode) {
+            quickkeysMenuItem.setText("Disable Quick Key Mode");
+
+        } else {
+            quickkeysMenuItem.setText("Enable Quick Key Mode");
+        }
+
+        updateTitle();
+    }
+
+    @Action
+    public void toggleHighlightAndFocusMode() {
+        Datavyu.getDataController().getMixerController().enableHighlightAndFocusHandler(null);
+        if(Datavyu.getDataController().getCellHighlightAndFocus()) {
+            highlightAndFocusMenuItem.setText("Disable Highlight and Focus Mode");
+
+        } else {
+            highlightAndFocusMenuItem.setText("Enable Highlight and Focus Mode");
+        }
+
+        updateTitle();
+    }
+
+    public boolean isQuickKeyMode() {
+        return quickKeyMode;
+    }
+
+    public boolean isHighlightAndFocusMode() {
+        if(Datavyu.getDataController() != null) {
+            return Datavyu.getDataController().getCellHighlightAndFocus();
+        } else {
+            return false;
+        }
     }
 
 
@@ -1327,8 +1395,10 @@ public final class DatavyuView extends FrameView
         task.execute();
         try {
             ProjectController p = task.get();
-            if (p != null)
+            if (p != null) {
+                Datavyu.setProjectController(p);
                 createNewSpreadsheet(p);
+            }
 
             progressBar.close();
         } catch (Exception e) {
@@ -1563,12 +1633,18 @@ public final class DatavyuView extends FrameView
     }
 
     public ProjectController createNewSpreadsheet(ProjectController pc) {
+        Datavyu.setProjectController(pc);
+
+        // Data controller needs to be registered before load for the cell positioning highlighting
+        DataControllerV dcv = new DataControllerV(Datavyu.getApplication().getMainFrame(), false);
+        Datavyu.setDataController(dcv);
+
+
         pc.setSpreadsheetPanel(new SpreadsheetPanel(pc, null));
         SpreadsheetPanel panel = pc.getSpreadsheetPanel();
         panel.registerListeners();
         panel.addFileDropEventListener(this);
-        panel.setDataController(new DataControllerV(Datavyu.getApplication().getMainFrame(), false));
-        Datavyu.setProjectController(panel.getProjectController());
+        panel.setDataController(dcv);
 
         tabbedPane.add(panel);
         tabbedPane.setTabComponentAt(tabbedPane.indexOfComponent(panel), new TabWithCloseButton(tabbedPane));
@@ -1697,7 +1773,7 @@ public final class DatavyuView extends FrameView
      */
     @Action
     public void hideColumn() {
-        LOGGER.event("Hidding columns");
+        LOGGER.info("Hidding columns");
         Datastore ds = Datavyu.getProjectController().getDB();
 
         for (Variable var : ds.getSelectedVariables()) {
@@ -1713,7 +1789,7 @@ public final class DatavyuView extends FrameView
      */
     @Action
     public void showAllColumns() {
-        LOGGER.event("Showing all columns");
+        LOGGER.info("Showing all columns");
         Datastore ds = Datavyu.getProjectController().getDB();
 
         for (Variable var : ds.getAllVariables()) {
@@ -1755,6 +1831,7 @@ public final class DatavyuView extends FrameView
         UndoableEdit edit = new RemoveCellEdit(selectedCells);
         // perform the operation
         new DeleteCellC(selectedCells);
+
         // notify the listeners
         Datavyu.getView().getUndoSupport().postEdit(edit);
     }
@@ -1941,6 +2018,8 @@ public final class DatavyuView extends FrameView
         guideMenuItem = new javax.swing.JMenuItem();
         citationMenuItem = new javax.swing.JMenuItem();
         hotkeysMenuItem = new javax.swing.JMenuItem();
+        quickkeysMenuItem = new javax.swing.JMenuItem();
+        highlightAndFocusMenuItem = new javax.swing.JMenuItem();
 
         scriptMenuPermanentsList = new ArrayList();
 
@@ -2197,6 +2276,19 @@ public final class DatavyuView extends FrameView
         pullMenuItem.setAction(actionMap.get("pull"));
         pullMenuItem.setName("pullMenuItem");
         spreadsheetMenu.add(pullMenuItem);
+
+        quickkeysMenuItem.setAction(actionMap.get("toggleQuickKeys"));
+        quickkeysMenuItem.setName("quickkeysMenuItem");
+        quickkeysMenuItem.setText("Enable Quick Key Mode");
+        quickkeysMenuItem.setToolTipText("Create new cells in selected column by hitting a single key, filling in the first argument with the key pressed.");
+
+        highlightAndFocusMenuItem.setAction(actionMap.get("toggleHighlightAndFocusMode"));
+        highlightAndFocusMenuItem.setName("highlightAndFocusMenuItem");
+        highlightAndFocusMenuItem.setText("Enable Highlight and Focus Mode");
+        highlightAndFocusMenuItem.setToolTipText("For the selected column, highlight the cell that the video clock is displaying and select the first uncoded argument.");
+
+        spreadsheetMenu.add(quickkeysMenuItem);
+        spreadsheetMenu.add(highlightAndFocusMenuItem);
 
         menuBar.add(spreadsheetMenu);
 
@@ -2738,7 +2830,12 @@ public final class DatavyuView extends FrameView
                     Datavyu.getProjectController().getProjectName() == null &&
                     !Datavyu.getProjectController().isChanged() &&
                     jd.getSelectedFile().exists()) {
-                tabbedPane.remove(0);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        tabbedPane.remove(0);
+                    }
+                });
             }
 
 

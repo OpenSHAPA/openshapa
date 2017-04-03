@@ -14,13 +14,15 @@
  */
 package org.datavyu.views.discrete;
 
-import com.usermetrix.jclient.Logger;
-import com.usermetrix.jclient.UserMetrix;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.Configuration;
 import org.datavyu.Datavyu;
 import org.datavyu.models.db.*;
 import org.datavyu.undoableedits.ChangeNameVariableEdit;
+import org.datavyu.util.ClockTimer;
 import org.datavyu.util.Constants;
+import org.datavyu.util.DragAndDrop.GhostGlassPane;
 import org.jdesktop.application.Action;
 
 import javax.swing.*;
@@ -30,8 +32,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * This class maintains the visual representation of the column in the
@@ -40,7 +44,8 @@ import java.util.List;
 public final class SpreadsheetColumn extends JLabel
         implements VariableListener,
         MouseListener,
-        MouseMotionListener {
+        MouseMotionListener,
+        ClockTimer.ClockListener {
 
     /**
      * Default column width.
@@ -55,7 +60,7 @@ public final class SpreadsheetColumn extends JLabel
     /**
      * The logger for this class.
      */
-    private static Logger LOGGER = UserMetrix.getLogger(SpreadsheetColumn.class);
+    private static Logger LOGGER = LogManager.getLogger(SpreadsheetColumn.class);
 
     /**
      * Database reference.
@@ -132,11 +137,15 @@ public final class SpreadsheetColumn extends JLabel
      */
     private int offsetPadding = 0;
 
+    private GhostGlassPane glassPane = (GhostGlassPane) Datavyu.getView().getFrame().getGlassPane();
+
+    private int previouslyFocusedCellIdx = -1;
+
     /**
      * Creates new SpreadsheetColumn.
      *
      * @param db       Database reference.
-     * @param colID    the variable this column displays.
+     * @param var    the variable this column displays.
      * @param cellSelL Spreadsheet cell selection listener to notify
      * @param colSelL  Column selection listener to notify.
      */
@@ -166,20 +175,8 @@ public final class SpreadsheetColumn extends JLabel
         datapanel = new ColumnDataPanel(db, width, var, cellSelL);
         this.setVisible(!var.isHidden());
         datapanel.setVisible(!var.isHidden());
-    }
 
-    /**
-     * @param padding The working onset padding to use for cells in this column.
-     */
-    public void setWorkingOnsetPadding(final int padding) {
-        onsetPadding = padding;
-    }
-
-    /**
-     * @param padding The working offset padding to use for cells in this column.
-     */
-    public void setWorkingOffsetPadding(final int padding) {
-        offsetPadding = padding;
+        Datavyu.getDataController().getClock().registerListener(this);
     }
 
     /**
@@ -191,11 +188,25 @@ public final class SpreadsheetColumn extends JLabel
     }
 
     /**
+     * @param padding The working onset padding to use for cells in this column.
+     */
+    public void setWorkingOnsetPadding(final int padding) {
+        onsetPadding = padding;
+    }
+
+    /**
      * @return The offset padding to use for the next cell you are laying in
      * this column.
      */
     public int getWorkingOffsetPadding() {
         return offsetPadding;
+    }
+
+    /**
+     * @param padding The working offset padding to use for cells in this column.
+     */
+    public void setWorkingOffsetPadding(final int padding) {
+        offsetPadding = padding;
     }
 
     /**
@@ -330,10 +341,18 @@ public final class SpreadsheetColumn extends JLabel
     }
 
     /**
+     * @return Column Width in pixels.
+     */
+    @Override
+    public int getWidth() {
+        return width;
+    }
+
+    /**
      * @param colWidth Column width to set in pixels.
      */
     public void setWidth(final int colWidth) {
-        LOGGER.event("set column width");
+        LOGGER.info("set column width");
         width = colWidth;
 
         Dimension dim = getHeaderSize();
@@ -343,14 +362,6 @@ public final class SpreadsheetColumn extends JLabel
 
         datapanel.setWidth(width);
         datapanel.revalidate();
-    }
-
-    /**
-     * @return Column Width in pixels.
-     */
-    @Override
-    public int getWidth() {
-        return width;
     }
 
     /**
@@ -368,12 +379,31 @@ public final class SpreadsheetColumn extends JLabel
     }
 
     /**
+     * Set the selected state for the DataColumn this displays and clear all other cells and columns.
+     *
+     * @param isSelected Selected state.
+     */
+    public void setExclusiveSelected(final boolean isSelected) {
+        LOGGER.info("select column");
+        cellSelList.clearCellSelection();
+        columnSelList.clearColumnSelection();
+        setSelected(isSelected);
+    }
+
+    /**
+     * @return selection status of underlying variable
+     */
+    public boolean isSelected() {
+        return variable.isSelected();
+    }
+
+    /**
      * Set the selected state for the DataColumn this displays.
      *
      * @param isSelected Selected state.
      */
     public void setSelected(final boolean isSelected) {
-        LOGGER.event("select column");
+        LOGGER.info("select column");
         variable.setSelected(isSelected);
         this.selected = isSelected;
 
@@ -384,26 +414,6 @@ public final class SpreadsheetColumn extends JLabel
         }
 
 //        repaint();
-    }
-
-    /**
-     * Set the selected state for the DataColumn this displays and clear all other cells and columns.
-     *
-     * @param isSelected Selected state.
-     */
-    public void setExclusiveSelected(final boolean isSelected) {
-        LOGGER.event("select column");
-        cellSelList.clearCellSelection();
-        columnSelList.clearColumnSelection();
-        setSelected(isSelected);
-    }
-
-
-    /**
-     * @return selection status of underlying variable
-     */
-    public boolean isSelected() {
-        return variable.isSelected();
     }
 
     /**
@@ -454,6 +464,42 @@ public final class SpreadsheetColumn extends JLabel
      */
     public String getColumnName() {
         return variable.getName();
+    }
+
+    private void focusNextCell() {
+        long time = Datavyu.getDataController().getCurrentTime();
+        List<SpreadsheetCell> tempCells = getCellsTemporally();
+        for(int i = 0; i < tempCells.size(); i++) {
+            SpreadsheetCell c = tempCells.get(i);
+            if(c.getCell().isInTimeWindow(time)) {
+                if(!c.isFocusOwner()) {
+                    if(c.getCell().getValue() instanceof MatrixValue) {
+                        int firstEmpty = -1;
+                        List<Value> args = ((MatrixValue) c.getCell().getValue()).getArguments();
+                        for(int j = 0; j < args.size(); j++) {
+                            if(args.get(j).isEmpty()) {
+                                firstEmpty = j;
+                                break;
+                            }
+                        }
+                        if(firstEmpty > -1) {
+                            c.requestFocus();
+                            c.getDataView().getEdTracker().setEditor(c.getDataView().getEdTracker().getEditorAtArgIndex(firstEmpty));
+                        } else {
+                            c.requestFocus();
+                        }
+                    } else {
+                        if(c.getCell().getValue().isEmpty()) {
+                            c.requestFocus();
+                        }
+                    }
+                }
+                if(c.getCell().getOnset() > time) {
+                    break;
+                }
+                break;
+            }
+        }
     }
 
     public void setColumnName(final String newName) throws UserWarningException {
@@ -520,34 +566,98 @@ public final class SpreadsheetColumn extends JLabel
     @Override
     public void cellRemoved(final Cell deletedCell) {
         datapanel.deleteCell(deletedCell);
+        for(SpreadsheetCell c : getCellsTemporally()) {
+            if(c.getOnsetTicks() >= deletedCell.getOnset()) {
+                c.requestFocus();
+                break;
+            }
+        }
     }
 
     // *************************************************************************
     // MouseListener Overrides
     // *************************************************************************
     @Override
-    public void mouseEntered(final MouseEvent me) {
-        setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-    }
+    public void mouseEntered(final MouseEvent me) {}
 
     @Override
     public void mouseExited(final MouseEvent me) {
-        setCursor(Cursor.getDefaultCursor());
     }
 
     @Override
     public void mousePressed(final MouseEvent me) {
+        if(moveable && !draggable) {
+            System.out.println("Pressed X: " + me.getX());
+
+            if(System.getProperty("os.name").startsWith("Mac OS X")){
+                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            }
+            else{
+                setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+            }
+        }
     }
 
     @Override
     public void mouseReleased(final MouseEvent me) {
+        // BugzID:301 - Fix dragging columns
+        // Call column moving routine if user dragged mouse across columns.
+
+        if (moveable) {
+
+            Component c = me.getComponent();
+
+            Point p = (Point) me.getPoint().clone();
+            SwingUtilities.convertPointToScreen(p, c);
+
+            Point eventPoint = (Point) p.clone();
+            SwingUtilities.convertPointFromScreen(p, glassPane);
+
+            glassPane.setPoint(p);
+            glassPane.setVisible(false);
+            glassPane.setImage(null);
+
+            int x = me.getX();
+            System.out.println("Released X: " + x);
+            // Iterate over the spreadsheet columns, starting at current column, to figure out how many
+            // positions to shift by.
+            SpreadsheetPanel sp = (SpreadsheetPanel) Datavyu.getView().getComponent();
+            List<SpreadsheetColumn> cols = sp.getVisibleColumns();
+            ListIterator<SpreadsheetColumn> itr = cols.listIterator(cols.indexOf(this));
+
+            final int columnWidth = this.getWidth();
+
+            SpreadsheetColumn swapCol;
+            if (x > columnWidth) {
+                swapCol = itr.next();
+                while (x > swapCol.getWidth()) {
+                    x -= swapCol.getWidth();
+                    if (itr.hasNext()) swapCol = itr.next();
+                    else break;
+                }
+                sp.moveColumn(this.getVariable(), swapCol.getVariable());
+            } else if (x < 0 && itr.hasPrevious()) {
+                swapCol = itr.previous();
+                while (x < 0 && itr.hasPrevious()) {
+                    x += swapCol.getWidth();
+                    if (itr.hasPrevious() && x < 0) swapCol = itr.previous();
+                    else break;
+                }
+                sp.moveColumn(this.getVariable(), swapCol.getVariable());
+            }
+
+            // Update globals
+            moveable = false;
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
     }
 
     @Override
     public void mouseClicked(final MouseEvent me) {
         if (me.getClickCount() == 2) {
             showChangeVarNameDialog();
-        } else {
+        }
+        else {
             int keyMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
             boolean groupSel = (((me.getModifiers() & ActionEvent.SHIFT_MASK)
@@ -568,6 +678,7 @@ public final class SpreadsheetColumn extends JLabel
     // *************************************************************************
     // MouseMotionListener Overrides
     // *************************************************************************
+
     @Override
     public void mouseDragged(final MouseEvent me) {
         // BugzID:660 - Implements columns dragging.
@@ -577,25 +688,34 @@ public final class SpreadsheetColumn extends JLabel
             if (newWidth >= this.getMinimumSize().width) {
                 this.setWidth(newWidth);
             }
-        }
+        } else if (moveable) {
+            if (glassPane.getImage() == null) {
+                Component c = me.getComponent();
 
-        if (moveable) {
-            setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+                BufferedImage image = new BufferedImage(c.getWidth(), c.getHeight(), BufferedImage.TYPE_INT_ARGB);
+                Graphics g = image.getGraphics();
+                c.paint(g);
 
-            final int columnWidth = this.getWidth();
+                glassPane.setVisible(true);
 
-            if (me.getX() > columnWidth) {
-                int positions = Math.round((me.getX() * 1F) / (columnWidth * 1F));
+                Point p = (Point) me.getPoint().clone();
+                SwingUtilities.convertPointToScreen(p, c);
+                SwingUtilities.convertPointFromScreen(p, glassPane);
 
-                SpreadsheetPanel sp = (SpreadsheetPanel) Datavyu.getView().getComponent();
-                sp.moveColumnRight(this.getVariable(), positions);
-
-            } else if (me.getX() < 0) {
-                int positions = Math.round((me.getX() * -1F) / (columnWidth * 1F));
-                SpreadsheetPanel sp = (SpreadsheetPanel) Datavyu.getView().getComponent();
-
-                sp.moveColumnLeft(this.getVariable(), positions);
+                glassPane.setPoint(p);
+                glassPane.setImage(image);
+                glassPane.setBackground(Color.BLACK);
+                glassPane.repaint();
             }
+
+            Component c = me.getComponent();
+
+            Point p = (Point) me.getPoint().clone();
+            SwingUtilities.convertPointToScreen(p, c);
+            SwingUtilities.convertPointFromScreen(p, glassPane);
+            glassPane.setPoint(p);
+
+            glassPane.repaint();
         }
     }
 
@@ -603,20 +723,50 @@ public final class SpreadsheetColumn extends JLabel
     public void mouseMoved(final MouseEvent me) {
         final int xCoord = me.getX();
         final int componentWidth = this.getSize().width;
-        final int rangeStart = Math.round(componentWidth / 4F);
-        final int rangeEnd = Math.round(3F * componentWidth / 4F);
+//        final int rangeStart = Math.round(componentWidth / 4F);
+//        final int rangeEnd = Math.round(3F * componentWidth / 4F);
 
         // BugzID:660 - Implements columns dragging.
-        if ((componentWidth - xCoord) < 4) {
+        if ((componentWidth - xCoord) < 6) {
             setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
             draggable = true;
 
             // BugzID:128 - Implements moveable columns
-        } else if ((rangeStart <= xCoord) && (xCoord <= rangeEnd)) {
+        } else if (!draggable) {
             moveable = true;
         } else {
             draggable = false;
             moveable = false;
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+    }
+
+    @Override
+    public void clockTick(long time) {
+        if(isSelected() && Datavyu.getDataController().getCellHighlightAndFocus()) {
+            focusNextCell();
+        }
+    }
+
+    @Override
+    public void clockStart(long time) {
+
+    }
+
+    @Override
+    public void clockStop(long time) {
+
+    }
+
+    @Override
+    public void clockRate(float rate) {
+
+    }
+
+    @Override
+    public void clockStep(long time) {
+        if(isSelected() && Datavyu.getDataController().getCellHighlightAndFocus()) {
+            focusNextCell();
         }
     }
 }

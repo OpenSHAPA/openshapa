@@ -14,8 +14,8 @@
  */
 package org.datavyu.util;
 
-import com.usermetrix.jclient.Logger;
-import com.usermetrix.jclient.UserMetrix;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 
 import java.io.File;
@@ -42,7 +42,20 @@ public class MacHandler {
     /**
      * The logger for this class.
      */
-    private static Logger LOGGER = UserMetrix.getLogger(MacHandler.class);
+    private static Logger LOGGER = LogManager.getLogger(MacHandler.class);
+
+    public static int getOSVersion() {
+        try {
+            String osVersion = System.getProperty("os.version");
+
+            int major = Integer.valueOf(osVersion.split("\\.")[1]);
+            return major;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return -1;
+    }
 
     /**
      * Default constructor.

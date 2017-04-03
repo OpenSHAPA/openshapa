@@ -42,12 +42,27 @@ public class JavaFXApplication extends Application {
         } else {
             System.out.println("SEEKING TO: " + time);
 
+            double rate = 0;
+            if (mp.getCurrentRate() != 0) {
+                mp.pause();
+                rate = mp.getCurrentRate();
+            }
+//            System.out.println("BEFORE: " + mp.getCurrentTime());
+
+            // NOTE: JavaFX only seems to be able to seek accurately in 2.2 when the rate != 0,
+            // so lets fake that here.
+            mp.setRate(1);
             mp.seek(Duration.millis(time));
+            mp.setRate(rate);
+//            System.out.println("AFTER: " + mp.getCurrentTime());
+
+//            mp.setRate(rate);
             lastSeekTime = time;
         }
     }
 
     public void pause() {
+        System.out.println(mp.getCurrentTime());
         mp.pause();
     }
 
@@ -134,40 +149,46 @@ public class JavaFXApplication extends Application {
 
     }
 
-    public void start(Stage primaryStage) {
+    public void start(final Stage primaryStage) {
         stage = primaryStage;
 
         final Media m = new Media(dataFile.toURI().toString());
         mp = new MediaPlayer(m);
-        mv = new MediaView(mp);
+        mp.setOnReady(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("Creating new media view");
+                mv = new MediaView(mp);
 
 
-        final DoubleProperty width = mv.fitWidthProperty();
-        final DoubleProperty height = mv.fitHeightProperty();
+                final DoubleProperty width = mv.fitWidthProperty();
+                final DoubleProperty height = mv.fitHeightProperty();
 
-        width.bind(Bindings.selectDouble(mv.sceneProperty(), "width"));
-        height.bind(Bindings.selectDouble(mv.sceneProperty(), "height"));
-
-
-        mv.setPreserveRatio(true);
-
-        StackPane root = new StackPane();
-        root.getChildren().add(mv);
-
-        final Scene scene = new Scene(root, 960, 540);
-        scene.setFill(Color.BLACK);
-
-        primaryStage.setScene(scene);
-        primaryStage.setTitle(dataFile.getName());
-//        primaryStage.setFullScreen(true);
-        primaryStage.show();
+                width.bind(Bindings.selectDouble(mv.sceneProperty(), "width"));
+                height.bind(Bindings.selectDouble(mv.sceneProperty(), "height"));
 
 
-        System.out.println("Setting init to true");
-        System.out.println(mp.getTotalDuration().toMillis());
+                mv.setPreserveRatio(true);
 
-        init = true;
-        System.out.println(init);
+                StackPane root = new StackPane();
+                root.getChildren().add(mv);
+
+                final Scene scene = new Scene(root, 960, 540);
+                scene.setFill(Color.BLACK);
+
+                primaryStage.setScene(scene);
+                primaryStage.setTitle(dataFile.getName());
+                primaryStage.show();
+
+
+                System.out.println("Setting init to true");
+                System.out.println(mp.getTotalDuration().toMillis());
+
+                init = true;
+                System.out.println(init);
+            }
+        });
+
 
     }
 

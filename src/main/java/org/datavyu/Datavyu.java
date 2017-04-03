@@ -17,12 +17,13 @@ package org.datavyu;
 import ca.beq.util.win32.registry.Win32Exception;
 import ch.randelshofer.quaqua.QuaquaManager;
 import com.sun.jna.NativeLibrary;
-import com.usermetrix.jclient.Logger;
-import com.usermetrix.jclient.UserMetrix;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.controllers.project.ProjectController;
 import org.datavyu.models.db.TitleNotifier;
 import org.datavyu.models.db.UserWarningException;
 import org.datavyu.plugins.PluginManager;
+import org.datavyu.plugins.quicktime.QTDataViewer;
 import org.datavyu.plugins.vlcfx.NativeLibraryManager;
 import org.datavyu.undoableedits.SpreadsheetUndoManager;
 import org.datavyu.util.MacHandler;
@@ -41,8 +42,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.Stack;
 
@@ -53,6 +57,39 @@ public final class Datavyu extends SingleFrameApplication
         implements KeyEventDispatcher, TitleNotifier {
 
     private static final NativeLibraryManager nlm;
+    /**
+     * The desired minimum initial width.
+     */
+    private static final int INITMINX = 600;
+    /**
+     * The desired minimum initial height.
+     */
+    private static final int INITMINY = 700;
+    public static boolean scriptRunning = false;
+    private static boolean osxPressAndHoldEnabled;
+    /**
+     * Constant variable for the Datavyu main panel. This is so we can send
+     * keyboard shortcuts to it while the QTController is in focus. It actually
+     * get initialized in startup().
+     */
+    private static DatavyuView VIEW;
+    /**
+     * The scripting engine manager that we use with Datavyu.
+     */
+    private static ScriptEngineManager m2;
+    /**
+     * The scripting engine factory that we use with Datavyu
+     */
+    private static ScriptEngineFactory sef;
+    /**
+     * The logger for this class.
+     */
+    private static Logger LOGGER = LogManager.getLogger();
+    /**
+     * The view to use for the quick time video controller.
+     */
+    private static DataControllerV dataController;
+    private static ProjectController projectController;
 
     /** Load required native libraries (JNI). */
     static {
@@ -98,17 +135,24 @@ public final class Datavyu extends SingleFrameApplication
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                if (getOSXPressAndHoldValue()) {
+                    osxPressAndHoldEnabled = true;
+                    setOSXPressAndHoldValue(false);
+                }
+
             case WINDOWS:
                 try {
-                    if(false && System.getProperty("sun.arch.data.model").equals("32") && !Datavyu.quicktimeLibrariesFound())
-                    {
+                    if (System.getProperty("sun.arch.data.model").equals("32")) {
                         NativeLoader.LoadNativeLib("QTJNative");
                         NativeLoader.LoadNativeLib("QTJavaNative");
                         System.out.println(System.getProperty("java.library.path"));
                         System.loadLibrary("QTJNative");
                         System.loadLibrary("QTJavaNative");
+
+                        QTDataViewer.librariesFound = true;
                     }
                 } catch (Exception e) {
+                    // for copying style
                     e.printStackTrace();
                 }
 
@@ -119,39 +163,7 @@ public final class Datavyu extends SingleFrameApplication
 //        System.setProperty("jna.library.path", "/Applications/VLC.app/Contents/MacOS/lib/vlc/lib");
 //        System.setProperty("VLC_PLUGIN_PATH", "/Applications/VLC.app/Contents/MacOS/plugins");
     }
-    /**
-     * The desired minimum initial width.
-     */
-    private static final int INITMINX = 600;
-    /**
-     * The desired minimum initial height.
-     */
-    private static final int INITMINY = 700;
 
-    public static boolean scriptRunning = false;
-    /**
-     * Constant variable for the Datavyu main panel. This is so we can send
-     * keyboard shortcuts to it while the QTController is in focus. It actually
-     * get initialized in startup().
-     */
-    private static DatavyuView VIEW;
-    /**
-     * The scripting engine manager that we use with Datavyu.
-     */
-    private static ScriptEngineManager m2;
-    /**
-     * The scripting engine factory that we use with Datavyu
-     */
-    private static ScriptEngineFactory sef;
-    /**
-     * The logger for this class.
-     */
-    private static Logger LOGGER = UserMetrix.getLogger(Datavyu.class);
-    /**
-     * The view to use for the quick time video controller.
-     */
-    private static DataControllerV dataController;
-    private static ProjectController projectController;
     public boolean ready = false;
     /**
      * The scripting engine that we use with Datavyu.
@@ -192,6 +204,8 @@ public final class Datavyu extends SingleFrameApplication
         try {
             Class.forName("quicktime.QTSession");
             ans = true;
+            QTDataViewer.librariesFound = true;
+
         } catch (ClassNotFoundException ce) {
             System.out.println("Class not found: " + ce.getMessage());
         } catch (Exception e) {
@@ -263,6 +277,79 @@ public final class Datavyu extends SingleFrameApplication
         }
 
         return Platform.UNKNOWN;
+    }
+
+    private static boolean getOSXPressAndHoldValue() {
+        Runtime rt = Runtime.getRuntime();
+        String[] commands = {"defaults", "read", "-g ApplePressAndHoldEnabled"};
+        try {
+            Process process =
+                    new ProcessBuilder(new String[]{"bash", "-c", "defaults read -g ApplePressAndHoldEnabled"})
+                            .redirectErrorStream(true)
+                            .directory(new File("./"))
+                            .start();
+
+            ArrayList<String> output = new ArrayList<String>();
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()));
+            String line = null;
+            while ((line = br.readLine()) != null)
+                output.add(line);
+
+            if (output.size() > 0 && output.get(0).equals("0")) {
+                return false;
+            } else {
+//                osxPressAndHoldEnabled = true;
+                return true;
+            }
+
+            //There should really be a timeout here.
+//            if (0 != process.waitFor())
+//                return null;
+
+//            return output;
+
+        } catch (Exception e) {
+            //Warning: doing this is no good in high quality applications.
+            //Instead, present appropriate error messages to the user.
+            //But it's perfectly fine for prototyping.
+
+//            return null;
+        }
+
+        return true;
+    }
+
+    private static void setOSXPressAndHoldValue(boolean bool) {
+        String strVal;
+        if (bool) {
+            strVal = "true";
+        } else {
+            strVal = "false";
+        }
+        try {
+            Process process =
+                    new ProcessBuilder(new String[]{"bash", "-c", "defaults write -g ApplePressAndHoldEnabled -bool " + strVal})
+                            .redirectErrorStream(true)
+                            .directory(new File("./"))
+                            .start();
+
+            ArrayList<String> output = new ArrayList<String>();
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()));
+            String line = null;
+            while ((line = br.readLine()) != null)
+                output.add(line);
+
+        } catch (Exception e) {
+            //Warning: doing this is no good in high quality applications.
+            //Instead, present appropriate error messages to the user.
+            //But it's perfectly fine for prototyping.
+
+//            return null;
+        }
+
+//        return true;
     }
 
     /**
@@ -817,8 +904,12 @@ public final class Datavyu extends SingleFrameApplication
 
                         }
 
+                        // Get name of spreadsheet.  Check in both project and datastore.
+                        String projName = sp.getProjectController().getProjectName();
+                        if(projName==null) projName = sp.getDatastore().getName();
+
                         int selection = JOptionPane.showOptionDialog(mainFrame,
-                                rMap.getString("UnsavedDialog.message"),
+                                rMap.getString("UnsavedDialog.message",projName),
                                 rMap.getString("UnsavedDialog.title"),
                                 JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                                 null, options, yes);
@@ -883,8 +974,12 @@ public final class Datavyu extends SingleFrameApplication
 
             }
 
+            // Get project name.
+            String projName = sp.getProjectController().getProjectName();
+            if(projName==null) projName = sp.getDatastore().getName();
+            
             int selection = JOptionPane.showOptionDialog(mainFrame,
-                    rMap.getString("UnsavedDialog.tabmessage"),
+                    rMap.getString("UnsavedDialog.tabmessage", projName),
                     rMap.getString("UnsavedDialog.title"),
                     JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                     null, options, yes);
@@ -908,8 +1003,9 @@ public final class Datavyu extends SingleFrameApplication
      */
     @Override
     protected void end() {
+
+
         Datavyu.getApplication().getMainFrame().setVisible(false);
-        UserMetrix.shutdown();
         shutdown();
         super.end();
     }
@@ -984,35 +1080,23 @@ public final class Datavyu extends SingleFrameApplication
 
         windows = new Stack<Window>();
 
-        // Initalise the logger (UserMetrix).
+        // Initalise the logger (LogManager).
         LocalStorage ls = Datavyu.getApplication().getContext()
                 .getLocalStorage();
         ResourceMap rMap = Application.getInstance(Datavyu.class).getContext()
                 .getResourceMap(Datavyu.class);
 
-        com.usermetrix.jclient.Configuration config =
-                new com.usermetrix.jclient.Configuration(2);
-        config.setTmpDirectory(ls.getDirectory().toString() + File.separator);
-        config.addMetaData("build",
-                rMap.getString("Application.version") + ":"
-                        + rMap.getString("Application.build"));
-        UserMetrix.initalise(config);
-        LOGGER = UserMetrix.getLogger(Datavyu.class);
+        LOGGER = LogManager.getLogger();
 
         // If the user hasn't specified, we don't send error logs.
-        if (Configuration.getInstance().getCanSendLogs() == null) {
-            UserMetrix.setCanSendLogs(false);
-        } else {
-            UserMetrix.setCanSendLogs(Configuration.getInstance()
-                    .getCanSendLogs());
-        }
+        Configuration.getInstance().setCanSendLogs(false);
 
         // Init scripting engine
+        System.setProperty("org.jruby.embed.localvariable.behavior", "transient");
         m2 = new ScriptEngineManager();
 
         // Init ruby factory
         sef = m2.getEngineByName("jruby").getFactory();
-
         // Initialize plugin manager
         PluginManager.getInstance();
 
@@ -1038,10 +1122,10 @@ public final class Datavyu extends SingleFrameApplication
 
         // Now that datavyu is up - we may need to ask the user if can send
         // gather logs.
-        if (Configuration.getInstance().getCanSendLogs() == null) {
-            LOGGER.event("show usermetrix dialog");
-            show(new UserMetrixV(VIEW.getFrame(), true));
-        }
+//        if (Configuration.getInstance().getCanSendLogs() == null) {
+//            LOGGER.info("show usermetrix dialog");
+//            show(new LogManagerV(VIEW.getFrame(), true));
+//        }
 
         // BugzID:435 - Correct size if a small size is detected.
         int width = (int) getMainFrame().getSize().getWidth();
@@ -1092,6 +1176,10 @@ public final class Datavyu extends SingleFrameApplication
      */
     @Override
     public void shutdown() {
+        if (getPlatform() == Platform.MAC && osxPressAndHoldEnabled) {
+            setOSXPressAndHoldValue(true);
+        }
+
         NativeLoader.cleanAllTmpFiles();
         nlm.purge();
         super.shutdown();

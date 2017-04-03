@@ -8,8 +8,7 @@ import org.datavyu.Build;
 import org.datavyu.Configuration;
 import org.datavyu.Datavyu;
 import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
-
+import org.datavyu.util.LocalVersion;
 import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,19 +32,6 @@ public class UpdateV extends javax.swing.JDialog {
     private ServerVersion m_server;
     private LocalVersion m_local;
 
-    /* Private class for handling the local version number */
-    private class LocalVersion {
-        public String version = "";
-        public String build = "";
-
-        public LocalVersion() {
-            ResourceMap bMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Build.class);
-            ResourceMap rMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
-            version = rMap.getString("Application.version");
-            build = bMap.getString("Application.build");
-        }
-    }
-
     /* Private class for handling the server version number */
     private class ServerVersion {
         public String version = "";
@@ -57,6 +43,14 @@ public class UpdateV extends javax.swing.JDialog {
                 url = new URL(version_file);
 
                 URLConnection conn = url.openConnection();
+
+                /* Bug 320: Add OS information to user-agent */
+                String ua = Application.getInstance(Datavyu.class).getContext().getResourceMap(Build.class).getString("Application.version")
+                        + "\t" +System.getProperty("java.version")
+                        + "\t" + System.getProperty("os.name")
+                        + "\t" + System.getProperty("os.version");
+                conn.setRequestProperty("User-Agent", ua);
+
                 BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
                 version = br.readLine();

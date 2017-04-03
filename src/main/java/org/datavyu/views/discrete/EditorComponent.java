@@ -14,8 +14,8 @@
  */
 package org.datavyu.views.discrete;
 
-import com.usermetrix.jclient.Logger;
-import com.usermetrix.jclient.UserMetrix;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.Configuration;
 
 import javax.swing.text.JTextComponent;
@@ -34,7 +34,7 @@ public abstract class EditorComponent implements ClipboardOwner {
     /**
      * The logger for this class.
      */
-    private static Logger LOGGER = UserMetrix.getLogger(EditorComponent.class);
+    private static Logger LOGGER = LogManager.getLogger(EditorComponent.class);
     /**
      * JTextComponent containing this EditorComponent.
      */
@@ -137,6 +137,9 @@ public abstract class EditorComponent implements ClipboardOwner {
      * @param fe The FocusEvent that triggered this action.
      */
     public void focusLost(final FocusEvent fe) {
+        if (parentComp != null) {
+            parentComp.select(0, 0);
+        }
     }
 
     /**

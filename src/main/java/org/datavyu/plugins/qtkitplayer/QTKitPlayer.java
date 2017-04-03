@@ -58,11 +58,7 @@ public class QTKitPlayer extends Canvas {
 
     static {
         // Standard JNI: load the native library
-        try {
-            NativeLoader.LoadNativeLib("QTKitCanvas");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
 //        System.loadLibrary("QTKitCanvas");
 
 //        System.load("/Users/jesse/Library/Developer/Xcode/DerivedData/JAWTExample-cdhbmpdibiannlgigweelsyjyces/Build/Products/Debug/libQTKitCanvas.jnilib");
@@ -74,6 +70,11 @@ public class QTKitPlayer extends Canvas {
 
     public QTKitPlayer(File fileToLoad) {
         super();
+        try {
+            NativeLoader.LoadNativeLib("QTKitCanvas");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         this.id = QTKitPlayer.playerCount;
         QTKitPlayer.playerCount += 1;
         this.fileToLoad = fileToLoad;
@@ -85,6 +86,7 @@ public class QTKitPlayer extends Canvas {
         try {
             addNativeCoreAnimationLayer("file://" + fileToLoad.toURI().getPath());
         } catch (Exception e) {
+            System.out.println("ERROR CAUGHT");
             e.printStackTrace();
         }
     }

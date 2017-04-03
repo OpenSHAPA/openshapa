@@ -26,6 +26,7 @@ package org.datavyu.models.db;
 import org.datavyu.Datavyu;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Maps a variable object to a datastore.
@@ -36,7 +37,8 @@ public final class DatavyuVariable implements Variable {
             new HashMap<UUID, List<VariableListener>>();
     private static CellComparator CellComparator = new CellComparator();
     final private UUID variableId = UUID.randomUUID();
-    private List<Cell> cells = new ArrayList<Cell>();
+    //    private List<Cell> cells = new ArrayList<Cell>();
+    private List<Cell> cells = new CopyOnWriteArrayList<>();
     private Argument rootNodeArgument = null;
     private Boolean selected;
     private Boolean highlighted;
@@ -274,6 +276,7 @@ public final class DatavyuVariable implements Variable {
         }
 
         this.setRootNode(arg);
+        owningDatastore.markDBAsChanged();
         return arg.childArguments.get(arg.childArguments.size() - 1);
     }
 
@@ -294,6 +297,7 @@ public final class DatavyuVariable implements Variable {
         for (Cell cell : getCells()) {
             cell.moveMatrixValue(old_index, new_index);
         }
+        owningDatastore.markDBAsChanged();
         this.setRootNode(arg);
     }
 
@@ -301,6 +305,7 @@ public final class DatavyuVariable implements Variable {
     public void moveArgument(final String name, final int new_index) {
         int old_index = getArgumentIndex(name);
         moveArgument(old_index, new_index);
+        owningDatastore.markDBAsChanged();
     }
 
     @Override
@@ -314,6 +319,7 @@ public final class DatavyuVariable implements Variable {
             cell.removeMatrixValue(arg_index);
         }
 
+        owningDatastore.markDBAsChanged();
         this.setRootNode(arg);
     }
 
@@ -346,6 +352,7 @@ public final class DatavyuVariable implements Variable {
     @Override
     public void setOrderIndex(final int newIndex) {
         orderIndex = newIndex;
+        owningDatastore.markDBAsChanged();
     }
 
     //would like to change the above calls to DatavyuDatastore.markDBAsChanged to this,

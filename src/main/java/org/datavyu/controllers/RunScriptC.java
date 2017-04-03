@@ -14,8 +14,8 @@
  */
 package org.datavyu.controllers;
 
-import com.usermetrix.jclient.Logger;
-import com.usermetrix.jclient.UserMetrix;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.RecentFiles;
 import org.datavyu.models.db.*;
@@ -29,6 +29,7 @@ import rcaller.RCode;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+import javax.script.SimpleScriptContext;
 import javax.swing.*;
 import java.io.*;
 import java.util.*;
@@ -46,7 +47,7 @@ public final class RunScriptC extends SwingWorker<Object, String> {
     /**
      * The logger for this class.
      */
-    private static Logger LOGGER = UserMetrix.getLogger(RunScriptC.class);
+    private static Logger LOGGER = LogManager.getLogger(RunScriptC.class);
     /**
      * The path to the script file we are executing.
      */
@@ -134,7 +135,7 @@ public final class RunScriptC extends SwingWorker<Object, String> {
 
     @Override
     protected Object doInBackground() {
-        LOGGER.event("run script");
+        LOGGER.info("run script");
 
         ReaderThread t = new ReaderThread();
         t.start();
@@ -166,6 +167,8 @@ public final class RunScriptC extends SwingWorker<Object, String> {
         Datavyu.scriptRunning = true;
         outString = new StringBuilder("");
         ScriptEngine rubyEngine = Datavyu.getScriptingEngine();
+        ScriptContext rubyContext = new SimpleScriptContext();
+//        rubyContext.setAttribute("db", Datavyu.getProjectController().getDB(), ScriptContext.ENGINE_SCOPE);
 
         try {
             try {
@@ -176,10 +179,13 @@ public final class RunScriptC extends SwingWorker<Object, String> {
                 consoleWriter.flush();
 
                 // Place reference to various Datavyu functionality.
-                rubyEngine.put("db", Datavyu.getProjectController().getDB());
-                rubyEngine.put("pj", Datavyu.getProjectController().getProject());
-                rubyEngine.put("mixer", Datavyu.getDataController().getMixerController());
-                rubyEngine.put("viewers", Datavyu.getDataController());
+                System.out.println(Datavyu.getProjectController().getDB());
+//                rubyEngine.put("db", Datavyu.getProjectController().getDB());
+//                rubyEngine.put("pj_handle", Datavyu.getProjectController().getProject());
+//                rubyEngine.put("mixer_handle", Datavyu.getDataController().getMixerController());
+//                rubyEngine.put("viewers_handle", Datavyu.getDataController());
+//                rubyEngine.getContext().setAttribute("db_handle", Datavyu.getProjectController().getDB(),
+//                        ScriptContext.ENGINE_SCOPE);
                 String path = System.getProperty("user.dir") + File.separator;
                 
                 rubyEngine.put("path", path);
@@ -189,20 +195,24 @@ public final class RunScriptC extends SwingWorker<Object, String> {
                         fileReaderIntoStringReader(scriptReader));
                 //System.out.println(wholeScript);
 
+                rubyEngine.setContext(rubyContext);
                 rubyEngine.getContext().setWriter(consoleWriter);
                 rubyEngine.getContext().setErrorWriter(consoleWriter);
-                rubyEngine.getContext().setAttribute(AttributeName.TERMINATION.toString(), new Boolean(true),
+                rubyEngine.getContext().setAttribute(AttributeName.TERMINATION.toString(), true,
+                        ScriptContext.ENGINE_SCOPE);
+                rubyEngine.getContext().setAttribute(AttributeName.CLEAR_VARAIBLES.toString(), true,
                         ScriptContext.ENGINE_SCOPE);
                 try{
+                    rubyEngine.eval("load 'Datavyu_API.rb'\n");
                     rubyEngine.eval(lineReader);
                     //System.out.println("SCRIPT OVER");
                     consoleWriter.close();
                     
                     // Remove references.
-                    //rubyEngine.put("db", null);
-                    //rubyEngine.put("pj", null);
-                    //rubyEngine.put("mixer", null);
-                    //rubyEngine.put("viewers", null);
+//                    rubyEngine.put("db", null);
+//                    rubyEngine.put("pj", null);
+//                    rubyEngine.put("mixer", null);
+//                    rubyEngine.put("viewers", null);
 
                     consoleWriterAfter.write("\nScript has finished running.");
                     consoleWriterAfter.flush();
@@ -239,8 +249,9 @@ public final class RunScriptC extends SwingWorker<Object, String> {
         } catch (IOException ioe) {
             System.out.println("IOEXCEPTION!!!! " + ioe.getMessage());
             ioe.printStackTrace();
+        } finally{
+            Datavyu.scriptRunning = false;
         }
-        Datavyu.scriptRunning = false;
         Datavyu.getView().getSpreadsheetPanel().redrawCells();
     }
     
