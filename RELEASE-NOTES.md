@@ -49,10 +49,9 @@ AVFoundation player to ensure that playback still works (pre-10.6).
 * Renamed functions for internal consistency and to follow Ruby Style Guide.
     * snake-case; e.g. new_column() instead of newColumn()
     * Previous names should work as well. If they do not please report them
-on the support forum (datavyu.org/support) or e-mail info@datavyu.org
+on the [support forum](http://datavyu.org/support) or e-mail info@datavyu.org
 
-See the reference page for more information (
-http://datavyu.com/user-guide/api/reference.html)
+See the [reference page for more information](http://datavyu.com/user-guide/api/reference.html)
 
 ### Bug fixes:
   * create_mutually_exclusive prints a single line of output to scripting
