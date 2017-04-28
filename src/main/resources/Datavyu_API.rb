@@ -1093,6 +1093,7 @@ alias :createNewColumn :new_column
 alias :createVariable :new_column
 alias :createNewVariable :new_column
 alias :create_column :new_column
+alias :createColumn :new_column
 
 
 # Makes a duration based reliability column
@@ -1178,18 +1179,6 @@ alias :add_args_to_var :add_codes_to_column
 alias :addCodesToColumn :add_codes_to_column
 alias :addArgsToVar :add_codes_to_column
 
-# Combine cells of different columns into a new column.
-# Iteratively runs #create_mutually_exclusive on additional columns.
-# @note Not thoroughly tested.
-# @todo verify this works
-def combine_columns(name, varnames)
-  stationary_var = varnames[0]
-  for i in 1...varnames.length
-    next_var = varnames[i]
-    var = create_mutually_exclusive(name, stationary_var, next_var)
-  end
-  return var
-end
 
 # @!visibility private
 # Helper method for #create_mutually_exclusive
@@ -1516,6 +1505,94 @@ def fillMutexCell(v1cell, v2cell, cell, mutex, var1_argprefix, var2_argprefix)
       end
     end
   end
+end
+
+# Combine cells of different columns into a new column.
+# Iteratively runs #create_mutually_exclusive on additional columns.
+# @note Not thoroughly tested. Only merges first and last columns.
+# @todo verify this works
+def combine_columns(name, varnames)
+  stationary_var = varnames[0]
+  for i in 1...varnames.length
+    next_var = varnames[i]
+    var = create_mutually_exclusive(name, stationary_var, next_var)
+  end
+  return var
+end
+
+# Combine cells of different columns into a new column.
+# Intended to mimic functionality of create_mutually_exclusive() and combine_columns
+# but not guaranteed to produce equivalent results.
+# @param name [String] name of result column
+# @return [RColumn] merged column
+def merge_columns(name, *cols)
+  # Handle degenerate cases
+  return nil if cols.nil? || cols.size == 0
+
+  # Ensure cols contains RColumns
+  cols.map! do |x|
+    case x
+    when String
+      get_column(x)
+    when RColumn
+      x
+    else
+      raise "Unhandled column value or class: #{x}, #{x.class}."
+    end
+  end
+
+  # Do nothing if only one column given.
+  return cols.first if cols.size == 1
+
+	# Concatenate arglists and cells.
+  # Codes have their column name and an underscore prepended to them.
+	my_args = []
+	all_cells = []
+	cols.each{
+		|x|
+		my_args << x.name.downcase+"_ordinal"
+		my_args << x.arglist.map{ |y| x.name.downcase+"_"+y}
+		all_cells << x.cells
+	}
+	my_args.flatten!
+	all_cells.flatten!
+
+	ncol = new_column(name, *my_args)
+
+  # Convert point cells to have offsets = onset + 1
+  all_cells.each{ |x| x.offset = x.onset + 1 if x.onset == x.offset }
+
+	# Gather onsets and offsets and collect unique times into a single array
+	onsets = all_cells.map(&:onset)
+	offsets = all_cells.map(&:offset)
+	times = (onsets+offsets).uniq.sort
+
+	# For each consecutive time in times, create a new cell over that interval.
+	if times.size>0
+		onset = times.first
+		for offset in times[1..-1]
+			ncell = ncol.make_new_cell()
+			ncell.onset = onset
+			ncell.offset = offset
+
+      # Find an enclosing cell (if any) from each of the columns for this time region
+			ocells = cols.map do |col|
+				col.cells.find{ |y| y.contains(ncell) }
+			end
+
+			for c in ocells
+				unless c.nil?
+					ncell.change_arg(c.parent.downcase+"_ordinal", c.ordinal)
+					c.arglist.each do |a|
+						ncell.change_arg(c.parent.downcase+"_"+a, c.get_code(a))
+					end
+				end
+			end
+			onset = offset
+		end
+	end
+
+	return ncol
 end
 
 # Loads a new database from a file.
@@ -2441,12 +2518,12 @@ end
 # @param [Array<String>] names of columns to hide
 def hide_columns(*names)
   valid_names = names & get_column_list
-  valid_names.each{ |x| $db.getVariable(name).setHidden(true)}
+  valid_names.each{ |x| $db.getVariable(x).setHidden(true)}
 end
 
 # Show the given columns in the spreadsheet
 # @param [Array<String>] names of columns to show
 def show_columns(*names)
   valid_names = names & get_column_list
-  valid_names.each{ |x| $db.getVariable(name).setHidden(false) }
+  valid_names.each{ |x| $db.getVariable(x).setHidden(false) }
 end
