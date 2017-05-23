@@ -196,8 +196,9 @@ public final class ViewerSetting {
      *                     stream.
      */
     public void writeSettings(final OutputStream os) throws IOException {
-        assert (os != null && settingsOutput != null);
-        settingsOutput.writeTo(os);
+        assert os != null;
+
+        if(settingsOutput != null) settingsOutput.writeTo(os);
     }
 
     /**
