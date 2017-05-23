@@ -588,13 +588,7 @@ public final class SpreadsheetColumn extends JLabel
     public void mousePressed(final MouseEvent me) {
         if(moveable && !draggable) {
             System.out.println("Pressed X: " + me.getX());
-
-            if(System.getProperty("os.name").startsWith("Mac OS X")){
-                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            }
-            else{
-                setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-            }
+            setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
         }
     }
 
@@ -723,11 +717,12 @@ public final class SpreadsheetColumn extends JLabel
     public void mouseMoved(final MouseEvent me) {
         final int xCoord = me.getX();
         final int componentWidth = this.getSize().width;
+        final int RESIZE_BOUNDARY_SIZE = Math.max(10, (int)(componentWidth * 0.10));
 //        final int rangeStart = Math.round(componentWidth / 4F);
 //        final int rangeEnd = Math.round(3F * componentWidth / 4F);
 
         // BugzID:660 - Implements columns dragging.
-        if ((componentWidth - xCoord) < 6) {
+        if ((componentWidth - xCoord) < RESIZE_BOUNDARY_SIZE) {
             setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
             draggable = true;
 
