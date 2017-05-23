@@ -55,7 +55,7 @@ public final class SpreadsheetColumn extends JLabel
     /**
      * Default column height.
      */
-    public static final int DEFAULT_HEADER_HEIGHT = 16;
+    public static final int DEFAULT_HEADER_HEIGHT = 25;
 
     /**
      * The logger for this class.
