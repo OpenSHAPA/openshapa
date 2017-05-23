@@ -599,24 +599,29 @@ public final class OpenDatabaseFileC {
                     new PopulateNominal());
 
         } else if (variableType == Argument.Type.MATRIX) {
+            if(tokens.length > 1) {
+                // Read matrix variable - Build vocab for matrix.
+                String[] vocabString = tokens[1].split("(?<!\\\\)-");
 
-            // Read matrix variable - Build vocab for matrix.
-            String[] vocabString = tokens[1].split("(?<!\\\\)-");
+                // Get the vocab element for the matrix and clean it up to be
+                // populated with arguments from the CSV file.
+                Argument newArg = newVar.getRootNode();
+                newArg.clearChildArguments();
 
-            // Get the vocab element for the matrix and clean it up to be
-            // populated with arguments from the CSV file.
-            Argument newArg = newVar.getRootNode();
-            newArg.clearChildArguments();
+                if(vocabString.length > 1) {
+                    // For each of the formal arguments in the file - parse it and
+                    // create a formal argument in the matrix vocab element.
+                    for (String arg : vocabString[1].split(",")) {
+                        newArg.childArguments.add(parseFormalArgument(arg));
+                    }
+                }
+                else{
+                    System.out.println("Can not parse codes from: " + tokens[1]);
+                }
+                newVar.setRootNode(newArg);
 
-            // For each of the formal arguments in the file - parse it and
-            // create a formal argument in the matrix vocab element.
-            for (String arg : vocabString[1].split(",")) {
-                newArg.childArguments.add(parseFormalArgument(arg));
+                return parseMatrixVariable(csvFile, newVar, newArg);
             }
-            newVar.setRootNode(newArg);
-
-            return parseMatrixVariable(csvFile, newVar, newArg);
-
         }
         throw new IllegalStateException("Unknown variable type.");
     }
