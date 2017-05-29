@@ -86,7 +86,7 @@ public final class VocabElementRootView extends JTextArea {
     /**
      * Sets the argument that this VocabElementRootView will represent.
      *
-     * @param ve The new vocab element that his root view will represent.
+     * @param var The new vocab element that his root view will represent.
      * @param pv The parent view for this root view.
      */
     public void setVocabElement(final Variable var, VocabElementV pv) {
