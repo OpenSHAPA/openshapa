@@ -54,7 +54,7 @@ public final class FormalArgEditor extends EditorComponent {
 
     /**
      * @param ta    The JTextComponent that this virtual editor floats ontop.
-     * @param pa    The parent that this argument belongs too.
+     * @param var    The parent that this argument belongs too.
      * @param index The index of the argument within the parent vocabelement
      *              that this Editor will represent.
      * @param pv    The parent vocab element view that this editor belongs too.
