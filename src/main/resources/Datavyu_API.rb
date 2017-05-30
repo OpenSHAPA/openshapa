@@ -1657,6 +1657,8 @@ alias :loadDB :load_db
 def save_db(filename)
   print_debug "Saving Database: " + filename
 
+  filename = File.expand_path(filename)
+  
   # Create the controller that holds all the logic for opening projects and
   # databases.
   save_c = SaveC.new
@@ -1669,12 +1671,12 @@ def save_db(filename)
   if filename.include?('.csv')
     save_c.save_database(filename, $db)
   else
-    #if $pj == nil or $pj.getDatabaseFileName == nil
-    $pj = Project.new()
-    $pj.setDatabaseFileName("db")
-    dbname = filename[filename.rindex("/")+1..filename.length]
-    $pj.setProjectName(dbname)
-    #end
+    if $pj == nil or $pj.getDatabaseFileName == nil
+      $pj = Project.new()
+      $pj.setDatabaseFileName("db")
+      dbname = filename[filename.rindex("/")+1..filename.length]
+      $pj.setProjectName(dbname)
+    end
     save_file = java.io.File.new(filename)
     save_c.save_project(save_file, $pj, $db)
   end
