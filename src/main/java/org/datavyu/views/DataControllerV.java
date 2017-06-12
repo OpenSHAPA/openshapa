@@ -673,10 +673,11 @@ public final class DataControllerV extends DatavyuDialog
             final long windowPlayEnd = playbackModel.getWindowPlayEnd();
 
             if ((time >= windowPlayEnd) && (clock.getRate() >= 0)) {
-                setCurrentTime(windowPlayEnd);
                 clock.stop();
+                setCurrentTime(windowPlayEnd);
 //                clock.setTime(windowPlayEnd);
                 clockStop(windowPlayEnd);
+                clock.setTime(windowPlayEnd);
 
                 return;
             }
