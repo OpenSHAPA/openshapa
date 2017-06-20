@@ -1660,7 +1660,7 @@ def save_db(filename)
   print_debug "Saving Database: " + filename
 
   filename = File.expand_path(filename)
-  
+
   # Create the controller that holds all the logic for opening projects and
   # databases.
   save_c = SaveC.new
@@ -1903,6 +1903,177 @@ def load_macshapa_db(filename, write_to_gui, *ignore_vars)
 end
 alias :loadMacshapaDB :load_macshapa_db
 
+# Updated function. Keeping original as is in case edits break previously working imports.
+def load_macshapa_db2(filename, write_to_gui, *ignore_vars)
+  # Create a new DB for us to use so we don't touch the GUI... some of these
+  # files can be huge.
+  # Since I don't know how to make a whole new project, lets just load a blank file.
+  if not write_to_gui
+    #$db,$pj = load_db("/Users/j4lingeman/Desktop/blank.opf")
+    # $db = Datastore.new
+    # $pj = Project.new()
+  end
+
+
+  puts "Opening file"
+  f = File.open(filename, 'r')
+
+  puts "Opened file"
+  # Read and split file by lines.  '\r' is used because that is the default
+  # format for OS9 files.
+  lines = ""
+  while (line = f.gets)
+    lines += line
+  end
+  lines = lines.split(/[\r\n]/)
+
+  # Find the variable names in the file and use these to create and set up
+  # our columns.
+  predIndex = lines.index("***Predicates***")
+  varIndex = lines.index("***Variables***")
+  spreadIndex = lines.index("***SpreadPane***")
+  predIndex += 2
+
+  variables = Hash.new
+  varIdent = Array.new
+
+  while predIndex < varIndex
+    line = lines[predIndex].strip
+    parser = /(?<d1>\d+)\s*(?<d2>\d+)\s*(?<d3>\d+)\s*(?<vardata>(?<varname>.*)\((?<codes>.*)\))/
+    matches = parser.match(line)
+    # l = lines[predIndex].split(/ /)[5]
+    # varname = l[0..l.index("(") - 1]
+    varname = matches['varname']
+    if varname != "###QueryVar###" and varname != "div" and varname != "qnotes" \
+			and not ignore_vars.include?(varname)
+      print_debug varname
+
+      # Replace non-alphabet with underscores
+      vname2 = varname.gsub(/\W+/, '_')
+      if vname2 != varname
+        puts "Replacing #{varname} with #{vname2}"
+        varname = vname2
+      end
+
+      variables[varname] = matches['codes'].split(/,/)
+      varIdent << matches['vardata']
+    end
+    predIndex += 1
+  end
+
+  puts "Got predicate index"
+
+  # Create the columns for the variables
+  variables.each do |key, value|
+    puts "Creating column: #{key}"
+    # Create column
+    args = Array.new
+    value.each { |v|
+      # Strip out the ordinal, onset, and offset.  These will be handled on a
+      # cell by cell basis.
+      if v != "<ord>" and v != "<onset>" and v != "<offset>"
+        args << v.sub("<", "").sub(">", "")
+      end
+    }
+
+    set_column(new_column(key, args))
+  end
+
+  # Search for where in the file the var's cells are, create them, then move
+  # on to the next variable.
+  varSection = lines[varIndex..spreadIndex]
+
+  varIdent.each do |id|
+
+    # Search the variable section for the above id
+    varSection.each do |l|
+      line = l.split(/[\t\s]/)
+      if line[2] == id
+
+        print_debug id
+        colname = id.slice(0, id.index("(")).gsub(/\W+/,'_')
+        col = getVariable(colname)
+        #print_debug varname
+        start = varSection.index(l) + 1
+
+        stringCol = false
+
+        if varSection[start - 2].index("strID") != nil
+          stringCol = true
+        end
+
+        #Found it!  Now build the cells
+        while varSection[start] != "0"
+
+          if stringCol == false
+            cellData = varSection[start].split(/[\t]/)
+            cellData[cellData.length - 1] = cellData[cellData.length-1][cellData[cellData.length-1].index("(")..cellData[cellData.length-1].length]
+          else
+            cellData = varSection[start].split(/[\t]/)
+          end
+
+          # Init cell to null
+
+          cell = col.create_cell
+
+          # Convert onset/offset from 60 ticks/sec to milliseconds
+          onset = cellData[0].to_i / 60.0 * 1000
+          offset = cellData[1].to_i / 60.0 * 1000
+
+          # Set onset/offset of cell
+          cell.change_arg("onset", onset.round)
+          cell.change_arg("offset", offset.round)
+
+          # Split up cell data
+          data = cellData[cellData.length - 1]
+          print_debug data
+          if stringCol == false
+            data = data[1..data.length-2]
+            data = data.gsub(/[() ]*/, "")
+            data = data.split(/,/)
+          elsif data != nil #Then this is a string var
+            data = data.strip()
+            if data.split(" ").length > 1
+              data = data[data.index(" ")..data.length] # Remove the char count
+              data = data.gsub("/", " or ")
+              data = data.gsub(/[^\w ]*/, "")
+              data = data.gsub(/  /, " ")
+            else
+              data = ""
+            end
+          else
+            data = Array.new
+            data << nil
+          end
+          # Cycle thru cell data arguments and fill them into the cell matrix
+          narg = 0
+          if data.is_a?(String)
+            argname = cell.arglist.last
+            cell.change_arg(argname, data)
+          elsif data.is_a?(Array)
+            data.each_with_index do |d, i|
+              print_debug cell.arglist[1]
+              argname = cell.arglist[i]
+              if d == nil
+                cell.change_arg(argname, "")
+              elsif d == "" or d.index("<") != nil
+                cell.change_arg(argname, "")
+              else
+                cell.change_arg(argname, d)
+              end
+            end
+          end
+          start += 1
+        end
+        setVariable(col)
+      end
+    end
+  end
+
+  f.close()
+
+  return $db, $pj
+end
 
 # Transfers columns between databases.
 # If db1 or db2 are set to the empty string "", then that database is the current database in $db (usually the GUI's database).
