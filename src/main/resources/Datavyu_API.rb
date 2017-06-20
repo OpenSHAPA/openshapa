@@ -339,7 +339,9 @@ class RColumn
   # @return [String] validated code name
   # @since 1.3.5
   def self.sanitize_codename(name)
-    return name.gsub(/(\W)+/, "").gsub(/^\d{1}/, '_').downcase
+    sanitized = name.gsub(/(\W)+/, "").downcase
+    sanitized.gsub(/(^\d{1})/, '_\\1')
+    return sanitized
   end
 
   def convert_argname(arg)
