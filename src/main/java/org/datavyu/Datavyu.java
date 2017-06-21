@@ -1165,7 +1165,7 @@ public final class Datavyu extends SingleFrameApplication
     protected void ready() {
 
         ready = true;
-        if (commandLineFile != null) {
+        if (!(commandLineFile == null || commandLineFile.equals("clean"))) {
             getView().openExternalFile(new File(commandLineFile));
             commandLineFile = null;
         }
