@@ -27,9 +27,9 @@ import static junit.framework.Assert.assertTrue;
 public class TextValueTest {
 
     /**
-     * The parent Datastore for the TextValue we are testing.
+     * The parent DataStore for the TextValue we are testing.
      */
-    private Datastore ds;
+    private DataStore ds;
 
     /**
      * The parent variable for the TextValue we are testing.
@@ -48,7 +48,7 @@ public class TextValueTest {
 
     @BeforeMethod
     public void setUp() throws UserWarningException {
-        ds = DatastoreFactory.newDatastore();
+        ds = DataStoreFactory.newDataStore();
         var = ds.createVariable("test", Argument.Type.TEXT);
         cell = var.createCell();
         model = cell.getValue();

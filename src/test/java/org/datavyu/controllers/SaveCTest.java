@@ -50,7 +50,7 @@ public class SaveCTest {
         }
         File demoFile = new File(TEST_FOLDER + "IO/simple1.csv");
 
-        Datastore ds = DatastoreFactory.newDatastore();
+        DataStore ds = DataStoreFactory.newDataStore();
         Variable var = ds.createVariable("TestColumn", Argument.Type.TEXT);
         Cell c = var.createCell();
         c.setOnset("00:01:00:000");
@@ -75,7 +75,7 @@ public class SaveCTest {
         p.setProjectName("simple2");
         p.setDatabaseFileName("simple1.csv");
         p.setOriginalProjectDirectory("Z:\\datavyu\\src\\test\\resources\\IO");
-        Datastore ds = DatastoreFactory.newDatastore();
+        DataStore ds = DataStoreFactory.newDataStore();
         Variable var = ds.createVariable("TestColumn", Argument.Type.TEXT);
         Cell c = var.createCell();
         c.setOnset("00:01:00:000");
@@ -99,7 +99,7 @@ public class SaveCTest {
         p.setProjectName("simple3");
         p.setOriginalProjectDirectory("Z:\\datavyu\\src\\test\\resources\\IO");
 
-        Datastore ds = DatastoreFactory.newDatastore();
+        DataStore ds = DataStoreFactory.newDataStore();
         Variable var = ds.createVariable("testColumn", Argument.Type.TEXT);
         Cell c = var.createCell();
         c.getValue().set("cellA");

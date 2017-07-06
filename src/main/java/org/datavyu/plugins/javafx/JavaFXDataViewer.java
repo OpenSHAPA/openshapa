@@ -3,7 +3,7 @@ package org.datavyu.plugins.javafx;
 import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
 import javafx.stage.Stage;
-import org.datavyu.models.db.Datastore;
+import org.datavyu.models.db.DataStore;
 import org.datavyu.plugins.CustomActions;
 import org.datavyu.plugins.CustomActionsAdapter;
 import org.datavyu.plugins.ViewerStateListener;
@@ -328,7 +328,7 @@ public class JavaFXDataViewer extends BaseQuickTimeDataViewer {
     }
 
     @Override
-    public void setDatastore(final Datastore sDB) {
+    public void setDatastore(final DataStore sDB) {
         // TODO Auto-generated method stub
     }
 

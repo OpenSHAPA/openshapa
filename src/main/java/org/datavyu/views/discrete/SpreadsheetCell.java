@@ -20,7 +20,7 @@ import org.datavyu.Configuration;
 import org.datavyu.Datavyu;
 import org.datavyu.models.db.Cell;
 import org.datavyu.models.db.CellListener;
-import org.datavyu.models.db.Datastore;
+import org.datavyu.models.db.DataStore;
 import org.datavyu.models.db.Value;
 import org.datavyu.util.ClockTimer;
 import org.datavyu.views.discrete.datavalues.MatrixRootView;
@@ -158,7 +158,7 @@ public class SpreadsheetCell extends JPanel
 
     private SpreadsheetColumn parentColumn = null;
 
-    public SpreadsheetCell(final Datastore cellDB,
+    public SpreadsheetCell(final DataStore cellDB,
                            final Cell cell,
                            final CellSelectionListener listener) {
 

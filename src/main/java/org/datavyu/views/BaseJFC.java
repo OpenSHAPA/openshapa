@@ -23,27 +23,6 @@ import java.util.List;
 public abstract class BaseJFC extends PluginChooser {
     protected JComboBox pluginsBox;
     protected List<PluginCallback> plugins = Lists.newArrayList();
-    
-/* BugzID:2395 allow plugins to open any file type
-    public void approveSelection() {
-        File selected = getSelectedFile();
-
-        boolean approved = false;
-
-        for (Filter filter : getSelectedPlugin().getFilters()) {
-
-            if (filter.getFileFilter().accept(selected)) {
-                approved = true;
-                super.approveSelection();
-            }
-        }
-
-        if (!approved) {
-            JOptionPane.showMessageDialog(this, "Select a different plugin.",
-                "Unsupported File", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-*/
 
     @Override
     public void addPlugin(final Plugin plugin) {

@@ -45,7 +45,7 @@ public final class DatavyuVariable implements Variable {
     private Boolean hidden;
     private String name;
     private int orderIndex = -1;
-    private DatavyuDatastore owningDatastore;
+    private DatavyuDataStore owningDatastore;
 
     /**
      * Default constructor.
@@ -74,7 +74,7 @@ public final class DatavyuVariable implements Variable {
     public DatavyuVariable(String name,
                            Argument type,
                            boolean grandfathered,
-                           DatavyuDatastore dds) throws UserWarningException {
+                           DatavyuDataStore dds) throws UserWarningException {
         owningDatastore = dds;
         this.setName(name, grandfathered);
         this.setRootNode(type);
@@ -116,7 +116,7 @@ public final class DatavyuVariable implements Variable {
         }
     }
 
-    public Datastore getOwningDatastore() {
+    public DataStore getOwningDatastore() {
         return owningDatastore;
     }
 
@@ -355,7 +355,7 @@ public final class DatavyuVariable implements Variable {
         owningDatastore.markDBAsChanged();
     }
 
-    //would like to change the above calls to DatavyuDatastore.markDBAsChanged to this,
+    //would like to change the above calls to DatavyuDataStore.markDBAsChanged to this,
     //but am holding off for now to avoid merge complications
     private void markDB() {
         if (owningDatastore != null) {

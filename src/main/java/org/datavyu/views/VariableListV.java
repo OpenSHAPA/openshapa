@@ -19,8 +19,8 @@ import net.miginfocom.swing.MigLayout;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
-import org.datavyu.models.db.Datastore;
-import org.datavyu.models.db.DatastoreListener;
+import org.datavyu.models.db.DataStore;
+import org.datavyu.models.db.DataStoreListener;
 import org.datavyu.models.db.UserWarningException;
 import org.datavyu.models.db.Variable;
 import org.jdesktop.application.Application;
@@ -36,7 +36,7 @@ import javax.swing.table.TableModel;
  * The dialog to list database variables.
  */
 public final class VariableListV extends DatavyuDialog
-        implements TableModelListener, DatastoreListener {
+        implements TableModelListener, DataStoreListener {
 
     /**
      * The column for if a variable is visible or not.
@@ -59,9 +59,9 @@ public final class VariableListV extends DatavyuDialog
      */
     private static Logger LOGGER = LogManager.getLogger(VariableListV.class);
     /**
-     * Datastore for holding all the information in the variable list.
+     * DataStore for holding all the information in the variable list.
      */
-    private Datastore datastore;
+    private DataStore dataStore;
 
     /**
      * The table model of the JTable that lists the actual variables.
@@ -92,17 +92,17 @@ public final class VariableListV extends DatavyuDialog
      *
      * @param parent The parent frame for this dialog.
      * @param modal  Is this dialog to be modal (true), or not.
-     * @param ds     The Datastore containing the variables you wish to list.
+     * @param ds     The DataStore containing the variables you wish to list.
      */
     public VariableListV(final java.awt.Frame parent,
                          final boolean modal,
-                         final Datastore ds) {
+                         final DataStore ds) {
         super(parent, modal);
         tableModel = new VListTableModel();
         dbToTableMap = HashBiMap.create();
         initComponents();
         setName(this.getClass().getSimpleName());
-        datastore = ds;
+        dataStore = ds;
 
         // Set the names of the columns.
         tableModel.addColumn(rMap.getString("Table.orderColumn"));
@@ -162,7 +162,7 @@ public final class VariableListV extends DatavyuDialog
     }
 
     public void populateTable() {
-        for (Variable var : datastore.getAllVariables()) {
+        for (Variable var : dataStore.getAllVariables()) {
             insertRow(var, rMap);
         }
     }
@@ -170,7 +170,7 @@ public final class VariableListV extends DatavyuDialog
     public void recreateMap() {
         dbToTableMap.clear();
         for (int i = 0; i < tableModel.getRowCount(); i++) {
-            dbToTableMap.put(datastore.getVariable((String) tableModel.getValueAt(i, NCOLUMN)), i);
+            dbToTableMap.put(dataStore.getVariable((String) tableModel.getValueAt(i, NCOLUMN)), i);
         }
     }
 
@@ -180,7 +180,7 @@ public final class VariableListV extends DatavyuDialog
      */
     public void registerListeners() {
         tableModel.addTableModelListener(this);
-        datastore.addListener(this);
+        dataStore.addListener(this);
     }
 
     /**
@@ -189,7 +189,7 @@ public final class VariableListV extends DatavyuDialog
      */
     public void deRegisterListeners() {
         tableModel.removeTableModelListener(this);
-        datastore.removeListener(this);
+        dataStore.removeListener(this);
     }
 
     @Override
@@ -227,7 +227,7 @@ public final class VariableListV extends DatavyuDialog
                 }
             }
 
-            Datavyu.getProjectController().getDB().markDBAsChanged();
+            Datavyu.getProjectController().getDataStore().markDBAsChanged();
             Datavyu.getView().getComponent().revalidate();
         }
     }

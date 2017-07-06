@@ -18,7 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.RecentFiles;
-import org.datavyu.models.db.Datastore;
+import org.datavyu.models.db.DataStore;
 import org.datavyu.models.db.UserWarningException;
 import org.datavyu.models.project.Project;
 import org.datavyu.models.project.ViewerSetting;
@@ -46,44 +46,44 @@ public final class SaveC {
      * Saves only a database to disk.
      *
      * @param databaseFile The location to save the database too.
-     * @param datastore    The datastore to save to disk.
+     * @param dataStore    The dataStore to save to disk.
      * @throws UswerWarningException If unable to save the database.
      */
     public void saveDatabase(final String databaseFile,
-                             final Datastore datastore)
+                             final DataStore dataStore)
             throws UserWarningException {
-        this.saveDatabase(new File(databaseFile), datastore);
+        this.saveDatabase(new File(databaseFile), dataStore);
     }
 
     /**
      * Saves only a database to disk.
      *
      * @param databaseFile The location to save the database too.
-     * @param datastore    The datastore to save to disk.
+     * @param dataStore    The dataStore to save to disk.
      * @throws UserWarningException If unable to save the database.
      */
     public void saveDatabase(final File databaseFile,
-                             final Datastore datastore)
+                             final DataStore dataStore)
             throws UserWarningException {
-        saveDatabase(databaseFile, datastore, true);
+        saveDatabase(databaseFile, dataStore, true);
     }
 
     /**
      * Saves only a database to disk.
      *
      * @param databaseFile The location to save the database too.
-     * @param datastore    The datastore to save to disk.
+     * @param dataStore    The dataStore to save to disk.
      * @param remember     Add this project to the rememberProject list.
      * @throws UserWarningException If unable to save the database.
      */
     public void saveDatabase(final File databaseFile,
-                             final Datastore datastore,
+                             final DataStore dataStore,
                              boolean remember)
             throws UserWarningException {
         LOGGER.info("saving database");
 
         SaveDatabaseFileC saveDBC = new SaveDatabaseFileC();
-        saveDBC.saveDatabase(databaseFile, datastore);
+        saveDBC.saveDatabase(databaseFile, dataStore);
         if (remember) {
             RecentFiles.rememberProject(databaseFile);
         }
@@ -95,15 +95,15 @@ public final class SaveC {
      *
      * @param projectFile The destination to save the project too.
      * @param project     The project to save to disk.
-     * @param datastore   The datastore to save to disk.
+     * @param dataStore   The dataStore to save to disk.
      * @throws UserWarningException If unable to save the entire project to
      *                              disk.
      */
     public void saveProject(final File projectFile,
                             final Project project,
-                            final Datastore datastore)
+                            final DataStore dataStore)
             throws UserWarningException {
-        saveProject(projectFile, project, datastore, true);
+        saveProject(projectFile, project, dataStore, true);
     }
 
     /**
@@ -111,14 +111,14 @@ public final class SaveC {
      *
      * @param projectFile The destination to save the project too.
      * @param project     The project to save to disk.
-     * @param datastore   The datastore to save to disk.
+     * @param dataStore   The dataStore to save to disk.
      * @param remember    Add this project to the rememberProject list.
      * @throws UserWarningException If unable to save the entire project to
      *                              disk.
      */
     public void saveProject(final File projectFile,
                             final Project project,
-                            final Datastore datastore,
+                            final DataStore dataStore,
                             boolean remember) throws UserWarningException {
 
         try {
@@ -134,7 +134,7 @@ public final class SaveC {
 
             ZipEntry dbEntry = new ZipEntry("db");
             zos.putNextEntry(dbEntry);
-            new SaveDatabaseFileC().saveAsCSV(zos, datastore);
+            new SaveDatabaseFileC().saveAsCSV(zos, dataStore);
             zos.closeEntry();
 
             // BugzID:1806

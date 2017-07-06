@@ -176,7 +176,7 @@ public final class MatrixRootView extends JTextArea implements FocusListener {
             oldValue = parentCell.getValueAsString();
             // method names don't reflect usage - we didn't really create
             // this column just now.
-            Variable v = Datavyu.getProjectController().getDB().getVariable(parentCell);
+            Variable v = Datavyu.getProjectController().getDataStore().getVariable(parentCell);
             Datavyu.getProjectController().setLastCreatedVariable(v);
             Datavyu.getProjectController().setLastSelectedCell(parentCell);
         }

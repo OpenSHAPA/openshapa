@@ -18,7 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.models.db.Argument;
-import org.datavyu.models.db.Datastore;
+import org.datavyu.models.db.DataStore;
 import org.datavyu.models.db.UserWarningException;
 import org.datavyu.models.db.Variable;
 import org.datavyu.undoableedits.AddVariableEdit;
@@ -37,7 +37,7 @@ public final class NewVariableV extends DatavyuDialog {
     /**
      * The database to add the new variable to.
      */
-    private Datastore model;
+    private DataStore model;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel jLabel1;
@@ -56,7 +56,7 @@ public final class NewVariableV extends DatavyuDialog {
         initComponents();
         setName(this.getClass().getSimpleName());
 
-        model = Datavyu.getProjectController().getDB();
+        model = Datavyu.getProjectController().getDataStore();
 
         getRootPane().setDefaultButton(okButton);
     }

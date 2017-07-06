@@ -26,8 +26,8 @@ import org.datavyu.controllers.component.MixerController;
 import org.datavyu.controllers.id.IDController;
 import org.datavyu.models.component.TrackModel;
 import org.datavyu.models.db.Cell;
-import org.datavyu.models.db.Datastore;
-import org.datavyu.models.db.DatastoreFactory;
+import org.datavyu.models.db.DataStore;
+import org.datavyu.models.db.DataStoreFactory;
 import org.datavyu.models.db.Variable;
 import org.datavyu.models.project.Project;
 import org.datavyu.models.project.TrackSettings;
@@ -68,7 +68,7 @@ public final class ProjectController {
     /**
      * The current database we are working on.
      */
-    private Datastore db = null;
+    private DataStore dataStore = null;
 
     /**
      * The last cell that was created.
@@ -86,10 +86,7 @@ public final class ProjectController {
     private Variable lastCreatedVariable;
 
     /**
-     * Controller state
-     */
-    /**
-     * has the project been changed since it was created.
+     * Controller state encodes that the project been changed since it was created.
      */
     private boolean changed;
 
@@ -106,13 +103,10 @@ public final class ProjectController {
     /**
      * Default constructor.
      */
-
-
     public ProjectController() {
-//        this.spreadsheetPanel = spreadsheetPanel;
         project = new Project();
-        db = DatastoreFactory.newDatastore();
-        db.setTitleNotifier(Datavyu.getApplication());
+        dataStore = DataStoreFactory.newDataStore();
+        dataStore.setTitleNotifier(Datavyu.getApplication());
         changed = false;
         newProject = true;
         lastCreatedCell = null;
@@ -120,11 +114,10 @@ public final class ProjectController {
         lastCreatedVariable = null;
     }
 
-    public ProjectController(final Project project, final Datastore db) {
-//        this.spreadsheetPanel = spreadsheetPanel;
+    public ProjectController(final Project project, final DataStore dataStore) {
         this.project = project;
-        this.db = db;
-        db.setTitleNotifier(Datavyu.getApplication());
+        this.dataStore = dataStore;
+        dataStore.setTitleNotifier(Datavyu.getApplication());
         changed = false;
         newProject = false;
         lastCreatedCell = null;
@@ -142,17 +135,11 @@ public final class ProjectController {
     }
 
     /**
+     *
      * @return The last "saved" option used when saving.
      */
     public FileFilter getLastSaveOption() {
         return lastSaveOption;
-    }
-
-    public void createNewProject(final String name) {
-        project = new Project();
-        setProjectName(name);
-        changed = false;
-        newProject = true;
     }
 
     /**
@@ -165,31 +152,32 @@ public final class ProjectController {
     }
 
     /**
-     * Gets the MacshapaDatabase associated with this project. Should eventually
-     * be replaced with a Datastore.
+     * Gets the DataStore associated with this project.
      *
-     * @return The single database to use with this project.
+     * @return The single DataStore used for this project.
      */
-    public Datastore getDB() {
-        return db;
+    public DataStore getDataStore() {
+        return dataStore;
     }
 
     /**
      * Sets the datastore to use with this project. This is used when loading a
      * database from file.
      *
-     * @param newDS The new datastore we are using.
+     * @param newDataStore The new datastore we are using.
      */
-    public void setDatastore(final Datastore newDS) {
-        db = newDS;
-        db.setTitleNotifier(Datavyu.getApplication());
+    public void setDataStore(final DataStore newDataStore) {
+        dataStore = newDataStore;
+        dataStore.setTitleNotifier(Datavyu.getApplication());
         
-        //don't let code editor instance corresponding to an old Datastore hang around!
+        //don't let code editor instance corresponding to an old DataStore hang around!
         VocabEditorC.getController().killView();
     }
 
     /**
-     * @return The last cell created for the datastore.
+     * Returns the last created cell.
+     *
+     * @return The last cell created for the DataStore.
      */
     public Cell getLastCreatedCell() {
         return lastCreatedCell;
@@ -240,7 +228,7 @@ public final class ProjectController {
      * @return the changed
      */
     public boolean isChanged() {
-        return (changed || ((db != null) && db.isChanged()));
+        return (changed || ((dataStore != null) && dataStore.isChanged()));
     }
 
     /**
@@ -261,12 +249,9 @@ public final class ProjectController {
      * @return the project name for purposes for display. returns "(untitled)" instead of null
      */
     public String getProjectNamePretty() {
-        if (project.getProjectName() != null)
-        {
+        if (project.getProjectName() != null) {
             return project.getProjectName();
-        }
-        else
-        {
+        } else {
             return "(untitled)";
         }
     }
@@ -288,11 +273,14 @@ public final class ProjectController {
     }
 
     /**
+     * Get the full path
+     *
      * @return the database file name, directory not included.
      */
     public String getFullPath() {
         try {
-            return new File(project.getProjectDirectory() + File.separator + project.getDatabaseFileName()).getCanonicalPath();
+            return new File(project.getProjectDirectory() + File.separator
+                            + project.getDatabaseFileName()).getCanonicalPath();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -300,29 +288,30 @@ public final class ProjectController {
     }
 
     /**
-     * Set the directory the project file (and all project specific resources)
-     * resides in.
+     * Set the directory the project file (and all project specific resources) resides in.
      *
-     * @param directory
+     * @param directory The project directory.
      */
     public void setProjectDirectory(final String directory) {
         project.setProjectDirectory(directory);
     }
 
     /**
-     * @return the directory the project file (and all project specific
-     * resources) resides in.
+     * Get the project directory.
+     *
+     * @return the directory the project file and all project specific resources reside in.
      */
     public String getProjectDirectory() {
         return project.getProjectDirectory();
     }
 
+    /**
+     * Set the original project directory.
+     *
+     * @param directory the original directory.
+     */
     public void setOriginalProjectDirectory(final String directory) {
         project.setOriginalProjectDirectory(directory);
-    }
-
-    public String getOriginalProjectDirectory() {
-        return project.getOriginalProjectDirectory();
     }
 
     /**
@@ -367,9 +356,9 @@ public final class ProjectController {
             if (!file.exists()) {
 
                 // Look for a file that _might_ be the file we are looking for.
-                // This is a brute force search. Ideally we would never want to
-                // do this.
-                File searchedFile = huntForFile(currentDir, dataFileName);
+                // Searches in this directory, all child directories, and from
+                // the parent directory in all child directories.
+                File searchedFile = searchFile(currentDir, dataFileName);
 
                 if (searchedFile != null) {
                     file = searchedFile;
@@ -387,8 +376,7 @@ public final class ProjectController {
 
             // BugzID:2110
             if ((plugin == null) && (setting.getPluginClassifier() != null)) {
-                plugin = pm.getCompatiblePlugin(setting.getPluginClassifier(),
-                        file);
+                plugin = pm.getCompatiblePlugin(setting.getPluginClassifier(), file);
             }
 
             if (plugin == null) {
@@ -399,24 +387,20 @@ public final class ProjectController {
                 continue;
             }
 
-            final DataViewer viewer = plugin.getNewDataViewer(Datavyu
-                    .getApplication().getMainFrame(), false);
+            final DataViewer viewer = plugin.getNewDataViewer(
+                    Datavyu.getApplication().getMainFrame(), false);
             viewer.setIdentifier(IDController.generateIdentifier());
 
             viewer.setDataFeed(file);
-            viewer.setDatastore(db);
+            viewer.setDatastore(dataStore);
 
             if (setting.getSettingsId() != null) {
-
                 // new project file
                 viewer.loadSettings(setting.getSettingsInputStream());
             } else {
-
                 // old project file
                 viewer.setOffset(setting.getOffset());
             }
-
-
 
             dataController.addViewer(viewer, viewer.getOffset());
 
@@ -462,7 +446,7 @@ public final class ProjectController {
                 // project file type).
                 if (project.getOriginalProjectDirectory() != null) {
 
-                    File searchedFile = huntForFile(new File(
+                    File searchedFile = searchFile(new File(
                             project.getProjectDirectory()), file.getName());
 
                     if (searchedFile != null) {
@@ -594,16 +578,34 @@ public final class ProjectController {
         return project;
     }
 
+    /**
+     *
+     * @return the spreadsheet panel.
+     */
     public SpreadsheetPanel getSpreadsheetPanel() {
         return spreadsheetPanel;
     }
 
+    /**
+     * Sets the spreadsheet panel.
+     *
+     * @param spreadsheetPanel
+     */
     public void setSpreadsheetPanel(SpreadsheetPanel spreadsheetPanel) {
         this.spreadsheetPanel = spreadsheetPanel;
     }
 
-    private File genRelative(final String originalDir,
-                             final String originalFilePath, final String currentDir) {
+    /**
+     * TODO: Would this be better put into a file utils?
+     *
+     * @param originalDir
+     * @param originalFilePath
+     * @param currentDir
+     *
+     * @return
+     */
+    private File genRelative(final String originalDir, final String originalFilePath,
+                             final String currentDir) {
 
         // 1. Find the longest common directory for the original dir and
         // original file path.
@@ -650,50 +652,47 @@ public final class ProjectController {
         return new File(newBase, rel);
     }
 
-    private File huntForFile(final File workingDir, final String fileName) {
-        // If we can't find the file, we will start looking for the file
-        // using the easiest solution first and bump up the complexity as
-        // we go along.
+    /**
+     * TODO: Would this be better put into a file utils?
+     *
+     * We search for a file first in the directory, second in all sub-directories,
+     * and third in all sub-directories of the parent directory.
+     *
+     * @param directory The directory to search in.
+     * @param fileName The filename.
+     *
+     * @return The file with the directory path.
+     */
+    private File searchFile(final File directory, final String fileName) {
 
         // Solution 1: It is in the same directory as the project file.
-        File file = new File(workingDir, fileName);
-
+        File file = new File(directory, fileName);
         if (file.exists()) {
             return file;
         }
 
-        IOFileFilter fileNameFilter = FileFilterUtils.nameFileFilter(fileName);
-
         // Solution 2: It is in a sub-directory of the project file.
-        {
-            Iterator<File> subFiles = FileUtils.iterateFiles(workingDir,
-                    fileNameFilter, TrueFileFilter.TRUE);
-
-            if (subFiles.hasNext()) {
-                file = subFiles.next();
-            }
-
-            if (file.exists()) {
-                return file;
-            }
+        IOFileFilter fileNameFilter = FileFilterUtils.nameFileFilter(fileName);
+        Iterator<File> subFiles = FileUtils.iterateFiles(directory, fileNameFilter,
+                                                         TrueFileFilter.TRUE);
+        if (subFiles.hasNext()) {
+            file = subFiles.next();
+        }
+        if (file.exists()) {
+            return file;
         }
 
 
         // Solution 3: It is in the parent of the current directory.
-        {
-            Iterator<File> subFiles = FileUtils.iterateFiles(
-                    workingDir.getParentFile(), fileNameFilter, null);
-
-            if (subFiles.hasNext()) {
-                file = subFiles.next();
-            }
-
-            if (file.exists()) {
-                return file;
-            }
+        subFiles = FileUtils.iterateFiles(directory.getParentFile(), fileNameFilter,
+                                         null);
+        if (subFiles.hasNext()) {
+            file = subFiles.next();
+        }
+        if (file.exists()) {
+            return file;
         }
 
         return null;
     }
-
 }

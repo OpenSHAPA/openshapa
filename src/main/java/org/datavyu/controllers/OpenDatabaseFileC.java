@@ -64,8 +64,8 @@ public final class OpenDatabaseFileC {
      * @param sourceFile The source file to open.
      * @return populated MacshapaDatabase on success, null otherwise.
      */
-    public Datastore open(final File sourceFile) {
-        Datastore db;
+    public DataStore open(final File sourceFile) {
+        DataStore db;
         String inputFile = sourceFile.toString().toLowerCase();
 
         // If the file ends with CSV - treat it as a comma seperated file.
@@ -87,7 +87,7 @@ public final class OpenDatabaseFileC {
      * @param sFile The source file to use when populating the database.
      * @return populated database on success, null otherwise.
      */
-    public Datastore openAsMacSHAPADB(final File sFile) {
+    public DataStore openAsMacSHAPADB(final File sFile) {
 
         // Currently no implementation of opening older MacSHAPA database.
         // ... One day.
@@ -103,13 +103,13 @@ public final class OpenDatabaseFileC {
      * @param sFile The source file to use when populating the database.
      * @return populated database on success, null otherwise.
      */
-    public Datastore openAsCSV(final File sFile) {
+    public DataStore openAsCSV(final File sFile) {
 
         try {
             LOGGER.info("open csv database from file");
 
             FileInputStream fis = new FileInputStream(sFile);
-            Datastore result = openAsCSV(fis);
+            DataStore result = openAsCSV(fis);
             fis.close();
 
             return result;
@@ -130,11 +130,11 @@ public final class OpenDatabaseFileC {
      * @param inStream The stream to deserialized when populating the database.
      * @return populated database on sucess, null otherwise.
      */
-    public Datastore openAsCSV(final InputStream inStream) {
+    public DataStore openAsCSV(final InputStream inStream) {
         try {
             LOGGER.info("open csv database from stream");
 
-            Datastore db = DatastoreFactory.newDatastore();
+            DataStore db = DataStoreFactory.newDataStore();
             db.setTitleNotifier(Datavyu.getApplication());
             InputStreamReader isr = new InputStreamReader(inStream);
             BufferedReader csvFile = new BufferedReader(isr);
@@ -520,7 +520,7 @@ public final class OpenDatabaseFileC {
      */
     private String parseVariable(final BufferedReader csvFile,
                                  final String line,
-                                 final Datastore db)
+                                 final DataStore db)
             throws IOException, UserWarningException {
         return parseVariable(csvFile, line, db, "#2");
     }
@@ -538,7 +538,7 @@ public final class OpenDatabaseFileC {
      */
     private String parseVariable(final BufferedReader csvFile,
                                  final String line,
-                                 final Datastore ds,
+                                 final DataStore ds,
                                  final String version)
             throws IOException, UserWarningException {
         // Determine the variable name and type.

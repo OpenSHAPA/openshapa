@@ -47,8 +47,6 @@ public class WindowsJFC extends BaseJFC {
 
         dialog.pack();
 
-        //setFileFilter(getAcceptAllFileFilter());
-
         return dialog;
     }
     

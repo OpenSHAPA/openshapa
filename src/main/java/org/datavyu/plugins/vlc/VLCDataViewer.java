@@ -1,6 +1,6 @@
 package org.datavyu.plugins.vlc;
 
-import org.datavyu.models.db.Datastore;
+import org.datavyu.models.db.DataStore;
 import org.datavyu.models.id.Identifier;
 import org.datavyu.plugins.CustomActions;
 import org.datavyu.plugins.CustomActionsAdapter;
@@ -455,7 +455,7 @@ public class VLCDataViewer implements DataViewer {
     }
 
     @Override
-    public void setDatastore(final Datastore sDB) {
+    public void setDatastore(final DataStore sDB) {
         // TODO Auto-generated method stub
     }
 

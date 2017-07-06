@@ -685,7 +685,7 @@ public final class DatavyuView extends FrameView
         panel = new SpreadsheetPanel(new ProjectController(), null);
         panel.getProjectController().setSpreadsheetPanel(panel);
         panel.setDataController(new DataControllerV(Datavyu.getApplication().getMainFrame(), false));
-//        panel.getProjectController().setDatastore(panel.getDatastore());
+//        panel.getProjectController().setDataStore(panel.getDataStore());
 
         Datavyu.setProjectController(panel.getProjectController());
         panel.registerListeners();
@@ -893,21 +893,21 @@ public final class DatavyuView extends FrameView
                     saveController.saveProject(new File(projController.getProjectDirectory(),
                                     projController.getProjectName() + ".opf"),
                             projController.getProject(),
-                            projController.getDB()
+                            projController.getDataStore()
                     );
 
                     projController.markProjectAsUnchanged();
-                    projController.getDB().markAsUnchanged();
+                    projController.getDataStore().markAsUnchanged();
 
                     // Save content just as a database.
                 } else {
                     File file = new File(projController.getProjectDirectory(),
                             projController.getDatabaseFileName());
-                    saveC.saveDatabase(file, projController.getDB());
+                    saveC.saveDatabase(file, projController.getDataStore());
 
                     projController.markProjectAsUnchanged();
 
-                    projController.getDB().markAsUnchanged();
+                    projController.getDataStore().markAsUnchanged();
 
                 }
             }
@@ -1022,7 +1022,7 @@ public final class DatavyuView extends FrameView
             }
             File f = new File(fc.getSelectedFile().getParent(), dbFileName);
 
-            exportC.exportAsCells(dbFileName, projController.getDB());
+            exportC.exportAsCells(dbFileName, projController.getDataStore());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1065,7 +1065,7 @@ public final class DatavyuView extends FrameView
             }
             File f = new File(fc.getSelectedFile().getParent(), dbFileName);
 
-            exportC.exportByFrame(dbFileName, projController.getDB());
+            exportC.exportByFrame(dbFileName, projController.getDataStore());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -1103,9 +1103,9 @@ public final class DatavyuView extends FrameView
                 }
 
                 File f = new File(fc.getSelectedFile().getParent(), dbFileName);
-                saveC.saveDatabase(f, projController.getDB());
+                saveC.saveDatabase(f, projController.getDataStore());
 
-                projController.getDB().setName(dbFileName);
+                projController.getDataStore().setName(dbFileName);
                 projController.setProjectName(dbFileName);
                 projController.setProjectDirectory(fc.getSelectedFile().getParent());
                 projController.setDatabaseFileName(dbFileName);
@@ -1125,14 +1125,14 @@ public final class DatavyuView extends FrameView
                 }
 
                 File f = new File(fc.getSelectedFile().getParent(), dbFileName);
-                saveC.saveDatabase(f, projController.getDB());
+                saveC.saveDatabase(f, projController.getDataStore());
 
                 if (dbFileName.lastIndexOf('.') != -1) {
                     dbFileName = dbFileName.substring(0,
                             dbFileName.lastIndexOf('.'));
                 }
 
-                projController.getDB().setName(dbFileName);
+                projController.getDataStore().setName(dbFileName);
                 projController.setProjectDirectory(fc.getSelectedFile()
                         .getParent());
                 projController.setDatabaseFileName(dbFileName);
@@ -1165,7 +1165,7 @@ public final class DatavyuView extends FrameView
                 saveC.saveProject(new File(fc.getSelectedFile().getParent(),
                                 archiveName),
                         projController.getProject(),
-                        projController.getDB()
+                        projController.getDataStore()
                 );
                 projController.setProjectDirectory(fc.getSelectedFile().getParent());
 
@@ -1173,7 +1173,7 @@ public final class DatavyuView extends FrameView
 
             projController.setLastSaveOption(filter);
             projController.markProjectAsUnchanged();
-            projController.getDB().markAsUnchanged();
+            projController.getDataStore().markAsUnchanged();
 
         } catch (UserWarningException e) {
             Datavyu.getApplication().showWarningDialog(e);
@@ -1203,9 +1203,9 @@ public final class DatavyuView extends FrameView
                 }
 
                 File f = new File(fc.getSelectedFile().getParent(), dbFileName);
-                saveC.saveDatabase(f, projController.getDB());
+                saveC.saveDatabase(f, projController.getDataStore());
 
-                projController.getDB().setName(dbFileName);
+                projController.getDataStore().setName(dbFileName);
                 projController.setProjectName(dbFileName);
                 projController.setProjectDirectory(fc.getSelectedFile().getParent());
                 projController.setDatabaseFileName(dbFileName);
@@ -1225,14 +1225,14 @@ public final class DatavyuView extends FrameView
                 }
 
                 File f = new File(fc.getSelectedFile().getParent(), dbFileName);
-                saveC.saveDatabase(f, projController.getDB());
+                saveC.saveDatabase(f, projController.getDataStore());
 
                 if (dbFileName.lastIndexOf('.') != -1) {
                     dbFileName = dbFileName.substring(0,
                             dbFileName.lastIndexOf('.'));
                 }
 
-                projController.getDB().setName(dbFileName);
+                projController.getDataStore().setName(dbFileName);
                 projController.setProjectName(dbFileName);
                 projController.setProjectDirectory(fc.getSelectedFile()
                         .getParent());
@@ -1267,9 +1267,9 @@ public final class DatavyuView extends FrameView
                 saveC.saveProject(new File(fc.getSelectedFile().getParent(),
                                 archiveName),
                         projController.getProject(),
-                        projController.getDB()
+                        projController.getDataStore()
                 );
-                projController.getDB().setName(fc.getSelectedFile().getName());
+                projController.getDataStore().setName(fc.getSelectedFile().getName());
                 projController.setProjectDirectory(fc.getSelectedFile().getParent());
                 projController.setDatabaseFileName(archiveName);
 
@@ -1277,8 +1277,8 @@ public final class DatavyuView extends FrameView
 
             projController.setLastSaveOption(filter);
             projController.markProjectAsUnchanged();
-            projController.getDB().markAsUnchanged();
-            this.tabbedPane.setTitleAt(this.tabbedPane.getSelectedIndex(), projController.getDB().getName());
+            projController.getDataStore().markAsUnchanged();
+            this.tabbedPane.setTitleAt(this.tabbedPane.getSelectedIndex(), projController.getDataStore().getName());
 
         } catch (UserWarningException e) {
             Datavyu.getApplication().showWarningDialog(e);
@@ -1659,16 +1659,16 @@ public final class DatavyuView extends FrameView
     ;
 
     //no usages as of 5/5/2014
-    public ProjectController createNewSpreadsheet(Datastore ds) {
+    public ProjectController createNewSpreadsheet(DataStore ds) {
         ProjectController pc = new ProjectController();
-        pc.setDatastore(ds);
+        pc.setDataStore(ds);
 
         return createNewSpreadsheet(pc);
     }
 
     public ProjectController createNewSpreadsheet(String name) {
         ProjectController pc = new ProjectController();
-        pc.setDatastore(DatastoreFactory.newDatastore());
+        pc.setDataStore(DataStoreFactory.newDataStore());
         pc.setProjectName(name);
         pc = createNewSpreadsheet(pc);
 
@@ -1755,7 +1755,7 @@ public final class DatavyuView extends FrameView
      */
     @Action
     public void deleteColumn() {
-        Datastore ds = Datavyu.getProjectController().getDB();
+        DataStore ds = Datavyu.getProjectController().getDataStore();
         List<Variable> selectedVariables = ds.getSelectedVariables();
 
         // record the effect
@@ -1774,7 +1774,7 @@ public final class DatavyuView extends FrameView
     @Action
     public void hideColumn() {
         LOGGER.info("Hidding columns");
-        Datastore ds = Datavyu.getProjectController().getDB();
+        DataStore ds = Datavyu.getProjectController().getDataStore();
 
         for (Variable var : ds.getSelectedVariables()) {
             var.setHidden(true);
@@ -1790,7 +1790,7 @@ public final class DatavyuView extends FrameView
     @Action
     public void showAllColumns() {
         LOGGER.info("Showing all columns");
-        Datastore ds = Datavyu.getProjectController().getDB();
+        DataStore ds = Datavyu.getProjectController().getDataStore();
 
         for (Variable var : ds.getAllVariables()) {
             if (var.isHidden()) {
@@ -1808,7 +1808,7 @@ public final class DatavyuView extends FrameView
     public void changeColumnName() {
         // Only one column should be selected, but just in case, we'll only
         // change the first column
-        Variable var = Datavyu.getProjectController().getDB().getSelectedVariables().get(0);
+        Variable var = Datavyu.getProjectController().getDataStore().getSelectedVariables().get(0);
 
         for (SpreadsheetColumn sCol : panel.getColumns()) {
             if (sCol.getVariable().equals(var)) {
@@ -1825,7 +1825,7 @@ public final class DatavyuView extends FrameView
     @Action
     public void deleteCells() {
         List<Cell> selectedCells = Datavyu.getProjectController()
-                .getDB().getSelectedCells();
+                .getDataStore().getSelectedCells();
 
         // record the effect
         UndoableEdit edit = new RemoveCellEdit(selectedCells);
@@ -2565,7 +2565,7 @@ public final class DatavyuView extends FrameView
         ResourceMap rMap = Application.getInstance(Datavyu.class).getContext()
                 .getResourceMap(DatavyuView.class);
 
-        int totalNumberOfColumns = Datavyu.getProjectController().getDB().getAllVariables().size();
+        int totalNumberOfColumns = Datavyu.getProjectController().getDataStore().getAllVariables().size();
 
         if (totalNumberOfColumns == 0) {
             newCellMenuItem.setEnabled(false);
@@ -2573,7 +2573,7 @@ public final class DatavyuView extends FrameView
             newCellMenuItem.setEnabled(true);
         }
 
-        List<Variable> selectedCols = Datavyu.getProjectController().getDB()
+        List<Variable> selectedCols = Datavyu.getProjectController().getDataStore()
                 .getSelectedVariables();
 
         if (selectedCols.isEmpty()) {
@@ -2598,7 +2598,7 @@ public final class DatavyuView extends FrameView
             changeVarNameMenuItem.setEnabled(false);
         }
 
-        List<Cell> selectedCells = Datavyu.getProjectController().getDB()
+        List<Cell> selectedCells = Datavyu.getProjectController().getDataStore()
                 .getSelectedCells();
 
         if (selectedCells.isEmpty()) {
@@ -2662,7 +2662,7 @@ public final class DatavyuView extends FrameView
 
     public void newCellLeft() {
         List<Cell> selectedCells = Datavyu.getProjectController()
-                .getDB().getSelectedCells();
+                .getDataStore().getSelectedCells();
 
         new CreateNewCellC(selectedCells, ArrayDirection.LEFT);
     }
@@ -2680,7 +2680,7 @@ public final class DatavyuView extends FrameView
 
     public void newCellRight() {
         List<Cell> selectedCells = Datavyu.getProjectController()
-                .getDB().getSelectedCells();
+                .getDataStore().getSelectedCells();
 
         new CreateNewCellC(selectedCells, ArrayDirection.RIGHT);
     }
@@ -2886,7 +2886,7 @@ public final class DatavyuView extends FrameView
 
             // The project we just opened doesn't really contain any unsaved changes.
             pController.markProjectAsUnchanged();
-            pController.getDB().markAsUnchanged();
+            pController.getDataStore().markAsUnchanged();
 
             // Update the list of recently opened files.
             RecentFiles.rememberProject(jd.getSelectedFile());

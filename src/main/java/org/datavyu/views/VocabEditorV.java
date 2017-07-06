@@ -19,7 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.controllers.DeleteColumnC;
 import org.datavyu.models.db.Argument;
-import org.datavyu.models.db.Datastore;
+import org.datavyu.models.db.DataStore;
 import org.datavyu.models.db.UserWarningException;
 import org.datavyu.models.db.Variable;
 import org.datavyu.undoableedits.AddVariableEdit;
@@ -53,7 +53,7 @@ public final class VocabEditorV extends DatavyuDialog {
     /**
      * Model
      */
-    Datastore ds;
+    DataStore ds;
     /**
      * All the vocab views displayed in the editor.
      */
@@ -108,7 +108,7 @@ public final class VocabEditorV extends DatavyuDialog {
         super(parent, modal);
 
         LOGGER.info("vocEd - show");
-        ds = Datavyu.getProjectController().getDB();
+        ds = Datavyu.getProjectController().getDataStore();
 
         initComponents();
         componentListnersInit();
@@ -185,7 +185,7 @@ public final class VocabEditorV extends DatavyuDialog {
 
     private void makeElements() {
         // Populate current vocab list with vocab data from the database.
-        ds = Datavyu.getProjectController().getDB();
+        ds = Datavyu.getProjectController().getDataStore();
         veViews = new ArrayList<VocabElementV>();
         verticalFrame = new JPanel();
         verticalFrame.setName("verticalFrame");
@@ -214,7 +214,7 @@ public final class VocabEditorV extends DatavyuDialog {
     }
 
     private boolean isCurrent() {
-        List<Variable> varList = Datavyu.getProjectController().getDB().getAllVariables();
+        List<Variable> varList = Datavyu.getProjectController().getDataStore().getAllVariables();
         java.util.ListIterator<Variable> varIt = varList.listIterator();
         for (VocabElementV v : veViews) //wish i could map...
         {

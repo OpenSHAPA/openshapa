@@ -28,7 +28,7 @@ import java.util.List;
  * An interface which abstracts away from the specific underlying database,
  * with methods to access columns and cells in an intuitive manner.
  */
-public interface Datastore {
+public interface DataStore {
 
     /**
      * @return All the variables held in the datastore.
@@ -179,13 +179,13 @@ public interface Datastore {
     /**
      * Adds a listener that needs to be notified when the datastore changes.
      */
-    void addListener(final DatastoreListener listener);
+    void addListener(final DataStoreListener listener);
 
     /**
      * Removes a listener from the list of things that need to be notified when
      * the datastore changes.
      */
-    void removeListener(final DatastoreListener listener);
+    void removeListener(final DataStoreListener listener);
     
     void addExemptionVariable(String s);
     String getExemptionVariables();

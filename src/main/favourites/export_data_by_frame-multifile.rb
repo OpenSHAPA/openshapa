@@ -50,7 +50,7 @@ begin
         if file.include?(".opf") and file[0].chr != '.'
 
             puts "LOADING DATABASE: " + filedir+file
-            $db,proj = load_db(filedir + "/" + file)
+            $dataStore,proj = load_db(filedir + "/" + file)
             puts "SUCCESSFULLY LOADED"
 
 

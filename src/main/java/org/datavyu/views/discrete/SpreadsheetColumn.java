@@ -65,7 +65,7 @@ public final class SpreadsheetColumn extends JLabel
     /**
      * Database reference.
      */
-    private Datastore datastore;
+    private DataStore dataStore;
 
     /**
      * Reference to the variable.
@@ -149,12 +149,12 @@ public final class SpreadsheetColumn extends JLabel
      * @param cellSelL Spreadsheet cell selection listener to notify
      * @param colSelL  Column selection listener to notify.
      */
-    public SpreadsheetColumn(final Datastore db,
+    public SpreadsheetColumn(final DataStore db,
                              final Variable var,
                              final CellSelectionListener cellSelL,
                              final ColumnSelectionListener colSelL,
                              final ColumnVisibilityListener colVisL) {
-        this.datastore = db;
+        this.dataStore = db;
         this.variable = var;
         this.cellSelList = cellSelL;
         this.columnSelList = colSelL;
@@ -505,7 +505,7 @@ public final class SpreadsheetColumn extends JLabel
     public void setColumnName(final String newName) throws UserWarningException {
         try {
             // Make sure this column name isn't already in the column
-            for (Variable v : datastore.getAllVariables()) {
+            for (Variable v : dataStore.getAllVariables()) {
                 if (v.getName().equals(newName)) {
                     Datavyu.getApplication().showWarningDialog("Error: Column name already exists.");
                     return;
@@ -560,7 +560,7 @@ public final class SpreadsheetColumn extends JLabel
 
     @Override
     public void cellInserted(final Cell newCell) {
-        datapanel.insertCell(datastore, newCell, cellSelList);
+        datapanel.insertCell(dataStore, newCell, cellSelList);
     }
 
     @Override

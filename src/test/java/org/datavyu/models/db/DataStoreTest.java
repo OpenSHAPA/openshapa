@@ -35,7 +35,7 @@ public class DataStoreTest {
     /**
      * The modelListener we are testing.
      */
-    private DataStoreListener modelListener;
+    private DatastoreListener modelListener;
 
     /**
      * The title notifier we are testing.
@@ -52,8 +52,8 @@ public class DataStoreTest {
 
     @BeforeMethod
     public void setUp() {
-        model = DataStoreFactory.newDataStore();
-        modelListener = mock(DataStoreListener.class);
+        model = DatastoreFactory.newDatastore();
+        modelListener = mock(DatastoreListener.class);
         titleListener = mock(TitleNotifier.class);
         model.addListener(modelListener);
         model.setTitleNotifier(titleListener);

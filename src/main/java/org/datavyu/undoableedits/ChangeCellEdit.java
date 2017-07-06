@@ -50,7 +50,7 @@ abstract public class ChangeCellEdit extends SpreadsheetEdit {
         super();
         this.granularity = granularity;
 
-        Variable var = Datavyu.getProjectController().getDB().getVariable(c);
+        Variable var = Datavyu.getProjectController().getDataStore().getVariable(c);
         if (var != null) {
             columnName = var.getName();
 
@@ -90,7 +90,7 @@ abstract public class ChangeCellEdit extends SpreadsheetEdit {
     }
 
     protected void updateCell() {
-        Variable var = Datavyu.getProjectController().getDB().getVariable(columnName);
+        Variable var = Datavyu.getProjectController().getDataStore().getVariable(columnName);
         Cell cell = var.getCells().get(ord);
         updateCell(cell);
 /*

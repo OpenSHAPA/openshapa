@@ -136,7 +136,7 @@ public final class TimeStampTextField extends JTextField
         if (parentCell != null) {
             // method names don't reflect usage - we didn't really create this
             // cell just now.
-            Variable var = Datavyu.getProjectController().getDB()
+            Variable var = Datavyu.getProjectController().getDataStore()
                     .getVariable(parentCell);
 
             Datavyu.getProjectController().setLastCreatedVariable(var);

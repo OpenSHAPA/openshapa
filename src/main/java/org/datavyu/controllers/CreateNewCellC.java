@@ -18,7 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.models.db.Cell;
-import org.datavyu.models.db.Datastore;
+import org.datavyu.models.db.DataStore;
 import org.datavyu.models.db.Variable;
 import org.datavyu.undoableedits.AddCellEdit;
 import org.datavyu.undoableedits.ChangeCellEdit;
@@ -48,7 +48,7 @@ public final class CreateNewCellC {
     /**
      * The model (the database) for this controller.
      */
-    private Datastore model;
+    private DataStore model;
 
     /**
      * Default constructor.
@@ -56,7 +56,7 @@ public final class CreateNewCellC {
     public CreateNewCellC() {
         // The spreadsheet is the view for this controller.
         view = (SpreadsheetPanel) Datavyu.getView().getComponent();
-        model = Datavyu.getProjectController().getDB();
+        model = Datavyu.getProjectController().getDataStore();
     }
 
     /**
@@ -71,7 +71,7 @@ public final class CreateNewCellC {
     public CreateNewCellC(final List<Cell> sourceCells,
                           final ArrayDirection direction) {
         view = (SpreadsheetPanel) Datavyu.getView().getComponent();
-        model = Datavyu.getProjectController().getDB();
+        model = Datavyu.getProjectController().getDataStore();
 
         Cell newCell = null;
 
@@ -124,7 +124,7 @@ public final class CreateNewCellC {
     public CreateNewCellC(final long milliseconds, boolean setPrevOffset) {
         // The spreadsheet is the view for this controller.
         view = (SpreadsheetPanel) Datavyu.getView().getComponent();
-        model = Datavyu.getProjectController().getDB();
+        model = Datavyu.getProjectController().getDataStore();
 
         // BugzID:758 - Before creating a new cell and setting onset. We need
         // the last created cell and need to set the previous cells offset...
@@ -159,13 +159,13 @@ public final class CreateNewCellC {
         //FIRST selected variable or the variable belonging to the FIRST selected cell
         if (setPrevOffset && lastCreatedCell == null){
               Variable v = null;
-              if(!Datavyu.getProjectController().getDB().getSelectedVariables().isEmpty()){
-                  Datavyu.getProjectController().getDB().getSelectedVariables().get(0);
+              if(!Datavyu.getProjectController().getDataStore().getSelectedVariables().isEmpty()){
+                  Datavyu.getProjectController().getDataStore().getSelectedVariables().get(0);
               }
               else{
-                  if(!Datavyu.getProjectController().getDB().getSelectedCells().isEmpty()){
-                          Cell selectedC = Datavyu.getProjectController().getDB().getSelectedCells().get(0);
-                          for(Variable v1 : Datavyu.getProjectController().getDB().getVisibleVariables()){
+                  if(!Datavyu.getProjectController().getDataStore().getSelectedCells().isEmpty()){
+                          Cell selectedC = Datavyu.getProjectController().getDataStore().getSelectedCells().get(0);
+                          for(Variable v1 : Datavyu.getProjectController().getDataStore().getVisibleVariables()){
                                   if(v1.contains(selectedC)){
                                       v = v1;
                                       break;
@@ -245,7 +245,7 @@ public final class CreateNewCellC {
         Cell newCell = null;
         Variable v = Datavyu.getProjectController().getLastCreatedVariable();
         if (preferFirstSelected) {
-            List<Variable> vlist = Datavyu.getProjectController().getDB().getSelectedVariables();
+            List<Variable> vlist = Datavyu.getProjectController().getDataStore().getSelectedVariables();
             if (!vlist.isEmpty()) {
                 v = vlist.get(0);
             }
@@ -317,7 +317,7 @@ public final class CreateNewCellC {
         boolean newcelladded = false;
 
         // check for Situation 1: one or more selected columns
-        model = Datavyu.getProjectController().getDB();
+        model = Datavyu.getProjectController().getDataStore();
 
         for (Variable var : model.getSelectedVariables()) {
             LOGGER.info("create cell in selected column");

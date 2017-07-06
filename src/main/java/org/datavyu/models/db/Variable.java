@@ -177,5 +177,5 @@ public interface Variable {
 
     void setOrderIndex(int newIndex);
 
-    Datastore getOwningDatastore();
+    DataStore getOwningDatastore();
 }

@@ -18,7 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.models.db.Cell;
-import org.datavyu.models.db.Datastore;
+import org.datavyu.models.db.DataStore;
 import org.datavyu.undoableedits.ChangeCellEdit.Granularity;
 import org.datavyu.undoableedits.ChangeOnsetCellEdit;
 
@@ -44,10 +44,10 @@ public class SetSelectedCellStartTimeC {
     public SetSelectedCellStartTimeC(final long milliseconds) {
         LOGGER.info("set selected cell onset");
 
-        // Get the datastore that we are manipulating.
-        Datastore datastore = Datavyu.getProjectController().getDB();
+        // Get the dataStore that we are manipulating.
+        DataStore dataStore = Datavyu.getProjectController().getDataStore();
 
-        for (Cell c : datastore.getSelectedCells()) {
+        for (Cell c : dataStore.getSelectedCells()) {
             // record the effect
             UndoableEdit edit = new ChangeOnsetCellEdit(c, c.getOnset(), milliseconds, Granularity.FINEGRAINED);
             Datavyu.getView().getUndoSupport().postEdit(edit);

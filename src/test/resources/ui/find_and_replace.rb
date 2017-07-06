@@ -2,16 +2,16 @@ require 'java'
 require 'csv'
 require 'time'
 
-import 'org.datavyu.models.db.legacy.Database'
-import 'org.datavyu.models.db.legacy.DataColumn'
-import 'org.datavyu.models.db.legacy.MatrixVocabElement'
-import 'org.datavyu.models.db.legacy.FloatDataValue'
-import 'org.datavyu.models.db.legacy.DBElement'
-import 'org.datavyu.models.db.legacy.TimeStamp'
-import 'org.datavyu.models.db.legacy.DataCell'
-import 'org.datavyu.models.db.legacy.SystemErrorException'
-import 'org.datavyu.models.db.legacy.Matrix'
-import 'org.datavyu.models.db.legacy.TextStringDataValue'
+import 'org.datavyu.models.dataStore.legacy.Database'
+import 'org.datavyu.models.dataStore.legacy.DataColumn'
+import 'org.datavyu.models.dataStore.legacy.MatrixVocabElement'
+import 'org.datavyu.models.dataStore.legacy.FloatDataValue'
+import 'org.datavyu.models.dataStore.legacy.DBElement'
+import 'org.datavyu.models.dataStore.legacy.TimeStamp'
+import 'org.datavyu.models.dataStore.legacy.DataCell'
+import 'org.datavyu.models.dataStore.legacy.SystemErrorException'
+import 'org.datavyu.models.dataStore.legacy.Matrix'
+import 'org.datavyu.models.dataStore.legacy.TextStringDataValue'
 
 find = "moo"
 replace = "frog"
@@ -36,12 +36,12 @@ begin
  puts "Modifying database..."
 
  # For each of the columns within the database - start to save them to disk. 
- $db.get_col_order_vector.each do |col_index|
+ $dataStore.get_col_order_vector.each do |col_index|
   # Get the column and write its name to the file.
-  dc = $db.get_data_column(col_index)
+  dc = $dataStore.get_data_column(col_index)
 
   # Get the matrix vocab definition for the column
-  mve = $db.get_matrix_ve(dc.get_its_mve_id)
+  mve = $dataStore.get_matrix_ve(dc.get_its_mve_id)
   
   if dc.get_its_mve_type == MatrixVocabElement::MatrixType::TEXT
    # Output the cells for the column.
@@ -63,11 +63,11 @@ begin
 	 end
 	 # Replace the old cell with the new one (with new contents)
 	 string = start_bit + replace + end_bit
-	 dv = TextStringDataValue.new($db)
+	 dv = TextStringDataValue.new($dataStore)
 	 dv.set_its_value(string)
-	 mat = Matrix.new(Matrix.construct($db, mve.get_id, dv))	
+	 mat = Matrix.new(Matrix.construct($dataStore, mve.get_id, dv))
 	 cell.set_val(mat)
-	 $db.replaceCell(cell)
+	 $dataStore.replaceCell(cell)
 	end
    end
   end

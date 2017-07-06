@@ -49,7 +49,7 @@ public final class ExportDatabaseFileC {
      * @throws UserWarningException When unable to save the database as a CSV to
      *                              disk (usually because of permissions errors).
      */
-    public void exportByFrame(final String outFile, final Datastore ds)
+    public void exportByFrame(final String outFile, final DataStore ds)
             throws UserWarningException {
 
         try {
@@ -225,7 +225,7 @@ public final class ExportDatabaseFileC {
         }
     }
 
-    public void exportAsCells(final String outFile, final Datastore ds)
+    public void exportAsCells(final String outFile, final DataStore ds)
             throws UserWarningException {
         try {
             FileOutputStream outStream = new FileOutputStream(outFile);
@@ -332,7 +332,7 @@ public final class ExportDatabaseFileC {
      * @throws UserWarningException When unable to save the database as a CSV to
      *                              disk (usually because of permissions errors).
      */
-    public void exportAsCSV(final OutputStream outStream, final Datastore ds)
+    public void exportAsCSV(final OutputStream outStream, final DataStore ds)
             throws UserWarningException {
         LOGGER.info("save database as CSV to stream");
 

@@ -168,7 +168,7 @@ public final class RunScriptC extends SwingWorker<Object, String> {
         outString = new StringBuilder("");
         ScriptEngine rubyEngine = Datavyu.getScriptingEngine();
         ScriptContext rubyContext = new SimpleScriptContext();
-//        rubyContext.setAttribute("db", Datavyu.getProjectController().getDB(), ScriptContext.ENGINE_SCOPE);
+//        rubyContext.setAttribute("db", Datavyu.getProjectController().getDataStore(), ScriptContext.ENGINE_SCOPE);
 
         try {
             try {
@@ -179,12 +179,12 @@ public final class RunScriptC extends SwingWorker<Object, String> {
                 consoleWriter.flush();
 
                 // Place reference to various Datavyu functionality.
-                System.out.println(Datavyu.getProjectController().getDB());
-//                rubyEngine.put("db", Datavyu.getProjectController().getDB());
+                System.out.println(Datavyu.getProjectController().getDataStore());
+//                rubyEngine.put("db", Datavyu.getProjectController().getDataStore());
 //                rubyEngine.put("pj_handle", Datavyu.getProjectController().getProject());
 //                rubyEngine.put("mixer_handle", Datavyu.getDataController().getMixerController());
 //                rubyEngine.put("viewers_handle", Datavyu.getDataController());
-//                rubyEngine.getContext().setAttribute("db_handle", Datavyu.getProjectController().getDB(),
+//                rubyEngine.getContext().setAttribute("db_handle", Datavyu.getProjectController().getDataStore(),
 //                        ScriptContext.ENGINE_SCOPE);
                 String path = System.getProperty("user.dir") + File.separator;
                 
@@ -408,7 +408,7 @@ public final class RunScriptC extends SwingWorker<Object, String> {
      * This allows for easy reading into R.
      */
     private HashMap<String, String> convertDbToColStrings() {
-        Datastore db = Datavyu.getProjectController().getDB();
+        DataStore db = Datavyu.getProjectController().getDataStore();
         HashMap<String, String> str_db = new HashMap<String, String>();
 
         String str_var;

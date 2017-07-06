@@ -26,9 +26,9 @@ import static junit.framework.Assert.*;
 public class MatrixValueTest {
 
     /**
-     * The parent Datastore for the TextValue we are testing.
+     * The parent DataStore for the TextValue we are testing.
      */
-    private Datastore ds;
+    private DataStore ds;
 
     /**
      * The parent variable for the TextValue we are testing.
@@ -47,7 +47,7 @@ public class MatrixValueTest {
 
     @BeforeMethod
     public void setUp() throws UserWarningException {
-        ds = DatastoreFactory.newDatastore();
+        ds = DataStoreFactory.newDataStore();
         var = ds.createVariable("test", Argument.Type.MATRIX);
         cell = var.createCell();
         model = cell.getValue();

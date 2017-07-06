@@ -15,10 +15,16 @@
 package org.datavyu.models.db;
 
 /**
- * Factory for constructing new empty datastores.
+ * Factory constructs a new, empty DataStore.
  */
-public class DatastoreFactory {
-    public static Datastore newDatastore() {
-        return new DatavyuDatastore();
+public class DataStoreFactory {
+
+    /**
+     * Create a new empty DataStore.
+     *
+     * @return A new empty DataStore.
+     */
+    public static DataStore newDataStore() {
+        return new DatavyuDataStore();
     }
 }

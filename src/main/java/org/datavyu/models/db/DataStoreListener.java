@@ -25,7 +25,7 @@ package org.datavyu.models.db;
 /**
  * Implement this interface to be notified of changes to the datastore.
  */
-public interface DatastoreListener {
+public interface DataStoreListener {
     /**
      * Called when a variable is added to the datastore.
      *

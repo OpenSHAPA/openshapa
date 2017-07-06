@@ -167,7 +167,7 @@ public final class NewProjectV extends DatavyuDialog {
             s.createNewSpreadsheet(getProjectName());
 
             // The DB we just created doesn't really have any unsaved changes.
-            Datavyu.getProjectController().getDB().markAsUnchanged();
+            Datavyu.getProjectController().getDataStore().markAsUnchanged();
             dispose();
         }
 

@@ -17,7 +17,7 @@ package org.datavyu.controllers;
 import org.apache.logging.log4j.LogManager;
 import org.datavyu.models.db.Argument;
 import org.datavyu.models.db.Cell;
-import org.datavyu.models.db.Datastore;
+import org.datavyu.models.db.DataStore;
 import org.datavyu.models.db.Variable;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -53,7 +53,7 @@ public class OpenCTest {
         OpenC openc = new OpenC();
         openc.openDatabase(demoFile);
 
-        Datastore ds = openc.getDatastore();
+        DataStore ds = openc.getDatastore();
         List<Variable> vars = ds.getAllVariables();
         assertEquals(vars.size(), 1);
         assertEquals(vars.get(0).getName(), "TestColumn");
@@ -73,7 +73,7 @@ public class OpenCTest {
         OpenC openc = new OpenC();
         openc.openProject(demoFile);
 
-        Datastore ds = openc.getDatastore();
+        DataStore ds = openc.getDatastore();
         List<Variable> vars = ds.getAllVariables();
         assertEquals(vars.size(), 1);
         assertEquals(vars.get(0).getName(), "TestColumn");
@@ -93,7 +93,7 @@ public class OpenCTest {
         OpenC openc = new OpenC();
         openc.openProject(demoFile);
 
-        Datastore ds = openc.getDatastore();
+        DataStore ds = openc.getDatastore();
         List<Variable> vars = ds.getAllVariables();
         assertEquals(vars.size(), 4);
         
@@ -145,7 +145,7 @@ public class OpenCTest {
         OpenC openc = new OpenC();
         openc.openProject(demoFile);
 
-        Datastore ds = openc.getDatastore();
+        DataStore ds = openc.getDatastore();
         List<Variable> vars = ds.getAllVariables();
         assertEquals(vars.size(), 1);
         assertEquals(vars.get(0).getName(), "blah");

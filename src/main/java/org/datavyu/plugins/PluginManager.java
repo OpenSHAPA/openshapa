@@ -18,6 +18,7 @@ import com.google.common.collect.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
+import org.datavyu.plugins.ffmpegplayer.FFmpegPlugin;
 import org.datavyu.plugins.javafx.JavaFxPlugin;
 import org.datavyu.plugins.nativeosxplayer.NativeOSXPlayerFactory;
 import org.datavyu.plugins.quicktime.QTDataViewer;
@@ -524,13 +525,16 @@ public final class PluginManager {
                                       final File file) {
 
         // Shortcircuit this for the preferred new plugins for Windows and OSX
+        // FR: What is this doing? (One selects the play back plugin in the open file dialog)
         if (classifier.equals("datavyu.video")) {
             if (Datavyu.getPlatform() == Datavyu.Platform.MAC) {
                 return NativeOSXPlayerFactory.getNativeOSXPlugin();
             }
 
             if (Datavyu.getPlatform() == Datavyu.Platform.WINDOWS) {
-                return new QTPlugin();
+                QTPlugin qtPlugin = new QTPlugin();
+                LOGGER.info("Loading windows plugin: " + qtPlugin.getPluginName());
+                return qtPlugin;
             }
 
             if (Datavyu.getPlatform() == Datavyu.Platform.LINUX) {

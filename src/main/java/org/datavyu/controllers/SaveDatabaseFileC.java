@@ -45,7 +45,7 @@ public final class SaveDatabaseFileC {
      *                              desired location.
      */
     public void saveDatabase(final File destinationFile,
-                             final Datastore ds)
+                             final DataStore ds)
             throws UserWarningException {
 
         // We bypass any overwrite checks here.
@@ -65,7 +65,7 @@ public final class SaveDatabaseFileC {
      * @throws UserWarningException When unable to save the database as a CSV to
      *                              disk (usually because of permissions errors).
      */
-    public void saveAsCSV(final String outFile, final Datastore ds)
+    public void saveAsCSV(final String outFile, final DataStore ds)
             throws UserWarningException {
 
         try {
@@ -87,7 +87,7 @@ public final class SaveDatabaseFileC {
      * @throws UserWarningException When unable to save the database as a CSV to
      *                              disk (usually because of permissions errors).
      */
-    public void saveAsCSV(final OutputStream outStream, final Datastore ds)
+    public void saveAsCSV(final OutputStream outStream, final DataStore ds)
             throws UserWarningException {
         LOGGER.info("save database as CSV to stream");
 

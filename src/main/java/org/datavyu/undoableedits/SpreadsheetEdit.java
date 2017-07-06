@@ -18,7 +18,7 @@ package org.datavyu.undoableedits;
 import org.datavyu.Datavyu;
 import org.datavyu.controllers.project.ProjectController;
 import org.datavyu.models.db.Cell;
-import org.datavyu.models.db.Datastore;
+import org.datavyu.models.db.DataStore;
 import org.datavyu.views.DatavyuView;
 import org.datavyu.views.discrete.SpreadsheetCell;
 import org.datavyu.views.discrete.SpreadsheetColumn;
@@ -37,14 +37,14 @@ public abstract class SpreadsheetEdit extends AbstractUndoableEdit {
     private Date timestamp; // when the action was done
 
     protected ProjectController controller;
-    protected Datastore model;
+    protected DataStore model;
     protected DatavyuView view;
 
     public SpreadsheetEdit() {
         super();
         timestamp = new Date();
         controller = Datavyu.getProjectController();
-        model = controller.getDB();
+        model = controller.getDataStore();
         view = Datavyu.getView();
     }
 

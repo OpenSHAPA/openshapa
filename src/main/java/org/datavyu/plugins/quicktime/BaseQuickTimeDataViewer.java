@@ -17,7 +17,7 @@ package org.datavyu.plugins.quicktime;
 import net.miginfocom.swing.MigLayout;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.models.db.Datastore;
+import org.datavyu.models.db.DataStore;
 import org.datavyu.models.id.Identifier;
 import org.datavyu.plugins.CustomActions;
 import org.datavyu.plugins.CustomActionsAdapter;
@@ -691,7 +691,7 @@ public abstract class BaseQuickTimeDataViewer extends DatavyuDialog
     }
 
     @Override
-    public void setDatastore(final Datastore sDB) {
+    public void setDatastore(final DataStore sDB) {
         // not currently needed
     }
 

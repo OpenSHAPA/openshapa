@@ -16,7 +16,6 @@ package org.datavyu;
 
 import ca.beq.util.win32.registry.Win32Exception;
 import ch.randelshofer.quaqua.QuaquaManager;
-import com.sun.jna.NativeLibrary;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.controllers.project.ProjectController;
@@ -33,7 +32,6 @@ import org.datavyu.util.WindowsKeyChar;
 import org.datavyu.views.*;
 import org.datavyu.views.discrete.SpreadsheetPanel;
 import org.jdesktop.application.*;
-import uk.co.caprica.vlcj.runtime.RuntimeUtil;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
@@ -761,7 +759,7 @@ public final class Datavyu extends SingleFrameApplication
      */
     public void showVariableList() {
         JFrame mainFrame = Datavyu.getApplication().getMainFrame();
-        listVarView = new VariableListV(mainFrame, true, projectController.getDB());
+        listVarView = new VariableListV(mainFrame, true, projectController.getDataStore());
         listVarView.registerListeners();
 
         Datavyu.getApplication().show(listVarView);
@@ -906,7 +904,7 @@ public final class Datavyu extends SingleFrameApplication
 
                         // Get name of spreadsheet.  Check in both project and datastore.
                         String projName = sp.getProjectController().getProjectName();
-                        if(projName==null) projName = sp.getDatastore().getName();
+                        if(projName==null) projName = sp.getDataStore().getName();
 
                         int selection = JOptionPane.showOptionDialog(mainFrame,
                                 rMap.getString("UnsavedDialog.message",projName),
@@ -976,7 +974,7 @@ public final class Datavyu extends SingleFrameApplication
 
             // Get project name.
             String projName = sp.getProjectController().getProjectName();
-            if(projName==null) projName = sp.getDatastore().getName();
+            if(projName==null) projName = sp.getDataStore().getName();
             
             int selection = JOptionPane.showOptionDialog(mainFrame,
                     rMap.getString("UnsavedDialog.tabmessage", projName),
@@ -1157,7 +1155,7 @@ public final class Datavyu extends SingleFrameApplication
         VIEW.checkForAutosavedFile();
 
         // The DB we create by default doesn't really have any unsaved changes.
-        projectController.getDB().markAsUnchanged();
+        projectController.getDataStore().markAsUnchanged();
         ready();
     }
 

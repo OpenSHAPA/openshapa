@@ -115,7 +115,7 @@ public final class VENameEditor extends EditorComponent {
     
     private void attemptRename(StringBuilder currentValue)
     {
-        if (Datavyu.getProjectController().getDB().getVariable(currentValue.toString()) == null)
+        if (Datavyu.getProjectController().getDataStore().getVariable(currentValue.toString()) == null)
         {
             try {
                     varModel.setName(currentValue.toString());

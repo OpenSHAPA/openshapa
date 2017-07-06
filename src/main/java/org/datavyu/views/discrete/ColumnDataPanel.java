@@ -17,7 +17,7 @@ package org.datavyu.views.discrete;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.models.db.Cell;
-import org.datavyu.models.db.Datastore;
+import org.datavyu.models.db.DataStore;
 import org.datavyu.models.db.Variable;
 import org.datavyu.util.Constants;
 
@@ -78,7 +78,7 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
      * @param variable The Data Column that this panel represents.
      * @param cellSelL Spreadsheet cell selection listener.
      */
-    public ColumnDataPanel(final Datastore db,
+    public ColumnDataPanel(final DataStore db,
                            final int width,
                            final Variable variable,
                            final CellSelectionListener cellSelL) {
@@ -134,7 +134,7 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
      * @param cellSelL Spreadsheet listener to notify about cell selection
      *                 changes.
      */
-    private void buildDataPanelCells(final Datastore db,
+    private void buildDataPanelCells(final DataStore db,
                                      final Variable variable,
                                      final CellSelectionListener cellSelL) {
 
@@ -193,7 +193,7 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
      * @param cellSelL SpreadsheetCellSelectionListener to notify of changes in
      *                 selection.
      */
-    public void insertCell(final Datastore ds,
+    public void insertCell(final DataStore ds,
                            final Cell cell,
                            final CellSelectionListener cellSelL) {
 

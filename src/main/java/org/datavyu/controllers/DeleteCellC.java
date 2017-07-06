@@ -56,7 +56,7 @@ public final class DeleteCellC {
                 Datavyu.getProjectController().setLastSelectedCell(null);
             }
 
-            Datavyu.getProjectController().getDB().removeCell(c);
+            Datavyu.getProjectController().getDataStore().removeCell(c);
         }
     }
 }

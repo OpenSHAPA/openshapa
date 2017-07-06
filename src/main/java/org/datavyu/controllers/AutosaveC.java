@@ -81,7 +81,7 @@ public class AutosaveC implements ActionListener {
                 ext = ".opf";
                 f = File.createTempFile(baseName, ext);
                 saveController.saveProject(f, projController.getProject(),
-                        projController.getDB(), false);
+                        projController.getDataStore(), false);
             } else {
                 if ((projController.getLastSaveOption() instanceof SHAPAFilter)
                         || (projController.getLastSaveOption()
@@ -90,14 +90,14 @@ public class AutosaveC implements ActionListener {
                     ext = ".opf";
                     f = File.createTempFile(baseName, ext);
                     saveController.saveProject(f, projController.getProject(),
-                            projController.getDB(), false);
+                            projController.getDataStore(), false);
                     // Save content just as a database.
                 } else {
                     String filename = "~" + projController.getDatabaseFileName();
                     baseName = FilenameUtils.getBaseName(filename) + "_";
                     ext = "." + FilenameUtils.getExtension(filename);
                     f = File.createTempFile(baseName, ext);
-                    saveController.saveDatabase(f, projController.getDB(), false);
+                    saveController.saveDatabase(f, projController.getDataStore(), false);
                 }
             }
         } catch (UserWarningException lee) {

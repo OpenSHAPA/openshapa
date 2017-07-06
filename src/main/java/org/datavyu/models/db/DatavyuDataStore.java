@@ -28,20 +28,27 @@ import org.apache.logging.log4j.Logger;
 import java.util.*;
 
 /**
- * Acts as a connector between Datavyu's various data structures.
+ * TODO: Fill in the comment at the ???
+ *
+ * Acts as a connector between Datavyu's various data structures and ???.
  */
-public class DatavyuDatastore implements Datastore {
+public class DatavyuDataStore implements DataStore {
 
-    // The logger for the datastore
-    private static Logger LOGGER = LogManager.getLogger(DatavyuDatastore.class);
-    // The notifier to ping when the application's title changes.
+    /** Logger for the DataStore */
+    private static Logger LOGGER = LogManager.getLogger(DatavyuDataStore.class);
+
+    /** The notifier to ping when the application's title changes. */
     private static TitleNotifier titleNotifier = null;
-    // Name of the datastore - does not need to persist - is used for file names.
+
+    /** Name of the DataStore - does not need to persist - is used for file names. */
     private String name = "untitled";
-    // Has tbhe datastore changed since it has last been marked as unchanged?
+
+    /** Has the DataStore changed since it has last been marked as not changed. */
     private boolean changed;
+
     //
-    private List<DatastoreListener> dbListeners = new ArrayList<DatastoreListener>();
+    private List<DataStoreListener> dbListeners = new ArrayList<DataStoreListener>();
+
     private Map<String, Variable> variables;
 
     private VariableComparator VariableComparator = new VariableComparator();
@@ -49,13 +56,8 @@ public class DatavyuDatastore implements Datastore {
     private String exemptionVariables = "";
 
 
-    public DatavyuDatastore() {
-
-        // Set up variable collection
+    public DatavyuDataStore() {
         variables = new HashMap<String, Variable>();
-
-        // Clear variable listeners.
-//        DatavyuVariable.clearListeners();
         changed = false;
     }
 
@@ -64,8 +66,8 @@ public class DatavyuDatastore implements Datastore {
         if (!changed) {
             changed = true;
 
-            if (DatavyuDatastore.titleNotifier != null) {
-                DatavyuDatastore.titleNotifier.updateTitle();
+            if (DatavyuDataStore.titleNotifier != null) {
+                DatavyuDataStore.titleNotifier.updateTitle();
             }
         }
     }
@@ -175,7 +177,7 @@ public class DatavyuDatastore implements Datastore {
         Variable v = new DatavyuVariable(name, rootNode, grandfathered, this);
         variables.put(name, v);
 
-        for (DatastoreListener dbl : this.dbListeners) {
+        for (DataStoreListener dbl : this.dbListeners) {
             dbl.variableAdded(v);
         }
 
@@ -185,7 +187,7 @@ public class DatavyuDatastore implements Datastore {
 
     @Override
     public void removeVariable(final Variable var) {
-        for (DatastoreListener dbl : this.dbListeners) {
+        for (DataStoreListener dbl : this.dbListeners) {
             dbl.variableRemoved(var);
         }
 
@@ -195,7 +197,7 @@ public class DatavyuDatastore implements Datastore {
 
     @Override
     public void addVariable(final Variable var) {
-        for (DatastoreListener dbl : this.dbListeners) {
+        for (DataStoreListener dbl : this.dbListeners) {
             dbl.variableAdded(var);
         }
 
@@ -228,8 +230,8 @@ public class DatavyuDatastore implements Datastore {
         if (changed) {
             changed = false;
 
-            if (DatavyuDatastore.titleNotifier != null) {
-                DatavyuDatastore.titleNotifier.updateTitle();
+            if (DatavyuDataStore.titleNotifier != null) {
+                DatavyuDataStore.titleNotifier.updateTitle();
             }
         }
     }
@@ -248,16 +250,16 @@ public class DatavyuDatastore implements Datastore {
 
     @Override
     public void setTitleNotifier(final TitleNotifier titleNotifier) {
-        DatavyuDatastore.titleNotifier = titleNotifier;
+        DatavyuDataStore.titleNotifier = titleNotifier;
     }
 
     @Override
-    public void addListener(final DatastoreListener listener) {
+    public void addListener(final DataStoreListener listener) {
         dbListeners.add(listener);
     }
 
     @Override
-    public void removeListener(final DatastoreListener listener) {
+    public void removeListener(final DataStoreListener listener) {
         if (dbListeners.contains(listener)) {
             dbListeners.remove(listener);
         }

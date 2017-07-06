@@ -27,7 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.swing.JDialog;
-import org.datavyu.models.db.Datastore;
+import org.datavyu.models.db.DataStore;
 
 import org.datavyu.models.id.Identifier;
 
@@ -198,11 +198,11 @@ public interface DataViewer {
     CustomActions getCustomActions();
 
     /**
-     * Sets the Datastore from which this viewer can extract data.
+     * Sets the DataStore from which this viewer can extract data.
      *
-     * @param sDB The Datastore to use.
+     * @param sDB The DataStore to use.
      */
-    void setDatastore(final Datastore sDB);
+    void setDatastore(final DataStore sDB);
 
     /**
      * Unload all data, to prepare for being closed- essentially the opposite

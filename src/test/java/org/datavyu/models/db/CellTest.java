@@ -32,7 +32,7 @@ public class CellTest {
     /**
      * The parent datastore for the cell we are testing.
      */
-    private Datastore ds;
+    private DataStore ds;
 
     /**
      * The parent variable for the cell we are testing.
@@ -51,7 +51,7 @@ public class CellTest {
 
     @BeforeMethod
     public void setUp() throws UserWarningException {
-        ds = DatastoreFactory.newDatastore();
+        ds = DataStoreFactory.newDataStore();
         Datavyu.setProjectController(new ProjectController(new Project(), ds));
         var = ds.createVariable("test", Argument.Type.TEXT);
         model = var.createCell();

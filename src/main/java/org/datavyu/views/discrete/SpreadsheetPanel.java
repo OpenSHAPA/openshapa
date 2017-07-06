@@ -60,7 +60,7 @@ import java.util.stream.Collectors;
  * Datavyu database as a spreadsheet.
  */
 public final class SpreadsheetPanel extends JPanel
-        implements DatastoreListener,
+        implements DataStoreListener,
         CellSelectionListener,
         ColumnSelectionListener,
         ColumnVisibilityListener,
@@ -102,7 +102,7 @@ public final class SpreadsheetPanel extends JPanel
     /**
      * The Database being viewed.
      */
-    private Datastore datastore;
+    private DataStore dataStore;
     /**
      * Vector of the Spreadsheetcolumns added to the Spreadsheet.
      */
@@ -135,7 +135,7 @@ public final class SpreadsheetPanel extends JPanel
      */
     private SheetLayoutType currentLayoutType;
 
-    //    public SpreadsheetPanel(final Datastore db, DVProgressBar progressBar) {
+    //    public SpreadsheetPanel(final DataStore db, DVProgressBar progressBar) {
 //        ProjectController pc = new ProjectController(null, this);
 //        new SpreadsheetPanel(pc, progressBar);
 //    }
@@ -191,10 +191,10 @@ public final class SpreadsheetPanel extends JPanel
 
 
         // set the database and layout the columns
-        if (pc.getDB() == null) {
-            pc.setDatastore(new DatavyuDatastore());
+        if (pc.getDataStore() == null) {
+            pc.setDataStore(new DatavyuDataStore());
         }
-        setDatabase(pc.getDB());
+        setDatabase(pc.getDataStore());
         newVarSpacer.setText(" + ");
         newVarSpacer.setForeground(newVarSpacer.getBackground());
         mainView.add(newVarSpacer);
@@ -211,7 +211,7 @@ public final class SpreadsheetPanel extends JPanel
         buildColumns(progressBar);
         pc.setSpreadsheetPanel(this);
 
-        setName(datastore.getName());
+        setName(dataStore.getName());
         numNewSheets++;
 
 
@@ -224,7 +224,7 @@ public final class SpreadsheetPanel extends JPanel
         updateHiddenVars();
         headerView.add(hiddenVars);
 
-        projectController.getDB().markAsUnchanged();
+        projectController.getDataStore().markAsUnchanged();
     }
     
     private JButton makeHiddenVarsButton()
@@ -236,7 +236,7 @@ public final class SpreadsheetPanel extends JPanel
     }
 
     private void updateHiddenVars() {
-        List<Variable> allVars = datastore.getAllVariables();
+        List<Variable> allVars = dataStore.getAllVariables();
         List<Variable> hiddensOnly = new ArrayList<Variable>();
         final JPopupMenu dropdown = new JPopupMenu();
         for(final Variable v: allVars)
@@ -336,7 +336,7 @@ public final class SpreadsheetPanel extends JPanel
      * Populate from the database.
      */
     private void buildColumns(DVProgressBar progressBar) {
-        List<Variable> vlist = getDatastore().getAllVariables();
+        List<Variable> vlist = getDataStore().getAllVariables();
         int pb_increment = 0;
         int i = 0;
 
@@ -348,7 +348,7 @@ public final class SpreadsheetPanel extends JPanel
             if (progressBar != null) {
                 progressBar.setProgress(progressBar.getProgress() + pb_increment, "Adding column " + ++i + " of " + vlist.size());
             }
-            addColumn(getDatastore(), v);
+            addColumn(getDataStore(), v);
         }
     }
 
@@ -358,7 +358,7 @@ public final class SpreadsheetPanel extends JPanel
      * @param db  database.
      * @param var The variable that this column represents.
      */
-    private void addColumn(final Datastore db, final Variable var) {
+    private void addColumn(final DataStore db, final Variable var) {
         // Remove previous instance of newVar from the header.
         headerView.remove(newVar);
         headerView.remove(hiddenVars);
@@ -443,8 +443,8 @@ public final class SpreadsheetPanel extends JPanel
      * Deselect all selected items in the Spreadsheet.
      */
     public void deselectAll() {
-        datastore.clearCellSelection();
-        datastore.clearVariableSelection();
+        dataStore.clearCellSelection();
+        dataStore.clearVariableSelection();
     }
 
     /**
@@ -452,15 +452,15 @@ public final class SpreadsheetPanel extends JPanel
      *
      * @param db Database to set
      */
-    public void setDatabase(final Datastore db) {
+    public void setDatabase(final DataStore db) {
         // check if we need to deregister any existing listeners.
-        if ((datastore != null) && (datastore != db)) {
-            datastore.removeListener(this);
+        if ((dataStore != null) && (dataStore != db)) {
+            dataStore.removeListener(this);
         }
 
         // set the database
-        datastore = db;
-        datastore.addListener(this);
+        dataStore = db;
+        dataStore.addListener(this);
 
         // setName to remember screen locations
         setName(db.getName());
@@ -471,13 +471,13 @@ public final class SpreadsheetPanel extends JPanel
     /**
      * @return Database this spreadsheet displays
      */
-    public Datastore getDatastore() {
-        return (datastore);
+    public DataStore getDataStore() {
+        return (dataStore);
     }
 
     @Override
     public void variableAdded(final Variable newVariable) {
-        addColumn(datastore, newVariable);
+        addColumn(dataStore, newVariable);
         variableVisible(newVariable);
     }
 
@@ -633,12 +633,12 @@ public final class SpreadsheetPanel extends JPanel
     public int getAdjacentSelectedCells(final ArrayDirection dir) {
         int result = 0;
 
-        for (Cell cell : datastore.getSelectedCells()) {
-            for (int i = 0; i < datastore.getVisibleVariables().size(); i++) {
-                if (datastore.getVisibleVariables().get(i).equals(datastore.getVariable(cell))) {
+        for (Cell cell : dataStore.getSelectedCells()) {
+            for (int i = 0; i < dataStore.getVisibleVariables().size(); i++) {
+                if (dataStore.getVisibleVariables().get(i).equals(dataStore.getVariable(cell))) {
                     // We have at least one column to the left of the cells.
                     if (((i + dir.getModifier()) >= 0) && ((i + dir.getModifier())
-                            < datastore.getVisibleVariables().size())) {
+                            < dataStore.getVisibleVariables().size())) {
                         result++;
                     }
 
@@ -786,10 +786,10 @@ public final class SpreadsheetPanel extends JPanel
     public void addCellToContinousSelection(final SpreadsheetCell cell) {
         if (lastSelectedCell != null) {
             Cell c1 = lastSelectedCell.getCell();
-            Variable v1 = datastore.getVariable(c1);
+            Variable v1 = dataStore.getVariable(c1);
 
             Cell c2 = cell.getCell();
-            Variable v2 = datastore.getVariable(c2);
+            Variable v2 = dataStore.getVariable(c2);
 
             // We can only do continuous selections in a single column at
             // at the moment.
@@ -892,7 +892,7 @@ public final class SpreadsheetPanel extends JPanel
         highlightedCell = null;
         lastSelectedCell = null;
 
-        datastore.clearCellSelection();
+        dataStore.clearCellSelection();
     }
 
     /**

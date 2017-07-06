@@ -16,7 +16,7 @@ package org.datavyu.controllers;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.models.db.Datastore;
+import org.datavyu.models.db.DataStore;
 import org.datavyu.models.project.Project;
 import org.datavyu.models.project.ViewerSetting;
 
@@ -37,7 +37,7 @@ public final class OpenC {
     /**
      * A reference to the database that this controller opened.
      */
-    private Datastore database = null;
+    private DataStore database = null;
     /**
      * A reference to the projec that this controller opened.
      */
@@ -162,7 +162,7 @@ public final class OpenC {
      * @return The instance of the datastore that was opened by this controller,
      * returns null if no database opened.
      */
-    public Datastore getDatastore() {
+    public DataStore getDatastore() {
         return database;
     }
 
