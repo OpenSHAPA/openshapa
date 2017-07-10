@@ -56,19 +56,11 @@ public class QTKitPlayer extends Canvas {
 
     protected static int playerCount = 0;
 
-    static {
-        // Standard JNI: load the native library
-
-//        System.loadLibrary("QTKitCanvas");
-
-//        System.load("/Users/jesse/Library/Developer/Xcode/DerivedData/JAWTExample-cdhbmpdibiannlgigweelsyjyces/Build/Products/Debug/libQTKitCanvas.jnilib");
-
-    }
-
     public final int id;
-    File fileToLoad;
 
-    public QTKitPlayer(File fileToLoad) {
+    File sourceFile;
+
+    public QTKitPlayer(File sourceFile) {
         super();
         try {
             NativeLoader.LoadNativeLib("QTKitCanvas");
@@ -76,15 +68,23 @@ public class QTKitPlayer extends Canvas {
             e.printStackTrace();
         }
         this.id = QTKitPlayer.playerCount;
-        QTKitPlayer.playerCount += 1;
-        this.fileToLoad = fileToLoad;
+        QTKitPlayer.incPlayerCount();
+        this.sourceFile = sourceFile;
+    }
+
+    protected static void incPlayerCount() {
+        playerCount++;
+    }
+
+    protected static void decPlayerCount() {
+        playerCount--;
     }
 
     public void addNotify() {
         super.addNotify();
-        System.out.println("Opening video file: " + fileToLoad.toURI().getPath());
+        System.out.println("Opening video file: " + sourceFile.toURI().getPath());
         try {
-            addNativeCoreAnimationLayer("file://" + fileToLoad.toURI().getPath());
+            addNativeCoreAnimationLayer("file://" + sourceFile.toURI().getPath());
         } catch (Exception e) {
             System.out.println("ERROR CAUGHT");
             e.printStackTrace();

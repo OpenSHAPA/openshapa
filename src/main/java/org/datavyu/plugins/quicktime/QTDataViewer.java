@@ -16,6 +16,7 @@ package org.datavyu.plugins.quicktime;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.datavyu.plugins.BaseDataViewer;
 import org.datavyu.util.Constants;
 import quicktime.QTException;
 import quicktime.QTSession;
@@ -40,7 +41,7 @@ import java.io.File;
  * The viewer for a quicktime video file.
  * <b>Do not move this class, this is for backward compatibility with 1.07.</b>
  */
-public final class QTDataViewer extends BaseQuickTimeDataViewer {
+public final class QTDataViewer extends BaseDataViewer {
 
     /**
      * How many milliseconds in a second?
@@ -85,7 +86,7 @@ public final class QTDataViewer extends BaseQuickTimeDataViewer {
     }
 
     @Override
-    protected void setQTVolume(final float volume) {
+    protected void setPlayerVolume(final float volume) {
 
         if (movie == null) {
             return;
@@ -118,7 +119,7 @@ public final class QTDataViewer extends BaseQuickTimeDataViewer {
     }
 
     @Override
-    protected void setQTDataFeed(final File videoFile) {
+    protected void setPlayerSourceFile(final File videoFile) {
 
         try {
 //            QTFile v = new QTFile(videoFile);
@@ -140,7 +141,7 @@ public final class QTDataViewer extends BaseQuickTimeDataViewer {
             // is displayable/visible
             add(QTFactory.makeQTComponent(movie).asComponent());
 //            visualMedia.loadIntoRam(0, (int)getDuration()+500, StdQTConstants.unkeepInRam);
-            seekTo(0L);
+            seek(0L);
         } catch (QTException e) {
 //            LOGGER.error("Unable to setVideoFile", e);
             e.printStackTrace();
@@ -148,7 +149,7 @@ public final class QTDataViewer extends BaseQuickTimeDataViewer {
     }
 
     @Override
-    protected Dimension getQTVideoSize() {
+    protected Dimension getOriginalVideoSize() {
         try {
             if (visualTrack != null) {
                 QDDimension vtDim = visualTrack.getSize();
@@ -162,7 +163,7 @@ public final class QTDataViewer extends BaseQuickTimeDataViewer {
     }
 
     @Override
-    protected float getQTFPS() {
+    protected float getPlayerFramesPerSecond() {
         float fps = 0;
 
         try {
@@ -185,7 +186,7 @@ public final class QTDataViewer extends BaseQuickTimeDataViewer {
             }
         } catch (QTException e) {
 //            LOGGER.error("Unable to calculate FPS, assuming " + FALLBACK_FRAME_RATE, e);
-            assumedFPS = true;
+            isAssumedFramesPerSecond = true;
             fps = FALLBACK_FRAME_RATE;
         }
 
@@ -275,7 +276,7 @@ public final class QTDataViewer extends BaseQuickTimeDataViewer {
      * {@inheritDoc}
      */
     @Override
-    public void seekTo(final long position) {
+    public void seek(final long position) {
 
         try {
 

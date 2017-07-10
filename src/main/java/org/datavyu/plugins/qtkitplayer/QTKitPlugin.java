@@ -84,7 +84,7 @@ public final class QTKitPlugin implements Plugin {
     }
 
     @Override
-    public String getClassifier() {
+    public String getNamespace() {
         return "datavyu.video";
     }
 

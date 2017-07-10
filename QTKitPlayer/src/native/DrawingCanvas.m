@@ -98,7 +98,7 @@ JNF_COCOA_ENTER(env);
 //			NSView *view = dsi_mac->cocoaViewRef;
 //			NSWindow *window = [view window];
 //			
-//			// Get the CoreGraphics context from the parent window - DO NOT CACHE
+//			// Get the CoreGraphics context from the dataController window - DO NOT CACHE
 //			CGContextRef cg = [[NSGraphicsContext graphicsContextWithWindow:window] graphicsPort];
 //			
 //			// Match Java's ctm

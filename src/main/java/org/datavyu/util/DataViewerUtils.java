@@ -52,7 +52,7 @@ public final class DataViewerUtils {
         }
 
         Properties props = new Properties();
-        props.setProperty("offset", Long.toString(dv.getOffset()));
+        props.setProperty("offset", Long.toString(dv.getStartTime()));
         props.store(os, null);
     }
 
@@ -79,7 +79,7 @@ public final class DataViewerUtils {
         String property = props.getProperty("offset");
 
         if ((property != null) && !"".equals(property)) {
-            dv.setOffset(Long.parseLong(property));
+            dv.setStartTime(Long.parseLong(property));
         }
     }
 

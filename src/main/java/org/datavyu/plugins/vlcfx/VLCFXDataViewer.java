@@ -7,7 +7,7 @@ import org.datavyu.models.id.Identifier;
 import org.datavyu.plugins.CustomActions;
 import org.datavyu.plugins.CustomActionsAdapter;
 import org.datavyu.plugins.ViewerStateListener;
-import org.datavyu.plugins.quicktime.BaseQuickTimeDataViewer;
+import org.datavyu.plugins.BaseDataViewer;
 import org.datavyu.views.component.DefaultTrackPainter;
 import org.datavyu.views.component.TrackPainter;
 
@@ -21,7 +21,7 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
 
-public class VLCFXDataViewer extends BaseQuickTimeDataViewer {
+public class VLCFXDataViewer extends BaseDataViewer {
 
     private static final float FALLBACK_FRAME_RATE = 24.0f;
     private static final String VIDEO =
@@ -122,7 +122,7 @@ public class VLCFXDataViewer extends BaseQuickTimeDataViewer {
         }
     }
 
-    protected void setQTVolume(float volume) {
+    protected void setPlayerVolume(float volume) {
         vlcFxApp.setVolume(volume);
     }
 
@@ -156,26 +156,26 @@ public class VLCFXDataViewer extends BaseQuickTimeDataViewer {
     }
 
     @Override
-    protected void setQTDataFeed(File videoFile) {
+    protected void setPlayerSourceFile(File videoFile) {
 
     }
 
     @Override
-    protected Dimension getQTVideoSize() {
+    protected Dimension getOriginalVideoSize() {
         return null;
     }
 
     @Override
-    protected float getQTFPS() {
-        return getFrameRate();
+    protected float getPlayerFramesPerSecond() {
+        return getFramesPerSecond();
     }
 
     @Override
-    public float getFrameRate() {
+    public float getFramesPerSecond() {
         return vlcFxApp.getFrameRate();
     }
 
-    public void setFrameRate(float fpsIn) {
+    public void setFramesPerSecond(float fpsIn) {
         fps = fpsIn;
         assumedFPS = false;
     }
@@ -196,12 +196,12 @@ public class VLCFXDataViewer extends BaseQuickTimeDataViewer {
     }
 
     @Override
-    public long getOffset() {
+    public long getStartTime() {
         return offset;
     }
 
     @Override
-    public void setOffset(final long offset) {
+    public void setStartTime(final long offset) {
         this.offset = offset;
     }
 
@@ -221,18 +221,18 @@ public class VLCFXDataViewer extends BaseQuickTimeDataViewer {
     }
 
     @Override
-    public File getDataFeed() {
+    public File getSourceFile() {
         return data;
     }
 
     @Override
-    public void setDataFeed(final File dataFeed) {
-        data = dataFeed;
+    public void setSourceFile(final File sourceFile) {
+        data = sourceFile;
 
 
         // Needed to init JavaFX stuff
         new JFXPanel();
-        vlcFxApp = new VLCApplication(dataFeed);
+        vlcFxApp = new VLCApplication(sourceFile);
 
         runAndWait(new Runnable() {
             @Override
@@ -264,7 +264,7 @@ public class VLCFXDataViewer extends BaseQuickTimeDataViewer {
     }
 
     @Override
-    public void seekTo(final long position) {
+    public void seek(final long position) {
 //        System.out.println("SEEKING TO " + position);
 
 //        Platform.runLater(new Runnable() {
@@ -323,7 +323,7 @@ public class VLCFXDataViewer extends BaseQuickTimeDataViewer {
         vlcFxApp.closeAndDestroy();
     }
 
-    public boolean usingAssumedFPS() {
+    public boolean isAssumedFramesPerSecond() {
         return vlcFxApp.isAssumedFps();
     }
 
@@ -331,7 +331,7 @@ public class VLCFXDataViewer extends BaseQuickTimeDataViewer {
     public void storeSettings(final OutputStream os) {
         try {
             Properties settings = new Properties();
-            settings.setProperty("offset", Long.toString(getOffset()));
+            settings.setProperty("offset", Long.toString(getStartTime()));
             settings.setProperty("volume", Float.toString(getVolume()));
             settings.setProperty("visible", Boolean.toString(vlcFxApp.isVisible()));
             settings.setProperty("height", Integer.toString(vlcFxApp.getHeight()));

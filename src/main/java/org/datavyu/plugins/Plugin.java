@@ -69,7 +69,7 @@ public interface Plugin {
      *<p>The classifier string cannot be null or the empty string.</p>
      * @return Classifier string.
      */
-    String getClassifier();
+    String getNamespace();
 
     /**
      * @return The various _groups_ of files that this plugin supports. As an

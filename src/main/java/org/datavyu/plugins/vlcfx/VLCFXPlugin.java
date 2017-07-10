@@ -49,7 +49,7 @@ public class VLCFXPlugin implements Plugin {
     private static final Filter[] FILTERS = new Filter[]{VIDEO_FILTER};
 
     @Override
-    public String getClassifier() {
+    public String getNamespace() {
         return "datavyu.video";
     }
 

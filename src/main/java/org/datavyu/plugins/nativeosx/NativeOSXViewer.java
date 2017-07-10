@@ -16,7 +16,7 @@ package org.datavyu.plugins.nativeosx;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.plugins.quicktime.BaseQuickTimeDataViewer;
+import org.datavyu.plugins.BaseDataViewer;
 import quicktime.std.movies.Track;
 import quicktime.std.movies.media.Media;
 
@@ -28,7 +28,7 @@ import java.io.File;
  * The viewer for a quicktime video file.
  * <b>Do not move this class, this is for backward compatibility with 1.07.</b>
  */
-public final class NativeOSXViewer extends BaseQuickTimeDataViewer {
+public final class NativeOSXViewer extends BaseDataViewer {
 
 
     private long timeOfPrevSeek = 0;
@@ -70,7 +70,7 @@ public final class NativeOSXViewer extends BaseQuickTimeDataViewer {
     }
 
     @Override
-    protected void setQTVolume(final float volume) {
+    protected void setPlayerVolume(final float volume) {
 
         if (movie == null) {
             return;
@@ -102,7 +102,7 @@ public final class NativeOSXViewer extends BaseQuickTimeDataViewer {
     }
 
     @Override
-    protected void setQTDataFeed(final File videoFile) {
+    protected void setPlayerSourceFile(final File videoFile) {
 
         // Ensure that the native hierarchy is set up
         this.addNotify();
@@ -111,8 +111,8 @@ public final class NativeOSXViewer extends BaseQuickTimeDataViewer {
 
         this.add(movie, BorderLayout.CENTER);
 
-//        setBounds(getX(), getY(), (int) nativeVideoSize.getWidth(),
-//                (int) nativeVideoSize.getHeight());
+//        setBounds(getX(), getY(), (int) originalVideoSize.getWidth(),
+//                (int) originalVideoSize.getHeight());
 //
 
 
@@ -143,13 +143,13 @@ public final class NativeOSXViewer extends BaseQuickTimeDataViewer {
     }
 
     @Override
-    protected Dimension getQTVideoSize() {
+    protected Dimension getOriginalVideoSize() {
         System.err.println(movie.id);
         return new Dimension((int) movie.getMovieWidth(movie.id), (int) movie.getMovieHeight(movie.id));
     }
 
     @Override
-    protected float getQTFPS() {
+    protected float getPlayerFramesPerSecond() {
         float fps = movie.getFPS(movie.id);
         if (fps <= 1) {
             try {
@@ -161,7 +161,7 @@ public final class NativeOSXViewer extends BaseQuickTimeDataViewer {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            assumedFPS = true;
+            isAssumedFramesPerSecond = true;
             return 29.97f;
         }
         return movie.getFPS(movie.id);
@@ -240,7 +240,7 @@ public final class NativeOSXViewer extends BaseQuickTimeDataViewer {
      * {@inheritDoc}
      */
     @Override
-    public void seekTo(final long position) {
+    public void seek(final long position) {
 
 //        System.out.println("ASKED FOR SEEK TO " + position);
 //        System.out.println(Arrays.toString(Thread.currentThread().getStackTrace()));

@@ -12,17 +12,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.datavyu.plugins.quicktime;
+package org.datavyu.plugins;
 
 import net.miginfocom.swing.MigLayout;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.models.db.DataStore;
 import org.datavyu.models.id.Identifier;
-import org.datavyu.plugins.CustomActions;
-import org.datavyu.plugins.CustomActionsAdapter;
-import org.datavyu.plugins.DataViewer;
-import org.datavyu.plugins.ViewerStateListener;
 import org.datavyu.views.DataController;
 import org.datavyu.views.DatavyuDialog;
 import org.datavyu.views.component.DefaultTrackPainter;
@@ -30,7 +26,6 @@ import org.datavyu.views.component.TrackPainter;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -41,98 +36,82 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
+/**
+ * This base viewer supports basic viewing operations common to videos.
+ * These are sound volume control and display size. It provides controls
+ * to the user about the video stream.
+ */
+public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer {
 
-public abstract class BaseQuickTimeDataViewer extends DatavyuDialog
-        implements DataViewer {
+    /** Tooltip text for volume icon */
+    private static final String VOLUME_TOOLTIP = "Change volume";
 
-    /**
-     * Tooltip text for volume icon
-     */
-    public static final String VOLUME_TOOLTIP = "Change volume";
-    /**
-     * Tooltip text for resize icon
-     */
-    public static final String RESIZE_TOOLTIP = "Resize video";
-    /**
-     * The logger for this class.
-     */
-    private static Logger LOGGER = LogManager.getLogger(BaseQuickTimeDataViewer.class);
-    /**
-     * Icon for displaying volume slider.
-     */
-    private final ImageIcon volumeIcon = new ImageIcon(getClass().getResource(
-            "/icons/volume.png"));
-    /**
-     * Volume slider icon for when the video is hidden (volume is muted).
-     */
-    private final ImageIcon mutedIcon = new ImageIcon(getClass().getResource(
-            "/icons/volume-muted.png"));
-    /**
-     * Icon for resizing the video.
-     */
-    private final ImageIcon resizeIcon = new ImageIcon(getClass().getResource(
-            "/icons/resize.png"));
-    /**
-     * The list of listeners interested in changes made to the project.
-     */
-    private final List<ViewerStateListener> viewerListeners =
-            new LinkedList<ViewerStateListener>();
-    /**
-     * Stores the desired volume the plugin should play at.
-     */
+    /** Tooltip text for resize icon */
+    private static final String RESIZE_TOOLTIP = "Resize video";
+
+    /** Logger for this class */
+    private static Logger logger = LogManager.getLogger(BaseDataViewer.class);
+
+    /** Icon for volume slider */
+    private final ImageIcon volumeIcon = new ImageIcon(
+            getClass().getResource("/icons/volume.png"));
+
+    /** Icon for when volume is muted */
+    private final ImageIcon mutedIcon = new ImageIcon(
+            getClass().getResource("/icons/volume-muted.png"));
+
+    /** Icon for resizing the video */
+    private final ImageIcon resizeIcon = new ImageIcon(
+            getClass().getResource("/icons/resize.png"));
+
+    /** List of listeners interested in changes made to the project */
+    private final List<ViewerStateListener> viewerListeners = new LinkedList<ViewerStateListener>();
+
+    /** Stores the desired volume the plugin should play at. */
     protected float volume = 1f;
-    /**
-     * Is the plugin visible?
-     */
+
+    /** Visibility control */
     protected boolean isVisible = true;
-    protected boolean assumedFPS = false;
-    /**
-     * The original size of the movie when first loaded.
-     */
-    protected Dimension nativeVideoSize;
-    /**
-     * Rate for playback.
-     */
-    private float playRate;
-    /**
-     * Frames per second.
-     */
-    private float fps = -1;
-    /**
-     * parent controller.
-     */
-    private DataController parent;
-    /**
-     * The playback offset of the movie in milliseconds.
-     */
-    private long offset;
-    /**
-     * Is the movie currently playing?
-     */
-    private boolean playing;
-    /**
-     * The current video file that this viewer is representing.
-     */
-    private File mediaFile;
-    /**
-     * Volume slider.
-     */
+
+    /** assumed frames per second */
+    protected boolean isAssumedFramesPerSecond = false;
+
+    /** Original size of the movie */
+    private Dimension originalVideoSize;
+
+    /** The playback speed */
+    // TODO: Initial value?
+    private float playBackSpeed;
+
+    /** Frames per second */
+    private float framesPerSecond = -1;
+
+    /** Data controller. */
+    private DataController dataController;
+
+    /** The playback offset of the movie in milliseconds */
+    // TODO: Why do we have this offset? Is it the current time in the stream?
+    private long offset = 0;
+
+    /** Is this movie currently playing? */
+    private boolean playing = false;
+
+    /** The current video file that this viewer is representing */
+    private File sourceFile;
+
+    /** Volume slider */
     private JSlider volumeSlider;
-    /**
-     * Dialog containing volume slider.
-     */
+
+    /** Dialog containing volume slider */
     private JDialog volumeDialog;
-    /**
-     * Volume button.
-     */
+
+    /** Volume button */
     private JButton volumeButton;
-    /**
-     * Resize button.
-     */
+
+    /** Resize button */
     private JButton resizeButton;
-    /**
-     * Custom actions handler.
-     */
+
+    /** Custom actions handler */
     private CustomActions actions = new CustomActionsAdapter() {
         @Override
         public AbstractButton getActionButton1() {
@@ -149,44 +128,17 @@ public abstract class BaseQuickTimeDataViewer extends DatavyuDialog
             return null;
         }
     };
-    /**
-     * A context menu for resizing the video.
-     */
-    private JPopupMenu menuContext = new JPopupMenu();
-    /**
-     * Menu item for quarter size.
-     */
-    private JMenuItem menuItemQuarter;
-    /**
-     * Menu item for half size.
-     */
-    private JMenuItem menuItemHalf;
-    /**
-     * Menu item for three quarters size.
-     */
-    private JMenuItem menuItemThreeQuarters;
-    /**
-     * Menu item for full size.
-     */
-    private JMenuItem menuItemFull;
 
-    //TODO: These may be better suited for a resoure bundle and properties file
-    private JMenuItem menuItemOneAndHalf;
-    private JMenuItem menuItemDouble;
-    /**
-     * ID of this data viewer.
-     */
+    /** A context menu for resizing the video */
+    private JPopupMenu menuForResize = new JPopupMenu();
+
+    /** Identifier of this data viewer */
     private Identifier id;
-    
-    // ------------------------------------------------------------------------
-    // [initialization]
-    //
 
     /**
      * Constructor - creates new video viewer.
      */
-    public BaseQuickTimeDataViewer(final java.awt.Frame parent,
-                                   final boolean modal) {
+    public BaseDataViewer(final java.awt.Frame parent, final boolean modal) {
 
         super(parent, modal);
 
@@ -198,23 +150,12 @@ public abstract class BaseQuickTimeDataViewer extends DatavyuDialog
         volumeButton.setBorderPainted(false);
         volumeButton.setContentAreaFilled(false);
         volumeButton.setToolTipText(VOLUME_TOOLTIP);
-        volumeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                handleActionButtonEvent1(e);
-            }
-        });
-
+        volumeButton.addActionListener(e -> handleActionButtonEvent1(e));
         volumeSlider = new JSlider(JSlider.VERTICAL, 0, 100, 70);
         volumeSlider.setMajorTickSpacing(10);
         volumeSlider.setPaintTicks(true);
         volumeSlider.setName("volumeSlider");
-        volumeSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(final ChangeEvent e) {
-                handleVolumeSliderEvent(e);
-            }
-        });
-
+        volumeSlider.addChangeListener(e -> handleVolumeSliderEvent(e));
         volumeDialog = new JDialog(parent, false);
         volumeDialog.setUndecorated(true);
         volumeDialog.setVisible(false);
@@ -240,57 +181,26 @@ public abstract class BaseQuickTimeDataViewer extends DatavyuDialog
         resizeButton.setBorderPainted(false);
         resizeButton.setContentAreaFilled(false);
         resizeButton.setToolTipText(RESIZE_TOOLTIP);
-        resizeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                handleActionButtonEvent2(e);
-            }
-        });
-
-        menuItemQuarter = new JMenuItem("25% size");
-        menuItemQuarter.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                scaleVideo(0.25f);
-            }
-        });
-        menuItemHalf = new JMenuItem("50% size");
-        menuItemHalf.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                scaleVideo(0.5f);
-            }
-        });
-        menuItemThreeQuarters = new JMenuItem("75% size");
-        menuItemThreeQuarters.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                scaleVideo(0.75f);
-            }
-        });
-        menuItemFull = new JMenuItem("100% size");
-        menuItemFull.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                scaleVideo(1);
-            }
-        });
-        menuItemOneAndHalf = new JMenuItem("150% size");
-        menuItemOneAndHalf.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                scaleVideo(1.5f);
-            }
-        });
-        menuItemDouble = new JMenuItem("200% size");
-        menuItemDouble.addActionListener(new ActionListener() {
-            public void actionPerformed(final ActionEvent e) {
-                scaleVideo(2);
-            }
-        });
-        menuContext.add(menuItemQuarter);
-        menuContext.add(menuItemHalf);
-        menuContext.add(menuItemThreeQuarters);
-        menuContext.add(menuItemFull);
-        menuContext.add(menuItemOneAndHalf);
-        menuContext.add(menuItemDouble);
-        menuContext.setName("menuContext");
-
+        resizeButton.addActionListener(e -> handleActionButtonEvent2(e));
+        JMenuItem menuItemQuarter = new JMenuItem("25% size");
+        menuItemQuarter.addActionListener(e -> resizeVideo(0.25f));
+        JMenuItem menuItemHalf = new JMenuItem("50% size");
+        menuItemHalf.addActionListener(e -> resizeVideo(0.5f));
+        JMenuItem menuItemThreeQuarters = new JMenuItem("75% size");
+        menuItemThreeQuarters.addActionListener(e -> resizeVideo(0.75f));
+        JMenuItem menuItemFull = new JMenuItem("100% size");
+        menuItemFull.addActionListener(e -> resizeVideo(1.0f));
+        JMenuItem menuItemOneAndHalf = new JMenuItem("150% size");
+        menuItemOneAndHalf.addActionListener(e -> resizeVideo(1.5f));
+        JMenuItem menuItemDouble = new JMenuItem("200% size");
+        menuItemDouble.addActionListener(e -> resizeVideo(2.0f));
+        menuForResize.add(menuItemQuarter);
+        menuForResize.add(menuItemHalf);
+        menuForResize.add(menuItemThreeQuarters);
+        menuForResize.add(menuItemFull);
+        menuForResize.add(menuItemOneAndHalf);
+        menuForResize.add(menuItemDouble);
+        menuForResize.setName("menuForResize");
         initComponents();
     }
 
@@ -306,23 +216,30 @@ public abstract class BaseQuickTimeDataViewer extends DatavyuDialog
      * the volume).
      */
     private void setVolume() {
-        setQTVolume(isVisible ? volume : 0F);
+        setPlayerVolume(isVisible ? volume : 0F);
         volumeButton.setIcon(getVolumeButtonIcon());
     }
 
     public void setVolume(float volume) {
-        setQTVolume(volume);
+        setPlayerVolume(volume);
     }
 
     public float getVolume() {
         return volume;
     }
 
-    protected abstract void setQTVolume(float volume);
+    protected abstract void setPlayerVolume(float volume);
 
-    // ------------------------------------------------------------------------
-    // [interface] org.datavyu.views.continuous.DataViewer
-    //
+    protected abstract void setPlayerSourceFile(final File videoFile);
+
+    protected abstract Dimension getOriginalVideoSize();
+
+    /**
+     * {@inheritDoc}
+     */
+    public abstract void seek(final long position);
+
+    protected abstract float getPlayerFramesPerSecond();
 
     /**
      * @return The duration of the movie in milliseconds. If -1 is returned, the
@@ -330,9 +247,14 @@ public abstract class BaseQuickTimeDataViewer extends DatavyuDialog
      */
     public abstract long getDuration();
 
+    /**
+     * Get the aspect ratio for the images.
+     *
+     * @return Aspect ratio as width/height.
+     */
     private double getAspectRatio() {
-        return (nativeVideoSize != null)
-                ? (nativeVideoSize.getWidth() / nativeVideoSize.getHeight()) : 1;
+        return (originalVideoSize != null)
+                ? (originalVideoSize.getWidth() / originalVideoSize.getHeight()) : 1;
     }
 
     @Override
@@ -348,12 +270,15 @@ public abstract class BaseQuickTimeDataViewer extends DatavyuDialog
     }
 
     /**
-     * Scales the video to the desired ratio.
+     * Resizes the video to the desired scale.
      *
      * @param scale The new ratio to scale to, where 1.0 = original size, 2.0 = 200% zoom, etc.
      */
-    protected void scaleVideo(final float scale) {
-        int scaleHeight = (int) (nativeVideoSize.getHeight() * scale);
+    protected void resizeVideo(final float scale) {
+
+        // TODO: Better do some resampling!!
+
+        int scaleHeight = (int) (originalVideoSize.getHeight() * scale);
 
         // lock the aspect ratio
         if (getAspectRatio() > 0.0) {
@@ -364,16 +289,27 @@ public abstract class BaseQuickTimeDataViewer extends DatavyuDialog
             setSize(newWidth, newHeight);
             validate();
         }
-
         notifyChange();
     }
 
+    /**
+     * Get the width of the video image.
+     *
+     * @return
+     */
     public int getVideoHeight() {
+        // TODO:Have variables for JUST the video size
         return getHeight() - getInsets().bottom - getInsets().top;
     }
 
+    /**
+     * Set the height of the video.
+     *
+     * @param height
+     */
     private void setVideoHeight(final int height) {
 
+        // TODO: How can that happen?
         if (!(getAspectRatio() > 0)) {
             return;
         }
@@ -393,15 +329,16 @@ public abstract class BaseQuickTimeDataViewer extends DatavyuDialog
     /**
      * @return The playback offset of the movie in milliseconds.
      */
-    public long getOffset() {
+    public long getStartTime() {
         return offset;
     }
 
     /**
      * @param offset The playback offset of the movie in milliseconds.
      */
-    public void setOffset(final long offset) {
+    public void setStartTime(final long offset) {
         this.offset = offset;
+        // TODO: Should set offset in stream?
     }
 
     /**
@@ -411,89 +348,83 @@ public abstract class BaseQuickTimeDataViewer extends DatavyuDialog
         return this;
     }
 
-    protected abstract void setQTDataFeed(final File videoFile);
-
-    protected abstract Dimension getQTVideoSize();
-
-    protected abstract float getQTFPS();
-
     public float getDetectedFrameRate() {
-        return getQTFPS();
+        return getPlayerFramesPerSecond();
     }
 
     /**
      * @return The file used to display this data feed.
      */
-    public File getDataFeed() {
-        return mediaFile;
+    public File getSourceFile() {
+        return sourceFile;
     }
 
     @Override
-    public void setDataFeed(final File mediaFile) {
-        this.mediaFile = mediaFile;
-        setTitle(mediaFile.getName());
-        setName(getClass().getSimpleName() + "-" + mediaFile.getName());
+    public void setSourceFile(final File sourceFile) {
+        this.sourceFile = sourceFile;
+        setTitle(sourceFile.getName());
+        setName(getClass().getSimpleName() + "-" + sourceFile.getName());
         pack();
         invalidate();
 
         // BugzID:679 + 2407: Need to make the window visible before we know the
         // dimensions because of a QTJava bug
         setDataViewerVisible(true);
-        setQTDataFeed(mediaFile);
+        setPlayerSourceFile(sourceFile);
 
-        nativeVideoSize = getQTVideoSize();
-        System.out.println("SETTING SIZE TO:" + nativeVideoSize);
-        setPreferredSize(nativeVideoSize);
-        setBounds(getX(), getY(), (int) nativeVideoSize.getWidth(),
-                (int) nativeVideoSize.getHeight());
+        originalVideoSize = getOriginalVideoSize();
+        System.out.println("SETTING SIZE TO:" + originalVideoSize);
+        setPreferredSize(originalVideoSize);
+        setBounds(getX(), getY(), (int) originalVideoSize.getWidth(),
+                (int) originalVideoSize.getHeight());
         pack();
 
-        if (fps == -1) {
-            fps = getQTFPS();
+        if (framesPerSecond == -1) {
+            framesPerSecond = getPlayerFramesPerSecond();
         } // otherwise we loaded it from the settings
 
         System.out.println("FPS:");
-        System.out.println(fps);
+        System.out.println(framesPerSecond);
 
         // Try to display the first frame
 //        setPlaybackSpeed(1.0f);
 //        play();
 //        stop();
-        seekTo(0L);
+        seek(0L);
 
 
     }
 
     /**
-     * Sets parent data controller.
+     * Sets dataController data controller.
      *
-     * @param dataController The data controller to be set as parent.
+     * @param dataController The data controller to be set as dataController.
      */
     public void setParentController(final DataController dataController) {
-        parent = dataController;
+        this.dataController = dataController;
     }
 
     /**
      * @return The frames per second.
      */
-    public float getFrameRate() {
-        return fps;
+    public float getFramesPerSecond() {
+        return framesPerSecond;
     }
     
-    public void setFrameRate(float fpsIn) {
-        fps = fpsIn;
-        assumedFPS = false;
+    public void setFramesPerSecond(float fps) {
+        framesPerSecond = fps;
+        isAssumedFramesPerSecond = false;
     }
 
     public float getPlaybackSpeed() {
-        return playRate;
+        return playBackSpeed;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void setPlaybackSpeed(final float rate) {
-        playRate = rate;
+    public void setPlaybackSpeed(final float speed) {
+        playBackSpeed = speed;
     }
 
     /**
@@ -520,11 +451,6 @@ public abstract class BaseQuickTimeDataViewer extends DatavyuDialog
     /**
      * {@inheritDoc}
      */
-    public abstract void seekTo(final long position);
-
-    /**
-     * {@inheritDoc}
-     */
     public abstract long getCurrentTime();
 
     /**
@@ -537,7 +463,6 @@ public abstract class BaseQuickTimeDataViewer extends DatavyuDialog
     /**
      * Shows an interface for toggling the playback volume.
      *
-     * @see org.datavyu.views.continuous.CustomActionListener
      * #handleActionButtonEvent1(java.awt.event.ActionEvent)
      */
     private void handleActionButtonEvent1(final ActionEvent event) {
@@ -553,7 +478,7 @@ public abstract class BaseQuickTimeDataViewer extends DatavyuDialog
     private void handleActionButtonEvent2(final ActionEvent event) {
 
         if (isVisible) {
-            menuContext.show(resizeButton.getParent(), resizeButton.getX(),
+            menuForResize.show(resizeButton.getParent(), resizeButton.getX(),
                     resizeButton.getY());
         }
     }
@@ -577,7 +502,7 @@ public abstract class BaseQuickTimeDataViewer extends DatavyuDialog
             String property = settings.getProperty("offset");
 
             if ((property != null) && !property.equals("")) {
-                setOffset(Long.parseLong(property));
+                setStartTime(Long.parseLong(property));
             }
 
             property = settings.getProperty("volume");
@@ -602,30 +527,30 @@ public abstract class BaseQuickTimeDataViewer extends DatavyuDialog
                 setVideoHeight(Integer.parseInt(property));
             }
 
-            property = settings.getProperty("fps");
+            property = settings.getProperty("framesPerSecond");
             System.out.println(property);
             if ((property != null) && !property.equals("")) {
-                fps = Float.parseFloat(property);
+                framesPerSecond = Float.parseFloat(property);
             }
 
 
         } catch (IOException e) {
-            LOGGER.error("Error loading settings", e);
+            logger.error("Error loading settings", e);
         }
     }
 
     public void storeSettings(final OutputStream os) {
         Properties settings = new Properties();
-        settings.setProperty("offset", Long.toString(getOffset()));
+        settings.setProperty("offset", Long.toString(getStartTime()));
         settings.setProperty("volume", Float.toString(volume));
         settings.setProperty("visible", Boolean.toString(isVisible));
         settings.setProperty("height", Integer.toString(getVideoHeight()));
-        settings.setProperty("fps", Float.toString(fps));
+        settings.setProperty("framesPerSecond", Float.toString(framesPerSecond));
 
         try {
             settings.store(os, null);
         } catch (IOException e) {
-            LOGGER.error("Error saving settings", e);
+            logger.error("Error saving settings", e);
         }
     }
 
@@ -657,7 +582,6 @@ public abstract class BaseQuickTimeDataViewer extends DatavyuDialog
                 formWindowClosing(evt);
             }
         });
-
         pack();
     }
 
@@ -691,7 +615,7 @@ public abstract class BaseQuickTimeDataViewer extends DatavyuDialog
     }
 
     @Override
-    public void setDatastore(final DataStore sDB) {
+    public void setDataStore(final DataStore sDB) {
         // not currently needed
     }
 
@@ -707,10 +631,7 @@ public abstract class BaseQuickTimeDataViewer extends DatavyuDialog
         setVolume();
     }
 
-    public boolean usingAssumedFPS() {
-        return assumedFPS;
-    }    
-    
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    // End of variables declaration//GEN-END:variables
+    public boolean isAssumedFramesPerSecond() {
+        return isAssumedFramesPerSecond;
+    }
 }

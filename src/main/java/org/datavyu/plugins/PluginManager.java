@@ -18,7 +18,6 @@ import com.google.common.collect.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
-import org.datavyu.plugins.ffmpegplayer.FFmpegPlugin;
 import org.datavyu.plugins.javafx.JavaFxPlugin;
 import org.datavyu.plugins.nativeosxplayer.NativeOSXPlayerFactory;
 import org.datavyu.plugins.quicktime.QTDataViewer;
@@ -52,7 +51,7 @@ public final class PluginManager {
      * A reference to the interface that plugins must override.
      */
 
-    /* WARNING: PLUGIN_CLASS, static { PLUGIN_CLASS }, and LOGGER and INSTANCE MUST APPEAR IN THIS ORDER */
+    /* WARNING: PLUGIN_CLASS, static { PLUGIN_CLASS }, and logger and INSTANCE MUST APPEAR IN THIS ORDER */
     private static final Class<?> PLUGIN_CLASS;
 
     //
@@ -67,7 +66,7 @@ public final class PluginManager {
     /**
      * The logger for this class.
      */
-    private static Logger LOGGER = LogManager.getLogger(PluginManager.class.getName());
+    private static Logger logger = LogManager.getLogger(PluginManager.class.getName());
     /**
      * The single instance of the PluginManager for Datavyu.
      */
@@ -293,11 +292,11 @@ public final class PluginManager {
 
             // Whoops, something went bad. Chuck a spaz.
         } catch (ClassNotFoundException e) {
-            LOGGER.error("Unable to build Plugin", e);
+            logger.error("Unable to build Plugin", e);
         } catch (IOException ie) {
-            LOGGER.error("Unable to load jar file", ie);
+            logger.error("Unable to load jar file", ie);
         } catch (URISyntaxException se) {
-            LOGGER.error("Unable to build path to jar file", se);
+            logger.error("Unable to build path to jar file", se);
         }
     }
 
@@ -318,7 +317,7 @@ public final class PluginManager {
             method.setAccessible(true);
             method.invoke(sysLoader, new Object[]{f.toURL()});
         } catch (Throwable t) {
-            LOGGER.error("Unable to inject class into class path.", t);
+            logger.error("Unable to inject class into class path.", t);
         }
     }
 
@@ -387,7 +386,7 @@ public final class PluginManager {
                     plugins.add(p);
 
                     // BugzID:2110
-                    pluginClassifiers.put(p.getClassifier(), p);
+                    pluginClassifiers.put(p.getNamespace(), p);
 
                     final Class<? extends DataViewer> cdv = p.getViewerClass();
 
@@ -397,13 +396,13 @@ public final class PluginManager {
                 }
             }
         } catch (ClassNotFoundException e) {
-            LOGGER.error("Unable to find plugin.", e);
+            logger.error("Unable to find plugin.", e);
             e.printStackTrace();
         } catch (ClassFormatError e) {
-            LOGGER.error("Plugin with bad class format.", e);
+            logger.error("Plugin with bad class format.", e);
             e.printStackTrace();
         } catch (Exception e) {
-            LOGGER.error("Unable to instantiate plugin", e);
+            logger.error("Unable to instantiate plugin", e);
             e.printStackTrace();
         }
     }
@@ -533,7 +532,7 @@ public final class PluginManager {
 
             if (Datavyu.getPlatform() == Datavyu.Platform.WINDOWS) {
                 QTPlugin qtPlugin = new QTPlugin();
-                LOGGER.info("Loading windows plugin: " + qtPlugin.getPluginName());
+                logger.info("Loading windows plugin: " + qtPlugin.getPluginName());
                 return qtPlugin;
             }
 

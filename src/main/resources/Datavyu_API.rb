@@ -73,18 +73,18 @@ $pj = Datavyu.get_project_controller.get_project
 #   @return [Fixnum] offset time of the cell in milliseconds
 # @!attribute [rw] arglist
 #   @note Use RColumn methods to modify column codes. Changing this list for the cell has no effect on the column.
-#   @return [Array<String>] list of codes inherited from parent column.
+#   @return [Array<String>] list of codes inherited from dataController column.
 # @!attribute argvals
 #   @note Dangerous to modify this directly since the order of the values must match the order of the code names.
 #   @return [Array] list of code values
 # @!attribute db_cell
 #   @note MODIFY AT OWN RISK.
 #   @return native Datavyu object corresponding to this cell.
-# @!attribute parent
+# @!attribute dataController
 #   @note MODIFY AT OWN RISK.
 #   @return [RColumn] the column this cell belongs to
 class RCell
-  attr_accessor :ordinal, :onset, :offset, :arglist, :argvals, :db_cell, :parent
+  attr_accessor :ordinal, :onset, :offset, :arglist, :argvals, :db_cell, :dataController
 
   # @!visibility private
   # @note This method is not for general use, it is used only when creating
@@ -370,7 +370,7 @@ class RColumn
         c.onset = cell.getOnset
         c.offset = cell.getOffset
         c.db_cell = cell
-        c.parent = @name
+        c.dataController = @name
         vals = Array.new
         if cell.getVariable.getRootNode.type == Argument::Type::MATRIX
           for val in cell.getValue().getArguments
@@ -409,7 +409,7 @@ class RColumn
         c.change_arg(code, cell.get_arg(code)) if cell.arglist.include?(code)
       end
     end
-    c.parent = @name
+    c.dataController = @name
     @cells << c
     return c
   end
@@ -862,7 +862,7 @@ def set_column(*args)
   for cell in var.cells
     # Copy the information from the ruby variable to the new cell
 
-    if cell.db_cell == nil or cell.parent != name
+    if cell.db_cell == nil or cell.dataController != name
       cell.db_cell = var.db_var.createCell()
     end
 

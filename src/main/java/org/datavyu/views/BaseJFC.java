@@ -20,6 +20,8 @@ import org.datavyu.plugins.Plugin;
 import javax.swing.*;
 import java.util.List;
 
+
+// TODO: What does JFC stand for?  Explain or write it out.
 public abstract class BaseJFC extends PluginChooser {
     protected JComboBox pluginsBox;
     protected List<PluginCallback> plugins = Lists.newArrayList();

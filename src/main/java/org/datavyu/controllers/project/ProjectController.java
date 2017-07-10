@@ -391,22 +391,22 @@ public final class ProjectController {
                     Datavyu.getApplication().getMainFrame(), false);
             viewer.setIdentifier(IDController.generateIdentifier());
 
-            viewer.setDataFeed(file);
-            viewer.setDatastore(dataStore);
+            viewer.setSourceFile(file);
+            viewer.setDataStore(dataStore);
 
             if (setting.getSettingsId() != null) {
                 // new project file
                 viewer.loadSettings(setting.getSettingsInputStream());
             } else {
                 // old project file
-                viewer.setOffset(setting.getOffset());
+                viewer.setStartTime(setting.getOffset());
             }
 
-            dataController.addViewer(viewer, viewer.getOffset());
+            dataController.addViewer(viewer, viewer.getStartTime());
 
             dataController.addTrack(viewer.getIdentifier(),
                     plugin.getTypeIcon(), file.getAbsolutePath(), file.getName(),
-                    viewer.getDuration(), viewer.getOffset(),
+                    viewer.getDuration(), viewer.getStartTime(),
                     viewer.getTrackPainter());
 
             if (setting.getTrackSettings() != null) {
@@ -523,16 +523,16 @@ public final class ProjectController {
 
         for (DataViewer viewer : dataController.getDataViewers()) {
             ViewerSetting vs = new ViewerSetting();
-            vs.setFilePath(viewer.getDataFeed().getAbsolutePath());
+            vs.setFilePath(viewer.getSourceFile().getAbsolutePath());
             vs.setPluginName(viewer.getClass().getName());
 
             // BugzID:2108
             Plugin p = PluginManager.getInstance().getAssociatedPlugin(
                     vs.getPluginName());
-            assert p.getClassifier() != null;
-            assert !"".equals(p.getClassifier());
+            assert p.getNamespace() != null;
+            assert !"".equals(p.getNamespace());
 
-            vs.setPluginClassifier(p.getClassifier());
+            vs.setPluginClassifier(p.getNamespace());
 
             // BugzID:1806
             vs.setSettingsId(Integer.toString(settingsId++));

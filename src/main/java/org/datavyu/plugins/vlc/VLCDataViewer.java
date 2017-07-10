@@ -193,11 +193,11 @@ public class VLCDataViewer implements DataViewer {
     }
 
     @Override
-    public float getFrameRate() {
+    public float getFramesPerSecond() {
         return fps;
     }
 
-    public void setFrameRate(float fpsIn) {
+    public void setFramesPerSecond(float fpsIn) {
         fps = fpsIn;
         assumedFPS = false;
     }
@@ -219,12 +219,12 @@ public class VLCDataViewer implements DataViewer {
     }
 
     @Override
-    public long getOffset() {
+    public long getStartTime() {
         return offset;
     }
 
     @Override
-    public void setOffset(final long offset) {
+    public void setStartTime(final long offset) {
         this.offset = offset;
     }
 
@@ -239,12 +239,12 @@ public class VLCDataViewer implements DataViewer {
     }
 
     @Override
-    public File getDataFeed() {
+    public File getSourceFile() {
         return data;
     }
 
     @Override
-    public void setDataFeed(final File dataFeed) {
+    public void setSourceFile(final File dataFeed) {
         data = dataFeed;
         vlcDialog.setVisible(true);
         vlcDialog.setName(vlcDialog.getName() + "-" + dataFeed.getName());
@@ -317,7 +317,7 @@ public class VLCDataViewer implements DataViewer {
     }
 
     @Override
-    public void seekTo(final long position) {
+    public void seek(final long position) {
         Runnable edtTask = new Runnable() {
             @Override
             public void run() {
@@ -401,7 +401,7 @@ public class VLCDataViewer implements DataViewer {
     public void storeSettings(final OutputStream os) {
         try {
             Properties settings = new Properties();
-            settings.setProperty("offset", Long.toString(getOffset()));
+            settings.setProperty("offset", Long.toString(getStartTime()));
 //            settings.setProperty("volume", Float.toString());
 //            settings.setProperty("visible", Boolean.toString());
             settings.setProperty("height", Integer.toString(vlcDialog.getHeight()));
@@ -455,7 +455,7 @@ public class VLCDataViewer implements DataViewer {
     }
 
     @Override
-    public void setDatastore(final DataStore sDB) {
+    public void setDataStore(final DataStore sDB) {
         // TODO Auto-generated method stub
     }
 
@@ -465,7 +465,7 @@ public class VLCDataViewer implements DataViewer {
         // TODO Auto-generated method stub
     }
 
-    public boolean usingAssumedFPS() {
+    public boolean isAssumedFramesPerSecond() {
         return assumedFPS;
     }
 

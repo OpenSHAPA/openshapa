@@ -61,18 +61,18 @@ public interface DataViewer {
     long getDuration();
 
     /**
-     * Retrieve the start time offset of the underlying data stream.
+     * Retrieve the start time of the underlying data stream.
      *
-     * @return Start time offset in milliseconds.
+     * @return Start time in milliseconds.
      */
-    long getOffset();
+    long getStartTime();
 
     /**
-     * Set the start time offset of the underlying data stream.
+     * Set the start time of the underlying data stream.
      *
-     * @param offset Start time offset in milliseconds.
+     * @param startTime Start time in milliseconds.
      */
-    void setOffset(final long offset);
+    void setStartTime(final long startTime);
 
     /**
      * Get the display window.
@@ -91,12 +91,14 @@ public interface DataViewer {
      *
      * @param dataFeed The new data feed for this viewer.
      */
-    void setDataFeed(final File dataFeed);
+    void setSourceFile(final File dataFeed);
 
     /**
+     * Return the file of the data.
+     *
      * @return The data feed being used by this viewer.
      */
-    File getDataFeed();
+    File getSourceFile();
 
     /**
      * Sets the parent data controller for this data viewer.
@@ -108,12 +110,12 @@ public interface DataViewer {
     /**
      * @return Currently stored frames per second.
      */
-    float getFrameRate();
+    float getFramesPerSecond();
     
     /**
-     * @param fpsIn framerate to assign
+     * @param fps framerate to assign
      */
-    void setFrameRate(float fpsIn);
+    void setFramesPerSecond(float fps);
     
     /**
      * @return Detected frames per second.
@@ -144,16 +146,16 @@ public interface DataViewer {
     /**
      * Set the playback speed.
      *
-     * @param rate Positive implies forwards, while negative implies reverse.
+     * @param speed Positive implies forwards, while negative implies reverse.
      */
-    void setPlaybackSpeed(float rate);
+    void setPlaybackSpeed(float speed);
 
     /**
-     * Set the playback position to an absolute value.
+     * Set the stream position.
      *
-     * @param position The absolute millisecond playback position.
+     * @param position Position in milliseconds.
      */
-    void seekTo(long position);
+    void seek(long position);
 
     /**
      * @return Custom track painter implementation. Must not return null.
@@ -202,15 +204,19 @@ public interface DataViewer {
      *
      * @param sDB The DataStore to use.
      */
-    void setDatastore(final DataStore sDB);
+    void setDataStore(final DataStore sDB);
 
     /**
      * Unload all data, to prepare for being closed- essentially the opposite
-     * of setDataFeed. Can be called to reduce the data viewer to a low-resource
+     * of setSourceFile. Can be called to reduce the data viewer to a low-resource
      * state.
      */
     void clearDataFeed();
-    
-    public boolean usingAssumedFPS();
 
+    /**
+     * Did we assume the frames per second plaback rate?
+     *
+     * @return True if we assumed the playback rate; otherwise false.
+     */
+    boolean isAssumedFramesPerSecond();
 }

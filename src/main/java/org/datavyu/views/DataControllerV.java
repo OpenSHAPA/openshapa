@@ -411,9 +411,9 @@ public final class DataControllerV extends DatavyuDialog
                     DataViewer dataViewer = plugin.getNewDataViewer(Datavyu
                             .getApplication().getMainFrame(), false);
                     dataViewer.setIdentifier(IDController.generateIdentifier());
-                    dataViewer.setDataFeed(f);
-                    dataViewer.seekTo(clock.getTime());
-                    dataViewer.setDatastore(Datavyu.getProjectController()
+                    dataViewer.setSourceFile(f);
+                    dataViewer.seek(clock.getTime());
+                    dataViewer.setDataStore(Datavyu.getProjectController()
                             .getDataStore());
                     addDataViewer(plugin.getTypeIcon(), dataViewer, f,
                             dataViewer.getTrackPainter());
@@ -430,7 +430,7 @@ public final class DataControllerV extends DatavyuDialog
                     t.printStackTrace(pw);
                     // stack trace as a string
 
-                    if (plugin.getClassifier().contains("quicktime")) {
+                    if (plugin.getNamespace().contains("quicktime")) {
                         JLabel label = new JLabel();
                         Font font = label.getFont();
 
@@ -549,12 +549,12 @@ public final class DataControllerV extends DatavyuDialog
 
             // We are playing back at a rate which is too fast and probably
             // won't allow us to stream all the information at the file. We fake
-            // playback by doing a bunch of seekTo's.
+            // playback by doing a bunch of seek's.
             if (playbackModel.isFakePlayback()) {
 
                 for (DataViewer v : viewers) {
-                    if ((time > v.getOffset()) && isWithinPlayRange(time, v)) {
-                        v.seekTo(time - v.getOffset());
+                    if ((time > v.getStartTime()) && isWithinPlayRange(time, v)) {
+                        v.seek(time - v.getStartTime());
                     }
                 }
 
@@ -576,7 +576,7 @@ public final class DataControllerV extends DatavyuDialog
                          */
 
                         if (!v.isPlaying() && isWithinPlayRange(time, v)) {
-                            //v.seekTo(time - v.getOffset());
+                            //v.seek(time - v.getStartTime());
                             v.play();
                         }
 
@@ -588,9 +588,9 @@ public final class DataControllerV extends DatavyuDialog
 
                         // For plugins with low data rate, use frame rate
                         // to determine threshold.
-                        if ((0 < v.getFrameRate())
-                                && (v.getFrameRate() <= LOW_RATE)) {
-                            thresh = (long) (ONE_SECOND / v.getFrameRate()
+                        if ((0 < v.getFramesPerSecond())
+                                && (v.getFramesPerSecond() <= LOW_RATE)) {
+                            thresh = (long) (ONE_SECOND / v.getFramesPerSecond()
                                     / clock.getRate());
                         }
 
@@ -600,8 +600,8 @@ public final class DataControllerV extends DatavyuDialog
 //                        if (v.isPlaying()
 //                                && (Math.abs(
 //                                v.getCurrentTime()
-//                                        - (time - v.getOffset())) > thresh)) {
-////                            v.seekTo(time - v.getOffset());
+//                                        - (time - v.getStartTime())) > thresh)) {
+////                            v.seek(time - v.getStartTime());
 //                        }
                     }
                 }
@@ -640,8 +640,8 @@ public final class DataControllerV extends DatavyuDialog
      * @return True if data exists at this time, and false otherwise.
      */
     private boolean isWithinPlayRange(final long time, final DataViewer view) {
-        return (time >= view.getOffset())
-                && (time < (view.getOffset() + view.getDuration()));
+        return (time >= view.getStartTime())
+                && (time < (view.getStartTime() + view.getDuration()));
     }
 
     /*
@@ -704,7 +704,7 @@ public final class DataControllerV extends DatavyuDialog
                             viewerTime = viewerTime + stepSize - mod;
                         }
 
-                        viewer.seekTo(viewerTime);
+                        viewer.seek(viewerTime);
 
                         clock.setTimeDontNotify(viewerTime);
                         resetSync();
@@ -722,7 +722,7 @@ public final class DataControllerV extends DatavyuDialog
                 }
 
                 if (isWithinPlayRange(time, viewer)) {
-//                    viewer.seekTo(time - viewer.getOffset());
+//                    viewer.seek(time - viewer.getStartTime());
                 }
             }
         }
@@ -739,7 +739,7 @@ public final class DataControllerV extends DatavyuDialog
 
         // If rate is faster than two times - we need to fake playback to give
         // the illusion of 'smooth'. We do this by stopping the dataviewer and
-        // doing many seekTo's to grab individual frames.
+        // doing many seek's to grab individual frames.
         if (Math.abs(rate) > 2.0 || rate < -1) {
             playbackModel.setFakePlayback(true);
 
@@ -778,7 +778,7 @@ public final class DataControllerV extends DatavyuDialog
             System.out.println(time);
             try {
                 if (isWithinPlayRange(time, viewer) && time != viewer.getCurrentTime()) {
-                    viewer.seekTo(time - viewer.getOffset());
+                    viewer.seek(time - viewer.getStartTime());
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -830,8 +830,8 @@ public final class DataControllerV extends DatavyuDialog
         while (it.hasNext()) {
             DataViewer dv = it.next();
 
-            if ((dv.getDuration() + dv.getOffset()) > maxDuration) {
-                maxDuration = dv.getDuration() + dv.getOffset();
+            if ((dv.getDuration() + dv.getStartTime()) > maxDuration) {
+                maxDuration = dv.getDuration() + dv.getStartTime();
             }
         }
 
@@ -1358,7 +1358,7 @@ public final class DataControllerV extends DatavyuDialog
                     float newfps = Float.parseFloat(stepSizeTextField.getText());
                     playbackModel.setCurrentFPS(newfps);
                     for (DataViewer dv : viewers) {
-                        dv.setFrameRate(newfps);
+                        dv.setFramesPerSecond(newfps);
                     }
                     stepSizeTextField.setEnabled(false);
                     updateStepSizePanelColor();
@@ -1396,7 +1396,7 @@ public final class DataControllerV extends DatavyuDialog
         boolean assumed = false;
         if (viewers != null) {
             for (DataViewer dv : viewers) {
-                if (dv.usingAssumedFPS()) {
+                if (dv.isAssumedFramesPerSecond()) {
                     assumed = true;
                 }
             }
@@ -1530,7 +1530,7 @@ public final class DataControllerV extends DatavyuDialog
 
         // Add the file to the tracks information panel
         addTrack(viewer.getIdentifier(), icon, f.getAbsolutePath(), f.getName(),
-                viewer.getDuration(), viewer.getOffset(), trackPainter);
+                viewer.getDuration(), viewer.getStartTime(), trackPainter);
 
         Datavyu.getProjectController().projectChanged();
     }
@@ -1572,7 +1572,7 @@ public final class DataControllerV extends DatavyuDialog
         // Add the QTDataViewer to the list of viewers we are controlling.
         viewers.add(viewer);
         viewer.setParentController(this);
-        viewer.setOffset(offset);
+        viewer.setStartTime(offset);
 
         // It is possible that the viewer will be handling its own window. In that case
         // dont worry about it.
@@ -1586,7 +1586,7 @@ public final class DataControllerV extends DatavyuDialog
         }
 
         // adjust the overall frame rate.
-        float fps = viewer.getFrameRate();
+        float fps = viewer.getFramesPerSecond();
 
         if (fps > playbackModel.getCurrentFPS()) {
             playbackModel.setCurrentFPS(fps);
@@ -1597,14 +1597,14 @@ public final class DataControllerV extends DatavyuDialog
         // Update track viewer.
         long maxDuration = playbackModel.getMaxDuration();
 
-        if ((viewer.getOffset() + viewer.getDuration()) > maxDuration) {
-            maxDuration = viewer.getOffset() + viewer.getDuration();
+        if ((viewer.getStartTime() + viewer.getDuration()) > maxDuration) {
+            maxDuration = viewer.getStartTime() + viewer.getDuration();
         }
 
         // BugzID:2114 - If this is the first viewer we are adding, always reset
         // max duration.
         if (viewers.size() == 1) {
-            maxDuration = viewer.getOffset() + viewer.getDuration();
+            maxDuration = viewer.getStartTime() + viewer.getDuration();
         }
 
         mixerController.getMixerModel().getViewportModel().setViewportMaxEnd(
@@ -1740,7 +1740,7 @@ public final class DataControllerV extends DatavyuDialog
              * the project file.
              */
             if (viewer.getIdentifier().equals(e.getTrackId())) {
-                viewer.setOffset(e.getOffset());
+                viewer.setStartTime(e.getOffset());
             }
         }
 
@@ -1751,8 +1751,8 @@ public final class DataControllerV extends DatavyuDialog
 
         for (DataViewer viewer : viewers) {
 
-            if ((viewer.getDuration() + viewer.getOffset()) > maxDuration) {
-                maxDuration = viewer.getDuration() + viewer.getOffset();
+            if ((viewer.getDuration() + viewer.getStartTime()) > maxDuration) {
+                maxDuration = viewer.getDuration() + viewer.getStartTime();
             }
         }
 

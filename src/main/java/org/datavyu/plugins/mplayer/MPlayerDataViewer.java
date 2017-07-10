@@ -7,7 +7,7 @@ import org.datavyu.models.db.DataStore;
 import org.datavyu.plugins.CustomActions;
 import org.datavyu.plugins.CustomActionsAdapter;
 import org.datavyu.plugins.ViewerStateListener;
-import org.datavyu.plugins.quicktime.BaseQuickTimeDataViewer;
+import org.datavyu.plugins.BaseDataViewer;
 import org.datavyu.views.DataController;
 
 import javax.swing.*;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 
-public class MPlayerDataViewer extends BaseQuickTimeDataViewer {
+public class MPlayerDataViewer extends BaseDataViewer {
 
     private static final float FALLBACK_FRAME_RATE = 24.0f;
     private static final String VIDEO =
@@ -118,7 +118,7 @@ public class MPlayerDataViewer extends BaseQuickTimeDataViewer {
     }
 
     @Override
-    protected void setQTVolume(float volume) {
+    protected void setPlayerVolume(float volume) {
         javafxapp.setVolume(volume);
     }
 
@@ -152,27 +152,27 @@ public class MPlayerDataViewer extends BaseQuickTimeDataViewer {
     }
 
     @Override
-    public float getFrameRate() {
+    public float getFramesPerSecond() {
         return javafxapp.getFrameRate();
     }
 
-    public void setFrameRate(float fpsIn) {
+    public void setFramesPerSecond(float fpsIn) {
         fps = fpsIn;
         assumedFPS = false;
     }
 
     @Override
     public float getDetectedFrameRate() {
-        return getFrameRate();
+        return getFramesPerSecond();
     }
 
     @Override
-    public long getOffset() {
+    public long getStartTime() {
         return offset;
     }
 
     @Override
-    public void setOffset(final long offset) {
+    public void setStartTime(final long offset) {
         this.offset = offset;
     }
 
@@ -183,19 +183,19 @@ public class MPlayerDataViewer extends BaseQuickTimeDataViewer {
     }
 
     @Override
-    public File getDataFeed() {
+    public File getSourceFile() {
         return data;
     }
 
     @Override
-    public void setDataFeed(final File dataFeed) {
+    public void setSourceFile(final File sourceFile) {
 
         final CountDownLatch latch = new CountDownLatch(1);
         System.out.println("Setting datafeed");
-        data = dataFeed;
+        data = sourceFile;
         Platform.setImplicitExit(false);
 
-        javafxapp = new MPlayerApplication(dataFeed);
+        javafxapp = new MPlayerApplication(sourceFile);
 
         System.out.println(SwingUtilities.isEventDispatchThread());
         System.out.println(Platform.isFxApplicationThread());
@@ -238,25 +238,25 @@ public class MPlayerDataViewer extends BaseQuickTimeDataViewer {
      * @param scale The new ratio to scale to, where 1.0 = original size, 2.0 = 200% zoom, etc.
      */
     @Override
-    protected void scaleVideo(final float scale) {
+    protected void resizeVideo(final float scale) {
         javafxapp.setScale(scale);
 
         notifyChange();
     }
 
     @Override
-    protected void setQTDataFeed(File videoFile) {
+    protected void setPlayerSourceFile(File videoFile) {
 
     }
 
     @Override
-    protected Dimension getQTVideoSize() {
+    protected Dimension getOriginalVideoSize() {
         return null;
     }
 
     @Override
-    protected float getQTFPS() {
-        return getFrameRate();
+    protected float getPlayerFramesPerSecond() {
+        return getFramesPerSecond();
     }
 
     @Override
@@ -270,7 +270,7 @@ public class MPlayerDataViewer extends BaseQuickTimeDataViewer {
     }
 
     @Override
-    public void seekTo(final long position) {
+    public void seek(final long position) {
 
 //        Platform.runLater(new Runnable() {
 //            @Override
@@ -328,7 +328,7 @@ public class MPlayerDataViewer extends BaseQuickTimeDataViewer {
     }
 
     @Override
-    public void setDatastore(final DataStore sDB) {
+    public void setDataStore(final DataStore sDB) {
         // TODO Auto-generated method stub
     }
 
@@ -338,7 +338,7 @@ public class MPlayerDataViewer extends BaseQuickTimeDataViewer {
         // TODO Auto-generated method stub
     }
 
-    public boolean usingAssumedFPS() {
+    public boolean isAssumedFramesPerSecond() {
         return assumedFPS;
     }
 

@@ -16,9 +16,7 @@ package org.datavyu.plugins.qtkitplayer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.plugins.quicktime.BaseQuickTimeDataViewer;
-import quicktime.std.movies.Track;
-import quicktime.std.movies.media.Media;
+import org.datavyu.plugins.BaseDataViewer;
 
 import java.awt.*;
 import java.io.File;
@@ -28,52 +26,28 @@ import java.io.File;
  * The viewer for a quicktime video file.
  * <b>Do not move this class, this is for backward compatibility with 1.07.</b>
  */
-public final class QTKitViewer extends BaseQuickTimeDataViewer {
+public final class QTKitViewer extends BaseDataViewer {
 
-    /**
-     * How many milliseconds in a second?
-     */
-    private static final int MILLI = 1000;
-    /**
-     * How many frames to check when correcting the FPS.
-     */
-    private static final int CORRECTIONFRAMES = 5;
-    /**
-     * The logger for this class.
-     */
-    private static Logger LOGGER = LogManager.getLogger(QTKitViewer.class);
-    private static float FALLBACK_FRAME_RATE = 24.0f;
-    long prevSeekTime = -1;
-    /**
-     * The quicktime movie this viewer is displaying.
-     */
-    private QTKitPlayer movie;
-    /**
-     * The visual track for the above quicktime movie.
-     */
-    private Track visualTrack;
-    /**
-     * The visual media for the above visual track.
-     */
-    private Media visualMedia;
+    /** The logger for this class */
+    private static Logger logger = LogManager.getLogger(QTKitViewer.class);
+
+    /** Previous seek time */
+    private long previousSeekTime = -1;
+
+    /** The player this viewer is displaying */
+    private QTKitPlayer player;
 
     public QTKitViewer(final Frame parent, final boolean modal) {
         super(parent, modal);
 
-        movie = null;
+        player = null;
     }
 
     @Override
-    protected void setQTVolume(final float volume) {
-
-        if (movie == null) {
-            return;
+    protected void setPlayerVolume(final float volume) {
+        if (player != null) {
+            EventQueue.invokeLater(() -> player.setVolume(volume, player.id));
         }
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                movie.setVolume(volume, movie.id);
-            }
-        });
     }
 
     /**
@@ -81,68 +55,43 @@ public final class QTKitViewer extends BaseQuickTimeDataViewer {
      */
     @Override
     public long getDuration() {
-
-
-        return movie.getDuration(movie.id);
+        return player.getDuration(player.id);
     }
 
     @Override
-    protected void setQTDataFeed(final File videoFile) {
-
+    protected void setPlayerSourceFile(final File sourceFile) {
         // Ensure that the native hierarchy is set up
         this.addNotify();
-
-        movie = new QTKitPlayer(videoFile);
-
-        this.add(movie, BorderLayout.CENTER);
-
-//        setBounds(getX(), getY(), (int) nativeVideoSize.getWidth(),
-//                (int) nativeVideoSize.getHeight());
-//
-
-
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-//                System.out.println(new Dimension(movie.getWidth(), movie.getHeight()));
-                try {
-                    // Make sure movie is actually loaded
-                    movie.setVolume(0.7F, movie.id);
-                } catch (Exception e) {
-                    // Oops! Back out
-                    QTKitPlayer.playerCount -= 1;
-                    throw e;
-                }
+        player = new QTKitPlayer(sourceFile);
+        this.add(player, BorderLayout.CENTER);
+        EventQueue.invokeLater(() -> {
+            try {
+                // Make sure that the player is loaded
+                player.setVolume(0.7F, player.id);
+            } catch (Exception e) {
+                // Oops! Back out
+                QTKitPlayer.decPlayerCount();
+                throw e;
             }
         });
-
     }
 
     @Override
-    protected Dimension getQTVideoSize() {
-        System.err.println(movie.id);
-        return new Dimension((int) movie.getMovieWidth(movie.id), (int) movie.getMovieHeight(movie.id));
+    protected Dimension getOriginalVideoSize() {
+        System.err.println(player.id);
+        return new Dimension((int) player.getMovieWidth(player.id),
+                             (int) player.getMovieHeight(player.id));
     }
 
     @Override
-    protected float getQTFPS() {
-
-        return movie.getFPS(movie.id);
+    protected float getPlayerFramesPerSecond() {
+        return player.getFPS(player.id);
     }
 
     @Override
     public void setPlaybackSpeed(final float rate) {
         super.setPlaybackSpeed(rate);
-//        try {
-//        EventQueue.invokeLater(new Runnable() {
-//            public void run() {
-//                movie.setRate(rate, movie.id);
-//            }
-//        });
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
     }
-
 
     /**
      * {@inheritDoc}
@@ -151,21 +100,17 @@ public final class QTKitViewer extends BaseQuickTimeDataViewer {
     public void play() {
         super.play();
         System.err.println("Playing at " + getPlaybackSpeed());
-
         try {
-
-            if (movie != null) {
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        if (movie.getRate(movie.id) != 0) {
-                            movie.stop(movie.id);
-                        }
-                        movie.setRate(getPlaybackSpeed(), movie.id);
+            if (player != null) {
+                EventQueue.invokeLater(() -> {
+                    if (player.getRate(player.id) != 0) {
+                        player.stop(player.id);
                     }
+                    player.setRate(getPlaybackSpeed(), player.id);
                 });
             }
         } catch (Exception e) {
-            LOGGER.error("Unable to play", e);
+            logger.error("Unable to play", e);
         }
     }
 
@@ -175,24 +120,20 @@ public final class QTKitViewer extends BaseQuickTimeDataViewer {
     @Override
     public void stop() {
         super.stop();
-
         System.out.println("HIT STOP");
         final double time = System.currentTimeMillis();
         try {
-
-            if (movie != null) {
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        System.out.println("EXECUTING STOP");
-                        System.out.println(System.currentTimeMillis() - time);
-                        movie.stop(movie.id);
-                        System.out.println("STOPPED");
-                        System.out.println(System.currentTimeMillis() - time);
-                    }
+            if (player != null) {
+                EventQueue.invokeLater(() -> {
+                    System.out.println("EXECUTING STOP");
+                    System.out.println(System.currentTimeMillis() - time);
+                    player.stop(player.id);
+                    System.out.println("STOPPED");
+                    System.out.println(System.currentTimeMillis() - time);
                 });
             }
         } catch (Exception e) {
-            LOGGER.error("Unable to stop", e);
+            logger.error("Unable to stop", e);
         }
     }
 
@@ -200,27 +141,26 @@ public final class QTKitViewer extends BaseQuickTimeDataViewer {
      * {@inheritDoc}
      */
     @Override
-    public void seekTo(final long position) {
-
+    public void seek(final long position) {
         try {
-            if (movie != null && (prevSeekTime != position)) {
-                prevSeekTime = position;
+            if (player != null && (previousSeekTime != position)) {
+                previousSeekTime = position;
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         boolean wasPlaying = isPlaying();
                         float prevRate = getPlaybackSpeed();
                         if (isPlaying())
-                            movie.stop(movie.id);
-                        movie.setTime(position, movie.id);
+                            player.stop(player.id);
+                        player.setTime(position, player.id);
                         if (wasPlaying) {
-                            movie.setRate(prevRate, movie.id);
+                            player.setRate(prevRate, player.id);
                         }
                     }
                 });
 
             }
         } catch (Exception e) {
-            LOGGER.error("Unable to find", e);
+            logger.error("Unable to find", e);
         }
     }
 
@@ -231,9 +171,9 @@ public final class QTKitViewer extends BaseQuickTimeDataViewer {
     public long getCurrentTime() {
 
         try {
-            return movie.getCurrentTime(movie.id);
+            return player.getCurrentTime(player.id);
         } catch (Exception e) {
-            LOGGER.error("Unable to get time", e);
+            logger.error("Unable to get time", e);
         }
 
         return 0;
@@ -242,6 +182,6 @@ public final class QTKitViewer extends BaseQuickTimeDataViewer {
     @Override
     protected void cleanUp() {
         //TODO
-//        movie.release();
+//        player.release();
     }
 }
