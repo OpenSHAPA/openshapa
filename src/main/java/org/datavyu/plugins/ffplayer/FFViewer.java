@@ -34,16 +34,20 @@ public class FFViewer extends BaseDataViewer {
 
     @Override
     protected void setPlayerSourceFile(File videoFile) {
+        logger.info("Opening file: " + videoFile.getAbsolutePath());
         player.openFile(videoFile.getAbsolutePath());
     }
 
     @Override
     protected Dimension getOriginalVideoSize() {
+        Dimension videoSize = player.getOriginalVideoSize();
+        logger.info("The original video size: " + videoSize);
         return player.getOriginalVideoSize();
     }
 
     @Override
     public void seek(long position) {
+        logger.info("Seeking position: " + position);
         try {
             if (!isSeeking && player != null && (previousSeekTime != position)) {
                 previousSeekTime = position;
@@ -68,16 +72,18 @@ public class FFViewer extends BaseDataViewer {
 
     @Override
     protected float getPlayerFramesPerSecond() {
-        return 0;
+        return 30; // TODO: Get this frame the native stream
     }
 
     @Override
     public long getDuration() {
+        logger.info("The duration of the video is: " + player.getDuration() + " seconds.");
         return (long) (player.getDuration() * 1000);
     }
 
     @Override
     public long getCurrentTime() {
+        logger.info("The current time is: " + player.getCurrentTime() + " seconds");
         return (long) (player.getCurrentTime() * 1000);
     }
 

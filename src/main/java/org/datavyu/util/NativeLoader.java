@@ -170,7 +170,7 @@ public class NativeLoader {
 
         loadedLibs.add(outfile);
         System.err.println("Temp File:" + outfile);
-//        System.load(outfile.toString());
+        System.load(outfile.toString());
         System.err.println("Extracted lib: " + outfile);
         return outfile;
     }

@@ -6,6 +6,7 @@ import java.awt.Frame;
 import java.awt.color.ColorSpace;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -28,7 +29,13 @@ public class MovieStream implements VideoStream, AudioStream {
 			NativeLoader.LoadNativeLib("avcodec-57");
 			NativeLoader.LoadNativeLib("avformat-57");
 
-			NativeLoader.LoadNativeLib("MovieStream");
+			//NativeLoader.LoadNativeLib("MovieStream");
+			//System.load("C:\\Users\\Florian\\AppData\\Local\\Temp\\MovieStream.dll");
+			String libPath = "C:/Users/Florian/AppData/Local/Temp/";
+			String libName = "MovieStream";
+			System.setProperty("java.library.path", System.getProperty("java.library.path") + File.pathSeparator + libPath);
+			System.loadLibrary(libName);
+			System.err.println("Loaded movie stream library.");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
