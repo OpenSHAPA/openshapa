@@ -27,8 +27,7 @@ import org.datavyu.plugins.vlcfx.NativeLibraryManager;
 import org.datavyu.undoableedits.SpreadsheetUndoManager;
 import org.datavyu.util.MacHandler;
 import org.datavyu.util.NativeLoader;
-import org.datavyu.util.WindowsFileAssociations;
-import org.datavyu.util.WindowsKeyChar;
+import org.datavyu.util.WindowsOS;
 import org.datavyu.views.*;
 import org.datavyu.views.discrete.SpreadsheetPanel;
 import org.jdesktop.application.*;
@@ -51,26 +50,28 @@ import java.util.Stack;
 /**
  * The main class of the application.
  */
-public final class Datavyu extends SingleFrameApplication
-        implements KeyEventDispatcher, TitleNotifier {
+public final class Datavyu extends SingleFrameApplication implements KeyEventDispatcher, TitleNotifier {
 
-    private static final NativeLibraryManager nlm;
+    private static final NativeLibraryManager nativeLibraryManager;
     /**
      * The desired minimum initial width.
      */
-    private static final int INITMINX = 600;
+    private static final int INIT_MIN_X = 600;
     /**
      * The desired minimum initial height.
      */
-    private static final int INITMINY = 700;
+    private static final int INIT_MIN_Y = 700;
+
     public static boolean scriptRunning = false;
+
     private static boolean osxPressAndHoldEnabled;
+
     /**
      * Constant variable for the Datavyu main panel. This is so we can send
      * keyboard shortcuts to it while the QTController is in focus. It actually
      * get initialized in startup().
      */
-    private static DatavyuView VIEW;
+    private static DatavyuView datavyuView;
     /**
      * The scripting engine manager that we use with Datavyu.
      */
@@ -92,35 +93,25 @@ public final class Datavyu extends SingleFrameApplication
     /** Load required native libraries (JNI). */
     static {
         String tempDir = System.getProperty("java.io.tmpdir") + File.separator + "vlc" + File.separator;
-        System.out.println("WORKING DIR:" + System.getProperty("user.dir"));
-        System.out.println("CLASS PATH: " + System.getProperty("java.class.path"));
 
-        System.out.println("LOG4J.CONFIGURATIONFILE" + System.getProperty("log4j.configurationFile"));
+        logger.info("Working directory is: " + System.getProperty("user.dir"));
+        logger.info("Class path is: " + System.getProperty("java.class.path"));
+        logger.info("JNA library path is: " + System.getProperty("jna.library.path"));
+        logger.info("The java library path is: " + System.getProperty("java.library.path"));
 
-        nlm = new NativeLibraryManager(tempDir);
+        nativeLibraryManager = new NativeLibraryManager(tempDir);
 
         try {
-
-            System.out.println(System.getProperty("jna.library.path"));
-
             URL resource = Datavyu.class.getClassLoader().getResource("../");
-            System.out.println(resource);
-
+            logger.info("The resource URL is: " + resource);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
         switch (getPlatform()) {
             case MAC:
+                logger.info("Detected platform: MAC");
                 try {
                     NativeLoader.LoadNativeLib("quaqua64");
-                    System.out.println(System.getProperty("java.library.path"));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                try {
-                    System.out.println(System.getProperty("java.library.path"));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -131,14 +122,14 @@ public final class Datavyu extends SingleFrameApplication
                 break;
 
             case WINDOWS:
+                logger.info("Detected platform: WINDOWS");
                 try {
                     if (System.getProperty("sun.arch.data.model").equals("32")) {
+                        logger.info("Loading libraries for 32 bit QT");
                         NativeLoader.LoadNativeLib("QTJNative");
                         NativeLoader.LoadNativeLib("QTJavaNative");
-                        System.out.println(System.getProperty("java.library.path"));
                         System.loadLibrary("QTJNative");
                         System.loadLibrary("QTJavaNative");
-
                         QTDataViewer.librariesFound = true;
                     }
                 } catch (Exception e) {
@@ -147,28 +138,22 @@ public final class Datavyu extends SingleFrameApplication
                 break;
 
             default:
-                System.err.println("Unknown or unsupported platform!");
+                logger.error("Unknown or unsupported platform!");
                 break;
         }
     }
 
     public boolean ready = false;
-    /**
-     * The scripting engine that we use with Datavyu.
-     */
-    private ScriptEngine rubyEngine;
-    /**
-     * The view to use when listing all variables in the database.
-     */
+
+    /** The view to use when listing all variables in the database */
     private VariableListV listVarView;
-    /**
-     * The view to use when listing all the undoable actions.
-     */
+
+    /** The view to use when listing all the undoable actions */
     private UndoHistoryWindow history;
-    /**
-     * The view to use when displaying information about Datavyu.
-     */
+
+    /** The view to use when displaying information about Datavyu */
     private AboutV aboutWindow;
+
     /**
      * The view to use when displaying information about Datavyu updates.
      */
@@ -185,23 +170,21 @@ public final class Datavyu extends SingleFrameApplication
      * File path from the command line.
      */
     private String commandLineFile;
+
     private VideoConverterV videoConverter;
 
-    public static boolean quicktimeLibrariesFound() {
+    public static boolean hasQuicktimeLibs() {
         boolean ans = false;
         try {
             Class.forName("quicktime.QTSession");
             ans = true;
             QTDataViewer.librariesFound = true;
-
         } catch (ClassNotFoundException ce) {
-            System.out.println("Class not found: " + ce.getMessage());
+            logger.error("Class not found: " + ce.getMessage());
         } catch (Exception e) {
-            System.out.println("Non-specific exception! " + e.getMessage());
-        } finally {
-            return ans;
+            logger.error("General exception: " + e.getMessage());
         }
-
+        return ans;
     }
 
     /**
@@ -251,19 +234,15 @@ public final class Datavyu extends SingleFrameApplication
      */
     public static Platform getPlatform() {
         String os = System.getProperty("os.name");
-
         if (os.contains("Mac")) {
             return Platform.MAC;
         }
-
         if (os.contains("Win")) {
             return Platform.WINDOWS;
         }
-
         if (os.contains("Linux")) {
             return Platform.LINUX;
         }
-
         return Platform.UNKNOWN;
     }
 
@@ -287,24 +266,14 @@ public final class Datavyu extends SingleFrameApplication
             if (output.size() > 0 && output.get(0).equals("0")) {
                 return false;
             } else {
-//                osxPressAndHoldEnabled = true;
                 return true;
             }
-
-            //There should really be a timeout here.
-//            if (0 != process.waitFor())
-//                return null;
-
-//            return output;
-
         } catch (Exception e) {
+            logger.error("Error: " + e.getMessage());
             //Warning: doing this is no good in high quality applications.
             //Instead, present appropriate error messages to the user.
             //But it's perfectly fine for prototyping.
-
-//            return null;
         }
-
         return true;
     }
 
@@ -365,9 +334,9 @@ public final class Datavyu extends SingleFrameApplication
     }
 
     public static ProjectController getProjectController() {
-        if (VIEW != null && VIEW.getSpreadsheetPanel() != null
-                && VIEW.getSpreadsheetPanel().getProjectController() != null) {
-            return VIEW.getSpreadsheetPanel().getProjectController();
+        if (datavyuView != null && datavyuView.getSpreadsheetPanel() != null
+                && datavyuView.getSpreadsheetPanel().getProjectController() != null) {
+            return datavyuView.getSpreadsheetPanel().getProjectController();
         }
         return projectController;
     }
@@ -377,7 +346,7 @@ public final class Datavyu extends SingleFrameApplication
     }
 
     public static DatavyuView getView() {
-        return VIEW;
+        return datavyuView;
     }
 
     public void setCommandLineFile(String s) {
@@ -407,7 +376,7 @@ public final class Datavyu extends SingleFrameApplication
         // away.
         if ((evt.getID() == KeyEvent.KEY_TYPED) && (modifiers == keyMask)) {
 
-            // VIEW also has the fun of key accelerator handling. If it is
+            // datavyuView also has the fun of key accelerator handling. If it is
             // focused, let it handle the fun or everything is done twice. If it
             // doesn't have focus we manually handle it in the switch below.
             if (getView().getFrame().isFocused()) {
@@ -420,7 +389,7 @@ public final class Datavyu extends SingleFrameApplication
 
                 // Code table used by Windows is different.
                 case WINDOWS: {
-                    switch (WindowsKeyChar.remap(evt.getKeyChar())) {
+                    switch (WindowsOS.remapKeyChar(evt.getKeyChar())) {
 
                         case '+':
                         case '-':
@@ -533,7 +502,7 @@ public final class Datavyu extends SingleFrameApplication
                 case KeyEvent.VK_EQUALS:
 
                     if (modifiers == keyMask) {
-                        VIEW.changeFontSize(DatavyuView.ZOOM_INTERVAL);
+                        datavyuView.changeFontSize(DatavyuView.ZOOM_INTERVAL);
                     }
 
                     return true;
@@ -541,7 +510,7 @@ public final class Datavyu extends SingleFrameApplication
                 case KeyEvent.VK_MINUS:
 
                     if (modifiers == keyMask) {
-                        VIEW.changeFontSize(-DatavyuView.ZOOM_INTERVAL);
+                        datavyuView.changeFontSize(-DatavyuView.ZOOM_INTERVAL);
                     }
 
                     return true;
@@ -1041,7 +1010,7 @@ public final class Datavyu extends SingleFrameApplication
         // BugzID:1288
         if (getPlatform() == Platform.WINDOWS) {
             try {
-                WindowsFileAssociations.setup();
+                WindowsOS.associate(".opf", WindowsOS.cwd().toString());
             } catch (Win32Exception e) {
                 e.printStackTrace();
             }
@@ -1090,24 +1059,24 @@ public final class Datavyu extends SingleFrameApplication
     protected void startup() {
 
         // Make view the new view so we can keep track of it for hotkeys.
-        VIEW = new DatavyuView(this);
-        show(VIEW);
-        VIEW.getFileSplitPane().setDividerLocation(0.75);
+        datavyuView = new DatavyuView(this);
+        show(datavyuView);
+        datavyuView.getFileSplitPane().setDividerLocation(0.75);
 
         // Now that datavyu is up - we may need to ask the user if can send
         // gather logs.
 //        if (Configuration.getInstance().getCanSendLogs() == null) {
 //            logger.info("show usermetrix dialog");
-//            show(new LogManagerV(VIEW.getFrame(), true));
+//            show(new LogManagerV(datavyuView.getFrame(), true));
 //        }
 
         // BugzID:435 - Correct size if a small size is detected.
         int width = (int) getMainFrame().getSize().getWidth();
         int height = (int) getMainFrame().getSize().getHeight();
 
-        if ((width < INITMINX) || (height < INITMINY)) {
-            int x = Math.max(width, INITMINX);
-            int y = Math.max(height, INITMINY);
+        if ((width < INIT_MIN_X) || (height < INIT_MIN_Y)) {
+            int x = Math.max(width, INIT_MIN_X);
+            int y = Math.max(height, INIT_MIN_Y);
             getMainFrame().setSize(x, y);
         }
 
@@ -1115,7 +1084,7 @@ public final class Datavyu extends SingleFrameApplication
 
         // Create video controller.
 //        projectController = new ProjectController();
-        dataController = VIEW.getSpreadsheetPanel().getDataController();
+        dataController = datavyuView.getSpreadsheetPanel().getDataController();
 
         final Dimension screenSize = Toolkit.getDefaultToolkit()
                 .getScreenSize();
@@ -1128,7 +1097,7 @@ public final class Datavyu extends SingleFrameApplication
                 screenSize.getHeight() - dataController.getHeight()), 0);
         dataController.setLocation(x, y);
         show(dataController);
-        VIEW.checkForAutosavedFile();
+        datavyuView.checkForAutosavedFile();
 
         // The DB we create by default doesn't really have any unsaved changes.
         projectController.getDataStore().markAsUnchanged();
@@ -1155,7 +1124,7 @@ public final class Datavyu extends SingleFrameApplication
         }
 
         NativeLoader.cleanAllTmpFiles();
-        nlm.purge();
+        nativeLibraryManager.purge();
         super.shutdown();
     }
 
@@ -1178,8 +1147,8 @@ public final class Datavyu extends SingleFrameApplication
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (VIEW != null) {
-                    VIEW.updateTitle();
+                if (datavyuView != null) {
+                    datavyuView.updateTitle();
                 }
             }
         });

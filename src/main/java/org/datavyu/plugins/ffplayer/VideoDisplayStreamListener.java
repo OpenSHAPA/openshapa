@@ -103,10 +103,10 @@ public class VideoDisplayStreamListener implements StreamListener {
 	 * Creates a video display through a stream listener. The display is added 
 	 * to the container using the constraint.
 	 * 
-	 * @param movieStream
-	 * @param container
-	 * @param constraints
-	 * @param colorSpace
+	 * @param movieStream Movie stream for this stream listener to get context information about the video.
+	 * @param container The container where to display the image frames from the video.
+	 * @param constraints The display constraint, e.g. BorderLayout.CENTER.
+	 * @param colorSpace The color space that is used to interpret the data from the native movie stream.
 	 */
 	public VideoDisplayStreamListener(MovieStream movieStream, 
 			Container container, Object constraints, ColorSpace colorSpace) {

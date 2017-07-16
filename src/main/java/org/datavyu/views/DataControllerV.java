@@ -1108,7 +1108,7 @@ public final class DataControllerV extends DatavyuDialog
         addDataButton.addActionListener(new ActionListener() {
             public void actionPerformed(final ActionEvent evt) {
 
-                if (!qtWarningShown && !Datavyu.quicktimeLibrariesFound()) {
+                if (!qtWarningShown && !Datavyu.hasQuicktimeLibs()) {
 
 //                    JOptionPane.showMessageDialog(null, makeEditorPaneWithLinks(QT_WARNING_MSG), "Quicktime Warning", JOptionPane.WARNING_MESSAGE);
                     qtWarningShown = true;
