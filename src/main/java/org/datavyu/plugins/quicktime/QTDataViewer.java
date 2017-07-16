@@ -50,12 +50,12 @@ public final class QTDataViewer extends BaseDataViewer {
     /**
      * How many frames to check when correcting the FPS.
      */
-    private static final int CORRECTIONFRAMES = 5;
+    private static final int CORRECTION_FRAMES = 5;
     public static boolean librariesFound = false;
     /**
      * The logger for this class.
      */
-    private static Logger LOGGER = LogManager.getLogger(QTDataViewer.class);
+    private static Logger logger = LogManager.getLogger(QTDataViewer.class);
     private static float FALLBACK_FRAME_RATE = 29.97f;
     /**
      * The quicktime movie this viewer is displaying.
@@ -80,7 +80,7 @@ public final class QTDataViewer extends BaseDataViewer {
             // Initalise QTJava.
             QTSession.open();
         } catch (Throwable e) {
-            LOGGER.error("Unable to create " + this.getClass().getName(), e);
+            logger.error("Unable to create " + this.getClass().getName(), e);
             e.printStackTrace();
         }
     }
@@ -95,7 +95,7 @@ public final class QTDataViewer extends BaseDataViewer {
         try {
             movie.setVolume(volume);
         } catch (StdQTException ex) {
-            LOGGER.error("Unable to set volume", ex);
+            logger.error("Unable to set volume", ex);
         }
     }
 
@@ -112,7 +112,7 @@ public final class QTDataViewer extends BaseDataViewer {
                         * (long) movie.getDuration() / movie.getTimeScale();
             }
         } catch (StdQTException ex) {
-            LOGGER.error("Unable to determine QT movie duration", ex);
+            logger.error("Unable to determine QT movie duration", ex);
         }
 
         return -1;
@@ -143,7 +143,7 @@ public final class QTDataViewer extends BaseDataViewer {
 //            visualMedia.loadIntoRam(0, (int)getDuration()+500, StdQTConstants.unkeepInRam);
             seek(0L);
         } catch (QTException e) {
-//            LOGGER.error("Unable to setVideoFile", e);
+//            logger.error("Unable to setVideoFile", e);
             e.printStackTrace();
         }
     }
@@ -156,7 +156,7 @@ public final class QTDataViewer extends BaseDataViewer {
                 return new Dimension(vtDim.getWidth(), vtDim.getHeight());
             }
         } catch (QTException e) {
-            LOGGER.error("Unable to getQTNativeVideoSize", e);
+            logger.error("Unable to getQTNativeVideoSize", e);
         }
 
         return new Dimension(1, 1);
@@ -185,7 +185,7 @@ public final class QTDataViewer extends BaseDataViewer {
                 }
             }
         } catch (QTException e) {
-//            LOGGER.error("Unable to calculate FPS, assuming " + FALLBACK_FRAME_RATE, e);
+//            logger.error("Unable to calculate FPS, assuming " + FALLBACK_FRAME_RATE, e);
             isAssumedFramesPerSecond = true;
             fps = FALLBACK_FRAME_RATE;
         }
@@ -195,7 +195,7 @@ public final class QTDataViewer extends BaseDataViewer {
 
     /**
      * If there was a problem getting the fps, we use this method to fix it. The
-     * first few frames (number of which is specified by CORRECTIONFRAMES) are
+     * first few frames (number of which is specified by CORRECTION_FRAMES) are
      * inspected, with the delay between each measured; the two frames with the
      * smallest delay between them are assumed to represent the fps of the
      * entire movie.
@@ -207,7 +207,7 @@ public final class QTDataViewer extends BaseDataViewer {
         float curFrameLen = 0;
         int curTime = 0;
 
-        for (int i = 0; i < CORRECTIONFRAMES; i++) {
+        for (int i = 0; i < CORRECTION_FRAMES; i++) {
 
             try {
                 TimeInfo timeObj = visualTrack.getNextInterestingTime(
@@ -220,7 +220,7 @@ public final class QTDataViewer extends BaseDataViewer {
                     minFrameLength = candidateFrameLen;
                 }
             } catch (QTException e) {
-                LOGGER.error("Error getting time", e);
+                logger.error("Error getting time", e);
             }
         }
 
@@ -243,7 +243,7 @@ public final class QTDataViewer extends BaseDataViewer {
                 } catch (
                         QTException e
                         ) {
-                    LOGGER.error("Unable to play", e);
+                    logger.error("Unable to play", e);
                 }
             }
         });
@@ -266,7 +266,7 @@ public final class QTDataViewer extends BaseDataViewer {
 //                movie.setRate(0);
                     }
                 } catch (QTException e) {
-                    LOGGER.error("Unable to stop", e);
+                    logger.error("Unable to stop", e);
                 }
             }
         });
@@ -287,7 +287,7 @@ public final class QTDataViewer extends BaseDataViewer {
                 movie.setTime(time);
             }
         } catch (QTException e) {
-            LOGGER.error("Unable to find", e);
+            logger.error("Unable to find", e);
         }
     }
 
@@ -300,7 +300,7 @@ public final class QTDataViewer extends BaseDataViewer {
         try {
             return movie.getTime();
         } catch (QTException e) {
-            LOGGER.error("Unable to get time", e);
+            logger.error("Unable to get time", e);
         }
 
         return 0;

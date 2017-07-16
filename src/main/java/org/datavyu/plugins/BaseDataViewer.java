@@ -386,13 +386,8 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
         System.out.println("FPS:");
         System.out.println(framesPerSecond);
 
-        // Try to display the first frame
-//        setPlaybackSpeed(1.0f);
-//        play();
-//        stop();
+        // Display the first frame
         seek(0L);
-
-
     }
 
     /**
@@ -487,7 +482,6 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
      * Notifies listeners that a change to the project has occurred.
      */
     protected void notifyChange() {
-
         for (ViewerStateListener listener : viewerListeners) {
             listener.notifyStateChanged(null, null);
         }

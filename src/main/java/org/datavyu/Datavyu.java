@@ -82,7 +82,7 @@ public final class Datavyu extends SingleFrameApplication
     /**
      * The logger for this class.
      */
-    private static Logger LOGGER = LogManager.getLogger();
+    private static Logger logger = LogManager.getLogger();
     /**
      * The view to use for the quick time video controller.
      */
@@ -91,11 +91,12 @@ public final class Datavyu extends SingleFrameApplication
 
     /** Load required native libraries (JNI). */
     static {
-
         String tempDir = System.getProperty("java.io.tmpdir") + File.separator + "vlc" + File.separator;
-
         System.out.println("WORKING DIR:" + System.getProperty("user.dir"));
         System.out.println("CLASS PATH: " + System.getProperty("java.class.path"));
+
+        System.out.println("LOG4J.CONFIGURATIONFILE" + System.getProperty("log4j.configurationFile"));
+
         nlm = new NativeLibraryManager(tempDir);
 
         try {
@@ -105,30 +106,20 @@ public final class Datavyu extends SingleFrameApplication
             URL resource = Datavyu.class.getClassLoader().getResource("../");
             System.out.println(resource);
 
-//            nlm.unpackNativePackage();
-//            NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), tempDir + File.separator + "vlc" + File.separator + "lib");
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        System.load(tempDir + "vlc" + File.separator + "lib" + File.separator + "libvlccore.dll");
 
-//        System.load(tempDir + "vlc" + File.separator + "lib" + File.separator + "libvlc.dll");
-//        new NativeDiscovery().discover();
 
         switch (getPlatform()) {
             case MAC:
                 try {
                     NativeLoader.LoadNativeLib("quaqua64");
                     System.out.println(System.getProperty("java.library.path"));
-//                    System.loadLibrary("QTKitCanvas");
-
-//                    System.loadLibrary("QTJNative");
-//                    NativeLoader.LoadNativeLib("QTJNative");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 try {
-//                    new NativeLibraryMan
                     System.out.println(System.getProperty("java.library.path"));
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -137,6 +128,7 @@ public final class Datavyu extends SingleFrameApplication
                     osxPressAndHoldEnabled = true;
                     setOSXPressAndHoldValue(false);
                 }
+                break;
 
             case WINDOWS:
                 try {
@@ -150,16 +142,14 @@ public final class Datavyu extends SingleFrameApplication
                         QTDataViewer.librariesFound = true;
                     }
                 } catch (Exception e) {
-                    // for copying style
                     e.printStackTrace();
                 }
+                break;
 
-//                break;
+            default:
+                System.err.println("Unknown or unsupported platform!");
+                break;
         }
-
-
-//        System.setProperty("jna.library.path", "/Applications/VLC.app/Contents/MacOS/lib/vlc/lib");
-//        System.setProperty("VLC_PLUGIN_PATH", "/Applications/VLC.app/Contents/MacOS/plugins");
     }
 
     public boolean ready = false;
@@ -878,7 +868,6 @@ public final class Datavyu extends SingleFrameApplication
                         String cancel = "Cancel";
                         String no = "Don't save";
                         String yes = "Save";
-                        int noIndex;
                         int yesIndex;
                         int cancelIndex;
 
@@ -888,7 +877,6 @@ public final class Datavyu extends SingleFrameApplication
                             options[0] = yes;
                             options[1] = cancel;
                             options[2] = no;
-                            noIndex = 2;
                             yesIndex = 0;
                             cancelIndex = 1;
 
@@ -897,7 +885,6 @@ public final class Datavyu extends SingleFrameApplication
                             options[1] = no;
                             options[2] = cancel;
                             yesIndex = 0;
-                            noIndex = 1;
                             cancelIndex = 2;
 
                         }
@@ -948,7 +935,6 @@ public final class Datavyu extends SingleFrameApplication
             String cancel = "Cancel";
             String no = "Don't save";
             String yes = "Save";
-            int noIndex;
             int yesIndex;
             int cancelIndex;
 
@@ -958,18 +944,14 @@ public final class Datavyu extends SingleFrameApplication
                 options[0] = yes;
                 options[1] = cancel;
                 options[2] = no;
-                noIndex = 2;
                 yesIndex = 0;
                 cancelIndex = 1;
-
             } else {
                 options[0] = yes;
                 options[1] = no;
                 options[2] = cancel;
                 yesIndex = 0;
-                noIndex = 1;
                 cancelIndex = 2;
-
             }
 
             // Get project name.
@@ -985,11 +967,7 @@ public final class Datavyu extends SingleFrameApplication
             if (selection == yesIndex) getView().save();
 
             // If the user cancels, break and return that it isnt safe to quit
-            if (selection == cancelIndex) {
-                return false;
-            } else {
-                return true;
-            }
+            return !(selection == cancelIndex);
         } else {
             return true;
         }
@@ -1001,8 +979,6 @@ public final class Datavyu extends SingleFrameApplication
      */
     @Override
     protected void end() {
-
-
         Datavyu.getApplication().getMainFrame().setVisible(false);
         shutdown();
         super.end();
@@ -1084,7 +1060,7 @@ public final class Datavyu extends SingleFrameApplication
         ResourceMap rMap = Application.getInstance(Datavyu.class).getContext()
                 .getResourceMap(Datavyu.class);
 
-        LOGGER = LogManager.getLogger();
+        logger = LogManager.getLogger();
 
         // If the user hasn't specified, we don't send error logs.
         Configuration.getInstance().setCanSendLogs(false);
@@ -1121,7 +1097,7 @@ public final class Datavyu extends SingleFrameApplication
         // Now that datavyu is up - we may need to ask the user if can send
         // gather logs.
 //        if (Configuration.getInstance().getCanSendLogs() == null) {
-//            LOGGER.info("show usermetrix dialog");
+//            logger.info("show usermetrix dialog");
 //            show(new LogManagerV(VIEW.getFrame(), true));
 //        }
 

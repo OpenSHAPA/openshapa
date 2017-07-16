@@ -62,7 +62,7 @@ public class VideoDisplayStreamListener implements StreamListener {
 	 * on the container without constraint.
 	 * 
 	 * @param container The container that the display is added to
-	 * @param constraint The constraint used when adding
+	 * @param constraints The constraint used when adding
 	 */
 	private void initImageDisplay(Container container, Object constraints) {
 		imageDisplay = new Canvas() {
@@ -120,7 +120,8 @@ public class VideoDisplayStreamListener implements StreamListener {
 		int width = movieStream.getWidthOfView();
 		int height = movieStream.getHeightOfView();		
 		nChannel = movieStream.getNumberOfColorChannels();
-		cm = new ComponentColorModel(colorSpace, false, false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
+		cm = new ComponentColorModel(colorSpace, false, false, Transparency.OPAQUE,
+									 DataBuffer.TYPE_BYTE);
 		SampleModel sm = cm.createCompatibleSampleModel(width, height);
 		// Initialize an empty image
 		DataBufferByte dataBuffer = new DataBufferByte(new byte[width*height*nChannel], width*height);

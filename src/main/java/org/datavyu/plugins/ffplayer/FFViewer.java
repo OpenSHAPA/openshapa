@@ -36,6 +36,7 @@ public class FFViewer extends BaseDataViewer {
     protected void setPlayerSourceFile(File videoFile) {
         logger.info("Opening file: " + videoFile.getAbsolutePath());
         player.openFile(videoFile.getAbsolutePath());
+        this.add(player, BorderLayout.CENTER);
     }
 
     @Override
@@ -59,6 +60,7 @@ public class FFViewer extends BaseDataViewer {
                         player.stop();
                     }
                     player.seek(position/1000.0);
+                    player.repaint();
                     if (wasPlaying) {
                         player.setPlaybackSpeed(playbackSpeed);
                     }
