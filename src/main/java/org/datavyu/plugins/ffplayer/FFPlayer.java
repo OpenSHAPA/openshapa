@@ -1,5 +1,8 @@
 package org.datavyu.plugins.ffplayer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.sound.sampled.AudioFormat;
 import javax.swing.*;
 import java.awt.*;
@@ -11,6 +14,9 @@ public class FFPlayer extends JPanel {
 	
 	/** Identifier for object serialization */
 	private static final long serialVersionUID = 5109839668203738974L;
+
+	/** The logger for this class */
+	private static Logger logger = LogManager.getLogger(FFPlayer.class);
 	
 	/** The requested color space */
 	private final ColorSpace reqColorSpace = ColorSpace.getInstance(ColorSpace.CS_sRGB);
@@ -36,14 +42,14 @@ public class FFPlayer extends JPanel {
 	 * listener for the video will show the image in this JPanel.
 	 */
 	public FFPlayer() {
+		setLayout(new BorderLayout());
 		movieStreamProvider = new MovieStreamProvider();
 		audioSound = new AudioSoundStreamListener(movieStreamProvider);
 		// Add the audio sound listener
 		movieStreamProvider.addAudioStreamListener(audioSound);
 		// Add video display
 		movieStreamProvider.addVideoStreamListener(
-				new VideoDisplayStreamListener(movieStreamProvider, this,
-						reqColorSpace));
+				new VideoDisplayStreamListener(movieStreamProvider, this, BorderLayout.CENTER, reqColorSpace));
 	}
 
 	/**
@@ -121,6 +127,7 @@ public class FFPlayer extends JPanel {
 	 * @param position Position in seconds.
 	 */
 	public void seek(double position) {
+		logger.info("Seeking position: " + position);
 		// TODO: May have to stop the video here!
 		movieStreamProvider.seek(position);
 		movieStreamProvider.dropImageFrame();
@@ -161,8 +168,12 @@ public class FFPlayer extends JPanel {
 		// Must set is stepping to false BEFORE calling playsAtForward1x
 		isStepping = false;
 		// Play sound only if we are in forward direction
-		if (playsAtForward1x()) { movieStreamProvider.startAudio(); }
+		if (playsAtForward1x()) {
+			logger.info("Starting playing audio.");
+			movieStreamProvider.startAudio();
+		}
 		// Play video
+		logger.info("Starting playing video");
 		movieStreamProvider.startVideo();
 	}
 

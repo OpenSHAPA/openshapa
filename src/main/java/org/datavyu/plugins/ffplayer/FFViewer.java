@@ -17,7 +17,7 @@ public class FFViewer extends BaseDataViewer {
     private long previousSeekTime = -1;
 
     /** The player this viewer is displaying */
-    private FFPlayer player;
+    private FFPlayer player = null;
 
     /** Currently is seeking */
     private boolean isSeeking = false;
@@ -69,6 +69,22 @@ public class FFViewer extends BaseDataViewer {
             }
         } catch (Exception e) {
             logger.error("Unable to find", e);
+        }
+    }
+
+    @Override
+    public void play() {
+        if (player != null) {
+            super.play();
+            player.play();
+        }
+    }
+
+    @Override
+    public void stop() {
+        if (player != null) {
+            super.stop();
+            player.stop();
         }
     }
 
