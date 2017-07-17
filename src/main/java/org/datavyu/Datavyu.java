@@ -145,46 +145,35 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
 
     public boolean ready = false;
 
-    /** The view to use when listing all variables in the database */
-    private VariableListV listVarView;
-
-    /** The view to use when listing all the undoable actions */
-    private UndoHistoryWindow history;
-
-    /** The view to use when displaying information about Datavyu */
-    private AboutV aboutWindow;
-
-    /**
-     * The view to use when displaying information about Datavyu updates.
-     */
+    /** The view to use when displaying information about Datavyu updates */
     private UpdateV updateWindow;
-    /**
-     * Tracks if a NumPad key has been pressed.
-     */
+
+    /** Tracks if a NumPad key has been pressed */
     private boolean numKeyDown = false;
-    /**
-     * Opened windows.
-     */
+
+    /** Opened windows */
     private Stack<Window> windows;
-    /**
-     * File path from the command line.
-     */
+
+    /** File path from the command line */
     private String commandLineFile;
 
-    private VideoConverterV videoConverter;
-
+    // TODO: Move this into the QTDataViewer class!!
     public static boolean hasQuicktimeLibs() {
-        boolean ans = false;
+        boolean found = false;
         try {
             Class.forName("quicktime.QTSession");
-            ans = true;
+            found = true;
             QTDataViewer.librariesFound = true;
+        } catch (UnsatisfiedLinkError noLink) {
+            logger.error("No link: " + noLink.getMessage());
+        } catch (NoClassDefFoundError noClass) {
+            logger.error("No class found: " + noClass.getMessage());
         } catch (ClassNotFoundException ce) {
             logger.error("Class not found: " + ce.getMessage());
         } catch (Exception e) {
             logger.error("General exception: " + e.getMessage());
         }
-        return ans;
+        return found;
     }
 
     /**
@@ -198,8 +187,13 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         return dataController;
     }
 
-    public static void setDataController(DataControllerV dc) {
-        dataController = dc;
+    /**
+     * Sets the data controller.
+     *
+     * @param dataController The data controller instance to set.
+     */
+    public static void setDataController(DataControllerV dataController) {
+        Datavyu.dataController = dataController;
     }
 
     /**
@@ -709,7 +703,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      */
     public void showVideoConverter() {
         JFrame mainFrame = Datavyu.getApplication().getMainFrame();
-        videoConverter = new VideoConverterV();
+        VideoConverterV videoConverter = new VideoConverterV();
         Datavyu.getApplication().show(videoConverter);
     }
 
@@ -718,9 +712,8 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      */
     public void showVariableList() {
         JFrame mainFrame = Datavyu.getApplication().getMainFrame();
-        listVarView = new VariableListV(mainFrame, true, projectController.getDataStore());
+        VariableListV listVarView = new VariableListV(mainFrame, true, projectController.getDataStore());
         listVarView.registerListeners();
-
         Datavyu.getApplication().show(listVarView);
     }
 
@@ -730,7 +723,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
     public void showHistory() {
         JFrame mainFrame = Datavyu.getApplication().getMainFrame();
         SpreadsheetUndoManager undomanager = Datavyu.getApplication().getView().getSpreadsheetUndoManager();
-        history = new UndoHistoryWindow(mainFrame, false, undomanager);
+        UndoHistoryWindow history = new UndoHistoryWindow(mainFrame, false, undomanager);
         Datavyu.getApplication().show(history);
     }
 
@@ -739,7 +732,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      */
     public void showAboutWindow() {
         JFrame mainFrame = Datavyu.getApplication().getMainFrame();
-        aboutWindow = new AboutV(mainFrame, false);
+        AboutV aboutWindow = new AboutV(mainFrame, false);
         Datavyu.getApplication().show(aboutWindow);
     }
 

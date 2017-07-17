@@ -79,13 +79,11 @@ public class FFViewer extends BaseDataViewer {
 
     @Override
     public long getDuration() {
-        logger.info("The duration of the video is: " + player.getDuration() + " seconds.");
         return (long) (player.getDuration() * 1000);
     }
 
     @Override
     public long getCurrentTime() {
-        logger.info("The current time is: " + player.getCurrentTime() + " seconds");
         return (long) (player.getCurrentTime() * 1000);
     }
 
