@@ -202,12 +202,6 @@ public class VLCDataViewer implements DataViewer {
         assumedFPS = false;
     }
 
-
-    @Override
-    public float getDetectedFrameRate() {
-        return mediaPlayer.getFps();
-    }
-
     @Override
     public Identifier getIdentifier() {
         return id;
@@ -447,7 +441,7 @@ public class VLCDataViewer implements DataViewer {
     }
 
     @Override
-    public void clearDataFeed() {
+    public void clearSourceFile() {
         stop();
         videoSurface.setVisible(false);
         vlcDialog.setVisible(false);

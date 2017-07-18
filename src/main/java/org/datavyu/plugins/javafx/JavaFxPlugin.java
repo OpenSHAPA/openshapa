@@ -12,13 +12,13 @@ import org.datavyu.plugins.Plugin;
 import javax.swing.*;
 import java.awt.*;
 import java.io.FileFilter;
-import java.net.URL;
 import java.util.List;
 
 
 public class JavaFxPlugin implements Plugin {
 
-    private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(Datavyu.Platform.WINDOWS, Datavyu.Platform.MAC, Datavyu.Platform.LINUX);
+    private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(
+            Datavyu.Platform.WINDOWS, Datavyu.Platform.MAC, Datavyu.Platform.LINUX);
 
     private static final Filter VIDEO_FILTER = new Filter() {
         final SuffixFileFilter ff;
@@ -70,10 +70,7 @@ public class JavaFxPlugin implements Plugin {
 
     @Override
     public ImageIcon getTypeIcon() {
-        URL typeIconURL = getClass().getResource(
-                "/icons/vlc_cone.png");
-
-        return new ImageIcon(typeIconURL);
+        return new ImageIcon(getClass().getResource("/icons/vlc_cone.png"));
     }
 
     @Override

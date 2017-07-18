@@ -181,6 +181,7 @@ public class FFPlayer extends JPanel {
 	 * Stop the video/audio.
 	 */
 	public void stop() {
+		logger.info("Stopping the video.");
 		movieStreamProvider.stop();
 	}
 

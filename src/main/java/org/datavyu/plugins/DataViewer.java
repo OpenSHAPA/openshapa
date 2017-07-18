@@ -120,7 +120,7 @@ public interface DataViewer {
     /**
      * @return Detected frames per second.
      */
-    float getDetectedFrameRate();
+    //float getDetectedFrameRate();
 
     /**
      * @return The current position within the data feed in milliseconds.
@@ -211,10 +211,10 @@ public interface DataViewer {
      * of setSourceFile. Can be called to reduce the data viewer to a low-resource
      * state.
      */
-    void clearDataFeed();
+    void clearSourceFile();
 
     /**
-     * Did we assume the frames per second plaback rate?
+     * Did we assume the frames per second play back rate?
      *
      * @return True if we assumed the playback rate; otherwise false.
      */

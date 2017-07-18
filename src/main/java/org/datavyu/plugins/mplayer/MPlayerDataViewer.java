@@ -321,7 +321,7 @@ public class MPlayerDataViewer extends BaseDataViewer {
     }
 
     @Override
-    public void clearDataFeed() {
+    public void clearSourceFile() {
         stop();
         javafxapp.setVisible(false);
         javafxapp.closeAndDestroy();

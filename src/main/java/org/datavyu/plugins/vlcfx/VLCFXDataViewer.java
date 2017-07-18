@@ -312,12 +312,12 @@ public class VLCFXDataViewer extends BaseDataViewer {
 
     @Override
     protected void cleanUp() {
-        clearDataFeed();
+        clearSourceFile();
 
     }
 
     @Override
-    public void clearDataFeed() {
+    public void clearSourceFile() {
         stop();
         vlcFxApp.setVisible(false);
         vlcFxApp.closeAndDestroy();

@@ -15,18 +15,15 @@ import javafx.util.Duration;
 
 import java.io.File;
 
-/**
- * Created by jesse on 10/21/14.
- */
 public class JavaFXApplication extends Application {
 
-    File dataFile;
-    boolean init = false;
-    MediaPlayer mp;
-    MediaView mv;
-    Stage stage;
-    long duration = -1;
-    long lastSeekTime = -1;
+    private File dataFile;
+    private boolean init = false;
+    private MediaPlayer mp;
+    private MediaView mv;
+    private Stage stage;
+    private long duration = -1;
+    private long lastSeekTime = -1;
 
     public JavaFXApplication(File file) {
         dataFile = file;
@@ -41,22 +38,17 @@ public class JavaFXApplication extends Application {
 
         } else {
             System.out.println("SEEKING TO: " + time);
-
             double rate = 0;
             if (mp.getCurrentRate() != 0) {
                 mp.pause();
                 rate = mp.getCurrentRate();
             }
-//            System.out.println("BEFORE: " + mp.getCurrentTime());
 
             // NOTE: JavaFX only seems to be able to seek accurately in 2.2 when the rate != 0,
             // so lets fake that here.
             mp.setRate(1);
             mp.seek(Duration.millis(time));
             mp.setRate(rate);
-//            System.out.println("AFTER: " + mp.getCurrentTime());
-
-//            mp.setRate(rate);
             lastSeekTime = time;
         }
     }
@@ -106,9 +98,6 @@ public class JavaFXApplication extends Application {
     }
 
     public void setScale(double scale) {
-//        mv.setScaleX(scale);
-//        mv.setScaleY(scale);
-
         stage.setHeight(mp.getMedia().getHeight() * scale);
         stage.setWidth(mp.getMedia().getWidth() * scale);
     }
@@ -143,7 +132,6 @@ public class JavaFXApplication extends Application {
             @Override
             public void run() {
                 stage.close();
-//                mp.dispose();
             }
         });
 
@@ -188,8 +176,5 @@ public class JavaFXApplication extends Application {
                 System.out.println(init);
             }
         });
-
-
     }
-
 }

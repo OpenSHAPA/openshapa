@@ -20,8 +20,7 @@ import java.util.concurrent.CountDownLatch;
 public class JavaFXDataViewer extends BaseDataViewer {
 
     private static final float FALLBACK_FRAME_RATE = 24.0f;
-    private static final String VIDEO =
-            "file:///Users/jesse/Desktop/country_life_butter.mp4";
+    private static final String VIDEO = "file:///Users/jesse/Desktop/country_life_butter.mp4";
 
     /**
      * Data viewer offset.
@@ -321,7 +320,7 @@ public class JavaFXDataViewer extends BaseDataViewer {
     }
 
     @Override
-    public void clearDataFeed() {
+    public void clearSourceFile() {
         stop();
         javafxapp.setVisible(false);
         javafxapp.closeAndDestroy();

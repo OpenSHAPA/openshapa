@@ -86,9 +86,6 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
     /** Frames per second */
     private float framesPerSecond = -1;
 
-    /** Data controller. */
-    private DataController dataController;
-
     /** The playback offset of the movie in milliseconds */
     // TODO: Why do we have this offset? Is it the current time in the stream?
     private long offset = 0;
@@ -110,6 +107,9 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
 
     /** Resize button */
     private JButton resizeButton;
+
+    /** The parent controller */
+    private DataController parentController;
 
     /** Custom actions handler */
     private CustomActions actions = new CustomActionsAdapter() {
@@ -208,6 +208,11 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
         volume = volumeSlider.getValue() / 100F;
         setVolume();
         notifyChange();
+    }
+
+    @Override
+    public void setParentController(DataController dataController) {
+        parentController = dataController;
     }
 
     /**
@@ -391,15 +396,6 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
     }
 
     /**
-     * Sets dataController data controller.
-     *
-     * @param dataController The data controller to be set as dataController.
-     */
-    public void setParentController(final DataController dataController) {
-        this.dataController = dataController;
-    }
-
-    /**
      * @return The frames per second.
      */
     public float getFramesPerSecond() {
@@ -461,9 +457,7 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
      * #handleActionButtonEvent1(java.awt.event.ActionEvent)
      */
     private void handleActionButtonEvent1(final ActionEvent event) {
-
-        // BugzID:1400 - We don't allow volume changes while the track is
-        // hidden from view.
+        // BugzID:1400 - We don't allow volume changes while the track is hidden.
         if (isVisible) {
             volumeDialog.setLocation(volumeButton.getLocationOnScreen());
             volumeDialog.setVisible(true);
@@ -471,7 +465,6 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
     }
 
     private void handleActionButtonEvent2(final ActionEvent event) {
-
         if (isVisible) {
             menuForResize.show(resizeButton.getParent(), resizeButton.getX(),
                     resizeButton.getY());
@@ -489,45 +482,34 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
 
     public void loadSettings(final InputStream is) {
         Properties settings = new Properties();
-
         try {
             settings.load(is);
 
             String property = settings.getProperty("offset");
-
             if ((property != null) && !property.equals("")) {
                 setStartTime(Long.parseLong(property));
             }
 
             property = settings.getProperty("volume");
-
             if ((property != null) && !property.equals("")) {
-                volume = Float.parseFloat(property);
-                volumeSlider.setValue((int) (volume * 100));
+                volumeSlider.setValue((int) (Float.parseFloat(property) * 100));
             }
 
             property = settings.getProperty("visible");
-
             if ((property != null) && !property.equals("")) {
-                isVisible = Boolean.parseBoolean(property);
-                this.setVisible(isVisible);
+                this.setVisible(Boolean.parseBoolean(property));
                 setVolume();
             }
 
             property = settings.getProperty("height");
-
             if ((property != null) && !property.equals("")) {
-                System.out.println("Setting video height to: " + property);
                 setVideoHeight(Integer.parseInt(property));
             }
 
             property = settings.getProperty("framesPerSecond");
-            System.out.println(property);
             if ((property != null) && !property.equals("")) {
                 framesPerSecond = Float.parseFloat(property);
             }
-
-
         } catch (IOException e) {
             logger.error("Error loading settings", e);
         }
@@ -540,7 +522,6 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
         settings.setProperty("visible", Boolean.toString(isVisible));
         settings.setProperty("height", Integer.toString(getVideoHeight()));
         settings.setProperty("framesPerSecond", Float.toString(framesPerSecond));
-
         try {
             settings.store(os, null);
         } catch (IOException e) {
@@ -549,19 +530,16 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
     }
 
     @Override
-    public void addViewerStateListener(
-            final ViewerStateListener vsl) {
+    public void addViewerStateListener(final ViewerStateListener vsl) {
         viewerListeners.add(vsl);
     }
 
     @Override
-    public void removeViewerStateListener(
-            final ViewerStateListener vsl) {
+    public void removeViewerStateListener(final ViewerStateListener vsl) {
         viewerListeners.remove(vsl);
     }
 
     private ImageIcon getVolumeButtonIcon() {
-
         if (isVisible && (volume > 0)) {
             return volumeIcon;
         } else {
@@ -609,12 +587,12 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
     }
 
     @Override
-    public void setDataStore(final DataStore sDB) {
-        // not currently needed
+    public void setDataStore(final DataStore dataStore) {
+        // currently not needed
     }
 
     @Override
-    public void clearDataFeed() {
+    public void clearSourceFile() {
         cleanUp();
     }
 

@@ -697,7 +697,7 @@ public final class DataControllerV extends DatavyuDialog
 
                         long stepSize = ((ONE_SECOND) / (long) playbackModel.getCurrentFPS());
 
-                     /* BugzID:1544 - Preserve precision - force jog to frame markers. */
+                        /* BugzID:1544 - Preserve precision - force jog to frame markers. */
                         long mod = (viewerTime % stepSize);
 
                         if (mod != 0) {
@@ -858,7 +858,7 @@ public final class DataControllerV extends DatavyuDialog
 
         if (removed) {
 
-            viewer.clearDataFeed();
+            viewer.clearSourceFile();
 
             // BugzID:2000
             viewer.removeViewerStateListener(
@@ -902,7 +902,7 @@ public final class DataControllerV extends DatavyuDialog
         viewers.remove(viewer);
 
         viewer.stop();
-        viewer.clearDataFeed();
+        viewer.clearSourceFile();
 
         JDialog viewDialog = viewer.getParentJDialog();
 
@@ -1405,7 +1405,6 @@ public final class DataControllerV extends DatavyuDialog
         else stepSizePanel.setBackground(Color.LIGHT_GRAY);
     }
 
-
     //Create a JEditorPane with working hyperlinks
     private JEditorPane makeEditorPaneWithLinks(String s) {
         JEditorPane out = new JEditorPane("text/html", s);
@@ -1445,7 +1444,7 @@ public final class DataControllerV extends DatavyuDialog
             final java.awt.event.ActionEvent evt) {
         logger.info("Add data");
 
-        PluginChooser chooser = null;
+        PluginChooser chooser;
 
         switch (Datavyu.getPlatform()) {
 
@@ -1468,12 +1467,12 @@ public final class DataControllerV extends DatavyuDialog
                 throw new NotImplementedException("Plugin chooser unimplemented.");
         }
 
-        PluginManager pm = PluginManager.getInstance();
-        chooser.addPlugin(pm.getPlugins());
+        PluginManager pluginManager = PluginManager.getInstance();
+        chooser.addPlugin(pluginManager.getPlugins());
 
-        for (FileFilter ff : pm.getFileFilters()) {
-            chooser.addChoosableFileFilter(ff);
-            chooser.setFileFilter(ff);
+        for (FileFilter fileFilter : pluginManager.getFileFilters()) {
+            chooser.addChoosableFileFilter(fileFilter);
+            chooser.setFileFilter(fileFilter);
         }
 
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
@@ -1575,7 +1574,7 @@ public final class DataControllerV extends DatavyuDialog
         viewer.setStartTime(offset);
 
         // It is possible that the viewer will be handling its own window. In that case
-        // dont worry about it.
+        // don't worry about it.
         if (viewer.getParentJDialog() != null) {
             boolean visible = viewer.getParentJDialog().isVisible();
             Datavyu.getApplication().show(viewer.getParentJDialog());
@@ -1585,7 +1584,7 @@ public final class DataControllerV extends DatavyuDialog
             }
         }
 
-        // adjust the overall frame rate.
+        // Adjust the overall frame rate
         float fps = viewer.getFramesPerSecond();
 
         if (fps > playbackModel.getCurrentFPS()) {
@@ -1594,15 +1593,14 @@ public final class DataControllerV extends DatavyuDialog
         updateStepSizeTextField();
         updateStepSizePanelColor();
 
-        // Update track viewer.
+        // Update track viewer
         long maxDuration = playbackModel.getMaxDuration();
 
         if ((viewer.getStartTime() + viewer.getDuration()) > maxDuration) {
             maxDuration = viewer.getStartTime() + viewer.getDuration();
         }
 
-        // BugzID:2114 - If this is the first viewer we are adding, always reset
-        // max duration.
+        // BugzID:2114 - If this is the first viewer we are adding, always reset max duration.
         if (viewers.size() == 1) {
             maxDuration = viewer.getStartTime() + viewer.getDuration();
         }

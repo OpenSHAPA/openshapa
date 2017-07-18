@@ -22,65 +22,65 @@ import java.io.File;
 import java.util.List;
 import java.util.Set;
 
-
+/**
+ * A group of file filters. This is the intersection of all filters to define a file filter.
+ */
 public final class GroupFileFilter extends FileFilter {
 
+    /** Description for this group file filter */
     private final String description;
+
+    /** Listing of filters */
     private List<Filter> filters;
 
-    public GroupFileFilter(final String desc) {
-        description = desc;
+    public GroupFileFilter(final String description) {
+        this.description = description;
         filters = Lists.newArrayList();
     }
 
     @Override
     public boolean accept(final File f) {
-
         if (f.isDirectory()) {
             return true;
         }
-
         for (Filter filter : filters) {
-
             if (filter.getFileFilter().accept(f)) {
                 return true;
             }
         }
-
         return false;
     }
 
     @Override
     public String getDescription() {
+        // Find the intersection of all extensions
         Set<String> extensions = Sets.newTreeSet();
-
         for (Filter filter : filters) {
-
             for (String ext : filter.getExtensions()) {
                 extensions.add(ext);
             }
         }
-
-        StringBuilder sb = new StringBuilder(description);
-        sb.append(":");
-
+        // Build the description with the intersection of all descriptions
+        StringBuilder stringBuilder = new StringBuilder(this.description);
+        stringBuilder.append(":");
         for (String ext : extensions) {
-            sb.append(" ");
-            sb.append(ext);
-            sb.append(",");
+            stringBuilder.append(" ");
+            stringBuilder.append(ext);
+            stringBuilder.append(",");
         }
-
+        // Remove the trailing comma
         if (!extensions.isEmpty()) {
-
-            // Remove trailing comma.
-            sb.deleteCharAt(sb.length() - 1);
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
-
-        return sb.toString();
+        return stringBuilder.toString();
     }
 
+    /**
+     * Add another filter to the group.
+     *
+     * @param filter A filter.
+     */
     public void addFileFilter(final Filter filter) {
         filters.add(filter);
     }
-
 }
