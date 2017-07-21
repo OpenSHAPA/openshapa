@@ -8,7 +8,6 @@ import org.datavyu.plugins.CustomActions;
 import org.datavyu.plugins.CustomActionsAdapter;
 import org.datavyu.plugins.ViewerStateListener;
 import org.datavyu.plugins.BaseDataViewer;
-import org.datavyu.views.DataController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -328,12 +327,6 @@ public class JavaFXDataViewer extends BaseDataViewer {
 
     @Override
     public void setDataStore(final DataStore sDB) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
-    public void setParentController(
-            final DataController dataController) {
         // TODO Auto-generated method stub
     }
 

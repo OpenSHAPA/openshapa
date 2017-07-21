@@ -21,7 +21,7 @@ import org.datavyu.Datavyu;
 import org.datavyu.plugins.javafx.JavaFxPlugin;
 import org.datavyu.plugins.nativeosxplayer.NativeOSXPlayerFactory;
 import org.datavyu.plugins.quicktime.QTDataViewer;
-import org.datavyu.plugins.quicktime.java.QTPlugin;
+import org.datavyu.plugins.quicktime.QTPlugin;
 import org.datavyu.util.MacHandler;
 import org.jdesktop.application.LocalStorage;
 

@@ -1,0 +1,4 @@
+- Code cleanup/documentation (around plugins)
+- Refactor ffplayer to ffmpegplayer
+- Add a class that uses native control for playback speed
+- Add playback speed at 0.5x (and others) preferably through filter in ffmpeg

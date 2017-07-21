@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Use the converter from Controller > Convert Videos
  */
 package org.datavyu.views;
 
@@ -19,15 +18,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-/**
- * @author jesse
- */
 public class VideoConverterV extends javax.swing.JFrame {
-
-    /**
-     * Creates new form VideoConverterV
-     */
-
     private File sourceVideo;
     private File targetVideo;
     private VideoConverter vc;
@@ -107,7 +98,7 @@ public class VideoConverterV extends javax.swing.JFrame {
     }
 
     public void startConversion() {
-
+        // TODO: ???
     }
 
     /**

@@ -43,31 +43,26 @@ import java.io.File;
  */
 public final class QTDataViewer extends BaseDataViewer {
 
-    /**
-     * How many milliseconds in a second?
-     */
+    /** How many milliseconds in a second? */
     private static final int MILLI = 1000;
-    /**
-     * How many frames to check when correcting the FPS.
-     */
+
+    /** How many frames to check when correcting the FPS */
     private static final int CORRECTION_FRAMES = 5;
+
     public static boolean librariesFound = false;
-    /**
-     * The logger for this class.
-     */
+
+    /** The logger for this class */
     private static Logger logger = LogManager.getLogger(QTDataViewer.class);
+
     private static float FALLBACK_FRAME_RATE = 29.97f;
-    /**
-     * The quicktime movie this viewer is displaying.
-     */
+
+    /** The quicktime movie this viewer is displaying */
     private Movie movie;
-    /**
-     * The visual track for the above quicktime movie.
-     */
+
+    /** The visual track for the above quicktime movie */
     private Track visualTrack;
-    /**
-     * The visual media for the above visual track.
-     */
+
+    /** The visual media for the above visual track */
     private Media visualMedia;
 
     public QTDataViewer(final java.awt.Frame parent, final boolean modal) {
@@ -76,8 +71,7 @@ public final class QTDataViewer extends BaseDataViewer {
         movie = null;
 
         try {
-
-            // Initalise QTJava.
+            // Initialize QTJava.
             QTSession.open();
         } catch (Throwable e) {
             logger.error("Unable to create " + this.getClass().getName(), e);
@@ -122,7 +116,6 @@ public final class QTDataViewer extends BaseDataViewer {
     protected void setPlayerSourceFile(final File videoFile) {
 
         try {
-//            QTFile v = new QTFile(videoFile);
             OpenMovieFile omf = OpenMovieFile.asRead(new QTFile(videoFile));
             movie = Movie.fromFile(omf);
             movie.setVolume(0.7F);
@@ -143,8 +136,7 @@ public final class QTDataViewer extends BaseDataViewer {
 //            visualMedia.loadIntoRam(0, (int)getDuration()+500, StdQTConstants.unkeepInRam);
             seek(0L);
         } catch (QTException e) {
-//            logger.error("Unable to setVideoFile", e);
-            e.printStackTrace();
+            logger.error("Unable to setVideoFile", e);
         }
     }
 
@@ -185,11 +177,10 @@ public final class QTDataViewer extends BaseDataViewer {
                 }
             }
         } catch (QTException e) {
-//            logger.error("Unable to calculate FPS, assuming " + FALLBACK_FRAME_RATE, e);
+            logger.warn("Unable to calculate FPS, assuming " + FALLBACK_FRAME_RATE, e);
             isAssumedFramesPerSecond = true;
             fps = FALLBACK_FRAME_RATE;
         }
-
         return fps;
     }
 

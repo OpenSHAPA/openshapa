@@ -36,7 +36,7 @@ import org.datavyu.plugins.DataViewer;
 import org.datavyu.plugins.Plugin;
 import org.datavyu.plugins.PluginManager;
 import org.datavyu.util.OFileUtils;
-import org.datavyu.views.DataControllerV;
+import org.datavyu.views.VideoController;
 import org.datavyu.views.discrete.SpreadsheetPanel;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -321,7 +321,7 @@ public final class ProjectController {
 
         // Use the plugin manager to load up the data viewers
         PluginManager pm = PluginManager.getInstance();
-        DataControllerV dataController = spreadsheetPanel.getDataController();
+        VideoController dataController = spreadsheetPanel.getDataController();
 
         // Load the plugins required for each media file
         boolean showController = false;
@@ -514,7 +514,7 @@ public final class ProjectController {
      */
     public void updateProject() {
 
-        DataControllerV dataController = spreadsheetPanel.getDataController();
+        VideoController dataController = spreadsheetPanel.getDataController();
 
         // Gather the data viewer settings
         List<ViewerSetting> viewerSettings = new LinkedList<ViewerSetting>();

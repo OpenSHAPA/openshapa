@@ -87,7 +87,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
     /**
      * The view to use for the quick time video controller.
      */
-    private static DataControllerV dataController;
+    private static VideoController dataController;
     private static ProjectController projectController;
 
     /** Load required native libraries (JNI). */
@@ -183,7 +183,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      * @return The single data controller in use with this instance of
      * Datavyu.
      */
-    public static DataControllerV getDataController() {
+    public static VideoController getDataController() {
         return dataController;
     }
 
@@ -192,7 +192,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      *
      * @param dataController The data controller instance to set.
      */
-    public static void setDataController(DataControllerV dataController) {
+    public static void setDataController(VideoController dataController) {
         Datavyu.dataController = dataController;
     }
 
@@ -1172,7 +1172,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
     public void resetApp() {
         closeOpenedWindows();
         this.dataController.dispose();
-        this.dataController = new DataControllerV(Datavyu.getApplication()
+        this.dataController = new VideoController(Datavyu.getApplication()
                 .getMainFrame(), false);
     }
 

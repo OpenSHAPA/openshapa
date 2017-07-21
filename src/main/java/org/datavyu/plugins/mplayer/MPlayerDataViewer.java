@@ -8,7 +8,6 @@ import org.datavyu.plugins.CustomActions;
 import org.datavyu.plugins.CustomActionsAdapter;
 import org.datavyu.plugins.ViewerStateListener;
 import org.datavyu.plugins.BaseDataViewer;
-import org.datavyu.views.DataController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,10 +17,6 @@ import java.util.concurrent.CountDownLatch;
 
 
 public class MPlayerDataViewer extends BaseDataViewer {
-
-    private static final float FALLBACK_FRAME_RATE = 24.0f;
-    private static final String VIDEO =
-            "file:///Users/jesse/Desktop/country_life_butter.mp4";
 
     /**
      * Data viewer offset.
@@ -35,35 +30,7 @@ public class MPlayerDataViewer extends BaseDataViewer {
      * Boolean to keep track of whether or not we are playing
      */
     private boolean playing;
-    /**
-     * Data viewer state listeners.
-     */
-    private List<ViewerStateListener> stateListeners;
-    /**
-     * Action button for demo purposes.
-     */
-    private JButton sampleButton;
-    /**
-     * Supported custom actions.
-     */
-    private CustomActions actions = new CustomActionsAdapter() {
-        @Override
-        public AbstractButton getActionButton1() {
-            return sampleButton;
-        }
-    };
-    /**
-     * Surface on which we will display video
-     */
-    private Canvas videoSurface;
-    /**
-     * FPS of the video, calculated on launch
-     */
-    private float fps;
-    /**
-     * Length of the video, calculated on launch
-     */
-    private long length;
+
 
     /**
      * The last jog position, making sure we are only calling jog once
@@ -77,9 +44,6 @@ public class MPlayerDataViewer extends BaseDataViewer {
     public MPlayerDataViewer(final Frame parent, final boolean modal) {
         super(parent, modal);
         javafxapp = new MPlayerApplication(null);
-//        new JFXPanel();
-//        stateListeners = new ArrayList<ViewerStateListener>();
-
     }
 
     public static void runAndWait(final Runnable action) {
@@ -94,7 +58,6 @@ public class MPlayerDataViewer extends BaseDataViewer {
         }
 
         // queue on JavaFX thread and wait for completion
-//        final CountDownLatch doneLatch = new CountDownLatch(1);
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
@@ -110,11 +73,6 @@ public class MPlayerDataViewer extends BaseDataViewer {
         });
 
         System.out.println("TESTING WEHTEHR IT RETURNS");
-//        try {
-//            doneLatch.await();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
     }
 
     @Override
@@ -157,7 +115,6 @@ public class MPlayerDataViewer extends BaseDataViewer {
     }
 
     public void setFramesPerSecond(float fpsIn) {
-        fps = fpsIn;
         assumedFPS = false;
     }
 
@@ -226,8 +183,6 @@ public class MPlayerDataViewer extends BaseDataViewer {
         System.out.println(javafxapp.getDuration());
         // Hide our fake dialog box
         dialog.setVisible(false);
-
-
         // TODO Add in function to guess framerate
     }
 
@@ -271,14 +226,7 @@ public class MPlayerDataViewer extends BaseDataViewer {
 
     @Override
     public void seek(final long position) {
-
-//        Platform.runLater(new Runnable() {
-//            @Override
-//            public void run() {
         javafxapp.seek(position);
-//            }
-//        });
-
     }
 
     @Override
@@ -289,13 +237,7 @@ public class MPlayerDataViewer extends BaseDataViewer {
     @Override
     public void stop() {
         playing = false;
-
-//        Platform.runLater(new Runnable() {
-//            @Override
-//            public void run() {
         javafxapp.pause();
-//            }
-//        });
     }
 
     @Override
@@ -306,13 +248,7 @@ public class MPlayerDataViewer extends BaseDataViewer {
     @Override
     public void play() {
         playing = true;
-
-//        Platform.runLater(new Runnable() {
-//            @Override
-//            public void run() {
         javafxapp.play();
-//            }
-//        });
     }
 
     @Override
@@ -329,12 +265,6 @@ public class MPlayerDataViewer extends BaseDataViewer {
 
     @Override
     public void setDataStore(final DataStore sDB) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
-    public void setParentController(
-            final DataController dataController) {
         // TODO Auto-generated method stub
     }
 

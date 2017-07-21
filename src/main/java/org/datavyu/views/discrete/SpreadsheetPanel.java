@@ -27,7 +27,7 @@ import org.datavyu.models.project.Project;
 import org.datavyu.util.ArrayDirection;
 import org.datavyu.util.Constants;
 import org.datavyu.views.DVProgressBar;
-import org.datavyu.views.DataControllerV;
+import org.datavyu.views.VideoController;
 import org.datavyu.views.discrete.layouts.SheetLayout;
 import org.datavyu.views.discrete.layouts.SheetLayoutFactory;
 import org.datavyu.views.discrete.layouts.SheetLayoutFactory.SheetLayoutType;
@@ -90,7 +90,7 @@ public final class SpreadsheetPanel extends JPanel
     
     //WR WANT TO RIGHT JUSTIFY THIS
     //private final SpringLayout.Constraints HIDDEN_VARS_CONSTRAINTS = SpringLayout.Constraints(Spring(SpringLayout.WEST),SpringLayout.VERTICAL_CENTER);
-    private DataControllerV dataController;
+    private VideoController dataController;
     /**
      * Scrollable view inserted into the JScrollPane.
      */
@@ -295,11 +295,11 @@ public final class SpreadsheetPanel extends JPanel
         projectController = new ProjectController();
     }
 
-    public DataControllerV getDataController() {
+    public VideoController getDataController() {
         return dataController;
     }
 
-    public void setDataController(DataControllerV dataController) {
+    public void setDataController(VideoController dataController) {
         this.dataController = dataController;
     }
 

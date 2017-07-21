@@ -23,17 +23,11 @@ import java.util.concurrent.CountDownLatch;
 
 public class VLCFXDataViewer extends BaseDataViewer {
 
-    private static final float FALLBACK_FRAME_RATE = 24.0f;
-    private static final String VIDEO =
-            "file:///Users/jesse/Desktop/country_life_butter.mp4";
     /**
      * Data viewer ID.
      */
     private Identifier id;
-    /**
-     * Dialog for showing our visualizations.
-     */
-    private JDialog vlcDialog;
+
     /**
      * Data viewer offset.
      */
@@ -42,53 +36,17 @@ public class VLCFXDataViewer extends BaseDataViewer {
      * Data to visualize.
      */
     private File data;
-    /**
-     * Boolean to keep track of whether or not we are playing
-     */
-    private boolean playing;
-    /**
-     * Data viewer state listeners.
-     */
-    private List<ViewerStateListener> stateListeners;
-    /**
-     * Action button for demo purposes.
-     */
-    private JButton sampleButton;
-    /**
-     * Supported custom actions.
-     */
-    private CustomActions actions = new CustomActionsAdapter() {
-        @Override
-        public AbstractButton getActionButton1() {
-            return sampleButton;
-        }
-    };
-    /**
-     * Surface on which we will display video
-     */
-    private Canvas videoSurface;
-    /**
-     * FPS of the video, calculated on launch
-     */
-    private float fps;
-    /**
-     * Length of the video, calculated on launch
-     */
-    private long length;
 
     /**
      * The last jog position, making sure we are only calling jog once
      * VLC has issues when trying to go to the same spot multiple times
      */
-    private long last_position;
-    private Thread vlcThread;
     private JDialog dialog = new JDialog();
+
     private VLCApplication vlcFxApp;
-    private boolean assumedFPS = false;
 
     public VLCFXDataViewer(final Frame parent, final boolean modal) {
         super(parent, modal);
-//        stateListeners = new ArrayList<ViewerStateListener>();
         dialog.setVisible(false);
     }
 
@@ -156,9 +114,7 @@ public class VLCFXDataViewer extends BaseDataViewer {
     }
 
     @Override
-    protected void setPlayerSourceFile(File videoFile) {
-
-    }
+    protected void setPlayerSourceFile(File videoFile) { }
 
     @Override
     protected Dimension getOriginalVideoSize() {
@@ -176,8 +132,9 @@ public class VLCFXDataViewer extends BaseDataViewer {
     }
 
     public void setFramesPerSecond(float fpsIn) {
-        fps = fpsIn;
-        assumedFPS = false;
+        // TODO: Check me!
+        //fps = fpsIn;
+        //assumedFPS = false;
     }
 
     @Override
@@ -265,15 +222,7 @@ public class VLCFXDataViewer extends BaseDataViewer {
 
     @Override
     public void seek(final long position) {
-//        System.out.println("SEEKING TO " + position);
-
-//        Platform.runLater(new Runnable() {
-//            @Override
-//            public void run() {
         vlcFxApp.seek(position);
-//            }
-//        });
-
     }
 
     @Override
@@ -283,14 +232,8 @@ public class VLCFXDataViewer extends BaseDataViewer {
 
     @Override
     public void stop() {
-        playing = false;
-
-//        Platform.runLater(new Runnable() {
-//            @Override
-//            public void run() {
+        super.stop();
         vlcFxApp.pause();
-//            }
-//        });
     }
 
     @Override
@@ -300,14 +243,8 @@ public class VLCFXDataViewer extends BaseDataViewer {
 
     @Override
     public void play() {
-        playing = true;
-
-//        Platform.runLater(new Runnable() {
-//            @Override
-//            public void run() {
+        super.play();
         vlcFxApp.play();
-//            }
-//        });
     }
 
     @Override

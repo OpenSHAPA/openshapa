@@ -33,31 +33,15 @@ public final class NativeOSXViewer extends BaseDataViewer {
 
     private long timeOfPrevSeek = 0;
     /**
-     * How many milliseconds in a second?
-     */
-    private static final int MILLI = 1000;
-    /**
-     * How many frames to check when correcting the FPS.
-     */
-    private static final int CORRECTIONFRAMES = 5;
-    /**
      * The logger for this class.
      */
     private static Logger LOGGER = LogManager.getLogger(NativeOSXViewer.class);
-    private static float FALLBACK_FRAME_RATE = 24.0f;
+
     long prevSeekTime = -1;
     /**
      * The quicktime movie this viewer is displaying.
      */
     private NativeOSXPlayer movie;
-    /**
-     * The visual track for the above quicktime movie.
-     */
-    private Track visualTrack;
-    /**
-     * The visual media for the above visual track.
-     */
-    private Media visualMedia;
 
     private boolean seeking = false;
 
@@ -88,13 +72,11 @@ public final class NativeOSXViewer extends BaseDataViewer {
     @Override
     public long getDuration() {
 
-//        System.out.println("Init Duration:" + movie.getDuration(movie.id));
         if(movie.getDuration(movie.id) < 0) {
             try { Thread.sleep(2000); } catch (Exception e) { e.printStackTrace(); }
             System.out.println("Error: Could not get duration. Sleeping");
         }
 
-//        System.out.println("New duration: " + movie.getDuration(movie.id));
         if(duration == 0) {
             duration = movie.getDuration(movie.id);
         }
@@ -111,14 +93,8 @@ public final class NativeOSXViewer extends BaseDataViewer {
 
         this.add(movie, BorderLayout.CENTER);
 
-//        setBounds(getX(), getY(), (int) originalVideoSize.getWidth(),
-//                (int) originalVideoSize.getHeight());
-//
-
-
         EventQueue.invokeLater(new Runnable() {
             public void run() {
-//                System.out.println(new Dimension(movie.getWidth(), movie.getHeight()));
                 try {
                     // Make sure movie is actually loaded
                     movie.setVolume(0.7F, movie.id);
@@ -170,15 +146,6 @@ public final class NativeOSXViewer extends BaseDataViewer {
     @Override
     public void setPlaybackSpeed(final float rate) {
         super.setPlaybackSpeed(rate);
-//        try {
-//        EventQueue.invokeLater(new Runnable() {
-//            public void run() {
-//                movie.setRate(rate, movie.id);
-//            }
-//        });
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
     }
 
 

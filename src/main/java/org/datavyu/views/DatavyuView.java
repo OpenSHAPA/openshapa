@@ -632,7 +632,7 @@ public final class DatavyuView extends FrameView
 
                 for (Component tab : t.getComponents()) {
                     if (tab instanceof SpreadsheetPanel) {
-                        DataControllerV dv = ((SpreadsheetPanel) tab).getDataController();
+                        VideoController dv = ((SpreadsheetPanel) tab).getDataController();
 
                         dv.stopAction();
                         for (DataViewer d : dv.getDataViewers()) {
@@ -684,7 +684,7 @@ public final class DatavyuView extends FrameView
 
         panel = new SpreadsheetPanel(new ProjectController(), null);
         panel.getProjectController().setSpreadsheetPanel(panel);
-        panel.setDataController(new DataControllerV(Datavyu.getApplication().getMainFrame(), false));
+        panel.setDataController(new VideoController(Datavyu.getApplication().getMainFrame(), false));
 //        panel.getProjectController().setDataStore(panel.getDataStore());
 
         Datavyu.setProjectController(panel.getProjectController());
@@ -1636,7 +1636,7 @@ public final class DatavyuView extends FrameView
         Datavyu.setProjectController(pc);
 
         // Data controller needs to be registered before load for the cell positioning highlighting
-        DataControllerV dcv = new DataControllerV(Datavyu.getApplication().getMainFrame(), false);
+        VideoController dcv = new VideoController(Datavyu.getApplication().getMainFrame(), false);
         Datavyu.setDataController(dcv);
 
 

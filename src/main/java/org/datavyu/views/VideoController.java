@@ -62,85 +62,67 @@ import java.util.*;
 
 
 /**
- * Quicktime video controller.
+ * Video controller.
  */
-public final class DataControllerV extends DatavyuDialog
-        implements ClockListener, TracksControllerListener, DataController,
-        PropertyChangeListener {
+public final class VideoController extends DatavyuDialog
+        implements ClockListener, TracksControllerListener, PropertyChangeListener {
 
-    private static final double LOW_RATE = 5D;
+    /** The logger for this class */
+    private static Logger logger = LogManager.getLogger(VideoController.class);
 
-    /**
-     * One second in milliseconds.
-     */
+    /** One second in milliseconds */
     private static final long ONE_SECOND = 1000L;
 
-    /**
-     * Rate of playback for rewinding.
-     */
+    /** Rate of playback for rewinding */
     private static final float REWIND_RATE = -32F;
 
-    /**
-     * Rate of normal playback.
-     */
+    /** Rate of normal playback */
     private static final float PLAY_RATE = 1F;
 
-    /**
-     * Rate of playback for fast forwarding.
-     */
-    private static final float FFORWARD_RATE = 32F;
+    /** Rate of playback for fast forwarding */
+    private static final float FAST_FORWARD_RATE = 32F;
 
-    /**
-     * The threshold to use while synchronising viewers (augmented by rate).
-     */
-    private static final long SYNC_THRESH = 200;
-
-    /**
-     * How often to synchronise the viewers with the master clock.
-     */
+    /** How often to synchronise the viewers with the master clock */
     private static final long SYNC_PULSE = 500;
-    /**
-     * The jump multiplier for shift-jogging.
-     */
-    private static final int SHIFTJOG = 5;
-    /**
-     * The jump multiplier for ctrl-jogging.
-     */
-    private static final int CTRLJOG = 10;
-    /**
-     * The 45x45 size for numpad keys
-     */
+
+    /** The jump multiplier for shift-jogging */
+    private static final int SHIFT_JOG = 5;
+
+    /** The jump multiplier for ctrl-jogging */
+    private static final int CTRL_JOG = 10;
+
+    /** The 45x45 size for number pad keys */
     private static final int NUMPAD_KEY_HEIGHT = 45;
+
     private static final int NUMPAD_KEY_WIDTH = 45;
-    private static final String NUMPAD_KEY_SIZE = "w " + NUMPAD_KEY_HEIGHT
-            + "!, h " + NUMPAD_KEY_WIDTH + "!";
-    /**
-     * The 45x95 size for tall numpad keys (enter, PC plus)
-     */
+
+    private static final String NUMPAD_KEY_SIZE = "w " + NUMPAD_KEY_HEIGHT + "!, h " + NUMPAD_KEY_WIDTH + "!";
+
+    /** The 45x95 size for tall numpad keys (enter, PC plus) */
     private static final int TALL_NUMPAD_KEY_HEIGHT = 95;
-    private static final String TALL_NUMPAD_KEY_SIZE = "span 1 2, w " + NUMPAD_KEY_WIDTH
-            + "!, h " + TALL_NUMPAD_KEY_HEIGHT + "!";
-    /**
-     * The 80x40 size for the text fields to the right of numpad
-     */
+
+    private static final String TALL_NUMPAD_KEY_SIZE = "span 1 2, w " + NUMPAD_KEY_WIDTH + "!, h "
+            + TALL_NUMPAD_KEY_HEIGHT + "!";
+
+    /** The 80x40 size for the text fields to the right of numpad */
     private static final int WIDE_TEXT_FIELD_WIDTH = 90;
+
     private static final int WIDE_TEXT_FIELD_HEIGHT = 45;
+
     private static final String WIDE_TEXT_FIELD_SIZE = "w " + WIDE_TEXT_FIELD_WIDTH + "!, h "
             + WIDE_TEXT_FIELD_HEIGHT + "!";
+
     private static final Font TEXT_FIELD_FONT = new Font("Arial", Font.PLAIN, 10);
+
     private static final Font TEXT_LABEL_FONT = new Font("Arial", Font.PLAIN, 10);
 
-    /**
-     * Format for representing time.
-     */
+    /** Format for time */
     private static final DateFormat CLOCK_FORMAT;
+
     private static final DateFormat CLOCK_FORMAT_HTML;
+
     private static int timeStampFontSize = 15;
 
-    /**
-     * The logger for this class.
-     */
-    private static Logger logger = LogManager.getLogger(DataControllerV.class);
 
     // initialize standard date format for clock display.
     static {
@@ -175,44 +157,28 @@ public final class DataControllerV extends DatavyuDialog
      */
     private boolean visible = false;
 
-    /**
-     * Determines whether or not Shift is being held.
-     */
+    /** Determines whether or not the 'shift' key is being held */
     private boolean shiftMask = false;
 
-    /**
-     * Determines whether or not Control is being held.
-     */
+    /** Determines whether or not 'control' key is being held */
     private boolean ctrlMask = false;
 
-    /**
-     * The list of viewers associated with this controller.
-     */
+    /** The list of viewers associated with this controller */
     private Set<DataViewer> viewers;
 
-    /**
-     * Clock timer.
-     */
+    /** Clock timer */
     private ClockTimer clock = new ClockTimer();
 
-    /**
-     * Is the tracks panel currently shown?
-     */
-    private boolean tracksPanelEnabled = true;
+    /** Is the tracks panel currently shown */
+    private boolean tracksPanelVisible = true;
 
-    /**
-     * The controller for manipulating tracks.
-     */
+    /** The controller for manipulating tracks */
     private MixerController mixerController;
 
-    /**
-     * Button to create a new cell.
-     */
+    /** Button to create a new cell */
     private javax.swing.JButton createNewCell;
 
-    /**
-     * Button to create a new cell setting offset.
-     */
+    /** Button to create a new cell setting offset */
     private javax.swing.JButton createNewCellSettingOffset;
 
     /** */
@@ -296,9 +262,7 @@ public final class DataControllerV extends DatavyuDialog
     /** */
     private javax.swing.JPanel tracksPanel;
 
-    /**
-     * Model containing playback information.
-     */
+    /** Model containing playback information */
     private PlaybackModel playbackModel;
 
     private boolean qtWarningShown = false;
@@ -314,12 +278,12 @@ public final class DataControllerV extends DatavyuDialog
     private boolean highlightAndFocus = false;
 
     /**
-     * Constructor. Creates a new DataControllerV.
+     * Create a new VideoController.
      *
      * @param parent The parent of this form.
      * @param modal  Should the dialog be modal or not?
      */
-    public DataControllerV(final java.awt.Frame parent, final boolean modal) {
+    public VideoController(final java.awt.Frame parent, final boolean modal) {
         super(parent, modal);
 
         clock.registerListener(this);
@@ -329,11 +293,11 @@ public final class DataControllerV extends DatavyuDialog
         resourceMap =
                 org.jdesktop.application.Application.getInstance(
                         org.datavyu.Datavyu.class).getContext().getResourceMap(
-                        DataControllerV.class);
+                        VideoController.class);
 
         actionMap = org.jdesktop.application.Application
                 .getInstance(org.datavyu.Datavyu.class).getContext()
-                .getActionMap(DataControllerV.class, this);
+                .getActionMap(VideoController.class, this);
 
         if (Datavyu.getPlatform() == Platform.MAC) {
             osModifier = "osx";
@@ -367,8 +331,8 @@ public final class DataControllerV extends DatavyuDialog
         mixerController.getMixerModel().getNeedleModel()
                 .addPropertyChangeListener(this);
 
-        tracksPanelEnabled = true;
-        showTracksPanel(tracksPanelEnabled);
+        tracksPanelVisible = true;
+        showTracksPanel(tracksPanelVisible);
         updateCurrentTimeLabel();
 
         visible = true;
@@ -564,8 +528,6 @@ public final class DataControllerV extends DatavyuDialog
                 // Synchronise viewers only if we have exceeded our pulse time.
                 if ((time - playbackModel.getLastSync())
                         > (SYNC_PULSE * clock.getRate()) || playbackModel.getLastSync() == 0) {
-                    long thresh = (long) (SYNC_THRESH
-                            * Math.abs(clock.getRate()));
                     playbackModel.setLastSync(time);
 
                     for (DataViewer v : viewers) {
@@ -585,24 +547,6 @@ public final class DataControllerV extends DatavyuDialog
                         if (v.isPlaying() && !isWithinPlayRange(time, v)) {
                             v.stop();
                         }
-
-                        // For plugins with low data rate, use frame rate
-                        // to determine threshold.
-                        if ((0 < v.getFramesPerSecond())
-                                && (v.getFramesPerSecond() <= LOW_RATE)) {
-                            thresh = (long) (ONE_SECOND / v.getFramesPerSecond()
-                                    / clock.getRate());
-                        }
-
-                        /*
-                         * Only synchronize the data viewers if we have a noticeable drift.
-                         */
-//                        if (v.isPlaying()
-//                                && (Math.abs(
-//                                v.getCurrentTime()
-//                                        - (time - v.getStartTime())) > thresh)) {
-////                            v.seek(time - v.getStartTime());
-//                        }
                     }
                 }
             }
@@ -794,7 +738,7 @@ public final class DataControllerV extends DatavyuDialog
     }
 
     private void updateCurrentTimeLabel() {
-        timestampLabel.setText(tracksPanelEnabled
+        timestampLabel.setText(tracksPanelVisible
                 ? CLOCK_FORMAT_HTML.format(getCurrentTime())
                 : CLOCK_FORMAT_HTML.format(getCurrentTime()));
     }
@@ -825,13 +769,10 @@ public final class DataControllerV extends DatavyuDialog
      */
     public void updateMaxViewerDuration() {
         long maxDuration = ViewportStateImpl.MINIMUM_MAX_END;
-        Iterator<DataViewer> it = viewers.iterator();
 
-        while (it.hasNext()) {
-            DataViewer dv = it.next();
-
-            if ((dv.getDuration() + dv.getStartTime()) > maxDuration) {
-                maxDuration = dv.getDuration() + dv.getStartTime();
+        for (DataViewer dataViewer : viewers) {
+            if ((dataViewer.getDuration() + dataViewer.getStartTime()) > maxDuration) {
+                maxDuration = dataViewer.getDuration() + dataViewer.getStartTime();
             }
         }
 
@@ -1492,9 +1433,9 @@ public final class DataControllerV extends DatavyuDialog
         JButton button = (JButton) evt.getSource();
         ResourceMap resourceMap = Application.getInstance(
                 org.datavyu.Datavyu.class).getContext().getResourceMap(
-                DataControllerV.class);
+                VideoController.class);
 
-        if (tracksPanelEnabled) {
+        if (tracksPanelVisible) {
             logger.info("Show tracks (" + button.getName() + ")");
 
             // Panel is being displayed, hide it
@@ -1509,8 +1450,8 @@ public final class DataControllerV extends DatavyuDialog
             button.setPressedIcon(resourceMap.getIcon(button.getName() + "Selected.hide.icon." + osModifier));
         }
 
-        tracksPanelEnabled = !tracksPanelEnabled;
-        showTracksPanel(tracksPanelEnabled);
+        tracksPanelVisible = !tracksPanelVisible;
+        showTracksPanel(tracksPanelVisible);
         updateCurrentTimeLabel();
     }
 
@@ -1570,7 +1511,6 @@ public final class DataControllerV extends DatavyuDialog
 
         // Add the QTDataViewer to the list of viewers we are controlling.
         viewers.add(viewer);
-        viewer.setParentController(this);
         viewer.setStartTime(offset);
 
         // It is possible that the viewer will be handling its own window. In that case
@@ -1678,11 +1618,11 @@ public final class DataControllerV extends DatavyuDialog
             playAt(PLAY_RATE);
             clockStart(e.getTime());
         } else {
-            gotoTime(e.getTime());
+            seekTime(e.getTime());
         }
     }
 
-    private void gotoTime(final long time) {
+    private void seekTime(final long time) {
         long newTime = time;
 
         if (newTime < playbackModel.getWindowPlayStart()) {
@@ -1783,10 +1723,6 @@ public final class DataControllerV extends DatavyuDialog
         playbackModel.setMaxDuration(viewport.getMaxEnd());
     }
 
-    // -------------------------------------------------------------------------
-    // Simulated clicks (for numpad calls)
-    //
-
     /**
      * Simulates play button clicked.
      */
@@ -1882,10 +1818,6 @@ public final class DataControllerV extends DatavyuDialog
         createNewCellSettingOffset.doClick();
     }
 
-    // ------------------------------------------------------------------------
-    // Playback actions
-    //
-
     /**
      * Action to invoke when the user clicks on the play button.
      */
@@ -1911,7 +1843,7 @@ public final class DataControllerV extends DatavyuDialog
     @Action
     public void forwardAction() {
         logger.info("Fast forward");
-        playAt(FFORWARD_RATE);
+        playAt(FAST_FORWARD_RATE);
     }
 
     /**
@@ -2025,7 +1957,8 @@ public final class DataControllerV extends DatavyuDialog
         } else {
 
             try {
-                System.out.println("Finding to " + onsetTextField.getText() + " " + CLOCK_FORMAT.parse(onsetTextField.getText()).getTime());
+                System.out.println("Finding to " + onsetTextField.getText() + " "
+                        + CLOCK_FORMAT.parse(onsetTextField.getText()).getTime());
                 jumpTo(CLOCK_FORMAT.parse(onsetTextField.getText()).getTime());
             } catch (ParseException e) {
                 logger.error("unable to find within video", e);
@@ -2131,11 +2064,11 @@ public final class DataControllerV extends DatavyuDialog
             int mul = 1;
 
             if (shiftMask) {
-                mul = SHIFTJOG;
+                mul = SHIFT_JOG;
             }
 
             if (ctrlMask) {
-                mul = CTRLJOG;
+                mul = CTRL_JOG;
             }
 
             long stepSize = ((-ONE_SECOND) / (long) playbackModel.getCurrentFPS());
@@ -2147,7 +2080,7 @@ public final class DataControllerV extends DatavyuDialog
                 nextTime = -mod;
             }
 
-        /* BugzID:1361 - Disallow jog to skip past the region boundaries. */
+            /* BugzID:1361 - Disallow jog to skip past the region boundaries. */
             if ((clock.getTime() + nextTime) > playbackModel.getWindowPlayStart()) {
                 stopAction();
                 jump(nextTime);
@@ -2171,24 +2104,24 @@ public final class DataControllerV extends DatavyuDialog
             int mul = 1;
 
             if (shiftMask) {
-                mul = SHIFTJOG;
+                mul = SHIFT_JOG;
             }
 
             if (ctrlMask) {
-                mul = CTRLJOG;
+                mul = CTRL_JOG;
             }
 
             long stepSize = ((ONE_SECOND) / (long) playbackModel.getCurrentFPS());
             long nextTime = (long) (mul * stepSize);
 
-        /* BugzID:1544 - Preserve precision - force jog to frame markers. */
+            /* BugzID:1544 - Preserve precision - force jog to frame markers. */
             long mod = (clock.getTime() % stepSize);
 
             if (mod != 0) {
                 nextTime = nextTime + stepSize - mod;
             }
 
-        /* BugzID:1361 - Disallow jog to skip past the region boundaries. */
+            /* BugzID:1361 - Disallow jog to skip past the region boundaries. */
             if ((clock.getTime() + nextTime) < playbackModel.getWindowPlayEnd()) {
                 stopAction();
                 jump(nextTime);
@@ -2197,10 +2130,6 @@ public final class DataControllerV extends DatavyuDialog
             }
         }
     }
-
-    // ------------------------------------------------------------------------
-    // [private] play back action helper functions
-    //
 
     /**
      * @param rate Rate of play.
@@ -2257,10 +2186,6 @@ public final class DataControllerV extends DatavyuDialog
             clock.setTime(time);
         }
     }
-
-    // -------------------------------------------------------------------------
-    //
-    //
 
     /**
      * Action to invoke when the user clicks on the create new cell button.

@@ -32,7 +32,7 @@ import org.datavyu.models.component.ViewportState;
 import org.datavyu.models.id.Identifier;
 import org.datavyu.plugins.CustomActions;
 import org.datavyu.plugins.ViewerStateListener;
-import org.datavyu.views.DataControllerV;
+import org.datavyu.views.VideoController;
 import org.datavyu.views.component.TrackPainter;
 
 import javax.swing.*;
@@ -342,7 +342,7 @@ public final class TrackController implements ViewerStateListener,
 
         // 3. Add menu item for deleting individual bookmarks
         for (final Long bookmark : trackModel.getBookmarks()) {
-            String text = DataControllerV.formatTime(bookmark);
+            String text = VideoController.formatTime(bookmark);
             JMenuItem delete = new JMenuItem("Delete bookmark " + text);
             delete.addActionListener(new ActionListener() {
                 @Override

@@ -3,16 +3,13 @@ package org.datavyu.plugins.vlc;
 import org.datavyu.models.db.DataStore;
 import org.datavyu.models.id.Identifier;
 import org.datavyu.plugins.CustomActions;
-import org.datavyu.plugins.CustomActionsAdapter;
 import org.datavyu.plugins.DataViewer;
 import org.datavyu.plugins.ViewerStateListener;
 import org.datavyu.util.DataViewerUtils;
-import org.datavyu.views.DataController;
 import org.datavyu.views.component.DefaultTrackPainter;
 import org.datavyu.views.component.TrackPainter;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
-import uk.co.caprica.vlcj.player.embedded.FullScreenStrategy;
 
 import javax.swing.*;
 import java.awt.*;
@@ -28,73 +25,40 @@ import java.util.Properties;
 public class VLCDataViewer implements DataViewer {
 
     private static final float FALLBACK_FRAME_RATE = 24.0f;
-    /**
-     * Data viewer ID.
-     */
+
+    /** Data viewer ID */
     private Identifier id;
-    /**
-     * Dialog for showing our visualizations.
-     */
+
+    /** Dialog for showing our visualizations */
     private JDialog vlcDialog;
-    /**
-     * Data viewer offset.
-     */
+
+    /** Data viewer offset */
     private long offset;
-    /**
-     * Data to visualize.
-     */
-    private File data;
-    /**
-     * Boolean to keep track of whether or not we are playing
-     */
+
+    /** Data to visualize */
+    private File sourceFile;
+
+    /** Boolean to keep track of whether or not we are playing */
     private boolean playing;
-    /**
-     * Data viewer state listeners.
-     */
+
+    /** Data viewer state listeners */
     private List<ViewerStateListener> stateListeners;
-    /**
-     * Action button for demo purposes.
-     */
-    private JButton sampleButton;
-    /**
-     * Supported custom actions.
-     */
-    private CustomActions actions = new CustomActionsAdapter() {
-        @Override
-        public AbstractButton getActionButton1() {
-            return sampleButton;
-        }
-    };
-    /**
-     * Surface on which we will display video
-     */
-    private Canvas videoSurface;
-    /**
-     * Factory for building our mediaPlayer
-     */
+
+    /** Factory for building our mediaPlayer */
     private MediaPlayerFactory mediaPlayerFactory;
-    /**
-     * The VLC mediaPlayer
-     */
+
+    /** Surface on which we will display video */
+    private Canvas videoSurface;
+
+    /** The VLC mediaPlayer */
     private EmbeddedMediaPlayer mediaPlayer;
-    /**
-     * How we will handle fullscreen (i.e., not)
-     */
-    private FullScreenStrategy fullScreenStrategy;
-    /**
-     * FPS of the video, calculated on launch
-     */
+
+    /** FPS of the video, calculated on launch */
     private float fps;
-    /**
-     * Length of the video, calculated on launch
-     */
-    private long length;
-    /**
-     * The last jog position, making sure we are only calling jog once
-     * VLC has issues when trying to go to the same spot multiple times
-     */
-    private long last_position;
-    private Thread vlcThread;
+
+    /** Length of the video, calculated on launch */
+    private long duration;
+
     private boolean assumedFPS = false;
 
     public VLCDataViewer(final Frame parent, final boolean modal) {
@@ -125,30 +89,6 @@ public class VLCDataViewer implements DataViewer {
         // Create a factory instance (once), you can keep a reference to this
         mediaPlayerFactory = new MediaPlayerFactory(libvlcArgs);
 
-        // Create a full-screen strategy
-        fullScreenStrategy = new FullScreenStrategy() {
-
-            @Override
-            public void enterFullScreenMode() {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        vlcDialog.toFront();
-                        vlcDialog.setVisible(true);
-                    }
-                });
-            }
-
-            @Override
-            public void exitFullScreenMode() {
-            }
-
-            @Override
-            public boolean isFullScreenMode() {
-                return false;
-            }
-        };
-
-
         // Create a media player instance
         mediaPlayer = mediaPlayerFactory.newEmbeddedMediaPlayer();
 
@@ -159,7 +99,7 @@ public class VLCDataViewer implements DataViewer {
         mediaPlayer.setFullScreen(false);
 
 
-        stateListeners = new ArrayList<ViewerStateListener>();
+        stateListeners = new ArrayList<>();
 
     }
 
@@ -234,17 +174,17 @@ public class VLCDataViewer implements DataViewer {
 
     @Override
     public File getSourceFile() {
-        return data;
+        return sourceFile;
     }
 
     @Override
     public void setSourceFile(final File dataFeed) {
-        data = dataFeed;
+        sourceFile = dataFeed;
         vlcDialog.setVisible(true);
         vlcDialog.setName(vlcDialog.getName() + "-" + dataFeed.getName());
         mediaPlayer.startMedia(dataFeed.getAbsolutePath());
 
-        // Grab FPS and length
+        // Grab FPS and duration
 
         // Because of the way VLC works, we have to wait for the metadata to become
         // available a short time after we start playing.
@@ -262,17 +202,17 @@ public class VLCDataViewer implements DataViewer {
         }
 
         fps = mediaPlayer.getFps();
-        length = mediaPlayer.getLength();
+        duration = mediaPlayer.getLength();
         Dimension d = mediaPlayer.getVideoDimension();
 
         System.out.println(String.format("FPS: %f", fps));
-        System.out.println(String.format("Length: %d", length));
+        System.out.println(String.format("Length: %d", duration));
 
         // Test to see if we should prompt user to convert the video to
         // the ideal format
 
         // Stop the player. This will rewind whatever
-        // frames we just played to get the FPS and length
+        // frames we just played to get the FPS and duration
         mediaPlayer.pause();
         mediaPlayer.setTime(0);
 
@@ -302,7 +242,7 @@ public class VLCDataViewer implements DataViewer {
 
     @Override
     public long getDuration() {
-        return length;
+        return duration;
     }
 
     @Override
@@ -437,7 +377,7 @@ public class VLCDataViewer implements DataViewer {
 
     @Override
     public CustomActions getCustomActions() {
-        return actions;
+        return null;
     }
 
     @Override
@@ -450,12 +390,6 @@ public class VLCDataViewer implements DataViewer {
 
     @Override
     public void setDataStore(final DataStore sDB) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
-    public void setParentController(
-            final DataController dataController) {
         // TODO Auto-generated method stub
     }
 

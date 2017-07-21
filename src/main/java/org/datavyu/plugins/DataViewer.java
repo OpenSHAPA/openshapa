@@ -31,7 +31,6 @@ import org.datavyu.models.db.DataStore;
 
 import org.datavyu.models.id.Identifier;
 
-import org.datavyu.views.DataController;
 import org.datavyu.views.component.DefaultTrackPainter;
 import org.datavyu.views.component.TrackPainter;
 
@@ -99,13 +98,6 @@ public interface DataViewer {
      * @return The data feed being used by this viewer.
      */
     File getSourceFile();
-
-    /**
-     * Sets the parent data controller for this data viewer.
-     *
-     * @param dataController The parent controller.
-     */
-    void setParentController(final DataController dataController);
 
     /**
      * @return Currently stored frames per second.

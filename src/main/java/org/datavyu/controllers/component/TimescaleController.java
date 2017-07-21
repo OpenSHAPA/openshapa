@@ -20,7 +20,7 @@ import org.datavyu.models.component.MixerModel;
 import org.datavyu.models.component.TimescaleConstants;
 import org.datavyu.models.component.TimescaleModel;
 import org.datavyu.models.component.ViewportState;
-import org.datavyu.views.DataControllerV;
+import org.datavyu.views.VideoController;
 import org.datavyu.views.component.TimescalePainter;
 
 import javax.swing.*;
@@ -176,7 +176,7 @@ public final class TimescaleController implements PropertyChangeListener {
 
             viewport = mixerModel.getViewportModel().getViewport();
             if (view.isPointInTimescale(e.getX(), e.getY())) {
-                view.setToolTipText(DataControllerV.formatTime(calculateNewNeedlePositionOnTimescale(e)));
+                view.setToolTipText(VideoController.formatTime(calculateNewNeedlePositionOnTimescale(e)));
             } else {
                 view.setToolTipText(null);
             }

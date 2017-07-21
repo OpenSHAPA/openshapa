@@ -3,7 +3,6 @@ package org.datavyu.plugins.ffplayer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.plugins.BaseDataViewer;
-import org.datavyu.views.DataController;
 
 import java.awt.*;
 import java.io.File;

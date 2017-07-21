@@ -19,7 +19,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.models.db.DataStore;
 import org.datavyu.models.id.Identifier;
-import org.datavyu.views.DataController;
 import org.datavyu.views.DatavyuDialog;
 import org.datavyu.views.component.DefaultTrackPainter;
 import org.datavyu.views.component.TrackPainter;
@@ -107,9 +106,6 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
 
     /** Resize button */
     private JButton resizeButton;
-
-    /** The parent controller */
-    private DataController parentController;
 
     /** Custom actions handler */
     private CustomActions actions = new CustomActionsAdapter() {
@@ -208,11 +204,6 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
         volume = volumeSlider.getValue() / 100F;
         setVolume();
         notifyChange();
-    }
-
-    @Override
-    public void setParentController(DataController dataController) {
-        parentController = dataController;
     }
 
     /**

@@ -18,7 +18,7 @@ import org.datavyu.models.component.MixerModel;
 import org.datavyu.models.component.NeedleConstants;
 import org.datavyu.models.component.NeedleModelImpl;
 import org.datavyu.models.component.ViewportState;
-import org.datavyu.views.DataControllerV;
+import org.datavyu.views.VideoController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -162,6 +162,6 @@ public final class NeedlePainter extends JComponent implements PropertyChangeLis
     }
 
     private void updateToolTipText() {
-        setToolTipText(DataControllerV.formatTime(needleModel.getCurrentTime()));
+        setToolTipText(VideoController.formatTime(needleModel.getCurrentTime()));
     }
 }
