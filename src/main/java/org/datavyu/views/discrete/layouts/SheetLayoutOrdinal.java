@@ -37,7 +37,7 @@ public class SheetLayoutOrdinal extends SheetLayout {
      * Helper class for tracking what we are ordering.
      */
     private class ColInfo {
-        // The ID of the column we are ordering.
+        // The Identifier of the column we are ordering.
         public int colID;
 
         // The height of the column in pixels.
@@ -46,7 +46,7 @@ public class SheetLayoutOrdinal extends SheetLayout {
         /**
          * Constructor.
          *
-         * @param columnID     The ID of the column we are ordering.
+         * @param columnID     The Identifier of the column we are ordering.
          * @param columnHeight The height of the column in pixels
          */
         public ColInfo(final int columnID, final int columnHeight) {

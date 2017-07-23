@@ -23,8 +23,8 @@ import org.datavyu.Datavyu;
 import org.datavyu.event.component.*;
 import org.datavyu.event.component.CarriageEvent.EventType;
 import org.datavyu.event.component.TracksControllerEvent.TracksEvent;
+import org.datavyu.models.Identifier;
 import org.datavyu.models.component.*;
-import org.datavyu.models.id.Identifier;
 import org.datavyu.plugins.CustomActions;
 import org.datavyu.views.component.TrackPainter;
 

@@ -55,7 +55,7 @@ public final class ViewerSetting {
     private long offset;
 
     /**
-     * ID of settings file.
+     * Identifier of settings file.
      */
     private String settingsId;
 

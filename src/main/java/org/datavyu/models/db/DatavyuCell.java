@@ -54,7 +54,7 @@ public class DatavyuCell implements Cell {
     }
 
     /**
-     * @param cellId The ID of the variable we want the listeners for.
+     * @param cellId The Identifier of the variable we want the listeners for.
      * @return The list of listeners for the specified cellId.
      */
     private static List<CellListener> getListeners(UUID cellId) {
@@ -108,7 +108,7 @@ public class DatavyuCell implements Cell {
 
     @Override
     public void setOffset(final long newOffset) {
-        if (newOffset != offset) parent.getOwningDatastore().markDBAsChanged();
+        if (newOffset != offset) parent.getOwningDatastore().markAsChanged();
         offset = newOffset;
         for (CellListener cl : getListeners(getID())) {
             cl.offsetChanged(offset);
@@ -137,7 +137,7 @@ public class DatavyuCell implements Cell {
 
     @Override
     public void setOnset(final long newOnset) {
-        if (newOnset != onset) parent.getOwningDatastore().markDBAsChanged();
+        if (newOnset != onset) parent.getOwningDatastore().markAsChanged();
         onset = newOnset;
         for (CellListener cl : getListeners(getID())) {
             cl.onsetChanged(onset);

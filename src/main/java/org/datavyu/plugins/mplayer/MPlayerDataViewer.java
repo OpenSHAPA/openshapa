@@ -263,11 +263,6 @@ public class MPlayerDataViewer extends BaseDataViewer {
         javafxapp.closeAndDestroy();
     }
 
-    @Override
-    public void setDataStore(final DataStore sDB) {
-        // TODO Auto-generated method stub
-    }
-
     public boolean isAssumedFramesPerSecond() {
         return assumedFPS;
     }

@@ -69,8 +69,7 @@ import java.util.logging.Level;
  * The main FrameView, representing the interface for Datavyu the user will
  * initially see.
  */
-public final class DatavyuView extends FrameView
-        implements FileDropEventListener {
+public final class DatavyuView extends FrameView implements FileDropEventListener {
 
     // Variable for the amount to raise the font size by when zooming.
     public static final int ZOOM_INTERVAL = 2;

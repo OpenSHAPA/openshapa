@@ -80,7 +80,7 @@ public final class RunScriptC extends SwingWorker<Object, String> {
      */
     public RunScriptC() throws IOException {
         DatavyuFileChooser jd = new DatavyuFileChooser();
-        //jd.addChoosableFileFilter(RFilter.INSTANCE);
+        //jd.addChoosableFileFilter(RFilter.ID_CONTROLLER);
         jd.addChoosableFileFilter(RBFilter.INSTANCE);
         jd.setFileFilter(RBFilter.INSTANCE);
 

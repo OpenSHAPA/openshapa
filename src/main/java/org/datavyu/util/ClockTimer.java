@@ -21,71 +21,36 @@ import java.util.TimerTask;
 
 
 /**
- * ClockTime is a class which can be used as a time marshall to keep multiple
- * objects in sync.
+ * ClockTime is a class which can be used as a time to keep multiple objects in sync.
  */
 public final class ClockTimer {
 
-    //--------------------------------------------------------------------------
-    //
-    //
-
-    /**
-     * Clock clockTick period.
-     */
+    /** Clock clockTick period */
     private static final long CLOCK_TICK = 31L;
 
-    /**
-     * Clock initial delay.
-     */
+    /** Clock initial delay */
     private static final long CLOCK_DELAY = 0L;
 
-    /**
-     * Used to convert between nanoseconds and milliseconds.
-     */
+    /** Used to convert between nanoseconds and milliseconds */
     private static final long NANO_IN_MILLI = 1000000L;
 
-    //--------------------------------------------------------------------------
-    //
-    //
-
-    /**
-     * Current time of the clock.
-     */
+    /** Current time of the clock */
     private double time;
 
-    /**
-     * Used to calculate elapsed time.
-     */
+    /** Used to calculate elapsed time */
     private long nanoTime;
 
-    /** */
-    private Timer clock;
-
-    /**
-     * Is the clock currently stopped?
-     */
+    /** Is the clock currently stopped */
     private boolean isStopped;
 
-    /**
-     * What was the state of the clock in the previous tick?
-     */
+    /** State of the clock in the previous tick */
     private boolean oldIsStopped;
 
-    /**
-     * Update multiplier.
-     */
+    /** Update multiplier */
     private float rate = 1F;
 
-    /**
-     * The set of objects that listen to this clock.
-     */
+    /** The set of objects that listen to this clock */
     private Set<ClockListener> clockListeners = new HashSet<ClockListener>();
-
-
-    //--------------------------------------------------------------------------
-    // initialization
-    //
 
     /**
      * Default constructor.
@@ -103,7 +68,7 @@ public final class ClockTimer {
         time = initialTime;
         isStopped = true;
         oldIsStopped = true;
-        clock = new Timer();
+        Timer clock = new Timer();
         clock.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -112,19 +77,9 @@ public final class ClockTimer {
         }, CLOCK_DELAY, CLOCK_TICK);
     }
 
-    //--------------------------------------------------------------------------
-    //
-    //
-
-    public synchronized void setTimeDontNotify(final long newTime) {
-
-//        if (isStopped) {
-            time = newTime;
-            time = Math.max(time, 0);
-//            notifyStep();
-//        } else {
-//            stop();
-//        }
+    public synchronized void setTimeWoutNotify(final long newTime) {
+        time = newTime;
+        time = Math.max(time, 0);
     }
 
     /**
@@ -138,7 +93,6 @@ public final class ClockTimer {
      * @param newTime Millisecond time to set clock to.
      */
     public synchronized void setTime(final long newTime) {
-
         if (isStopped) {
             time = newTime;
             time = Math.max(time, 0);
@@ -149,7 +103,7 @@ public final class ClockTimer {
     }
 
     /**
-     * @return Current clock multipler.
+     * @return Current clock rate.
      */
     public synchronized float getRate() {
         return rate;
@@ -167,7 +121,6 @@ public final class ClockTimer {
      * Initiate starting of clock.
      */
     public synchronized void start() {
-
         if (isStopped) {
             nanoTime = System.nanoTime();
             isStopped = false;
@@ -178,7 +131,6 @@ public final class ClockTimer {
      * Set flag to stop clock at next time update (boundary).
      */
     public synchronized void stop() {
-
         if (!isStopped) {
             isStopped = true;
             setRate(0);
@@ -189,7 +141,6 @@ public final class ClockTimer {
      * @param ms Time step to apply to current time when clock stopped.
      */
     public synchronized void stepTime(final long ms) {
-
         time += ms;
         time = Math.max(time, 0);
         notifyStep();
@@ -210,23 +161,16 @@ public final class ClockTimer {
         clockListeners.add(listener);
     }
 
-    //--------------------------------------------------------------------------
-    // [private] implementation
-    //
-
     /**
      * The "tick" of the clock - updates listeners of changes in time.
      */
     private synchronized void tick() {
-
         if (oldIsStopped != isStopped) {
-
             if (isStopped) {
                 notifyStop();
             } else {
                 notifyStart();
             }
-
             oldIsStopped = isStopped;
         }
 
@@ -234,24 +178,14 @@ public final class ClockTimer {
             long currentNano = System.nanoTime();
             time += rate * (currentNano - nanoTime) / NANO_IN_MILLI;
             nanoTime = currentNano;
-
             notifyTick();
         }
-
-        // Notify listeners if the clock has started or stopped since the last
-        // tick.
-
     }
-
-    //
-    // emit clock signals to registered listeners
-    //
 
     /**
      * Notify clock listeners of tick event.
      */
     private void notifyTick() {
-
         for (ClockListener l : clockListeners) {
             l.clockTick((long) time);
         }
@@ -261,7 +195,6 @@ public final class ClockTimer {
      * Notify clock listeners of rate update event.
      */
     private void notifyRate() {
-
         for (ClockListener l : clockListeners) {
             l.clockRate(rate);
         }
@@ -271,7 +204,6 @@ public final class ClockTimer {
      * Notify clock listeners of start event.
      */
     private void notifyStart() {
-
         for (ClockListener l : clockListeners) {
             l.clockStart((long) time);
         }
@@ -281,7 +213,6 @@ public final class ClockTimer {
      * Notify clock listeners of stop event.
      */
     private void notifyStop() {
-
         for (ClockListener l : clockListeners) {
             l.clockStop((long) time);
         }
@@ -291,16 +222,10 @@ public final class ClockTimer {
      * Notify clock listeners of time step event.
      */
     private void notifyStep() {
-
         for (ClockListener l : clockListeners) {
             l.clockStep((long) time);
         }
     }
-
-
-    //--------------------------------------------------------------------------
-    //
-    //
 
     /**
      * Listener interface for clock 'ticks'.

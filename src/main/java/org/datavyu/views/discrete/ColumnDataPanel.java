@@ -149,7 +149,7 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
             // and add it to our reference list
             cells.add(sc);
 
-            // Add the ID's to the mapping.
+            // Add the Identifier's to the mapping.
             viewMap.put(cell, sc);
             columnHeight += sc.getHeight();
         }
@@ -172,7 +172,7 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
     }
 
     /**
-     * Find and delete SpreadsheetCell by its ID.
+     * Find and delete SpreadsheetCell by its Identifier.
      *
      * @param cell The cell to find and delete from the column data panel.
      */

@@ -14,7 +14,7 @@
  */
 package org.datavyu.event.component;
 
-import org.datavyu.models.id.Identifier;
+import org.datavyu.models.Identifier;
 
 import java.util.EventObject;
 import java.util.List;

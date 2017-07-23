@@ -83,7 +83,7 @@ public abstract class DatavyuValue implements Value, Serializable, Comparable<Da
         if(!newValue.equals(toString()) && !newValue.equals(this.value))
         {
             this.value = newValue;
-            this.parent.getVariable().getOwningDatastore().markDBAsChanged();
+            this.parent.getVariable().getOwningDatastore().markAsChanged();
         }
         else
         {

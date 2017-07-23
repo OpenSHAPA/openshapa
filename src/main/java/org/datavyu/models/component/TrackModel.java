@@ -22,13 +22,13 @@
  */
 package org.datavyu.models.component;
 
+import org.datavyu.models.Identifier;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import org.datavyu.models.id.Identifier;
 
 
 /**
@@ -349,14 +349,14 @@ public final class TrackModel {
     }
 
     /**
-     * @return ID of the track.
+     * @return Identifier of the track.
      */
     public Identifier getId() {
         return id;
     }
 
     /**
-     * @return A copy of the track model but with a new ID.
+     * @return A copy of the track model but with a new Identifier.
      */
     public TrackModel copy() {
         return new TrackModel(this);

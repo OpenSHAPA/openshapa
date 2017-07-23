@@ -15,15 +15,11 @@
 package org.datavyu.controllers.project;
 
 import com.google.common.collect.Lists;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.datavyu.Datavyu;
 import org.datavyu.controllers.VocabEditorC;
 import org.datavyu.controllers.component.MixerController;
-import org.datavyu.controllers.id.IDController;
+import org.datavyu.models.Identifier;
 import org.datavyu.models.component.TrackModel;
 import org.datavyu.models.db.Cell;
 import org.datavyu.models.db.DataStore;
@@ -45,7 +41,6 @@ import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -329,8 +324,7 @@ public final class ProjectController {
         List<String> missingFilesList = Lists.newLinkedList();
         List<String> missingPluginList = Lists.newLinkedList();
 
-        final MixerController mixerController =
-                dataController.getMixerController();
+        final MixerController mixerController = dataController.getMixerController();
 
         // Load the viewer settings.
         for (ViewerSetting setting : project.getViewerSettings()) {
@@ -342,9 +336,8 @@ public final class ProjectController {
             String dataFileName = FilenameUtils.getName(setting.getFilePath());
 
             if (!file.exists()) {
-
                 // Look for a file by generating OS-independent paths.
-                File searchedFile = genRelative(
+                File searchedFile = OFileUtils.generateRelative(
                         project.getOriginalProjectDirectory(),
                         setting.getFilePath(), project.getProjectDirectory());
 
@@ -353,17 +346,20 @@ public final class ProjectController {
                 }
             }
 
+            // TODO: Enable search of file again
+            /*
             if (!file.exists()) {
 
                 // Look for a file that _might_ be the file we are looking for.
                 // Searches in this directory, all child directories, and from
                 // the parent directory in all child directories.
-                File searchedFile = searchFile(currentDir, dataFileName);
+                File searchedFile = OFileUtils.searchFile(currentDir, dataFileName);
 
                 if (searchedFile != null) {
                     file = searchedFile;
                 }
             }
+            */
 
             // The file is actually missing.
             if (!file.exists()) {
@@ -387,12 +383,9 @@ public final class ProjectController {
                 continue;
             }
 
-            final DataViewer viewer = plugin.getNewDataViewer(
-                    Datavyu.getApplication().getMainFrame(), false);
-            viewer.setIdentifier(IDController.generateIdentifier());
-
+            final DataViewer viewer = plugin.getNewDataViewer(Datavyu.getApplication().getMainFrame(), false);
+            viewer.setIdentifier(Identifier.generateIdentifier());
             viewer.setSourceFile(file);
-            viewer.setDataStore(dataStore);
 
             if (setting.getSettingsId() != null) {
                 // new project file
@@ -430,7 +423,7 @@ public final class ProjectController {
 
                 // Look for a file by generating OS-independent paths.
                 // This is not guaranteed for older project file formats.
-                File searchedFile = genRelative(
+                File searchedFile = OFileUtils.generateRelative(
                         project.getOriginalProjectDirectory(),
                         setting.getFilePath(), project.getProjectDirectory());
 
@@ -446,7 +439,7 @@ public final class ProjectController {
                 // project file type).
                 if (project.getOriginalProjectDirectory() != null) {
 
-                    File searchedFile = searchFile(new File(
+                    File searchedFile = OFileUtils.searchFile(new File(
                             project.getProjectDirectory()), file.getName());
 
                     if (searchedFile != null) {
@@ -593,106 +586,5 @@ public final class ProjectController {
      */
     public void setSpreadsheetPanel(SpreadsheetPanel spreadsheetPanel) {
         this.spreadsheetPanel = spreadsheetPanel;
-    }
-
-    /**
-     * TODO: Would this be better put into a file utils?
-     *
-     * @param originalDir
-     * @param originalFilePath
-     * @param currentDir
-     *
-     * @return
-     */
-    private File genRelative(final String originalDir, final String originalFilePath,
-                             final String currentDir) {
-
-        // 1. Find the longest common directory for the original dir and
-        // original file path.
-        String baseLCD = OFileUtils.longestCommonDir(originalDir,
-                originalFilePath);
-
-        if (baseLCD == null) {
-            return null;
-        }
-
-        // 2. Use the longest common directory to find the difference in
-        // directory levels with the original directory. The LCD is the original
-        // base dir.
-        int diff = OFileUtils.levelDifference(baseLCD, originalDir);
-
-        if (diff == -1) {
-            return null;
-        }
-
-        // 3. Use the difference in levels to generate a new base directory
-        // using the current directory.
-        File newBase = new File(currentDir);
-
-        while (diff > 0) {
-            newBase = newBase.getParentFile();
-
-            if (newBase == null) {
-                return null;
-            }
-
-            diff--;
-        }
-
-        // 4. Find the path relative to the original base directory for the
-        // original file path.
-        String rel = OFileUtils.relativeToBase(baseLCD, originalFilePath);
-
-        if (rel == null) {
-            return null;
-        }
-
-        // 5. Combine the relative path with the current base dir and return
-        // that as the file to try.
-        return new File(newBase, rel);
-    }
-
-    /**
-     * TODO: Would this be better put into a file utils?
-     *
-     * We search for a file first in the directory, second in all sub-directories,
-     * and third in all sub-directories of the parent directory.
-     *
-     * @param directory The directory to search in.
-     * @param fileName The filename.
-     *
-     * @return The file with the directory path.
-     */
-    private File searchFile(final File directory, final String fileName) {
-
-        // Solution 1: It is in the same directory as the project file.
-        File file = new File(directory, fileName);
-        if (file.exists()) {
-            return file;
-        }
-
-        // Solution 2: It is in a sub-directory of the project file.
-        IOFileFilter fileNameFilter = FileFilterUtils.nameFileFilter(fileName);
-        Iterator<File> subFiles = FileUtils.iterateFiles(directory, fileNameFilter,
-                                                         TrueFileFilter.TRUE);
-        if (subFiles.hasNext()) {
-            file = subFiles.next();
-        }
-        if (file.exists()) {
-            return file;
-        }
-
-
-        // Solution 3: It is in the parent of the current directory.
-        subFiles = FileUtils.iterateFiles(directory.getParentFile(), fileNameFilter,
-                                         null);
-        if (subFiles.hasNext()) {
-            file = subFiles.next();
-        }
-        if (file.exists()) {
-            return file;
-        }
-
-        return null;
     }
 }

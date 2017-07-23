@@ -79,7 +79,7 @@ public class OFileUtilsTest {
         String base = "C:\\Windows\\";
         String target = "C:\\Windows\\Boot\\Fonts\\";
 
-        assertEquals(2, OFileUtils.levelDifference(base, target));
+        assertEquals(2, OFileUtils.levelOneDifference(base, target));
     }
 
     @Test
@@ -87,7 +87,7 @@ public class OFileUtilsTest {
         String base = "C:\\Windows\\";
         String target = "C:\\Windows\\";
 
-        assertEquals(0, OFileUtils.levelDifference(base, target));
+        assertEquals(0, OFileUtils.levelOneDifference(base, target));
     }
 
     @Test
@@ -95,7 +95,7 @@ public class OFileUtilsTest {
         String base = "C:\\Windows\\Boot\\";
         String target = "C:\\Windows\\Boot\\Fonts\\foo.ttf";
 
-        assertEquals(1, OFileUtils.levelDifference(base, target));
+        assertEquals(1, OFileUtils.levelOneDifference(base, target));
     }
 
     @Test
@@ -103,7 +103,7 @@ public class OFileUtilsTest {
         String base = "/a/";
         String target = "/a/b/f/";
 
-        assertEquals(2, OFileUtils.levelDifference(base, target));
+        assertEquals(2, OFileUtils.levelOneDifference(base, target));
     }
 
     @Test
@@ -111,7 +111,7 @@ public class OFileUtilsTest {
         String base = "/a/";
         String target = "/a/";
 
-        assertEquals(0, OFileUtils.levelDifference(base, target));
+        assertEquals(0, OFileUtils.levelOneDifference(base, target));
     }
 
     @Test
@@ -119,7 +119,7 @@ public class OFileUtilsTest {
         String base = "/a/b/";
         String target = "/a/b/f/foo.ttf";
 
-        assertEquals(1, OFileUtils.levelDifference(base, target));
+        assertEquals(1, OFileUtils.levelOneDifference(base, target));
     }
 
     @Test
@@ -127,7 +127,7 @@ public class OFileUtilsTest {
         String base = "/a/b/";
         String target = "/";
 
-        assertEquals(-1, OFileUtils.levelDifference(base, target));
+        assertEquals(-1, OFileUtils.levelOneDifference(base, target));
     }
 
     @Test
@@ -135,7 +135,7 @@ public class OFileUtilsTest {
         String base = "C:/a/b/";
         String target = "C:/";
 
-        assertEquals(-1, OFileUtils.levelDifference(base, target));
+        assertEquals(-1, OFileUtils.levelOneDifference(base, target));
     }
 
     @Test

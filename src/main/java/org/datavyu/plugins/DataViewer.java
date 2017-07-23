@@ -27,10 +27,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.swing.JDialog;
-import org.datavyu.models.db.DataStore;
 
-import org.datavyu.models.id.Identifier;
-
+import org.datavyu.models.Identifier;
 import org.datavyu.views.component.DefaultTrackPainter;
 import org.datavyu.views.component.TrackPainter;
 
@@ -190,13 +188,6 @@ public interface DataViewer {
      * @see CustomActionsAdapter
      */
     CustomActions getCustomActions();
-
-    /**
-     * Sets the DataStore from which this viewer can extract data.
-     *
-     * @param sDB The DataStore to use.
-     */
-    void setDataStore(final DataStore sDB);
 
     /**
      * Unload all data, to prepare for being closed- essentially the opposite

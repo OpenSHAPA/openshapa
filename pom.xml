@@ -765,7 +765,7 @@
                 </configuration>
             </plugin>
 
-            <!-- BugzID:571 - Insert build ID into properties file. -->
+            <!-- BugzID:571 - Insert buIdentifierd ID into properties file. -->
             <plugin>
                 <dependencies>
                     <dependency>

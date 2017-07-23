@@ -25,7 +25,7 @@ import java.io.Serializable;
 public final class ConfigProperties implements Serializable {
 
     /**
-     * The unique ID for this serial version.
+     * The unique Identifier for this serial version.
      */
     private static final long serialVersionUID = 4L;
 

@@ -30,12 +30,12 @@ import java.util.*;
 /**
  * TODO: Fill in the comment at the ???
  *
- * Acts as a connector between Datavyu's various data structures and ???.
+ * Acts as a connector between Datavyu's various data structures and a hash map that serves as key value store.
  */
 public class DatavyuDataStore implements DataStore {
 
     /** Logger for the DataStore */
-    private static Logger LOGGER = LogManager.getLogger(DatavyuDataStore.class);
+    private static Logger logger = LogManager.getLogger(DatavyuDataStore.class);
 
     /** The notifier to ping when the application's title changes. */
     private static TitleNotifier titleNotifier = null;
@@ -46,26 +46,27 @@ public class DatavyuDataStore implements DataStore {
     /** Has the DataStore changed since it has last been marked as not changed. */
     private boolean changed;
 
-    //
-    private List<DataStoreListener> dbListeners = new ArrayList<DataStoreListener>();
+    /** All listeners of this data store */
+    private List<DataStoreListener> dataStoreListeners = new ArrayList<DataStoreListener>();
 
+    /** The variable that this data store holds */
     private Map<String, Variable> variables;
 
+    /** Compare variable with this class instance */
     private VariableComparator VariableComparator = new VariableComparator();
     
     private String exemptionVariables = "";
 
 
     public DatavyuDataStore() {
-        variables = new HashMap<String, Variable>();
+        variables = new HashMap<>();
         changed = false;
     }
 
     @Override
-    public void markDBAsChanged() {
+    public void markAsChanged() {
         if (!changed) {
             changed = true;
-
             if (DatavyuDataStore.titleNotifier != null) {
                 DatavyuDataStore.titleNotifier.updateTitle();
             }
@@ -74,36 +75,34 @@ public class DatavyuDataStore implements DataStore {
 
     @Override
     public List<Variable> getAllVariables() {
-        List<Variable> varList = new ArrayList<Variable>();
+        List<Variable> allVariables = new ArrayList<Variable>();
         for (String s : variables.keySet()) {
-            varList.add(variables.get(s));
+            allVariables.add(variables.get(s));
         }
-        Collections.sort(varList, VariableComparator);
-        return varList;
+        Collections.sort(allVariables, VariableComparator);
+        return allVariables;
     }
 
     public List<Variable> getVisibleVariables() {
-        //org.apache.commons.collections.CollectionUtils.filter? needs Predicate.
-        List<Variable> all = getAllVariables();
-        List<Variable> ans = new ArrayList<Variable>();
-        for(Variable v : all)
-        {
-            if(!v.isHidden()) {
-                ans.add(v);
+        List<Variable> allVariables = getAllVariables();
+        List<Variable> visibleVariables = new ArrayList<Variable>();
+        for (Variable variable : allVariables) {
+            if (!variable.isHidden()) {
+                visibleVariables.add(variable);
             }
         }
-        return ans;
+        return visibleVariables;
     }
 
     @Override
     public List<Variable> getSelectedVariables() {
-        List<Variable> varList = new ArrayList<Variable>();
+        List<Variable> selectedVariables = new ArrayList<Variable>();
         for (String s : variables.keySet()) {
             if (variables.get(s).isSelected()) {
-                varList.add(variables.get(s));
+                selectedVariables.add(variables.get(s));
             }
         }
-        return varList;
+        return selectedVariables;
     }
 
     @Override
@@ -116,22 +115,26 @@ public class DatavyuDataStore implements DataStore {
     @Override
     public List<Cell> getSelectedCells() {
         List<Cell> selectedCells = new ArrayList<Cell>();
-
-        for (Variable v : variables.values()) {
-            for (Cell c : v.getCells()) {
-                if (c.isSelected()) selectedCells.add(c);
+        for (Variable variable : variables.values()) {
+            for (Cell cell : variable.getCells()) {
+                if (cell.isSelected()) {
+                    selectedCells.add(cell);
+                }
             }
         }
-
         return selectedCells;
     }
 
     @Override
     public void clearCellSelection() {
-        for (Variable v : variables.values()) {
-            for (Cell c : v.getCells()) {
-                if (c.isSelected()) c.setSelected(false);
-                if (c.isHighlighted()) c.setHighlighted(false);
+        for (Variable variable : variables.values()) {
+            for (Cell cell : variable.getCells()) {
+                if (cell.isSelected()) {
+                    cell.setSelected(false);
+                }
+                if (cell.isHighlighted()) {
+                    cell.setHighlighted(false);
+                }
             }
         }
     }
@@ -156,8 +159,7 @@ public class DatavyuDataStore implements DataStore {
     }
 
     @Override
-    public Variable createVariable(final String name, final Argument.Type type)
-            throws UserWarningException {
+    public Variable createVariable(final String name, final Argument.Type type) throws UserWarningException {
         return createVariable(name, type, false);
     }
 
@@ -167,7 +169,8 @@ public class DatavyuDataStore implements DataStore {
         // Check to make sure the variable name is not already in use:
         Variable varTest = getVariable(name);
         if (varTest != null) {
-            throw new UserWarningException("Unable to add column with name '" + name + "', one with the same name already exists.");
+            throw new UserWarningException("Unable to add column with name '" + name
+                    + "', one with the same name already exists.");
         }
 
         Argument rootNode;
@@ -177,38 +180,37 @@ public class DatavyuDataStore implements DataStore {
         Variable v = new DatavyuVariable(name, rootNode, grandfathered, this);
         variables.put(name, v);
 
-        for (DataStoreListener dbl : this.dbListeners) {
+        for (DataStoreListener dbl : this.dataStoreListeners) {
             dbl.variableAdded(v);
         }
 
-        markDBAsChanged();
+        markAsChanged();
         return v;
     }
 
     @Override
     public void removeVariable(final Variable var) {
-        for (DataStoreListener dbl : this.dbListeners) {
-            dbl.variableRemoved(var);
+        for (DataStoreListener listener : this.dataStoreListeners) {
+            listener.variableRemoved(var);
         }
-
         variables.remove(var.getName());
-        markDBAsChanged();
+        markAsChanged();
     }
 
     @Override
     public void addVariable(final Variable var) {
-        for (DataStoreListener dbl : this.dbListeners) {
+        for (DataStoreListener dbl : this.dataStoreListeners) {
             dbl.variableAdded(var);
         }
 
         variables.put(var.getName(), var);
-        markDBAsChanged();
+        markAsChanged();
     }
 
     @Override
     public void removeCell(final Cell cell) {
         getVariable(cell).removeCell(cell);
-        markDBAsChanged();
+        markAsChanged();
     }
 
     @Override
@@ -219,10 +221,6 @@ public class DatavyuDataStore implements DataStore {
     @Override
     public void setName(final String datastoreName) {
         name = datastoreName;
-    }
-
-    @Override
-    public void canSetUnsaved(final boolean canSet) {
     }
 
     @Override
@@ -240,7 +238,7 @@ public class DatavyuDataStore implements DataStore {
     public void updateVariableName(String oldName, String newName, Variable variable) {
         this.variables.remove(oldName);
         this.variables.put(newName, variable);
-        if (!oldName.equals(newName)) markDBAsChanged();
+        if (!oldName.equals(newName)) markAsChanged();
     }
 
     @Override
@@ -255,13 +253,13 @@ public class DatavyuDataStore implements DataStore {
 
     @Override
     public void addListener(final DataStoreListener listener) {
-        dbListeners.add(listener);
+        dataStoreListeners.add(listener);
     }
 
     @Override
     public void removeListener(final DataStoreListener listener) {
-        if (dbListeners.contains(listener)) {
-            dbListeners.remove(listener);
+        if (dataStoreListeners.contains(listener)) {
+            dataStoreListeners.remove(listener);
         }
     }
     

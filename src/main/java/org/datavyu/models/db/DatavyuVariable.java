@@ -82,11 +82,11 @@ public final class DatavyuVariable implements Variable {
         this.setSelected(true);
 
 
-        owningDatastore.markDBAsChanged();
+        owningDatastore.markAsChanged();
     }
 
     /**
-     * @param variableId The ID of the variable we want the listeners for.
+     * @param variableId The Identifier of the variable we want the listeners for.
      * @return The list of listeners for the specified variableId.
      */
     private static List<VariableListener> getListeners(UUID variableId) {
@@ -112,7 +112,7 @@ public final class DatavyuVariable implements Variable {
             for (VariableListener vl : getListeners(getID())) {
                 vl.cellInserted(cell);
             }
-            owningDatastore.markDBAsChanged();
+            owningDatastore.markAsChanged();
         }
     }
 
@@ -122,7 +122,7 @@ public final class DatavyuVariable implements Variable {
 
 
     /**
-     * @return The internal ID for this variable.
+     * @return The internal Identifier for this variable.
      */
     public UUID getID() {
         return variableId;
@@ -138,7 +138,7 @@ public final class DatavyuVariable implements Variable {
             vl.cellInserted(c);
         }
 
-        owningDatastore.markDBAsChanged();
+        owningDatastore.markAsChanged();
         return c;
     }
 
@@ -146,7 +146,7 @@ public final class DatavyuVariable implements Variable {
     public void removeCell(final Cell cell) {
         cells.remove(cell);
 
-        owningDatastore.markDBAsChanged();
+        owningDatastore.markAsChanged();
 
         for (VariableListener vl : getListeners(getID())) {
             vl.cellRemoved(cell);
@@ -172,7 +172,7 @@ public final class DatavyuVariable implements Variable {
 
     @Override
     public void setRootNode(final Argument a) {
-        owningDatastore.markDBAsChanged();
+        owningDatastore.markAsChanged();
         rootNodeArgument = a;
     }
 
@@ -217,7 +217,7 @@ public final class DatavyuVariable implements Variable {
     @Override
     public void setHidden(final boolean hiddenParm) {
         if (hidden == null || hiddenParm != hidden) {
-            owningDatastore.markDBAsChanged();
+            owningDatastore.markAsChanged();
             hidden = hiddenParm;
 
             for (VariableListener vl : getListeners(getID())) {
@@ -276,7 +276,7 @@ public final class DatavyuVariable implements Variable {
         }
 
         this.setRootNode(arg);
-        owningDatastore.markDBAsChanged();
+        owningDatastore.markAsChanged();
         return arg.childArguments.get(arg.childArguments.size() - 1);
     }
 
@@ -297,7 +297,7 @@ public final class DatavyuVariable implements Variable {
         for (Cell cell : getCells()) {
             cell.moveMatrixValue(old_index, new_index);
         }
-        owningDatastore.markDBAsChanged();
+        owningDatastore.markAsChanged();
         this.setRootNode(arg);
     }
 
@@ -305,7 +305,7 @@ public final class DatavyuVariable implements Variable {
     public void moveArgument(final String name, final int new_index) {
         int old_index = getArgumentIndex(name);
         moveArgument(old_index, new_index);
-        owningDatastore.markDBAsChanged();
+        owningDatastore.markAsChanged();
     }
 
     @Override
@@ -319,7 +319,7 @@ public final class DatavyuVariable implements Variable {
             cell.removeMatrixValue(arg_index);
         }
 
-        owningDatastore.markDBAsChanged();
+        owningDatastore.markAsChanged();
         this.setRootNode(arg);
     }
 
@@ -352,17 +352,17 @@ public final class DatavyuVariable implements Variable {
     @Override
     public void setOrderIndex(final int newIndex) {
         orderIndex = newIndex;
-        owningDatastore.markDBAsChanged();
+        owningDatastore.markAsChanged();
     }
 
-    //would like to change the above calls to DatavyuDataStore.markDBAsChanged to this,
+    //would like to change the above calls to DatavyuDataStore.markAsChanged to this,
     //but am holding off for now to avoid merge complications
     private void markDB() {
         if (owningDatastore != null) {
-            owningDatastore.markDBAsChanged();
+            owningDatastore.markAsChanged();
         } else if (Datavyu.getProjectController() != null) {
-            //uncomment the below when markDBAsChanged is non-static
-            //owningDatastore.markDBAsChanged();
+            //uncomment the below when markAsChanged is non-static
+            //owningDatastore.markAsChanged();
         } else {
             System.out.println("FAILED TO MARK DATASTORE");
         }

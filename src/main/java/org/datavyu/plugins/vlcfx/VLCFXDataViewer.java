@@ -3,10 +3,7 @@ package org.datavyu.plugins.vlcfx;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.stage.Stage;
-import org.datavyu.models.id.Identifier;
-import org.datavyu.plugins.CustomActions;
-import org.datavyu.plugins.CustomActionsAdapter;
-import org.datavyu.plugins.ViewerStateListener;
+import org.datavyu.models.Identifier;
 import org.datavyu.plugins.BaseDataViewer;
 import org.datavyu.views.component.DefaultTrackPainter;
 import org.datavyu.views.component.TrackPainter;
@@ -16,7 +13,6 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
@@ -24,7 +20,7 @@ import java.util.concurrent.CountDownLatch;
 public class VLCFXDataViewer extends BaseDataViewer {
 
     /**
-     * Data viewer ID.
+     * Data viewer Identifier.
      */
     private Identifier id;
 

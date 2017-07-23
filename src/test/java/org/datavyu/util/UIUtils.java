@@ -171,14 +171,14 @@ public final class UIUtils {
             try {
 
                 // Handle doubles
-                boolean result = FloatUtils.closeEnough(Double.parseDouble(
+                boolean result = FloatingPointUtils.almostEqual(Double.parseDouble(
                         value1), Double.parseDouble(value2));
 
                 if (!result) {
                     System.out.println(value1 + "\n" + value2 + "\n");
                 }
 
-                return FloatUtils.closeEnough(Double.parseDouble(value1),
+                return FloatingPointUtils.almostEqual(Double.parseDouble(value1),
                         Double.parseDouble(value2));
             } catch (NumberFormatException nfe) {
 

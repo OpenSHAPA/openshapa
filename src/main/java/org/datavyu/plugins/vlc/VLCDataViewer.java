@@ -1,7 +1,6 @@
 package org.datavyu.plugins.vlc;
 
-import org.datavyu.models.db.DataStore;
-import org.datavyu.models.id.Identifier;
+import org.datavyu.models.Identifier;
 import org.datavyu.plugins.CustomActions;
 import org.datavyu.plugins.DataViewer;
 import org.datavyu.plugins.ViewerStateListener;
@@ -26,7 +25,7 @@ public class VLCDataViewer implements DataViewer {
 
     private static final float FALLBACK_FRAME_RATE = 24.0f;
 
-    /** Data viewer ID */
+    /** Data viewer Identifier */
     private Identifier id;
 
     /** Dialog for showing our visualizations */
@@ -310,7 +309,6 @@ public class VLCDataViewer implements DataViewer {
                     }
                 }
                 mediaPlayer.setRate(rate);
-//                mediaPlayer.setTime(mediaPlayer.getTime());
             }
         };
         launchEdtTaskLater(edtTask);
@@ -336,11 +334,8 @@ public class VLCDataViewer implements DataViewer {
         try {
             Properties settings = new Properties();
             settings.setProperty("offset", Long.toString(getStartTime()));
-//            settings.setProperty("volume", Float.toString());
-//            settings.setProperty("visible", Boolean.toString());
             settings.setProperty("height", Integer.toString(vlcDialog.getHeight()));
             settings.setProperty("fps", Float.toString(fps));
-
             settings.store(os, null);
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -388,10 +383,10 @@ public class VLCDataViewer implements DataViewer {
         mediaPlayerFactory.release();
     }
 
-    @Override
-    public void setDataStore(final DataStore sDB) {
-        // TODO Auto-generated method stub
-    }
+    //@Override
+    //public void setDataStore(final DataStore sDB) {
+    //    // TODO Auto-generated method stub
+    //}
 
     public boolean isAssumedFramesPerSecond() {
         return assumedFPS;

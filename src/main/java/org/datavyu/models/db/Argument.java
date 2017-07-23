@@ -48,7 +48,7 @@ public final class Argument implements Serializable {
     // The child arguments - this is empty if no child arguments.
     public List<Argument> childArguments;
 
-    // The ID of this variable
+    // The Identifier of this variable
     public long id;
 
     private int lastCodeNumber = 0;

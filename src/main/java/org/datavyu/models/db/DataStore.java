@@ -76,7 +76,7 @@ public interface DataStore {
     Variable getVariable(String varName);
 
     /**
-     * @param The cell that we are looking for it's parent variable.
+     * @param cell The cell that we are looking for it's parent variable.
      *
      * @return The parent variable for the supplied cell.
      */
@@ -91,8 +91,7 @@ public interface DataStore {
      * @return The new variable that was added to the datastore.
      * @throws UserWarningException
      */
-    Variable createVariable(final String name, final Argument.Type type)
-    throws UserWarningException;
+    Variable createVariable(final String name, final Argument.Type type) throws UserWarningException;
 
     /**
      * Creates and adds a variable to this datastore.
@@ -105,7 +104,7 @@ public interface DataStore {
      * @throws UserWarningException
      */
     Variable createVariable(final String name, final Argument.Type type, boolean grandfathered)
-    throws UserWarningException;
+        throws UserWarningException;
 
     /**
      * Removes a variable from the datastore.
@@ -134,23 +133,17 @@ public interface DataStore {
     String getName();
 
     /**
-     * Is the datastore permitted to mark a datastore as unsaved?
-     *
-     * @param canSet True if the datastore is premitted to mark a itself as
-     * unsaved, false otherwise.
-     */
-    void canSetUnsaved(final boolean canSet);
-
-    /**
-     * Used to flag all changes in the datastore as committed. isChanged will
-     * return false after calling this method.
+     * Mark this data store as unchanged; when all changes are committed.
      */
     void markAsUnchanged();
 
-    void markDBAsChanged();
+    /**
+     * Mark this data store as changed when there are outstanding changes that need to be committed.
+     */
+    void markAsChanged();
 
     /**
-     * @return True if the datastore has changed since it was last saved, false
+     * @return True if the data store has changed since it was last saved, false
      * otherwise.
      */
     boolean isChanged();
@@ -188,5 +181,6 @@ public interface DataStore {
     void removeListener(final DataStoreListener listener);
     
     void addExemptionVariable(String s);
+
     String getExemptionVariables();
 }

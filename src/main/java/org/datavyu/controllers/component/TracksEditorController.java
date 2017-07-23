@@ -20,8 +20,8 @@ import org.datavyu.event.component.CarriageEvent;
 import org.datavyu.event.component.CarriageEventAdapter;
 import org.datavyu.event.component.CarriageEventListener;
 import org.datavyu.event.component.TrackMouseEventListener;
+import org.datavyu.models.Identifier;
 import org.datavyu.models.component.*;
-import org.datavyu.models.id.Identifier;
 import org.datavyu.plugins.CustomActions;
 import org.datavyu.plugins.ViewerStateListener;
 import org.datavyu.views.component.TrackPainter;
@@ -500,8 +500,8 @@ public final class TracksEditorController implements TrackMouseEventListener {
     /**
      * Set the bookmark for the given track.
      *
-     * @param mediaPath Track identifier.
-     * @param position  Positions of the bookmarks in milliseconds.
+     * @param trackId Track identifier.
+     * @param positions Positions of the bookmarks in milliseconds.
      */
     public void setBookmarkPositions(final Identifier trackId,
                                      final List<Long> positions) {
@@ -517,7 +517,7 @@ public final class TracksEditorController implements TrackMouseEventListener {
      *
      * @param mediaPath Absolute path to the media file represented by the
      *                  track.
-     * @param position  Positions of the bookmarks in milliseconds.
+     * @param positions  Positions of the bookmarks in milliseconds.
      */
     @Deprecated
     public void setBookmarkPositions(final String mediaPath,
@@ -536,9 +536,8 @@ public final class TracksEditorController implements TrackMouseEventListener {
     /**
      * Set the movement lock state for a given track.
      *
-     * @param mediaPath Absolute path to the media file represented by the
-     *                  track.
-     * @param lock      true if the track's movement is locked, false otherwise.
+     * @param trackId Track id
+     * @param lock true if the track's movement is locked, false otherwise.
      */
     public void setMovementLock(final Identifier trackId, final boolean lock) {
         TrackController tc = tracks.get(trackId);

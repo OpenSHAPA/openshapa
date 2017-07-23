@@ -17,8 +17,7 @@ package org.datavyu.plugins;
 import net.miginfocom.swing.MigLayout;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.models.db.DataStore;
-import org.datavyu.models.id.Identifier;
+import org.datavyu.models.Identifier;
 import org.datavyu.views.DatavyuDialog;
 import org.datavyu.views.component.DefaultTrackPainter;
 import org.datavyu.views.component.TrackPainter;
@@ -575,11 +574,6 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
     @Override
     public void setIdentifier(final Identifier id) {
         this.id = id;
-    }
-
-    @Override
-    public void setDataStore(final DataStore dataStore) {
-        // currently not needed
     }
 
     @Override
