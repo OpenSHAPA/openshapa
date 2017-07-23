@@ -21,11 +21,11 @@ import java.io.File;
 /**
  * A file filter for CSV files.
  */
-public final class FrameCSVFilter extends FileFilter {
+public final class CsvFilter extends FileFilter {
 
-    public static final FrameCSVFilter INSTANCE = new FrameCSVFilter();
+    public static final CsvFilter INSTANCE = new CsvFilter();
 
-    private FrameCSVFilter() {
+    private CsvFilter() {
     }
 
     /**
@@ -33,7 +33,7 @@ public final class FrameCSVFilter extends FileFilter {
      */
     @Override
     public String getDescription() {
-        return "Frame-by-frame CSV file (*.csv)";
+        return "CSV file (*.csv)";
     }
 
     /**

@@ -21,11 +21,11 @@ import java.io.File;
 /**
  * A file filter for ruby files.
  */
-public class RBFilter extends FileFilter {
+public class RbFilter extends FileFilter {
 
-    public static final RBFilter INSTANCE = new RBFilter();
+    public static final RbFilter INSTANCE = new RbFilter();
 
-    private RBFilter() {
+    private RbFilter() {
     }
 
     /**

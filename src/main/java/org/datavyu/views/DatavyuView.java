@@ -804,13 +804,13 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         String extension = "";
         final FileFilter lastSaveOption = projectController.getLastSaveOption();
 
-        if (lastSaveOption instanceof SHAPAFilter) {
+        if (lastSaveOption instanceof ShapaFilter) {
             extension = ".shapa";
-        } else if (lastSaveOption instanceof CSVFilter) {
+        } else if (lastSaveOption instanceof CsvFilter) {
             extension = ".csv";
-        } else if (lastSaveOption instanceof MODBFilter) {
+        } else if (lastSaveOption instanceof MobdFilter) {
             extension = ".odb";
-        } else if (lastSaveOption instanceof OPFFilter) {
+        } else if (lastSaveOption instanceof OpfFilter) {
             extension = ".opf";
         }
 
@@ -874,9 +874,9 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
                 SaveC saveController = new SaveC();
 
                 // Force people to use new
-                if ((projController.getLastSaveOption() instanceof SHAPAFilter)
+                if ((projController.getLastSaveOption() instanceof ShapaFilter)
                         || (projController.getLastSaveOption()
-                        instanceof OPFFilter)) {
+                        instanceof OpfFilter)) {
 
                     // BugzID:1804 - Need to store the original absolute path of
                     // the
@@ -887,7 +887,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
                             projController.getProjectDirectory());
 
                     projController.updateProject();
-                    projController.setLastSaveOption(OPFFilter.INSTANCE);
+                    projController.setLastSaveOption(OpfFilter.INSTANCE);
 
                     saveController.saveProject(new File(projController.getProjectDirectory(),
                                     projController.getProjectName() + ".opf"),
@@ -924,11 +924,11 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     public void saveAs() {
         DatavyuFileChooser jd = new DatavyuFileChooser();
 
-        jd.addChoosableFileFilter(MODBFilter.INSTANCE);
-        jd.addChoosableFileFilter(OPFFilter.INSTANCE);
+        jd.addChoosableFileFilter(MobdFilter.INSTANCE);
+        jd.addChoosableFileFilter(OpfFilter.INSTANCE);
 
         jd.setAcceptAllFileFilterUsed(false);
-        jd.setFileFilter(OPFFilter.INSTANCE);
+        jd.setFileFilter(OpfFilter.INSTANCE);
 
         int result = jd.showSaveDialog(getComponent());
 
@@ -991,8 +991,8 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     public void exportFile() {
         DatavyuFileChooser jd = new DatavyuFileChooser();
 
-        jd.addChoosableFileFilter(CellCSVFilter.INSTANCE);
-        jd.setFileFilter(CellCSVFilter.INSTANCE);
+        jd.addChoosableFileFilter(CellCsvFilter.INSTANCE);
+        jd.setFileFilter(CellCsvFilter.INSTANCE);
 
         int result = jd.showSaveDialog(getComponent());
 
@@ -1034,8 +1034,8 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     public void exportFileByFrame() {
         DatavyuFileChooser jd = new DatavyuFileChooser();
 
-        jd.addChoosableFileFilter(FrameCSVFilter.INSTANCE);
-        jd.setFileFilter(FrameCSVFilter.INSTANCE);
+        jd.addChoosableFileFilter(FrameCsvFilter.INSTANCE);
+        jd.setFileFilter(FrameCsvFilter.INSTANCE);
 
         int result = jd.showSaveDialog(getComponent());
 
@@ -1088,7 +1088,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
             FileFilter filter = fc.getFileFilter();
 
-            if (filter instanceof CSVFilter) {
+            if (filter instanceof CsvFilter) {
                 String dbFileName = fc.getSelectedFile().getName();
 
                 if (!dbFileName.endsWith(".csv")) {
@@ -1110,7 +1110,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
                 projController.setDatabaseFileName(dbFileName);
 
                 // Save as a ODB database
-            } else if (filter instanceof MODBFilter) {
+            } else if (filter instanceof MobdFilter) {
                 String dbFileName = fc.getSelectedFile().getName();
 
                 if (!dbFileName.endsWith(".odb")) {
@@ -1137,7 +1137,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
                 projController.setDatabaseFileName(dbFileName);
 
                 // Save as a project
-            } else if (filter instanceof OPFFilter) {
+            } else if (filter instanceof OpfFilter) {
                 String archiveName = fc.getSelectedFile().getName();
 
                 if (!archiveName.endsWith(".opf")) {
@@ -1188,7 +1188,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
             FileFilter filter = fc.getFileFilter();
 
-            if (filter instanceof CSVFilter) {
+            if (filter instanceof CsvFilter) {
                 String dbFileName = fc.getSelectedFile().getName();
 
                 if (!dbFileName.endsWith(".csv")) {
@@ -1210,7 +1210,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
                 projController.setDatabaseFileName(dbFileName);
 
                 // Save as a ODB database
-            } else if (filter instanceof MODBFilter) {
+            } else if (filter instanceof MobdFilter) {
                 String dbFileName = fc.getSelectedFile().getName();
 
                 if (!dbFileName.endsWith(".odb")) {
@@ -1238,7 +1238,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
                 projController.setDatabaseFileName(dbFileName);
 
                 // Save as a project
-            } else if (filter instanceof OPFFilter) {
+            } else if (filter instanceof OpfFilter) {
                 String archiveName = fc.getSelectedFile().getName();
 
                 if (!archiveName.endsWith(".opf")) {
@@ -1301,10 +1301,10 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
         DatavyuFileChooser jd = new DatavyuFileChooser();
 
-        jd.addChoosableFileFilter(SHAPAFilter.INSTANCE);
-        jd.addChoosableFileFilter(OPFFilter.INSTANCE);
+        jd.addChoosableFileFilter(ShapaFilter.INSTANCE);
+        jd.addChoosableFileFilter(OpfFilter.INSTANCE);
 
-        jd.setFileFilter(OPFFilter.INSTANCE);
+        jd.setFileFilter(OpfFilter.INSTANCE);
         int result = jd.showOpenDialog(getComponent());
 
         if (result == JFileChooser.APPROVE_OPTION) {
@@ -1336,16 +1336,16 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
         String ext = FilenameUtils.getExtension(file.getAbsolutePath());
         if ("shapa".equalsIgnoreCase(ext)) {
-            fc.setFileFilter(SHAPAFilter.INSTANCE);
+            fc.setFileFilter(ShapaFilter.INSTANCE);
             open(fc);
         } else if ("csv".equalsIgnoreCase(ext)) {
-            fc.setFileFilter(CSVFilter.INSTANCE);
+            fc.setFileFilter(CsvFilter.INSTANCE);
             open(fc);
         } else if ("odb".equalsIgnoreCase(ext)) {
-            fc.setFileFilter(MODBFilter.INSTANCE);
+            fc.setFileFilter(MobdFilter.INSTANCE);
             open(fc);
         } else if ("opf".equalsIgnoreCase(ext)) {
-            fc.setFileFilter(OPFFilter.INSTANCE);
+            fc.setFileFilter(OpfFilter.INSTANCE);
             open(fc);
         }
     }
@@ -1410,7 +1410,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
         DatavyuFileChooser jd = new DatavyuFileChooser();
         jd.setSelectedFile(f);
-        jd.setFileFilter(OPFFilter.INSTANCE);
+        jd.setFileFilter(OpfFilter.INSTANCE);
 
         open(jd);
     }
@@ -2848,7 +2848,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
 //            showSpreadsheet(pController, progressBar);
 
-            if ((filter == SHAPAFilter.INSTANCE) || (filter == OPFFilter.INSTANCE)) {
+            if ((filter == ShapaFilter.INSTANCE) || (filter == OpfFilter.INSTANCE)) {
                 // Opening a project or project archive file
                 openC = openProject(jd.getSelectedFile());
 

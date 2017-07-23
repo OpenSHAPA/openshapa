@@ -31,7 +31,7 @@ import org.datavyu.models.project.ViewerSetting;
 import org.datavyu.plugins.DataViewer;
 import org.datavyu.plugins.Plugin;
 import org.datavyu.plugins.PluginManager;
-import org.datavyu.util.OFileUtils;
+import org.datavyu.util.FileSystemUtils;
 import org.datavyu.views.VideoController;
 import org.datavyu.views.discrete.SpreadsheetPanel;
 import org.jdesktop.application.Application;
@@ -337,7 +337,7 @@ public final class ProjectController {
 
             if (!file.exists()) {
                 // Look for a file by generating OS-independent paths.
-                File searchedFile = OFileUtils.generateRelative(
+                File searchedFile = FileSystemUtils.generateRelative(
                         project.getOriginalProjectDirectory(),
                         setting.getFilePath(), project.getProjectDirectory());
 
@@ -353,7 +353,7 @@ public final class ProjectController {
                 // Look for a file that _might_ be the file we are looking for.
                 // Searches in this directory, all child directories, and from
                 // the parent directory in all child directories.
-                File searchedFile = OFileUtils.searchFile(currentDir, dataFileName);
+                File searchedFile = FileSystemUtils.searchForFile(currentDir, dataFileName);
 
                 if (searchedFile != null) {
                     file = searchedFile;
@@ -423,7 +423,7 @@ public final class ProjectController {
 
                 // Look for a file by generating OS-independent paths.
                 // This is not guaranteed for older project file formats.
-                File searchedFile = OFileUtils.generateRelative(
+                File searchedFile = FileSystemUtils.generateRelative(
                         project.getOriginalProjectDirectory(),
                         setting.getFilePath(), project.getProjectDirectory());
 
@@ -439,7 +439,7 @@ public final class ProjectController {
                 // project file type).
                 if (project.getOriginalProjectDirectory() != null) {
 
-                    File searchedFile = OFileUtils.searchFile(new File(
+                    File searchedFile = FileSystemUtils.searchForFile(new File(
                             project.getProjectDirectory()), file.getName());
 
                     if (searchedFile != null) {

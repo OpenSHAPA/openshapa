@@ -165,11 +165,8 @@ public final class TracksEditorController implements TrackMouseEventListener {
         }
     }
 
-    public ViewerStateListener getViewerStateListener(
-            final Identifier trackId) {
-
+    public ViewerStateListener getViewerStateListener(final Identifier trackId) {
         TrackController tc = tracks.get(trackId);
-
         return tc;
     }
 

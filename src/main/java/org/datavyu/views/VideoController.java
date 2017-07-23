@@ -274,8 +274,7 @@ public final class VideoController extends DatavyuDialog
 
         setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 
-        resourceMap =
-                org.jdesktop.application.Application.getInstance(
+        resourceMap = org.jdesktop.application.Application.getInstance(
                         org.datavyu.Datavyu.class).getContext().getResourceMap(
                         VideoController.class);
 
@@ -293,7 +292,7 @@ public final class VideoController extends DatavyuDialog
 
         setResizable(false);
         setName(this.getClass().getSimpleName());
-        dataViewers = new LinkedHashSet<DataViewer>();
+        dataViewers = new LinkedHashSet<>();
 
         playbackModel = new PlaybackModel();
         playbackModel.setPauseRate(0);
@@ -308,12 +307,9 @@ public final class VideoController extends DatavyuDialog
         mixerController = new MixerController();
         tracksPanel.add(mixerController.getTracksPanel(), "growx");
         mixerController.addTracksControllerListener(this);
-        mixerController.getMixerModel().getViewportModel()
-                .addPropertyChangeListener(this);
-        mixerController.getMixerModel().getRegionModel()
-                .addPropertyChangeListener(this);
-        mixerController.getMixerModel().getNeedleModel()
-                .addPropertyChangeListener(this);
+        mixerController.getMixerModel().getViewportModel().addPropertyChangeListener(this);
+        mixerController.getMixerModel().getRegionModel().addPropertyChangeListener(this);
+        mixerController.getMixerModel().getNeedleModel().addPropertyChangeListener(this);
 
         tracksPanelVisible = true;
         showTracksPanel(tracksPanelVisible);
@@ -345,33 +341,31 @@ public final class VideoController extends DatavyuDialog
     /**
      * Handles opening a data source.
      *
-     * @param chooser The file chooser used to open the data source.
+     * @param chooser The plugin chooser used to open the data source.
      */
     private void openVideo(final PluginChooser chooser) {
-        Plugin plugin = chooser.getSelectedPlugin();
-        File f = chooser.getSelectedFile();
+        final Plugin plugin = chooser.getSelectedPlugin();
+        final File selectedFile = chooser.getSelectedFile();
 
         new Thread(() -> {
             if (plugin != null) {
-
                 try {
-                    DataViewer dataViewer = plugin.getNewDataViewer(Datavyu
-                            .getApplication().getMainFrame(), false);
-                    dataViewer.setIdentifier(Identifier.generateIdentifier());
-                    dataViewer.setSourceFile(f);
+                    DataViewer dataViewer = plugin.getNewDataViewer(Datavyu.getApplication().getMainFrame(),
+                            false);
+                    Identifier newIdentifier = Identifier.generateIdentifier();
+                    dataViewer.setIdentifier(newIdentifier);
+                    dataViewer.setSourceFile(selectedFile);
                     dataViewer.seek(clock.getTime());
-                    addDataViewer(plugin.getTypeIcon(), dataViewer, f, dataViewer.getTrackPainter());
-                    mixerController.bindTrackActions(dataViewer.getIdentifier(), dataViewer.getCustomActions());
-                    dataViewer.addViewerStateListener( mixerController.getTracksEditorController()
-                                    .getViewerStateListener(dataViewer.getIdentifier()));
-
+                    addDataViewer(plugin.getTypeIcon(), dataViewer, selectedFile, dataViewer.getTrackPainter());
+                    mixerController.bindTrackActions(newIdentifier, dataViewer.getCustomActions());
+                    dataViewer.addViewerStateListener(mixerController.getTracksEditorController()
+                                    .getViewerStateListener(newIdentifier));
                 } catch (Throwable t) {
                     logger.error(t);
                     StringWriter sw = new StringWriter();
                     PrintWriter pw = new PrintWriter(sw);
                     t.printStackTrace(pw);
                     // stack trace as a string
-
                     if (plugin.getNamespace().contains("quicktime")) {
                         JLabel label = new JLabel();
                         Font font = label.getFont();
@@ -395,7 +389,8 @@ public final class VideoController extends DatavyuDialog
                             public void hyperlinkUpdate(HyperlinkEvent e) {
                                 if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
                                     try {
-                                        Desktop.getDesktop().browse(e.getURL().toURI()); // roll your own link launcher or use Desktop if J6+
+                                        // roll your own link launcher or use Desktop if J6+
+                                        Desktop.getDesktop().browse(e.getURL().toURI());
                                     } catch (Exception u) {
                                         u.printStackTrace();
                                     }
@@ -505,14 +500,11 @@ public final class VideoController extends DatavyuDialog
                     playbackModel.setLastSync(time);
 
                     for (DataViewer v : dataViewers) {
-
                         /*
                          * Use offsets to determine if the video file should
                          * start playing.
                          */
-
                         if (!v.isPlaying() && isWithinPlayRange(time, v)) {
-                            //v.seek(time - v.getStartTime());
                             v.play();
                         }
 
@@ -542,11 +534,9 @@ public final class VideoController extends DatavyuDialog
                 setCurrentTime(windowPlayEnd);
                 clock.stop();
                 clockStop(windowPlayEnd);
-
-                return;
             }
         } catch (Exception e) {
-            logger.error("Unable to Sync dataViewers", e);
+            logger.error("Unable to Sync dataViewers: ", e);
         }
     }
 
@@ -558,12 +548,13 @@ public final class VideoController extends DatavyuDialog
      * @return True if data exists at this time, and false otherwise.
      */
     private boolean isWithinPlayRange(final long time, final DataViewer view) {
-        return (time >= view.getStartTime())
-                && (time < (view.getStartTime() + view.getDuration()));
+        return (time >= view.getStartTime()) && (time < (view.getStartTime() + view.getDuration()));
     }
 
-    /*
-        Method to sync the clock to the video
+    /**
+     * Method to sync the clock to the video.
+     *
+     * @param time
      */
     private void adjustClock(final long time) {
         if (dataViewers.size() == 1 && (time < playbackModel.getWindowPlayEnd() && time > playbackModel.getWindowPlayStart())) {
@@ -685,10 +676,7 @@ public final class VideoController extends DatavyuDialog
     public void clockStep(final long time) {
         resetSync();
         setCurrentTime(time);
-
         for (DataViewer viewer : dataViewers) {
-
-            System.out.println(time);
             try {
                 if (isWithinPlayRange(time, viewer) && time != viewer.getCurrentTime()) {
                     viewer.seek(time - viewer.getStartTime());
@@ -707,9 +695,8 @@ public final class VideoController extends DatavyuDialog
     }
 
     private void updateCurrentTimeLabel() {
-        timestampLabel.setText(tracksPanelVisible
-                ? CLOCK_FORMAT_HTML.format(getCurrentTime())
-                : CLOCK_FORMAT_HTML.format(getCurrentTime()));
+        timestampLabel.setText(tracksPanelVisible ? CLOCK_FORMAT_HTML.format(getCurrentTime())
+                                                  : CLOCK_FORMAT_HTML.format(getCurrentTime()));
     }
 
     /**
@@ -846,20 +833,14 @@ public final class VideoController extends DatavyuDialog
      *
      * @param id The identifier of the viewer to bind to.
      */
-    public void bindWindowListenerToDataViewer(final Identifier id,
-                                               final WindowListener wl) {
-
+    public void bindWindowListenerToDataViewer(final Identifier id, final WindowListener wl) {
         DataViewer viewer = null;
-
         for (DataViewer v : dataViewers) {
-
             if (v.getIdentifier().equals(id)) {
                 viewer = v;
-
                 break;
             }
         }
-
         if (viewer != null && viewer.getParentJDialog() != null) {
             viewer.getParentJDialog().addWindowListener(wl);
         }
@@ -874,16 +855,12 @@ public final class VideoController extends DatavyuDialog
                                         final boolean visible) {
 
         DataViewer viewer = null;
-
         for (DataViewer v : dataViewers) {
-
             if (v.getIdentifier().equals(id)) {
                 viewer = v;
-
                 break;
             }
         }
-
         if (viewer != null) {
             viewer.setDataViewerVisible(visible);
         }
@@ -896,14 +873,10 @@ public final class VideoController extends DatavyuDialog
      * @return True if the plugin should be removed, false otherwise.
      */
     private boolean shouldRemove() {
-        ResourceMap rMap = Application.getInstance(Datavyu.class).getContext()
-                .getResourceMap(Datavyu.class);
-
+        ResourceMap rMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
         String cancel = "Cancel";
         String ok = "OK";
-
         String[] options = new String[2];
-
         if (Datavyu.getPlatform() == Platform.MAC) {
             options[0] = cancel;
             options[1] = ok;
@@ -911,39 +884,31 @@ public final class VideoController extends DatavyuDialog
             options[0] = ok;
             options[1] = cancel;
         }
-
         int selection = JOptionPane.showOptionDialog(this,
                 rMap.getString("ClosePluginDialog.message"),
                 rMap.getString("ClosePluginDialog.title"),
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                 null, options, cancel);
-
         // Button behaviour is platform dependent.
         return (Datavyu.getPlatform() == Platform.MAC) ? (selection == 1)
                 : (selection == 0);
     }
 
     /**
-     * Helper method for Building a button for the data controller - sets the
-     * icon, selected icon, action map and name.
+     * Helper method for Building a button for the data controller - sets the icon, selected icon, action map, and name.
      *
-     * @param name     The prefix to use when looking for actions and buttons.
-     * @param modifier The modifier (if any) to apply to the prefix. Maybe null.
+     * @param name Prefix when looking for actions and buttons.
+     * @param modifier Modifier (if any) to apply to the prefix. Maybe null.
      * @return A configured button.
      */
-    private JButton buildButton(final String name,
-                                final String modifier) {
-        String dotModifier;
-        if (!(modifier == null) && !modifier.isEmpty()) dotModifier = "." + modifier;
-        else dotModifier = "";
-
+    private JButton buildButton(final String name, final String modifier) {
+        String dotModifier = !(modifier == null) && !modifier.isEmpty() ? "." : "";
         JButton result = new JButton();
         result.setAction(actionMap.get(name + "Action"));
         result.setIcon(resourceMap.getIcon(name + "Button.icon" + dotModifier));
         result.setPressedIcon(resourceMap.getIcon(name + "SelectedButton.icon" + dotModifier));
         result.setFocusPainted(false);
         result.setName(name + "Button");
-
         return result;
     }
 
@@ -951,24 +916,24 @@ public final class VideoController extends DatavyuDialog
         return buildButton(name, null);
     }
 
-    private JPanel makeLabelAndTextfieldPanel(JLabel l, JTextField tf) {
-        JPanel jp = new JPanel();
-        l.setFont(TEXT_LABEL_FONT);
-        tf.setFont(TEXT_FIELD_FONT);
-        jp.add(l);
-        jp.add(tf);
-        return jp;
+    private JPanel makeLabelAndTextfieldPanel(JLabel label, JTextField textField) {
+        JPanel jPanel = new JPanel();
+        label.setFont(TEXT_LABEL_FONT);
+        textField.setFont(TEXT_FIELD_FONT);
+        jPanel.add(label);
+        jPanel.add(textField);
+        return jPanel;
     }
 
     /**
      * Helper method for creating placeholder buttons
      */
-    private JButton makePlaceholderButton(boolean vis) {
-        JButton jb = new JButton();
-        jb.setEnabled(false);
-        jb.setFocusPainted(false);
-        jb.setVisible(vis);
-        return jb;
+    private JButton makePlaceholderButton(boolean visible) {
+        JButton jButton = new JButton();
+        jButton.setEnabled(false);
+        jButton.setFocusPainted(false);
+        jButton.setVisible(visible);
+        return jButton;
     }
 
     /**
@@ -1237,7 +1202,6 @@ public final class VideoController extends DatavyuDialog
             public void mouseExited(MouseEvent e) {}
             public void mouseReleased(MouseEvent e) {}
         });
-
         stepSizeTextField.addKeyListener(new KeyListener() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -1255,7 +1219,6 @@ public final class VideoController extends DatavyuDialog
             public void keyTyped(KeyEvent e) {}
             public void keyReleased(KeyEvent e) {}
         });
-
         stepSizePanel = makeLabelAndTextfieldPanel(stepSizeLabel, stepSizeTextField);
         gridButtonPanel.add(stepSizePanel, WIDE_TEXT_FIELD_SIZE);
         updateStepSizeTextField();
@@ -1299,31 +1262,23 @@ public final class VideoController extends DatavyuDialog
      *
      * @param evt The event that triggered this action.
      */
-    private void openVideoButtonActionPerformed(
-            final java.awt.event.ActionEvent evt) {
+    private void openVideoButtonActionPerformed(final java.awt.event.ActionEvent evt) {
         logger.info("Add data");
 
         PluginChooser chooser;
 
         switch (Datavyu.getPlatform()) {
-
             case WINDOWS:
                 chooser = new WindowsJFC();
-
                 break;
-
             case MAC:
                 chooser = new MacOSJFC();
-
                 break;
-
             case LINUX:
                 chooser = new LinuxJFC();
-
                 break;
-
             default:
-                throw new NotImplementedException("Plugin chooser unimplemented.");
+                throw new NotImplementedException("Plugin chooser not implemented.");
         }
 
         PluginManager pluginManager = PluginManager.getInstance();
@@ -1344,8 +1299,8 @@ public final class VideoController extends DatavyuDialog
      *
      * @param evt The event that triggered this action.
      */
-    private void showTracksButtonActionPerformed(
-            final java.awt.event.ActionEvent evt) {
+    private void showTracksButtonActionPerformed(final java.awt.event.ActionEvent evt) {
+        // TODO: Fix this assert through proper error handling
         assert (evt.getSource() instanceof JButton);
 
         JButton button = (JButton) evt.getSource();
@@ -1355,14 +1310,11 @@ public final class VideoController extends DatavyuDialog
 
         if (tracksPanelVisible) {
             logger.info("Show tracks (" + button.getName() + ")");
-
             // Panel is being displayed, hide it
             button.setIcon(resourceMap.getIcon(button.getName() + ".show.icon." + osModifier));
             button.setPressedIcon(resourceMap.getIcon(button.getName() + "Selected.show.icon." + osModifier));
-
         } else {
             logger.info("Hide tracks (" + button.getName() + ")");
-
             // Panel is hidden, show it
             button.setIcon(resourceMap.getIcon(button.getName() + ".hide.icon." + osModifier));
             button.setPressedIcon(resourceMap.getIcon(button.getName() + "Selected.hide.icon." + osModifier));

@@ -26,11 +26,11 @@ public class OFileUtilsTest {
     public void unixLongestCommonDir() {
 
         assertEquals("/var/data/",
-                OFileUtils.longestCommonDir("/var/data/stuff/xyz.dat",
+                FileSystemUtils.longestCommonDirectory("/var/data/stuff/xyz.dat",
                         "/var/data/"));
-        assertEquals("/a/", OFileUtils.longestCommonDir("/a/b/c", "/a/x/y/"));
+        assertEquals("/a/", FileSystemUtils.longestCommonDirectory("/a/b/c", "/a/x/y/"));
         assertEquals("/m/n/o/a/",
-                OFileUtils.longestCommonDir("/m/n/o/a/b/c", "/m/n/o/a/x/y/"));
+                FileSystemUtils.longestCommonDirectory("/m/n/o/a/b/c", "/m/n/o/a/x/y/"));
     }
 
     @Test
@@ -38,7 +38,7 @@ public class OFileUtilsTest {
         String target = "C:\\Windows\\Boot\\Fonts\\chs_boot.ttf";
         String base = "C:\\Windows\\Speech\\Common\\sapisvr.exe";
 
-        assertEquals("C:/Windows/", OFileUtils.longestCommonDir(target, base));
+        assertEquals("C:/Windows/", FileSystemUtils.longestCommonDirectory(target, base));
     }
 
     @Test
@@ -46,7 +46,7 @@ public class OFileUtilsTest {
         String target = "C:\\Windows\\Boot\\Fonts\\chs_boot.ttf";
         String base = "C:\\Windows\\Speech\\Common\\";
 
-        assertEquals("C:/Windows/", OFileUtils.longestCommonDir(target, base));
+        assertEquals("C:/Windows/", FileSystemUtils.longestCommonDirectory(target, base));
     }
 
     @Test
@@ -54,7 +54,7 @@ public class OFileUtilsTest {
         String target = "C:\\Windows\\Boot\\Fonts";
         String base = "C:\\Windows\\Speech\\Common\\foo.txt";
 
-        assertEquals("C:/Windows/", OFileUtils.longestCommonDir(target, base));
+        assertEquals("C:/Windows/", FileSystemUtils.longestCommonDirectory(target, base));
     }
 
     @Test
@@ -62,7 +62,7 @@ public class OFileUtilsTest {
         String target = "C:\\Windows\\Boot\\";
         String base = "C:\\Windows\\Speech\\Common\\";
 
-        assertEquals("C:/Windows/", OFileUtils.longestCommonDir(target, base));
+        assertEquals("C:/Windows/", FileSystemUtils.longestCommonDirectory(target, base));
     }
 
     @Test
@@ -71,7 +71,7 @@ public class OFileUtilsTest {
         String base =
                 "C:\\Java\\workspace\\AcceptanceTests\\Standard test data\\geo\\";
 
-        assertNull(OFileUtils.longestCommonDir(target, base));
+        assertNull(FileSystemUtils.longestCommonDirectory(target, base));
     }
 
     @Test
@@ -79,7 +79,7 @@ public class OFileUtilsTest {
         String base = "C:\\Windows\\";
         String target = "C:\\Windows\\Boot\\Fonts\\";
 
-        assertEquals(2, OFileUtils.levelOneDifference(base, target));
+        assertEquals(2, FileSystemUtils.levelOneDifference(base, target));
     }
 
     @Test
@@ -87,7 +87,7 @@ public class OFileUtilsTest {
         String base = "C:\\Windows\\";
         String target = "C:\\Windows\\";
 
-        assertEquals(0, OFileUtils.levelOneDifference(base, target));
+        assertEquals(0, FileSystemUtils.levelOneDifference(base, target));
     }
 
     @Test
@@ -95,7 +95,7 @@ public class OFileUtilsTest {
         String base = "C:\\Windows\\Boot\\";
         String target = "C:\\Windows\\Boot\\Fonts\\foo.ttf";
 
-        assertEquals(1, OFileUtils.levelOneDifference(base, target));
+        assertEquals(1, FileSystemUtils.levelOneDifference(base, target));
     }
 
     @Test
@@ -103,7 +103,7 @@ public class OFileUtilsTest {
         String base = "/a/";
         String target = "/a/b/f/";
 
-        assertEquals(2, OFileUtils.levelOneDifference(base, target));
+        assertEquals(2, FileSystemUtils.levelOneDifference(base, target));
     }
 
     @Test
@@ -111,7 +111,7 @@ public class OFileUtilsTest {
         String base = "/a/";
         String target = "/a/";
 
-        assertEquals(0, OFileUtils.levelOneDifference(base, target));
+        assertEquals(0, FileSystemUtils.levelOneDifference(base, target));
     }
 
     @Test
@@ -119,7 +119,7 @@ public class OFileUtilsTest {
         String base = "/a/b/";
         String target = "/a/b/f/foo.ttf";
 
-        assertEquals(1, OFileUtils.levelOneDifference(base, target));
+        assertEquals(1, FileSystemUtils.levelOneDifference(base, target));
     }
 
     @Test
@@ -127,7 +127,7 @@ public class OFileUtilsTest {
         String base = "/a/b/";
         String target = "/";
 
-        assertEquals(-1, OFileUtils.levelOneDifference(base, target));
+        assertEquals(-1, FileSystemUtils.levelOneDifference(base, target));
     }
 
     @Test
@@ -135,7 +135,7 @@ public class OFileUtilsTest {
         String base = "C:/a/b/";
         String target = "C:/";
 
-        assertEquals(-1, OFileUtils.levelOneDifference(base, target));
+        assertEquals(-1, FileSystemUtils.levelOneDifference(base, target));
     }
 
     @Test
@@ -143,7 +143,7 @@ public class OFileUtilsTest {
         String base = "C:\\Windows\\Boot\\";
         String target = "C:\\Windows\\Boot\\Fonts\\foo.ttf";
 
-        assertEquals("Fonts/foo.ttf", OFileUtils.relativeToBase(base, target));
+        assertEquals("Fonts/foo.ttf", FileSystemUtils.relativeToBase(base, target));
     }
 
     @Test
@@ -151,7 +151,7 @@ public class OFileUtilsTest {
         String base = "C:\\Windows\\Boot\\";
         String target = "C:\\Windows\\Boot\\boot.rom";
 
-        assertEquals("boot.rom", OFileUtils.relativeToBase(base, target));
+        assertEquals("boot.rom", FileSystemUtils.relativeToBase(base, target));
     }
 
     @Test
@@ -159,7 +159,7 @@ public class OFileUtilsTest {
         String base = "/a/b/";
         String target = "/a/b/boot.rom";
 
-        assertEquals("boot.rom", OFileUtils.relativeToBase(base, target));
+        assertEquals("boot.rom", FileSystemUtils.relativeToBase(base, target));
     }
 
     @Test
@@ -167,7 +167,7 @@ public class OFileUtilsTest {
         String base = "/a/b/";
         String target = "/a/b/c/d/e.file";
 
-        assertEquals("c/d/e.file", OFileUtils.relativeToBase(base, target));
+        assertEquals("c/d/e.file", FileSystemUtils.relativeToBase(base, target));
     }
 
     @Test
@@ -175,7 +175,7 @@ public class OFileUtilsTest {
         String base = "C:\\Windows\\Boot\\";
         String target = "/a/b/c/d/e.file";
 
-        assertNull(OFileUtils.relativeToBase(base, target));
+        assertNull(FileSystemUtils.relativeToBase(base, target));
     }
 
 }

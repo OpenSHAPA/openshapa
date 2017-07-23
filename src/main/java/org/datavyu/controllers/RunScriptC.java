@@ -19,7 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.RecentFiles;
 import org.datavyu.models.db.*;
-import org.datavyu.util.FileFilters.RBFilter;
+import org.datavyu.util.FileFilters.RbFilter;
 import org.datavyu.views.ConsoleV;
 import org.datavyu.views.DatavyuFileChooser;
 import org.jruby.embed.AttributeName;
@@ -81,8 +81,8 @@ public final class RunScriptC extends SwingWorker<Object, String> {
     public RunScriptC() throws IOException {
         DatavyuFileChooser jd = new DatavyuFileChooser();
         //jd.addChoosableFileFilter(RFilter.ID_CONTROLLER);
-        jd.addChoosableFileFilter(RBFilter.INSTANCE);
-        jd.setFileFilter(RBFilter.INSTANCE);
+        jd.addChoosableFileFilter(RbFilter.INSTANCE);
+        jd.setFileFilter(RbFilter.INSTANCE);
 
         int result = jd.showOpenDialog(Datavyu.getApplication()
                 .getMainFrame());

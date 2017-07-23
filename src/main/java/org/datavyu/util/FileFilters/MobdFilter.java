@@ -19,23 +19,31 @@ import java.io.File;
 
 
 /**
- * File filter for Datavyu project files
+ * A file filter for legacy MacSHAPA database files.
  */
-public class SHAPAFilter extends FileFilter {
+public class MobdFilter extends FileFilter {
 
-    public static final SHAPAFilter INSTANCE = new SHAPAFilter();
+    public static final MobdFilter INSTANCE = new MobdFilter();
 
-    private SHAPAFilter() {
+    private MobdFilter() {
     }
 
-    @Override
-    public boolean accept(final File file) {
-        return (file.getName().endsWith(".shapa") || file.isDirectory());
-    }
-
+    /**
+     * @return The description of the file filter.
+     */
     @Override
     public String getDescription() {
-        return "Datavyu project files (*.shapa)";
+        return "MacSHAPA open database file (*.odb)";
     }
 
+    /**
+     * Determines if the file filter will accept the supplied file.
+     *
+     * @param file The file to check if this file will accept.
+     * @return true if the file is to be accepted, false otherwise.
+     */
+    @Override
+    public boolean accept(final File file) {
+        return (file.getName().endsWith(".odb") || file.isDirectory());
+    }
 }

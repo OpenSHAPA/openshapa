@@ -19,31 +19,22 @@ import java.io.File;
 
 
 /**
- * A file filter for CSV files.
+ * File filter for Datavyu project files
  */
-public final class CellCSVFilter extends FileFilter {
+public class ShapaFilter extends FileFilter {
 
-    public static final CellCSVFilter INSTANCE = new CellCSVFilter();
+    /** Instance of a shapa filter */
+    public static final ShapaFilter INSTANCE = new ShapaFilter();
 
-    private CellCSVFilter() {
-    }
+    private ShapaFilter() {}
 
-    /**
-     * @return The description of the file filter.
-     */
-    @Override
-    public String getDescription() {
-        return "Cell per row CSV file (*.csv)";
-    }
-
-    /**
-     * Determines if the file filter will accept the supplied file.
-     *
-     * @param file The file to check if this file will accept.
-     * @return true if the file is to be accepted, false otherwise.
-     */
     @Override
     public boolean accept(final File file) {
-        return (file.getName().endsWith(".csv") || file.isDirectory());
+        return (file.getName().endsWith(".shapa") || file.isDirectory());
+    }
+
+    @Override
+    public String getDescription() {
+        return "Datavyu project files (*.shapa)";
     }
 }

@@ -25,9 +25,9 @@ import java.util.Iterator;
 
 
 /**
- * Utilities for files.
+ * Utilities for file system.
  */
-public final class OFileUtils {
+public final class FileSystemUtils {
 
     /**
      * Generates the longest common directory for the two given absolute paths.
@@ -38,7 +38,7 @@ public final class OFileUtils {
      * path2. null if no such common directory (i.e. if the files were
      * on different drives)
      */
-    public static String longestCommonDir(final String path1, final String path2) {
+    public static String longestCommonDirectory(final String path1, final String path2) {
 
         if ((path1 == null) || (path2 == null)) {
             throw new NullPointerException();
@@ -87,8 +87,7 @@ public final class OFileUtils {
      * levels if the difference can be determined. -1 if the difference
      * cannot be determined.
      */
-    public static int levelOneDifference(final String basePath,
-                                         final String path) {
+    public static int levelOneDifference(final String basePath, final String path) {
 
         if ((basePath == null) || (path == null)) {
             throw new NullPointerException();
@@ -117,8 +116,7 @@ public final class OFileUtils {
      * @param filePath
      * @return null if filePath does not have basePath as a prefix.
      */
-    public static String relativeToBase(final String basePath,
-                                        final String filePath) {
+    public static String relativeToBase(final String basePath, final String filePath) {
 
         if ((basePath == null) || (filePath == null)) {
             throw new NullPointerException();
@@ -145,7 +143,7 @@ public final class OFileUtils {
      */
     public static File generateRelative(final String originalDir, final String originalFilePath, final String currentDir) {
         // 1. Find the longest common directory for the original directory and the original file path.
-        String base = longestCommonDir(originalDir, originalFilePath);
+        String base = longestCommonDirectory(originalDir, originalFilePath);
         if (base == null) {
             return null;
         }
@@ -182,7 +180,7 @@ public final class OFileUtils {
      *
      * @return null if not found and otherwise the file with the directory path
      */
-    public static File searchFile(final File directory, final String fileName) {
+    public static File searchForFile(final File directory, final String fileName) {
         // Solution 1: It is in the same directory as the project file.
         File file = new File(directory, fileName);
         if (file.exists()) {

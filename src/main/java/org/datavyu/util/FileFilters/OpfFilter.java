@@ -21,11 +21,11 @@ import java.io.File;
 /**
  * File filter for Datavyu project archive files
  */
-public class OPFFilter extends FileFilter {
+public class OpfFilter extends FileFilter {
 
-    public static final OPFFilter INSTANCE = new OPFFilter();
+    public static final OpfFilter INSTANCE = new OpfFilter();
 
-    private OPFFilter() {
+    private OpfFilter() {
     }
 
     @Override

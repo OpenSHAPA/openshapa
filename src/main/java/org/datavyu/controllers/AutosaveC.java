@@ -20,8 +20,8 @@ import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.controllers.project.ProjectController;
 import org.datavyu.models.db.UserWarningException;
-import org.datavyu.util.FileFilters.OPFFilter;
-import org.datavyu.util.FileFilters.SHAPAFilter;
+import org.datavyu.util.FileFilters.OpfFilter;
+import org.datavyu.util.FileFilters.ShapaFilter;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -83,9 +83,9 @@ public class AutosaveC implements ActionListener {
                 saveController.saveProject(f, projController.getProject(),
                         projController.getDataStore(), false);
             } else {
-                if ((projController.getLastSaveOption() instanceof SHAPAFilter)
+                if ((projController.getLastSaveOption() instanceof ShapaFilter)
                         || (projController.getLastSaveOption()
-                        instanceof OPFFilter)) {
+                        instanceof OpfFilter)) {
                     baseName = "~" + projController.getProjectName() + "_";
                     ext = ".opf";
                     f = File.createTempFile(baseName, ext);

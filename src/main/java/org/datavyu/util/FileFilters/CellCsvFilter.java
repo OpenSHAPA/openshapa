@@ -19,13 +19,13 @@ import java.io.File;
 
 
 /**
- * A file filter for legacy MacSHAPA database files.
+ * A file filter for CSV files.
  */
-public class MODBFilter extends FileFilter {
+public final class CellCsvFilter extends FileFilter {
 
-    public static final MODBFilter INSTANCE = new MODBFilter();
+    public static final CellCsvFilter INSTANCE = new CellCsvFilter();
 
-    private MODBFilter() {
+    private CellCsvFilter() {
     }
 
     /**
@@ -33,7 +33,7 @@ public class MODBFilter extends FileFilter {
      */
     @Override
     public String getDescription() {
-        return "MacSHAPA open database file (*.odb)";
+        return "Cell per row CSV file (*.csv)";
     }
 
     /**
@@ -44,6 +44,6 @@ public class MODBFilter extends FileFilter {
      */
     @Override
     public boolean accept(final File file) {
-        return (file.getName().endsWith(".odb") || file.isDirectory());
+        return (file.getName().endsWith(".csv") || file.isDirectory());
     }
 }

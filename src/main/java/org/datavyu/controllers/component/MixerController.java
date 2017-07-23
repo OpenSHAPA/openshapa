@@ -578,13 +578,10 @@ public final class MixerController implements PropertyChangeListener,
      * @param trackId Identifier of the track
      * @param actions Actions to bind with
      */
-    public void bindTrackActions(final Identifier trackId,
-                                 final CustomActions actions) {
-
+    public void bindTrackActions(final Identifier trackId, final CustomActions actions) {
         if (actions == null) {
             return;
         }
-
         runInEDT(new Runnable() {
             @Override
             public void run() {
