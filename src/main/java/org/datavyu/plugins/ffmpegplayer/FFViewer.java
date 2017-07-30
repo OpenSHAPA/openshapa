@@ -1,4 +1,4 @@
-package org.datavyu.plugins.ffplayer;
+package org.datavyu.plugins.ffmpegplayer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

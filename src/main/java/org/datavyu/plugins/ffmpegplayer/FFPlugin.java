@@ -1,4 +1,4 @@
-package org.datavyu.plugins.ffplayer;
+package org.datavyu.plugins.ffmpegplayer;
 
 import com.google.common.collect.Lists;
 import com.sun.jna.Platform;
@@ -57,7 +57,7 @@ public class FFPlugin implements Plugin {
 
     @Override
     public String getPluginName() {
-        return "FF Plugin";
+        return "FFmpeg Plugin";
     }
 
     @Override
