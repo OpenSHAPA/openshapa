@@ -39,21 +39,16 @@ import java.lang.reflect.Proxy;
  */
 public class MacHandler {
 
-    /**
-     * The logger for this class.
-     */
-    private static Logger LOGGER = LogManager.getLogger(MacHandler.class);
+    /** The logger for this class */
+    private static Logger logger = LogManager.getLogger(MacHandler.class);
 
     public static int getOSVersion() {
         try {
             String osVersion = System.getProperty("os.version");
-
-            int major = Integer.valueOf(osVersion.split("\\.")[1]);
-            return major;
+            return Integer.valueOf(osVersion.split("\\.")[1]); // get major version
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Could not get major version number", e);
         }
-
         return -1;
     }
 
@@ -61,35 +56,31 @@ public class MacHandler {
      * Default constructor.
      */
     public MacHandler() {
-
         try {
             Class appc = Class.forName("com.apple.eawt.Application");
             Object app = appc.newInstance();
-
             Class applc = Class.forName("com.apple.eawt.ApplicationListener");
             Object listener = Proxy.newProxyInstance(Thread.currentThread()
                     .getContextClassLoader(), new Class[]{applc},
                     new HandlerForApplicationAdapter());
-
             // Add the listener to the application.
             Method m = appc.getMethod("addApplicationListener", applc);
             m.invoke(app, listener);
         } catch (ClassNotFoundException e) {
-            LOGGER.error("Unable to find apple classes", e);
+            logger.error("Unable to find apple classes", e);
         } catch (InstantiationException e) {
-            LOGGER.error("Unable to instantiate apple application", e);
+            logger.error("Unable to instantiate apple application", e);
         } catch (IllegalAccessException e) {
-            LOGGER.error("Unable to access application excapeion", e);
+            logger.error("Unable to access application excapeion", e);
         } catch (NoSuchMethodException e) {
-            LOGGER.error("Unable to access method in application", e);
+            logger.error("Unable to access method in application", e);
         } catch (InvocationTargetException e) {
-            LOGGER.error("Unable to invocate target", e);
+            logger.error("Unable to invocate target", e);
         }
     }
 
     /**
-     * InvocationHandler for the ApplicationAdapter... So we can override some
-     * methods.
+     * InvocationHandler for the ApplicationAdapter to override some methods.
      */
     class HandlerForApplicationAdapter implements InvocationHandler {
 
@@ -103,76 +94,63 @@ public class MacHandler {
          */
         public Object invoke(final Object proxy, final Method method,
                              final Object[] args) {
-
             try {
                 Class ae = Class.forName("com.apple.eawt.ApplicationEvent");
-
-                if (method.getName().equals("handleAbout")) {
-                    Datavyu.getApplication().showAboutWindow();
-
-                    Method setHandled = ae.getMethod("setHandled",
-                            boolean.class);
-                    setHandled.invoke(args[0], true);
-                } else if (method.getName().equals("handleSupportOpen")) {
-                    Datavyu.getApplication().openSupportSite();
-
-                    Method setHandled = ae.getMethod("setHandled",
-                            boolean.class);
-                    setHandled.invoke(args[0], true);
-                } else if (method.getName().equals("handleGuideOpen")) {
-                    Datavyu.getApplication().openGuideSite();
-
-                    Method setHandled = ae.getMethod("setHandled",
-                            boolean.class);
-                    setHandled.invoke(args[0], true);
-                } else if (method.getName().equals("handleUpdate")) {
-                    Datavyu.getApplication().showUpdateWindow();
-
-                    Method setHandled = ae.getMethod("setHandled",
-                            boolean.class);
-                    setHandled.invoke(args[0], true);
-                } else if (method.getName().equals("handleQuit")) {
-                    // Accept the quit request.
-
-                    boolean shouldQuit = Datavyu.getApplication().safeQuit();
-
-                    if (shouldQuit) {
-                        Datavyu.getApplication().getMainFrame().setVisible(
-                                false);
-                        Datavyu.getApplication().shutdown();
-                    }
-
-                    Method setHandled = ae.getMethod("setHandled",
-                            boolean.class);
-
-                    setHandled.invoke(args[0], shouldQuit);
-                } else if ("handleOpenFile".equals(method.getName())) {
-                    Method getFilename = ae.getMethod("getFilename", null);
-
-                    String fileName = (String) getFilename.invoke(args[0],
-                            null);
-
-                    if (Datavyu.getApplication().ready) {
-                        Datavyu.getApplication().getView().openExternalFile(new File(
-                                fileName));
-                    } else {
-                        Datavyu.getApplication().setCommandLineFile(fileName);
-                    }
-
-                    Method setHandled = ae.getMethod("setHandled",
-                            boolean.class);
-                    setHandled.invoke(args[0], true);
+                Method setHandled;
+                String methodName = method.getName();
+                switch (methodName) {
+                    case "handleAbout":
+                        Datavyu.getApplication().showAboutWindow();
+                        setHandled = ae.getMethod("setHandled", boolean.class);
+                        setHandled.invoke(args[0], true);
+                        break;
+                    case "handleSupportOpen":
+                        Datavyu.getApplication().openSupportSite();
+                        setHandled = ae.getMethod("setHandled", boolean.class);
+                        setHandled.invoke(args[0], true);
+                        break;
+                    case "handleGuideOpen":
+                        Datavyu.getApplication().openGuideSite();
+                        setHandled = ae.getMethod("setHandled", boolean.class);
+                        setHandled.invoke(args[0], true);
+                        break;
+                    case "handleUpdate":
+                        Datavyu.getApplication().showUpdateWindow();
+                        setHandled = ae.getMethod("setHandled", boolean.class);
+                        setHandled.invoke(args[0], true);
+                        break;
+                    case "handleQuit":
+                        boolean shouldQuit = Datavyu.getApplication().safeQuit();
+                        if (shouldQuit) {
+                            Datavyu.getApplication().getMainFrame().setVisible(false);
+                            Datavyu.getApplication().shutdown();
+                        }
+                        setHandled = ae.getMethod("setHandled", boolean.class);
+                        setHandled.invoke(args[0], shouldQuit);
+                        break;
+                    case "handleOpenFile":
+                        Method getFilename = ae.getMethod("getFilename", null);
+                        String fileName = (String) getFilename.invoke(args[0],null);
+                        if (Datavyu.getApplication().ready) {
+                            Datavyu.getApplication().getView().openExternalFile(new File(fileName));
+                        } else {
+                            Datavyu.getApplication().setCommandLineFile(fileName);
+                        }
+                        setHandled = ae.getMethod("setHandled", boolean.class);
+                        setHandled.invoke(args[0], true);
+                        break;
+                    default:
+                        logger.info("Tried to invoke method " + methodName + " which is not registered");
                 }
             } catch (NoSuchMethodException e) {
-                LOGGER.error("Unable to access method in application", e);
+                logger.error("Unable to access method in application", e);
             } catch (IllegalAccessException e) {
-                LOGGER.error("Unable to access application excapeion", e);
+                logger.error("Unable to access application excapeion", e);
             } catch (InvocationTargetException e) {
-                LOGGER.error("Unable to invocate target", e);
+                logger.error("Unable to invocate target", e);
             } catch (ClassNotFoundException e) {
-                LOGGER.error("Unable to find apple classes", e);
+                logger.error("Unable to find apple classes", e);
             }
-
             return null;
         }
     }

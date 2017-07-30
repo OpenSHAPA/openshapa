@@ -594,8 +594,8 @@ public final class MixerController implements PropertyChangeListener,
      * Used to set up the track interface.
      *
      * @param trackId  Track identifier.
-     * @param bookmark Bookmark position in milliseconds.
-     * @param lock     True if track movement is locked, false otherwise.
+     * @param bookmarks Bookmark position in milliseconds.
+     * @param lock True if track movement is locked, false otherwise.
      */
     public void setTrackInterfaceSettings(final Identifier trackId,
                                           final List<Long> bookmarks, final boolean lock) {

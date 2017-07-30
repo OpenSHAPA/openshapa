@@ -1,20 +1,14 @@
 package org.datavyu.plugins.ffplayer;
 
-import org.datavyu.util.NativeLoader;
+import org.datavyu.util.NativeLibraryLoader;
 
-import java.awt.Frame;
 import java.awt.color.ColorSpace;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioFormat.Encoding;
-import javax.sound.sampled.LineUnavailableException;
 
 public class MovieStream implements VideoStream, AudioStream {
 
@@ -23,13 +17,13 @@ public class MovieStream implements VideoStream, AudioStream {
 
 		try {
 			// Load order is important, do not change.
-			NativeLoader.LoadNativeLib("avutil-55");
-			NativeLoader.LoadNativeLib("swscale-4");
-			NativeLoader.LoadNativeLib("swresample-2");
-			NativeLoader.LoadNativeLib("avcodec-57");
-			NativeLoader.LoadNativeLib("avformat-57");
+			NativeLibraryLoader.load("avutil-55");
+			NativeLibraryLoader.load("swscale-4");
+			NativeLibraryLoader.load("swresample-2");
+			NativeLibraryLoader.load("avcodec-57");
+			NativeLibraryLoader.load("avformat-57");
 
-			//NativeLoader.LoadNativeLib("MovieStream");
+			//NativeLibraryLoader.load("MovieStream");
 			//System.load("C:\\Users\\Florian\\AppData\\Local\\Temp\\MovieStream.dll");
 			String libPath = "C:/Users/Florian/AppData/Local/Temp/";
 			String libName = "MovieStream";

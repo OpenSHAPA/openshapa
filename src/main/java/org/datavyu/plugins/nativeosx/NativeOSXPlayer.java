@@ -1,6 +1,6 @@
 package org.datavyu.plugins.nativeosx;
 
-import org.datavyu.util.NativeLoader;
+import org.datavyu.util.NativeLibraryLoader;
 
 import java.awt.*;
 import java.io.File;
@@ -20,7 +20,7 @@ public class NativeOSXPlayer extends Canvas {
     public NativeOSXPlayer(File fileToLoad) {
         super();
         try {
-            NativeLoader.LoadNativeLib("NativeOSXCanvas");
+            NativeLibraryLoader.load("NativeOSXCanvas");
         } catch (Exception e) {
             e.printStackTrace();
         }

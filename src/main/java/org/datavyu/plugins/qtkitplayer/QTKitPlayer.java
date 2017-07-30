@@ -47,7 +47,7 @@
 
 package org.datavyu.plugins.qtkitplayer;
 
-import org.datavyu.util.NativeLoader;
+import org.datavyu.util.NativeLibraryLoader;
 
 import java.awt.*;
 import java.io.File;
@@ -63,7 +63,7 @@ public class QTKitPlayer extends Canvas {
     public QTKitPlayer(File sourceFile) {
         super();
         try {
-            NativeLoader.LoadNativeLib("QTKitCanvas");
+            NativeLibraryLoader.load("QTKitCanvas");
         } catch (Exception e) {
             e.printStackTrace();
         }

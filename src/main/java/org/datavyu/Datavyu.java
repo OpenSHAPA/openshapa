@@ -26,7 +26,7 @@ import org.datavyu.plugins.quicktime.QTDataViewer;
 import org.datavyu.plugins.vlcfx.NativeLibraryManager;
 import org.datavyu.undoableedits.SpreadsheetUndoManager;
 import org.datavyu.util.MacHandler;
-import org.datavyu.util.NativeLoader;
+import org.datavyu.util.NativeLibraryLoader;
 import org.datavyu.util.WindowsOS;
 import org.datavyu.views.*;
 import org.datavyu.views.discrete.SpreadsheetPanel;
@@ -53,13 +53,11 @@ import java.util.Stack;
 public final class Datavyu extends SingleFrameApplication implements KeyEventDispatcher, TitleNotifier {
 
     private static final NativeLibraryManager nativeLibraryManager;
-    /**
-     * The desired minimum initial width.
-     */
+
+    /** The desired minimum initial width */
     private static final int INIT_MIN_X = 600;
-    /**
-     * The desired minimum initial height.
-     */
+
+    /** The desired minimum initial height */
     private static final int INIT_MIN_Y = 700;
 
     public static boolean scriptRunning = false;
@@ -67,30 +65,27 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
     private static boolean osxPressAndHoldEnabled;
 
     /**
-     * Constant variable for the Datavyu main panel. This is so we can send
-     * keyboard shortcuts to it while the QTController is in focus. It actually
-     * get initialized in startup().
+     * Constant variable for the Datavyu main panel to send keyboard shortcuts while the QTController is in focus.
+     * Initialized in startup().
      */
     private static DatavyuView datavyuView;
-    /**
-     * The scripting engine manager that we use with Datavyu.
-     */
+
+    /** The scripting engine manager that we use with Datavyu */
     private static ScriptEngineManager m2;
-    /**
-     * The scripting engine factory that we use with Datavyu
-     */
+
+    /** The scripting engine factory that we use with Datavyu */
     private static ScriptEngineFactory sef;
-    /**
-     * The logger for this class.
-     */
-    private static Logger logger = LogManager.getLogger();
-    /**
-     * The view to use for the quick time video controller.
-     */
+
+    /** The logger for this class */
+    private static Logger logger = LogManager.getLogger(Datavyu.class);
+
+    /** The view to use for the video controller */
     private static VideoController dataController;
+
+    /** The project controller instance */
     private static ProjectController projectController;
 
-    /** Load required native libraries (JNI). */
+    /** Load native libraries */
     static {
         String tempDir = System.getProperty("java.io.tmpdir") + File.separator + "vlc" + File.separator;
 
@@ -111,7 +106,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
             case MAC:
                 logger.info("Detected platform: MAC");
                 try {
-                    NativeLoader.LoadNativeLib("quaqua64");
+                    NativeLibraryLoader.load("quaqua64");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -126,8 +121,8 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                 try {
                     if (System.getProperty("sun.arch.data.model").equals("32")) {
                         logger.info("Loading libraries for 32 bit QT");
-                        NativeLoader.LoadNativeLib("QTJNative");
-                        NativeLoader.LoadNativeLib("QTJavaNative");
+                        NativeLibraryLoader.load("QTJNative");
+                        NativeLibraryLoader.load("QTJavaNative");
                         System.loadLibrary("QTJNative");
                         System.loadLibrary("QTJavaNative");
                         QTDataViewer.librariesFound = true;
@@ -309,7 +304,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      * @param args The command line arguments passed to Datavyu.
      */
     public static void main(final String[] args) {
-
         // If we are running on a MAC set some additional properties:
         if (Datavyu.getPlatform() == Platform.MAC) {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
@@ -366,8 +360,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         // BugzID:468 - Define accelerator keys based on OS.
         int keyMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
-        // If we are typing a key that is a shortcut - we consume it straight
-        // away.
+        // If we are typing a key that is a shortcut - we consume it immediately.
         if ((evt.getID() == KeyEvent.KEY_TYPED) && (modifiers == keyMask)) {
 
             // datavyuView also has the fun of key accelerator handling. If it is
@@ -375,7 +368,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
             // doesn't have focus we manually handle it in the switch below.
             if (getView().getFrame().isFocused()) {
                 evt.consume();
-
                 return true;
             }
 
@@ -702,7 +694,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      * Action for showing the video converter.
      */
     public void showVideoConverter() {
-        JFrame mainFrame = Datavyu.getApplication().getMainFrame();
+        //JFrame mainFrame = Datavyu.getApplication().getMainFrame();
         VideoConverterV videoConverter = new VideoConverterV();
         Datavyu.getApplication().show(videoConverter);
     }
@@ -740,12 +732,12 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      * Action for opening the support site
      */
     public void openSupportSite() {
+        // TODO: Move URL into properties file
         String url = "http://www.datavyu.org/support";
-
         try {
             java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
         } catch (java.io.IOException e) {
-            System.out.println(e.getMessage());
+            logger.error("Error while opening support site", e);
         }
     }
 
@@ -753,12 +745,12 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      * Action for opening the guide site
      */
     public void openGuideSite() {
+        // TODO: Move URL into properties file
         String url = "http://www.datavyu.org/user-guide/index.html";
-
         try {
             java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
         } catch (java.io.IOException e) {
-            System.out.println(e.getMessage());
+            logger.error("Error while opening guide site", e);
         }
     }
 
@@ -778,9 +770,9 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      */
     public void showWarningDialog(final String s) {
         JFrame mainFrame = Datavyu.getApplication().getMainFrame();
-        ResourceMap rMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
-
-        JOptionPane.showMessageDialog(mainFrame, s, rMap.getString("WarningDialog.title"), JOptionPane.WARNING_MESSAGE);
+        ResourceMap resourceMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
+        JOptionPane.showMessageDialog(mainFrame, s, resourceMap.getString("WarningDialog.title"),
+                JOptionPane.WARNING_MESSAGE);
     }
 
     /**
@@ -797,12 +789,11 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      */
     public void showErrorDialog() {
         JFrame mainFrame = Datavyu.getApplication().getMainFrame();
-        ResourceMap rMap = Application.getInstance(Datavyu.class).getContext()
+        ResourceMap resourceMap = Application.getInstance(Datavyu.class).getContext()
                 .getResourceMap(Datavyu.class);
-
         JOptionPane.showMessageDialog(mainFrame,
-                rMap.getString("ErrorDialog.message"),
-                rMap.getString("ErrorDialog.title"), JOptionPane.ERROR_MESSAGE);
+                resourceMap.getString("ErrorDialog.message"),
+                resourceMap.getString("ErrorDialog.title"), JOptionPane.ERROR_MESSAGE);
     }
 
     /**
@@ -816,15 +807,12 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      */
     public boolean safeQuit() {
         JFrame mainFrame = Datavyu.getApplication().getMainFrame();
-        ResourceMap rMap = Application.getInstance(Datavyu.class).getContext()
-                .getResourceMap(Datavyu.class);
-
+        ResourceMap resourceMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
         if (getView().checkAllTabsForChanges()) {
             for (Component tab : getView().getTabbedPane().getComponents()) {
                 if (tab instanceof SpreadsheetPanel) {
                     SpreadsheetPanel sp = (SpreadsheetPanel) tab;
                     getView().getTabbedPane().setSelectedComponent(sp);
-
                     // Ask to save if this spreadsheet has been changed
                     if (sp.getProjectController().isChanged()) {
                         String cancel = "Cancel";
@@ -852,16 +840,21 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                         }
 
                         // Get name of spreadsheet.  Check in both project and datastore.
-                        String projName = sp.getProjectController().getProjectName();
-                        if(projName==null) projName = sp.getDataStore().getName();
+                        String projectName = sp.getProjectController().getProjectName();
+
+                        if (projectName == null) {
+                            projectName = sp.getDataStore().getName();
+                        }
 
                         int selection = JOptionPane.showOptionDialog(mainFrame,
-                                rMap.getString("UnsavedDialog.message",projName),
-                                rMap.getString("UnsavedDialog.title"),
+                                resourceMap.getString("UnsavedDialog.message",projectName),
+                                resourceMap.getString("UnsavedDialog.title"),
                                 JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                                 null, options, yes);
 
-                        if (selection == yesIndex) getView().save();
+                        if (selection == yesIndex) {
+                            getView().save();
+                        }
 
                         // If the user cancels, break and return that it isnt safe to quit
                         if (selection == cancelIndex) {
@@ -869,15 +862,10 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                         }
                     }
                 }
-
-
             }
-
             // User has been asked whether or not to save each file, we can return now
             return true;
-
         } else {
-
             // Project hasn't been changed.
             return true;
         }
@@ -888,11 +876,10 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      */
     public boolean safeQuit(Component tab) {
         JFrame mainFrame = Datavyu.getApplication().getMainFrame();
-        ResourceMap rMap = Application.getInstance(Datavyu.class).getContext()
-                .getResourceMap(Datavyu.class);
-        SpreadsheetPanel sp = (SpreadsheetPanel) tab;
-        if (sp.getProjectController().isChanged()) {
-            getView().getTabbedPane().setSelectedComponent(sp);
+        ResourceMap resourceMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
+        SpreadsheetPanel spreadsheetPanel = (SpreadsheetPanel) tab;
+        if (spreadsheetPanel.getProjectController().isChanged()) {
+            getView().getTabbedPane().setSelectedComponent(spreadsheetPanel);
 
             String cancel = "Cancel";
             String no = "Don't save";
@@ -917,12 +904,12 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
             }
 
             // Get project name.
-            String projName = sp.getProjectController().getProjectName();
-            if(projName==null) projName = sp.getDataStore().getName();
+            String projName = spreadsheetPanel.getProjectController().getProjectName();
+            if(projName==null) projName = spreadsheetPanel.getDataStore().getName();
             
             int selection = JOptionPane.showOptionDialog(mainFrame,
-                    rMap.getString("UnsavedDialog.tabmessage", projName),
-                    rMap.getString("UnsavedDialog.title"),
+                    resourceMap.getString("UnsavedDialog.tabmessage", projName),
+                    resourceMap.getString("UnsavedDialog.title"),
                     JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                     null, options, yes);
 
@@ -961,6 +948,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
 
         String[] a = new String[2];
 
+        // TODO: Create a static method in os specifics class and use throughout
         if (getPlatform() == Platform.MAC) {
             a[0] = defaultOpt; // This has int value 0 if selected
             a[1] = altOpt; // This has int value 1 if selected.
@@ -969,9 +957,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
             a[0] = altOpt; // This has int value 0 if selected.
         }
 
-        int sel =
-
-                JOptionPane.showOptionDialog(mainFrame,
+        int sel = JOptionPane.showOptionDialog(mainFrame,
                         rMap.getString("OverwriteDialog.message"),
                         rMap.getString("OverwriteDialog.title"),
                         JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
@@ -987,19 +973,15 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
 
     @Override
     protected void initialize(final String[] args) {
-
         if (getPlatform() == Platform.MAC) {
-
             try {
                 UIManager.setLookAndFeel(QuaquaManager.getLookAndFeel());
             } catch (UnsupportedLookAndFeelException e) {
                 System.err.println("Failed to set Quaqua LNF");
                 e.printStackTrace();
             }
-
             new MacHandler();
         }
-
         // BugzID:1288
         if (getPlatform() == Platform.WINDOWS) {
             try {
@@ -1014,15 +996,9 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
             commandLineFile = args[0];
         }
 
-        windows = new Stack<Window>();
-
-        // Initalise the logger (LogManager).
-        LocalStorage ls = Datavyu.getApplication().getContext()
-                .getLocalStorage();
-        ResourceMap rMap = Application.getInstance(Datavyu.class).getContext()
-                .getResourceMap(Datavyu.class);
-
-        logger = LogManager.getLogger();
+        windows = new Stack<>();
+        LocalStorage ls = Datavyu.getApplication().getContext().getLocalStorage();
+        ResourceMap rMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
 
         // If the user hasn't specified, we don't send error logs.
         Configuration.getInstance().setCanSendLogs(false);
@@ -1042,7 +1018,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         if (updateWindow.Available() && !updateWindow.IgnoreVersion()) {
             Datavyu.getApplication().show(updateWindow);
         }
-
     }
 
     /**
@@ -1099,7 +1074,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
 
     @Override
     protected void ready() {
-
         ready = true;
         if (commandLineFile != null) {
             getView().openExternalFile(new File(commandLineFile));
@@ -1115,8 +1089,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         if (getPlatform() == Platform.MAC && osxPressAndHoldEnabled) {
             setOSXPressAndHoldValue(true);
         }
-
-        NativeLoader.cleanAllTmpFiles();
+        NativeLibraryLoader.unload();
         nativeLibraryManager.purge();
         super.shutdown();
     }
@@ -1129,8 +1102,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      * @param root The parent window.
      */
     @Override
-    protected void configureWindow(final java.awt.Window root) {
-    }
+    protected void configureWindow(final java.awt.Window root) {}
 
     /**
      * Asks the main frame to update its title.
