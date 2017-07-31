@@ -5,6 +5,7 @@ import org.datavyu.util.NativeLibraryLoader;
 import java.awt.color.ColorSpace;
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Native;
 import java.nio.ByteBuffer;
 
 import javax.sound.sampled.AudioFormat;
@@ -12,24 +13,16 @@ import javax.sound.sampled.AudioFormat.Encoding;
 
 public class MovieStream implements VideoStream, AudioStream {
 
-	/** Load the native library that interfaces to ffmpeg. */
+	/** Load the native library that interfaces to ffmpeg */
 	static {
-
 		try {
-			// Load order is important, do not change.
-			NativeLibraryLoader.load("avutil-55");
-			NativeLibraryLoader.load("swscale-4");
-			NativeLibraryLoader.load("swresample-2");
-			NativeLibraryLoader.load("avcodec-57");
-			NativeLibraryLoader.load("avformat-57");
-
-			//NativeLibraryLoader.load("MovieStream");
-			//System.load("C:\\Users\\Florian\\AppData\\Local\\Temp\\MovieStream.dll");
-			String libPath = "C:/Users/Florian/AppData/Local/Temp/";
-			String libName = "MovieStream";
-			System.setProperty("java.library.path", System.getProperty("java.library.path") + File.pathSeparator + libPath);
-			System.loadLibrary(libName);
-			System.err.println("Loaded movie stream library.");
+			NativeLibraryLoader.extract("avutil-55");
+			NativeLibraryLoader.extract("swscale-4");
+			NativeLibraryLoader.extract("swresample-2");
+			NativeLibraryLoader.extract("avcodec-57");
+			NativeLibraryLoader.extract("avformat-57");
+			// Ensure that the above dependent libraries are extracted first before loading MovieStream.
+			NativeLibraryLoader.extractAndLoad("MovieStream");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

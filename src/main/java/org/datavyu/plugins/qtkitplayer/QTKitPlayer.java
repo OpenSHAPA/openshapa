@@ -63,7 +63,8 @@ public class QTKitPlayer extends Canvas {
     public QTKitPlayer(File sourceFile) {
         super();
         try {
-            NativeLibraryLoader.load("QTKitCanvas");
+            //NativeLibraryLoader.load("QTKitCanvas");
+            NativeLibraryLoader.extractAndLoad("QTKitCanvas");
         } catch (Exception e) {
             e.printStackTrace();
         }

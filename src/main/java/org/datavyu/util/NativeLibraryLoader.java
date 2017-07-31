@@ -15,7 +15,6 @@
 package org.datavyu.util;
 
 import com.google.common.collect.Iterables;
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -23,37 +22,48 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
-
+/**
+ * This native library loader loads libraries from jar resources. It resolves the library file extension based on the
+ * loading OS automatically. It offers functionality to extract and load libraries. All library files are extracted into
+ * the current working directory. This allows the automatic discovery of dependent libraries.
+ *
+ * Notice: Former versions of this implementation used the trick from the Fahd Shariff's website
+ * (http://fahdshariff.blogspot.com/2011/08/changing-java-library-path-at-runtime.html); however, that trick does not
+ * work under windows; neither when using System.loadLibrary as described in the blog or System.load.  For this reason
+ * I opted to copy the libraries to the current working directory '.' which enables the discovery of dependent
+ * libraries automatically.
+ */
 public class NativeLibraryLoader {
 
     /** Logger for this native library loader */
     private static Logger logger = LogManager.getLogger(NativeLibraryLoader.class);
 
+    /** Listing of all library files that were loaded from jar's */
+    private static final ArrayList<File> libraryFiles = new ArrayList<>();
+
     /** Buffer size for unzipping native libraries */
     private static final int BUFFER = 16*1024; // 16 kB
 
-    /** Loaded library names */
-    private static final ArrayList<File> libraryFiles = new ArrayList<>();
-
-    /** Folder where we unzip libraries */
-    // TODO: Currently won't work for multiple datavyu's running because the 1st will delete libs of the 2nd
-    private static File libraryFolder = new File(System.getProperty("java.io.tmpdir"));
+    /**
+     * Folder where we unzip libraries must be current working directory for the library loader to find dependent
+     * libraries.
+     */
+    private static File libraryFolder = new File(System.getProperty("user.dir"));
 
     private static boolean isMacOs = System.getProperty("os.name").contains("Mac");
 
     /**
-     * Load a native library.
+     * Get resource URL for a given library name that is part of the jar.
      *
-     * @param libName Name of the library, extensions (dll, jnilib) removed. OSX libraries should have the "lib" suffix
-     *                removed.
-     * @throws Exception If the library cannot be loaded.
+     * @param libName The library name.
+     * @return The URL.
+     * @throws Exception Could come from class loader.
      */
-    public static void load(final String libName) throws Exception {
+    private static URL getResource(String libName) throws Exception {
         Enumeration<URL> resources;
         String extension;
         ClassLoader classLoader = NativeLibraryLoader.class.getClassLoader();
@@ -68,30 +78,57 @@ public class NativeLibraryLoader {
             extension = ".dll";
             resources = classLoader.getResources(libName + extension);
         }
-        while (resources.hasMoreElements()) {
-            extractAndLoad((libName + extension), resources.nextElement());
+        return resources.hasMoreElements() ? resources.nextElement() : null;
+    }
+
+    /**
+     * Get the file extension for a library name.
+     *
+     * @param libName The library name.
+     * @return The extension as string.
+     * @throws Exception Could come from the class loader.
+     */
+    private static String getExtension(String libName) throws Exception {
+        String extension;
+        if (isMacOs) {
+            extension = ".jnilib";
+            if (!NativeLibraryLoader.class.getClassLoader()
+                    .getResources("lib" + libName + extension).hasMoreElements()) {
+                extension = ".dylib";
+            }
+        } else {
+            extension = ".dll";
         }
-        addToLibraryPath(libraryFolder.getAbsolutePath());
-        unsetSysPath();
+        return extension;
     }
 
-    private static void addToLibraryPath(String path) throws Exception {
-        logger.info("Adding to library path", path);
-        System.setProperty("java.library.path", System.getProperty("java.library.path") + File.pathSeparator + path);
+    /**
+     * Extract the library file from a resource jar and load it.
+     *
+     * @param destName The destination name when the library has been extracted.
+     * @return The file name to the extracted library with extension.
+     *
+     * @throws Exception When extracting or loading the library.
+     */
+    public static File extractAndLoad(final String destName) throws Exception {
+        File libraryFile = extract(destName);
+        System.load(libraryFile.getAbsolutePath());
+        return libraryFile;
     }
 
-    private static void unsetSysPath() throws Exception {
-        final Field sysPathsField = ClassLoader.class.getDeclaredField("sys_paths");
-        sysPathsField.setAccessible(true);
-        sysPathsField.set(null, null);
-    }
-
-    private static File extractAndLoad(final String destName, final URL url) throws Exception {
-
-        // Create a temporary file for the library
+    /**
+     * Extract a library from a resource jar.
+     *
+     * @param destName The destination name when the library has been extracted.
+     * @return The file name to the extracted library with extension.
+     *
+     * @throws Exception When extracting or loading the library.
+     */
+    public static File extract(final String destName) throws Exception {
+        URL url = getResource(destName);
         logger.info("Attempting to extract " + url.toString());
         InputStream in = url.openStream();
-        File outfile = new File(libraryFolder, destName);
+        File outfile = new File(libraryFolder, destName + getExtension(destName));
         FileOutputStream out = new FileOutputStream(outfile);
         BufferedOutputStream dest = new BufferedOutputStream(out, BUFFER);
         int count;
@@ -103,9 +140,6 @@ public class NativeLibraryLoader {
         out.close();
         in.close();
         libraryFiles.add(outfile);
-        logger.info("Extracted lib into tmp file " + outfile);
-
-        System.load(outfile.toString());
         return outfile;
     }
 
@@ -113,24 +147,11 @@ public class NativeLibraryLoader {
      * Removes temporary files that were created by the native loader.
      */
     public static void unload() {
-        logger.info("cleaning temp files");
-
-        for (File loadedLib : Iterables.reverse(libraryFiles)) {
-            if (!loadedLib.delete()) {
-                logger.error("Unable to delete temp file: " + loadedLib);
+        logger.info("Cleaning library files");
+        for (File libraryFile : Iterables.reverse(libraryFiles)) {
+            if (!libraryFile.delete()) {
+                logger.error("Unable to delete " + libraryFile);
             }
         }
-
-        // Delete all of the other files
-        /*
-        try {
-            FileUtils.deleteDirectory(libraryFolder);
-        } catch (Exception e) {
-            logger.error("Unable to remove library folder ", e);
-        }
-        if ((libraryFolder != null) && !libraryFolder.delete()) {
-            logger.error("Unable to delete temp folder: + " + libraryFolder);
-        }
-        */
     }
 }

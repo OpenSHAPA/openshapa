@@ -166,6 +166,21 @@
             </roles>
             <timezone>-5</timezone>
         </developer>
+
+        <developer>
+            <id>Florian</id>
+            <name>Florian Raudies</name>
+            <email>florian.raudies@_no_spam_gmail.com</email>
+            <roles>
+                <role>Developer</role>
+                <role>Backend</role>
+                <role>Frontend</role>
+                <role>Plugins</role>
+                <role>FFmpeg</role>
+                <role>System integration</role>
+            </roles>
+            <timezone>-8</timezone>
+        </developer>
     </developers>
 
     <contributors>
@@ -205,18 +220,6 @@
             <timezone>-5</timezone>
         </contributor>
     </contributors>
-
-    <!--  <reporting>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-checkstyle-plugin</artifactId>
-            <configuration>
-              <configLocation>checkstyle.xml</configLocation>
-            </configuration>
-          </plugin>
-        </plugins>
-      </reporting>-->
 
     <!-- Our bugtracking. -->
     <issueManagement>
@@ -274,11 +277,6 @@
             <id>xuggle repo for 5.5</id>
             <url>http://m2.funambol.com/repositories/artifacts</url>
         </repository>
-
-        <!--<repository>-->
-            <!--<id>sonatype snapshots</id>-->
-            <!--<url>https://oss.sonatype.org/content/repositories/snapshots/</url>-->
-        <!--</repository>-->
 
     </repositories>
 
@@ -481,43 +479,6 @@
 
             </dependencies>
 
-            <!--<build>-->
-                <!--<plugins>-->
-                    <!--<plugin>-->
-                        <!--<groupId>org.apache.maven.plugins</groupId>-->
-                        <!--<artifactId>maven-dependency-plugin</artifactId>-->
-                        <!--<version>2.9</version>-->
-                        <!--<executions>-->
-                            <!--<execution>-->
-                                <!--<id>copy-package</id>-->
-                                <!--<phase>package</phase>-->
-                                <!--<goals>-->
-                                    <!--<goal>copy</goal>-->
-                                <!--</goals>-->
-                                <!--<configuration>-->
-                                    <!--<artifactItems>-->
-                                        <!--<artifactItem>-->
-                                            <!--<groupId>org.datavyu</groupId>-->
-                                            <!--<artifactId>vlcLibs-windows64</artifactId>-->
-                                            <!--<type>jar</type>-->
-                                            <!--<overWrite>true</overWrite>-->
-                                            <!--<outputDirectory>-->
-                                                <!--${project.build.directory}/jfx/app/lib/vlc-windows-${os.arch}-->
-                                            <!--</outputDirectory>-->
-                                            <!--<destFileName>vlc-windows-${os.arch}.jar</destFileName>-->
-                                        <!--</artifactItem>-->
-                                    <!--</artifactItems>-->
-                                    <!--<outputDirectory>${project.build.directory}/jfx/app/lib/vlc-windows-${os.arch}-->
-                                    <!--</outputDirectory>-->
-                                    <!--<overWriteReleases>false</overWriteReleases>-->
-                                    <!--<overWriteSnapshots>true</overWriteSnapshots>-->
-                                <!--</configuration>-->
-                            <!--</execution>-->
-                        <!--</executions>-->
-                    <!--</plugin>-->
-                <!--</plugins>-->
-            <!--</build>-->
-
         </profile>
 
         <profile>
@@ -593,16 +554,6 @@
                     <header>src/main/resources/GPL-header.txt</header>
                 </configuration>
             </plugin>
-
-            <!--
-            <plugin>
-              <artifactId>maven-site-plugin</artifactId>
-              <configuration>
-                <templateDirectory>src/site</templateDirectory>
-                <template>site.vm</template>
-              </configuration>
-            </plugin>
-            -->
 
             <plugin>
                 <groupId>com.zenjava</groupId>
@@ -853,37 +804,6 @@
                 </configuration>
             </plugin>
 
-
-            <!--      <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-shade-plugin</artifactId>
-                    <version>1.7.1</version>
-                    <executions>
-                      <execution>
-                        <phase>package</phase>
-                        <goals>
-                          <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                          <minimizeJar>true</minimizeJar>
-                            <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <shadedClassifierName>shaded</shadedClassifierName>
-                            <transformers>
-                                    <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                            <mainClass>org.datavyu.Datavyu</mainClass>
-                            </transformer>
-                            </transformers>
-                            <artifactSet>
-                            <excludes>
-                              <exclude>org.mongodb:mongodb-win32:*</exclude>
-                            </excludes>
-                            </artifactSet>
-                        </configuration>
-                      </execution>
-                    </executions>
-                  </plugin>-->
-
             <!-- BugzID:305 - Windows Application Bundle -->
             <plugin>
                 <groupId>org.bluestemsoftware.open.maven.plugin</groupId>
@@ -913,10 +833,6 @@
                     <jre>
                         <minVersion>1.6.0</minVersion>
                     </jre>
-                    <!--<singleInstance>-->
-                    <!--<mutexName>Datavyu</mutexName>-->
-                    <!--&lt;!&ndash;<windowTitle>Datavyu</windowTitle>&ndash;&gt;-->
-                    <!--</singleInstance>-->
                     <classPath>
                         <mainClass>org.datavyu.Datavyu</mainClass>
                         <preCp>jna-3.5.2.jar</preCp>
@@ -938,27 +854,19 @@
                     </classPath>
                 </configuration>
             </plugin>
-
-            <!-- Copy the VLC native libs to the correct directory -->
-
-
         </plugins>
     </build>
 
     <!--
-
         Third party dependencies.
-
          =========================================================================
          MAKE SURE YOU ALSO EDIT:
          =========================================================================
            * Above list as well - so that the windows build works correctly.
            * Info.plist - so that the OSX build works correctly.
-
     -->
     <dependencies>
-        <!-- We must specifiy this JNA version first so that all our dependencies
-             are happy. -->
+        <!-- We must specify this JNA version first so that all our dependencies are happy -->
         <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
@@ -1123,7 +1031,7 @@
         <dependency>
             <groupId>datavyu</groupId>
             <artifactId>ffmpeg-plugin</artifactId>
-            <version>0.4</version>
+            <version>0.5</version>
         </dependency>
 
         <dependency>
@@ -1134,59 +1042,6 @@
             <systemPath>${java.home}/lib/ext/jfxrt.jar</systemPath>
         </dependency>
 
-        <!--<dependency>-->
-        <!--<groupId>org.rococoa</groupId>-->
-        <!--<artifactId>rocodataControllerrent</artifactId>-->
-        <!--<version>0.5</version>-->
-        <!--</dependency>-->
-
-
-        <!--<dependency>-->
-        <!--<groupId>org.robovm</groupId>-->
-        <!--<artifactId>robovm-rt</artifactId>-->
-        <!--<version>1.0.0-SNAPSHOT</version>-->
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-        <!--<groupId>org.robovm</groupId>-->
-        <!--<artifactId>robovm-cocoatouch</artifactId>-->
-        <!--<version>1.0.0-SNAPSHOT</version>-->
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-        <!--<groupId>com.oracle</groupId>-->
-        <!--<artifactId>javafx-macosx</artifactId>-->
-        <!--<version>2.2</version>-->
-        <!--<scope>system</scope>-->
-        <!--<systemPath>${java.home}/lib/jfxrt.jar</systemPath>-->
-
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-        <!--<groupId>com.oracle</groupId>-->
-        <!--<artifactId>javafx-runtime</artifactId>-->
-        <!--<version>2.2</version>-->
-        <!--&lt;!&ndash;<scope>system</scope>&ndash;&gt;-->
-        <!--&lt;!&ndash;<systemPath>${java.home}/lib/jfxrt.jar</systemPath>&ndash;&gt;-->
-
-        <!--</dependency>-->
-
-
-        <!-- temporary add of QTJava and deps -->
-
-        <!--    <dependency>
-              <groupId>org.rococoa</groupId>
-              <artifactId>rococoa-core</artifactId>
-              <version>0.5.1x3</version>
-            </dependency>
-
-            <dependency>
-              <groupId>org.rococoa</groupId>
-              <artifactId>rococoa-cocoa</artifactId>
-              <version>0.5.1x3</version>
-            </dependency>-->
-
     </dependencies>
-
 
 </project>

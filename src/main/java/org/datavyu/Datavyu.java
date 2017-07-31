@@ -106,7 +106,8 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
             case MAC:
                 logger.info("Detected platform: MAC");
                 try {
-                    NativeLibraryLoader.load("quaqua64");
+                    //NativeLibraryLoader.load("quaqua64");
+                    NativeLibraryLoader.extractAndLoad("quaqua64");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -121,10 +122,12 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                 try {
                     if (System.getProperty("sun.arch.data.model").equals("32")) {
                         logger.info("Loading libraries for 32 bit QT");
-                        NativeLibraryLoader.load("QTJNative");
-                        NativeLibraryLoader.load("QTJavaNative");
-                        System.loadLibrary("QTJNative");
-                        System.loadLibrary("QTJavaNative");
+                        //NativeLibraryLoader.load("QTJNative");
+                        //NativeLibraryLoader.load("QTJavaNative");
+                        //System.loadLibrary("QTJNative");
+                        //System.loadLibrary("QTJavaNative");
+                        NativeLibraryLoader.extract("QTJNative");
+                        NativeLibraryLoader.extractAndLoad("QTJavaNative");
                         QTDataViewer.librariesFound = true;
                     }
                 } catch (Exception e) {

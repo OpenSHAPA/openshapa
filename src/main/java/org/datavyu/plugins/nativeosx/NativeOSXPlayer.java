@@ -20,7 +20,8 @@ public class NativeOSXPlayer extends Canvas {
     public NativeOSXPlayer(File fileToLoad) {
         super();
         try {
-            NativeLibraryLoader.load("NativeOSXCanvas");
+            //NativeLibraryLoader.load("NativeOSXCanvas");
+            NativeLibraryLoader.extractAndLoad("NativeOSXCanvas");
         } catch (Exception e) {
             e.printStackTrace();
         }
