@@ -25,22 +25,20 @@ import java.io.IOException;
 
 
 /**
- * Singleton object containing global configuration definitions for the user
- * interface.
+ * Singleton object containing global configuration definitions for the user interface.
  */
+// TODO: Cleanup un-used properties
+// TODO: Why are some of these properties hard coded here and not ALL of them loaded from properties files?
 public final class Configuration {
 
-    /**
-     * The colour to use for the border.
-     */
+    /** The colour to use for the border */
     public static final Color BORDER_COLOUR = new Color(175, 175, 175);
-    /**
-     * The name of the configuration file.
-     */
+
+    /** The name of the configuration file */
+    // TODO: This file does not seem to be anymore present in the project?
     private static final String CONFIG_FILE = "settings.xml";
-    /**
-     * The default font to be used by Datavyu.
-     */
+
+    /** The default font to be used by Datavyu */
     private static final Font DEFAULT_FONT = new Font("Arial", Font.PLAIN, 14);
 
     /**
@@ -104,7 +102,7 @@ public final class Configuration {
     /**
      * The logger for this class.
      */
-    private static Logger LOGGER = LogManager.getLogger();
+    private static Logger logger = LogManager.getLogger();
     /**
      * The configuration properties.
      */
@@ -120,26 +118,23 @@ public final class Configuration {
     private Configuration() {
         super();
 
-        // Try to load the configuration properties from disk.
+        // Try loading configuration properties
         try {
-            LocalStorage ls = Datavyu.getApplication().getContext()
-                    .getLocalStorage();
+            LocalStorage ls = Datavyu.getApplication().getContext().getLocalStorage();
             properties = (ConfigProperties) ls.load(CONFIG_FILE);
-
-            // Oh-noes, can't load configuration file from disk.
         } catch (IOException e) {
-            LOGGER.error("Unable to load configuration file from dis", e);
+            logger.error("Unable to load configuration file ", e);
         }
 
         // Set custom font
         String fontFileName = "/fonts/DejaVuSansCondensed.ttf";
 
-        // Properties not loaded from disk - initalise to default and save.
+        // Properties not loaded from disk - initialize to default and save
         if (properties == null) {
+            logger.info("Setting default properties");
             properties = new ConfigProperties();
             properties.setSSDataFont(DEFAULT_FONT);
             properties.setSSLabelFont(LABEL_FONT);
-
             properties.setSSSelectedColour(DEFAULT_SELECTED);
             properties.setSSOverlapColour(DEFAULT_OVERLAP);
             properties.setMixerInterfaceNormalCarriageColour(
@@ -153,19 +148,15 @@ public final class Configuration {
             properties.setIgnoreVersion("");
             properties.setColumnNameWarning(true);
             properties.setPrereleasePreference(false);
-
             save();
         }
 
         try {
-            newFont = Font.createFont(Font.TRUETYPE_FONT,
-                    getClass().getResourceAsStream(fontFileName));
+            newFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream(fontFileName));
             properties.setSSDataFont(newFont.deriveFont(DATA_FONT_SIZE));
             properties.setSSLabelFont(newFont.deriveFont(LABEL_FONT_SIZE));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            System.err.println(fontFileName
-                    + " can't be loaded. Using default font");
+        } catch (Exception e) {
+            logger.error("Error, unable to load font " + fontFileName + ". The error is " + e);
         }
 
         properties.setSSOrdinalColour(DEFAULT_ORDINAL);
@@ -178,9 +169,8 @@ public final class Configuration {
             save();
         }
 
+        // Assume that user wants their selected colour overridden too.
         if (properties.getSSOverlapColour() == null) {
-
-            // Assume that user wants their selected colour overridden too.
             properties.setSSSelectedColour(DEFAULT_SELECTED);
             properties.setSSOverlapColour(DEFAULT_OVERLAP);
             save();
@@ -188,14 +178,10 @@ public final class Configuration {
 
         // If one property is null, just reset all.
         if (properties.getMixerInterfaceNormalCarriageColour() == null) {
-            properties.setMixerInterfaceNormalCarriageColour(
-                    DEFAULT_NORMAL_CARRIAGE_COLOR);
-            properties.setMixerInterfaceNormalOutlineColour(
-                    DEFAULT_NORMAL_OUTLINE_COLOR);
-            properties.setMixerInterfaceSelectedCarriageColour(
-                    DEFAULT_SELECTED_CARRIAGE_COLOR);
-            properties.setMixerInterfaceSelectedOutlineColour(
-                    DEFAULT_SELECTED_OUTLINE_COLOR);
+            properties.setMixerInterfaceNormalCarriageColour(DEFAULT_NORMAL_CARRIAGE_COLOR);
+            properties.setMixerInterfaceNormalOutlineColour(DEFAULT_NORMAL_OUTLINE_COLOR);
+            properties.setMixerInterfaceSelectedCarriageColour(DEFAULT_SELECTED_CARRIAGE_COLOR);
+            properties.setMixerInterfaceSelectedOutlineColour(DEFAULT_SELECTED_OUTLINE_COLOR);
             save();
         }
     }
@@ -204,11 +190,9 @@ public final class Configuration {
      * @return The single instance of the Configuration object in Datavyu.
      */
     public static Configuration getInstance() {
-
         if (instance == null) {
             instance = new Configuration();
         }
-
         return instance;
     }
 
@@ -447,11 +431,10 @@ public final class Configuration {
     }
     
     /**
-     * @param b whether or not to display warnings for illegal column names
+     * @param setWarning whether or not to display warnings for illegal column names
      */    
-    public void setColumnNameWarning(final boolean b)
-    {
-        properties.setColumnNameWarning(b);
+    public void setColumnNameWarning(final boolean setWarning) {
+        properties.setColumnNameWarning(setWarning);
         save();
     }
 
@@ -459,15 +442,14 @@ public final class Configuration {
         return properties.getFavouritesFolder();
     }
     
-    public void setFavouritesFolder(final String path)
-    {
-        System.out.println(path);
+    public void setFavouritesFolder(final String path) {
+        logger.info("Setting Favourites folder to " + path);
         properties.setFavouritesFolder(path);
         save();
     }
 
     /**
-     * @return the prerelease preference
+     * @return the pre-release preference
      */
     public boolean getPrereleasePreference() {
         return properties.getPrereleasePreference();
@@ -512,21 +494,14 @@ public final class Configuration {
     }
 
     /**
-     * Saves the configuration properties do disk. This is stored in local
-     * storage of the swing application framework.
+     * Saves the configuration properties in local storage of the swing application framework.
      */
     private void save() {
-
-        // Try to save the configuration properties to disk.
         try {
-            LocalStorage ls = Datavyu.getApplication().getContext()
-                    .getLocalStorage();
+            LocalStorage ls = Datavyu.getApplication().getContext().getLocalStorage();
             ls.save(properties, CONFIG_FILE);
-
-            // Oh-noes, can't save configuration file to disk.
         } catch (IOException e) {
-            LOGGER.error("Unable to save configuration to disk", e);
+            logger.error("Unable to save configuration " + e);
         }
     }
-
 }

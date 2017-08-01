@@ -100,16 +100,15 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
             URL resource = Datavyu.class.getClassLoader().getResource("../");
             logger.info("The resource URL is: " + resource);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error finding resource URL " + e);
         }
         switch (getPlatform()) {
             case MAC:
                 logger.info("Detected platform: MAC");
                 try {
-                    //NativeLibraryLoader.load("quaqua64");
                     NativeLibraryLoader.extractAndLoad("quaqua64");
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("Could not load library quaqua64 for mac OS " + e);
                 }
                 if (getOSXPressAndHoldValue()) {
                     osxPressAndHoldEnabled = true;
@@ -131,7 +130,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                         QTDataViewer.librariesFound = true;
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("Could not load libraries for QT " + e);
                 }
                 break;
 
@@ -291,6 +290,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                 output.add(line);
 
         } catch (Exception e) {
+            logger.error("Error occured when processing press and hold " + e);
             //Warning: doing this is no good in high quality applications.
             //Instead, present appropriate error messages to the user.
             //But it's perfectly fine for prototyping.
@@ -476,11 +476,9 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         }
 
 
-        if ((evt.getID() == KeyEvent.KEY_PRESSED)
-                && (evt.getKeyLocation() == KeyEvent.KEY_LOCATION_STANDARD)) {
+        if ((evt.getID() == KeyEvent.KEY_PRESSED) && (evt.getKeyLocation() == KeyEvent.KEY_LOCATION_STANDARD)) {
 
             switch (evt.getKeyCode()) {
-
                 /**
                  * This case is because VK_PLUS is not linked to a key on the
                  * English keyboard. So the GUI is bound to VK_PLUS and VK_SUBTACT.
@@ -489,19 +487,15 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                  * is nothing left to be done with these keys.
                  */
                 case KeyEvent.VK_EQUALS:
-
                     if (modifiers == keyMask) {
                         datavyuView.changeFontSize(DatavyuView.ZOOM_INTERVAL);
                     }
-
                     return true;
 
                 case KeyEvent.VK_MINUS:
-
                     if (modifiers == keyMask) {
                         datavyuView.changeFontSize(-DatavyuView.ZOOM_INTERVAL);
                     }
-
                     return true;
 
                 default:
@@ -511,7 +505,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
 
         // BugzID:784 - Shift key is passed to Data Controller.
         if (evt.getKeyCode() == KeyEvent.VK_SHIFT) {
-
             if (evt.getID() == KeyEvent.KEY_PRESSED) {
                 dataController.setShiftMask(true);
             } else {
@@ -521,7 +514,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
 
         // BugzID:736 - Control key is passed to Data Controller.
         if (evt.getKeyCode() == KeyEvent.VK_CONTROL) {
-
             if (evt.getID() == KeyEvent.KEY_PRESSED) {
                 dataController.setCtrlMask(true);
             } else {
@@ -532,15 +524,13 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         /**
          * The following cases handle numpad keystrokes.
          */
-        if ((evt.getID() == KeyEvent.KEY_PRESSED)
-                && (evt.getKeyLocation() == KeyEvent.KEY_LOCATION_NUMPAD)) {
+        if ((evt.getID() == KeyEvent.KEY_PRESSED) && (evt.getKeyLocation() == KeyEvent.KEY_LOCATION_NUMPAD)) {
             numKeyDown = true;
         } else if (numKeyDown && (evt.getID() == KeyEvent.KEY_TYPED)) {
             return true;
         }
 
-        if ((evt.getID() == KeyEvent.KEY_RELEASED)
-                && (evt.getKeyLocation() == KeyEvent.KEY_LOCATION_NUMPAD)) {
+        if ((evt.getID() == KeyEvent.KEY_RELEASED) && (evt.getKeyLocation() == KeyEvent.KEY_LOCATION_NUMPAD)) {
             numKeyDown = false;
         }
 
@@ -740,7 +730,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         try {
             java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
         } catch (java.io.IOException e) {
-            logger.error("Error while opening support site", e);
+            logger.error("Error while opening support site " + e);
         }
     }
 
@@ -753,7 +743,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         try {
             java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
         } catch (java.io.IOException e) {
-            logger.error("Error while opening guide site", e);
+            logger.error("Error while opening guide site " + e);
         }
     }
 
@@ -980,8 +970,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
             try {
                 UIManager.setLookAndFeel(QuaquaManager.getLookAndFeel());
             } catch (UnsupportedLookAndFeelException e) {
-                System.err.println("Failed to set Quaqua LNF");
-                e.printStackTrace();
+                logger.error("Failed to set Quaqua LNF " + e);
             }
             new MacHandler();
         }
@@ -990,7 +979,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
             try {
                 WindowsOS.associate(".opf", WindowsOS.cwd().toString());
             } catch (Win32Exception e) {
-                e.printStackTrace();
+                logger.error("Could not associate .opf " + e);
             }
         }
 
@@ -1033,13 +1022,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         datavyuView = new DatavyuView(this);
         show(datavyuView);
         datavyuView.getFileSplitPane().setDividerLocation(0.75);
-
-        // Now that datavyu is up - we may need to ask the user if can send
-        // gather logs.
-//        if (Configuration.getInstance().getCanSendLogs() == null) {
-//            logger.info("show usermetrix dialog");
-//            show(new LogManagerV(datavyuView.getFrame(), true));
-//        }
 
         // BugzID:435 - Correct size if a small size is detected.
         int width = (int) getMainFrame().getSize().getWidth();
@@ -1124,22 +1106,18 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
 
     @Override
     public void show(final JDialog dialog) {
-
         if (windows == null) {
-            windows = new Stack<Window>();
+            windows = new Stack<>();
         }
-
         windows.push(dialog);
         super.show(dialog);
     }
 
     @Override
     public void show(final JFrame frame) {
-
         if (windows == null) {
-            windows = new Stack<Window>();
+            windows = new Stack<>();
         }
-
         windows.push(frame);
         super.show(frame);
     }
@@ -1152,11 +1130,9 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
     }
 
     public void closeOpenedWindows() {
-
         if (windows == null) {
-            windows = new Stack<Window>();
+            windows = new Stack<>();
         }
-
         while (!windows.empty()) {
             Window window = windows.pop();
             window.setVisible(false);
@@ -1168,25 +1144,9 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      * All the supported platforms that Datavyu runs on.
      */
     public enum Platform {
-
-        /**
-         * Generic Mac platform. I.e. Tiger, Leopard, Snow Leopard.
-         */
-        MAC,
-
-        /**
-         * Generic windows platform. I.e. XP, vista, etc.
-         */
-        WINDOWS,
-
-        /**
-         * Generic Linux platform.
-         */
-        LINUX,
-
-        /**
-         * Unknown platform.
-         */
+        MAC, // Generic Mac platform. I.e. Tiger, Leopard, Snow Leopard
+        WINDOWS, // Generic windows platform. I.e. XP, vista, etc.
+        LINUX, // Generic Linux platform.
         UNKNOWN
     }
 

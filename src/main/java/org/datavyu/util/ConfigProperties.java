@@ -18,9 +18,8 @@ import java.awt.*;
 import java.io.Serializable;
 
 /**
- * The properties to use for configuration. Access to the configuration
- * properties should be done via org.datavyu.Configuration. This class is a
- * JavaBean so that it can be easily dumped to disk via the XMLEncoder.
+ * The properties to use for configuration. Access to the configuration properties should be done via
+ * org.datavyu.Configuration. This class is a JavaBean to easily save it.
  */
 public final class ConfigProperties implements Serializable {
 
@@ -119,8 +118,7 @@ public final class ConfigProperties implements Serializable {
     /**
      * Default constructor.
      */
-    public ConfigProperties() {
-    }
+    public ConfigProperties() {}
 
     /**
      * @return The spreadsheet data font.

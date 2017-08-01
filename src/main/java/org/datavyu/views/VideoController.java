@@ -241,7 +241,7 @@ public final class VideoController extends DatavyuDialog
     private javax.swing.JButton stopButton;
 
     /** */
-    private javax.swing.JLabel timestampLabel;
+    private javax.swing.JLabel timeStampLabel;
 
     /** */
     private javax.swing.JPanel tracksPanel;
@@ -362,6 +362,7 @@ public final class VideoController extends DatavyuDialog
                                     .getViewerStateListener(newIdentifier));
                 } catch (Throwable t) {
                     logger.error(t);
+
                     StringWriter sw = new StringWriter();
                     PrintWriter pw = new PrintWriter(sw);
                     t.printStackTrace(pw);
@@ -386,13 +387,13 @@ public final class VideoController extends DatavyuDialog
                         // handle link events
                         ep.addHyperlinkListener(new HyperlinkListener() {
                             @Override
-                            public void hyperlinkUpdate(HyperlinkEvent e) {
-                                if (e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
+                            public void hyperlinkUpdate(HyperlinkEvent evt) {
+                                if (evt.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED)) {
                                     try {
                                         // roll your own link launcher or use Desktop if J6+
-                                        Desktop.getDesktop().browse(e.getURL().toURI());
-                                    } catch (Exception u) {
-                                        u.printStackTrace();
+                                        Desktop.getDesktop().browse(evt.getURL().toURI());
+                                    } catch (Exception e) {
+                                        logger.error("Error when opening hyper text " + e);
                                     }
                                 }
                             }
@@ -406,7 +407,6 @@ public final class VideoController extends DatavyuDialog
                         JOptionPane.showMessageDialog(null,
                                 "This plugin could not load this file. Error message:\n" + t.getMessage());
                     }
-                    t.printStackTrace();
                 }
             }
         }).start();
@@ -536,7 +536,7 @@ public final class VideoController extends DatavyuDialog
                 clockStop(windowPlayEnd);
             }
         } catch (Exception e) {
-            logger.error("Unable to Sync dataViewers: ", e);
+            logger.error("Unable to Sync dataViewers " + e);
         }
     }
 
@@ -578,7 +578,7 @@ public final class VideoController extends DatavyuDialog
                     resetSync();
                     updateCurrentTimeLabel();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("Could not adjust clock " + e);
                 }
             }
         }
@@ -618,7 +618,7 @@ public final class VideoController extends DatavyuDialog
                         resetSync();
                         updateCurrentTimeLabel();
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error("Error when stopping clock " + e);
                     }
                 }
             }
@@ -682,7 +682,7 @@ public final class VideoController extends DatavyuDialog
                     viewer.seek(time - viewer.getStartTime());
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.info("Error when stepping clock " + e);
             }
         }
     }
@@ -695,7 +695,7 @@ public final class VideoController extends DatavyuDialog
     }
 
     private void updateCurrentTimeLabel() {
-        timestampLabel.setText(tracksPanelVisible ? CLOCK_FORMAT_HTML.format(getCurrentTime())
+        timeStampLabel.setText(tracksPanelVisible ? CLOCK_FORMAT_HTML.format(getCurrentTime())
                                                   : CLOCK_FORMAT_HTML.format(getCurrentTime()));
     }
 
@@ -784,10 +784,8 @@ public final class VideoController extends DatavyuDialog
         DataViewer viewer = null;
 
         for (DataViewer v : dataViewers) {
-
             if (v.getIdentifier().equals(id)) {
                 viewer = v;
-
                 break;
             }
         }
@@ -876,6 +874,7 @@ public final class VideoController extends DatavyuDialog
         ResourceMap rMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
         String cancel = "Cancel";
         String ok = "OK";
+        // TODO: This pattern appears all over find a good place to put the general code for this
         String[] options = new String[2];
         if (Datavyu.getPlatform() == Platform.MAC) {
             options[0] = cancel;
@@ -890,8 +889,7 @@ public final class VideoController extends DatavyuDialog
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                 null, options, cancel);
         // Button behaviour is platform dependent.
-        return (Datavyu.getPlatform() == Platform.MAC) ? (selection == 1)
-                : (selection == 0);
+        return (Datavyu.getPlatform() == Platform.MAC) ? (selection == 1) : (selection == 0);
     }
 
     /**
@@ -952,7 +950,7 @@ public final class VideoController extends DatavyuDialog
         stepSizeTextField = new javax.swing.JTextField();
         onsetTextField = new javax.swing.JTextField();
         JButton addDataButton = new javax.swing.JButton();
-        timestampLabel = new javax.swing.JLabel();
+        timeStampLabel = new javax.swing.JLabel();
         lblSpeed = new javax.swing.JLabel();
         createNewCell = new javax.swing.JButton();
         JLabel atLabel = new javax.swing.JLabel();
@@ -994,12 +992,12 @@ public final class VideoController extends DatavyuDialog
         timestampPanel.setOpaque(false);
 
         // Timestamp label
-        timestampLabel.setFont(new Font("Tahoma", Font.BOLD, timeStampFontSize));
-        timestampLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        timestampLabel.setText("00:00:00:000");
-        timestampLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-        timestampLabel.setName("timestampLabel");
-        timestampLabel.addMouseListener(new MouseAdapter() {
+        timeStampLabel.setFont(new Font("Tahoma", Font.BOLD, timeStampFontSize));
+        timeStampLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        timeStampLabel.setText("00:00:00:000");
+        timeStampLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+        timeStampLabel.setName("timeStampLabel");
+        timeStampLabel.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 // you can open a new frame here as
                 // i have assumed you have declared "frame" as instance variable
@@ -1011,19 +1009,19 @@ public final class VideoController extends DatavyuDialog
                 }
             }
         });
-        timestampLabel.addMouseWheelListener(new MouseWheelListener() {
+        timeStampLabel.addMouseWheelListener(new MouseWheelListener() {
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
                 int count = e.getWheelRotation();
                 timeStampFontSize = Math.min(72, Math.max(10, timeStampFontSize + count));
-                timestampLabel.setFont(new Font("Tahoma", Font.BOLD, timeStampFontSize));
+                timeStampLabel.setFont(new Font("Tahoma", Font.BOLD, timeStampFontSize));
                 gridButtonPanel.setMinimumSize(timestampPanel.getMinimumSize());
-                timestampLabel.repaint();
+                timeStampLabel.repaint();
                 pack();
                 validate();
             }
         });
-        timestampPanel.add(timestampLabel);
+        timestampPanel.add(timeStampLabel);
 
         atLabel.setText("@");
         timestampPanel.add(atLabel);
@@ -1300,6 +1298,7 @@ public final class VideoController extends DatavyuDialog
      * @param evt The event that triggered this action.
      */
     private void showTracksButtonActionPerformed(final java.awt.event.ActionEvent evt) {
+
         // TODO: Fix this assert through proper error handling
         assert (evt.getSource() instanceof JButton);
 
@@ -1387,7 +1386,6 @@ public final class VideoController extends DatavyuDialog
         if (viewer.getParentJDialog() != null) {
             boolean visible = viewer.getParentJDialog().isVisible();
             Datavyu.getApplication().show(viewer.getParentJDialog());
-
             if (!visible) {
                 viewer.getParentJDialog().setVisible(false);
             }
@@ -1413,8 +1411,7 @@ public final class VideoController extends DatavyuDialog
             maxDuration = viewer.getStartTime() + viewer.getDuration();
         }
 
-        mixerController.getMixerModel().getViewportModel().setViewportMaxEnd(
-                maxDuration, true);
+        mixerController.getMixerModel().getViewportModel().setViewportMaxEnd(maxDuration, true);
     }
 
     /**
@@ -1454,19 +1451,13 @@ public final class VideoController extends DatavyuDialog
      * @param e event
      */
     public void tracksControllerChanged(final TracksControllerEvent e) {
-
         switch (e.getTracksEvent()) {
-
             case CARRIAGE_EVENT:
                 handleCarriageEvent((CarriageEvent) e.getEventObject());
-
                 break;
-
             case TIMESCALE_EVENT:
                 handleTimescaleEvent((TimescaleEvent) e.getEventObject());
-
                 break;
-
             default:
                 break;
         }
@@ -1561,8 +1552,7 @@ public final class VideoController extends DatavyuDialog
             }
         }
 
-        mixerController.getMixerModel().getViewportModel().setViewportMaxEnd(
-                maxDuration, false);
+        mixerController.getMixerModel().getViewportModel().setViewportMaxEnd(maxDuration, false);
     }
 
     private void handleNeedleChanged(final PropertyChangeEvent e) {
@@ -1696,8 +1686,7 @@ public final class VideoController extends DatavyuDialog
         // BugzID:464 - When stopped at the end of the region of interest.
         // pressing play jumps the stream back to the start of the video before
         // starting to play again.
-        if ((getCurrentTime() >= playbackModel.getWindowPlayEnd())
-                && clock.isStopped()) {
+        if ((getCurrentTime() >= playbackModel.getWindowPlayEnd()) && clock.isStopped()) {
             jumpTo(playbackModel.getWindowPlayStart());
         }
 
@@ -1754,7 +1743,7 @@ public final class VideoController extends DatavyuDialog
     /**
      * Action to invoke when the user clicks on the shuttle forward button.
      *
-     * @todo proper behavior for reversing shuttle direction?
+     * TODO: proper behavior for reversing shuttle direction?
      */
     @Action
     public void shuttleForwardAction() {
@@ -1810,13 +1799,12 @@ public final class VideoController extends DatavyuDialog
      */
     @Action
     public void findAction() {
-        logger.info("Find");
         if (shiftMask) {
             findOffsetAction();
         } else {
 
             try {
-                System.out.println("Finding to " + onsetTextField.getText() + " "
+                logger.info("Finding to " + onsetTextField.getText() + " "
                         + CLOCK_FORMAT.parse(onsetTextField.getText()).getTime());
                 jumpTo(CLOCK_FORMAT.parse(onsetTextField.getText()).getTime());
             } catch (ParseException e) {
@@ -1829,11 +1817,10 @@ public final class VideoController extends DatavyuDialog
      * Action to invoke when the user holds shift down.
      */
     public void findOffsetAction() {
-
         try {
             jumpTo(CLOCK_FORMAT.parse(offsetTextField.getText()).getTime());
         } catch (ParseException e) {
-            logger.error("unable to find within video", e);
+            logger.error("Unable to find offset " + e);
         }
     }
 
@@ -1862,11 +1849,9 @@ public final class VideoController extends DatavyuDialog
     }
 
     /**
-     * Sets the playback region of interest to lie from the find time to offset
-     * time.
+     * Sets the playback region of interest to lie from the find time to offset time.
      */
     public void setRegionOfInterestAction() {
-
         if (this.getDataViewers().size() > 0) {
             try {
                 final long findTextTime = CLOCK_FORMAT.parse(
@@ -1882,7 +1867,7 @@ public final class VideoController extends DatavyuDialog
                 mixerController.getMixerModel().getRegionModel().setPlaybackRegion(
                         newWindowPlayStart, newWindowPlayEnd);
             } catch (ParseException e) {
-                logger.error("Unable to set playback region of interest", e);
+                logger.error("Unable to set region of interest for playback " + e);
             }
         }
     }
@@ -1892,20 +1877,16 @@ public final class VideoController extends DatavyuDialog
      */
     @Action
     public void goBackAction() {
-
         try {
-            logger.info("Go back");
-
             long j = -CLOCK_FORMAT.parse(goBackTextField.getText()).getTime();
+            logger.info("Jump back by " + j);
             jump(j);
-            System.out.println("JUMP BACK!");
 
             //Bugzilla bug #179 - undoes the behavior from FogBugz BugzID:721
             // BugzID:721 - After going back - start playing again.
             //playAt(PLAY_RATE);
-
         } catch (ParseException e) {
-            logger.error("unable to find within video", e);
+            logger.error("Unable to jump back " + e);
         }
     }
 
@@ -1999,9 +1980,9 @@ public final class VideoController extends DatavyuDialog
     }
 
     /**
-     * @param shuttlejump The required rate/direction of the shuttle.
+     * @param shuttleJump The required rate/direction of the shuttle.
      */
-    private void shuttle(final int shuttlejump) {
+    private void shuttle(final int shuttleJump) {
         float currentRate = clock.getRate();
 
         if (currentRate == 0) {
@@ -2009,9 +1990,9 @@ public final class VideoController extends DatavyuDialog
         }
 
         try {
-            shuttleAt(SHUTTLE_RATES[rateToShuttleIndex(currentRate) + shuttlejump]);
+            shuttleAt(SHUTTLE_RATES[rateToShuttleIndex(currentRate) + shuttleJump]);
         } catch (java.lang.ArrayIndexOutOfBoundsException e) {
-            System.out.println("Error finding shuttle index given current rate: " + currentRate);
+            logger.error("Error finding shuttle index given at the current rate " + currentRate);
         }
     }
 
@@ -2091,15 +2072,12 @@ public final class VideoController extends DatavyuDialog
 
     @Override
     public void propertyChange(final PropertyChangeEvent e) {
-
-        if (e.getSource()
-                == mixerController.getNeedleController().getNeedleModel()) {
+        Object source = e.getSource();
+        if (source == mixerController.getNeedleController().getNeedleModel()) {
             handleNeedleChanged(e);
-        } else if (e.getSource()
-                == mixerController.getMixerModel().getViewportModel()) {
+        } else if (source == mixerController.getMixerModel().getViewportModel()) {
             handleViewportChanged(e);
-        } else if (e.getSource()
-                == mixerController.getRegionController().getModel()) {
+        } else if (source == mixerController.getRegionController().getModel()) {
             handleRegionChanged(e);
         }
     }
