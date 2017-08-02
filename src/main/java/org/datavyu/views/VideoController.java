@@ -900,7 +900,7 @@ public final class VideoController extends DatavyuDialog
      * @return A configured button.
      */
     private JButton buildButton(final String name, final String modifier) {
-        String dotModifier = !(modifier == null) && !modifier.isEmpty() ? "." : "";
+        String dotModifier = (modifier == null) || modifier.isEmpty() ? "" : "." + modifier;
         JButton result = new JButton();
         result.setAction(actionMap.get(name + "Action"));
         result.setIcon(resourceMap.getIcon(name + "Button.icon" + dotModifier));
