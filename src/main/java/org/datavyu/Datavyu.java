@@ -1074,7 +1074,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         if (getPlatform() == Platform.MAC && osxPressAndHoldEnabled) {
             setOSXPressAndHoldValue(true);
         }
-        NativeLibraryLoader.unload();
         nativeLibraryManager.purge();
         super.shutdown();
     }

@@ -14,7 +14,6 @@
  */
 package org.datavyu.util;
 
-import com.google.common.collect.Iterables;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -23,7 +22,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Enumeration;
 
 /**
@@ -41,9 +39,6 @@ public class NativeLibraryLoader {
 
     /** Logger for this native library loader */
     private static Logger logger = LogManager.getLogger(NativeLibraryLoader.class);
-
-    /** Listing of all library files that were loaded from jar's */
-    private static final ArrayList<File> libraryFiles = new ArrayList<>();
 
     /** Buffer size for unzipping native libraries */
     private static final int BUFFER = 16*1024; // 16 kB
@@ -139,19 +134,6 @@ public class NativeLibraryLoader {
         dest.close();  // close flushes
         out.close();
         in.close();
-        libraryFiles.add(outfile);
         return outfile;
-    }
-
-    /**
-     * Removes temporary files that were created by the native loader.
-     */
-    public static void unload() {
-        logger.info("Cleaning library files");
-        for (File libraryFile : Iterables.reverse(libraryFiles)) {
-            if (!libraryFile.delete()) {
-                logger.error("Unable to delete " + libraryFile);
-            }
-        }
     }
 }
