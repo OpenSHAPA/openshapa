@@ -33,15 +33,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public final class DatavyuVariable implements Variable {
     // All the listeners for variables in teh datastore.
-    static Map<UUID, List<VariableListener>> allListeners =
-            new HashMap<UUID, List<VariableListener>>();
+    static Map<UUID, List<VariableListener>> allListeners = new HashMap<UUID, List<VariableListener>>();
     private static CellComparator CellComparator = new CellComparator();
     final private UUID variableId = UUID.randomUUID();
-    //    private List<Cell> cells = new ArrayList<Cell>();
     private List<Cell> cells = new CopyOnWriteArrayList<>();
     private Argument rootNodeArgument = null;
     private Boolean selected;
-    private Boolean highlighted;
     private Boolean hidden;
     private String name;
     private int orderIndex = -1;
@@ -50,8 +47,7 @@ public final class DatavyuVariable implements Variable {
     /**
      * Default constructor.
      */
-    public DatavyuVariable() {
-    }
+    public DatavyuVariable() {}
 
     /**
      * Constructor.
@@ -80,8 +76,6 @@ public final class DatavyuVariable implements Variable {
         this.setRootNode(type);
         this.setHidden(false);
         this.setSelected(true);
-
-
         owningDatastore.markAsChanged();
     }
 
@@ -90,12 +84,13 @@ public final class DatavyuVariable implements Variable {
      * @return The list of listeners for the specified variableId.
      */
     private static List<VariableListener> getListeners(UUID variableId) {
+        //allListeners.computeIfAbsent(variableId, key -> new ArrayList<>());
+        //return allListeners.get(variableId);
         List<VariableListener> result = allListeners.get(variableId);
         if (result == null) {
-            result = new ArrayList<VariableListener>();
+            result = new ArrayList<>();
             allListeners.put(variableId, result);
         }
-
         return result;
     }
 

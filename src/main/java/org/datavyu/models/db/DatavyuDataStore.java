@@ -227,7 +227,6 @@ public class DatavyuDataStore implements DataStore {
     public void markAsUnchanged() {
         if (changed) {
             changed = false;
-
             if (DatavyuDataStore.titleNotifier != null) {
                 DatavyuDataStore.titleNotifier.updateTitle();
             }

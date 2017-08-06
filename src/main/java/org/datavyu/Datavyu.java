@@ -25,9 +25,7 @@ import org.datavyu.plugins.PluginManager;
 import org.datavyu.plugins.quicktime.QTDataViewer;
 import org.datavyu.plugins.vlcfx.NativeLibraryManager;
 import org.datavyu.undoableedits.SpreadsheetUndoManager;
-import org.datavyu.util.MacHandler;
-import org.datavyu.util.NativeLibraryLoader;
-import org.datavyu.util.WindowsOS;
+import org.datavyu.util.*;
 import org.datavyu.views.*;
 import org.datavyu.views.discrete.SpreadsheetPanel;
 import org.jdesktop.application.*;
@@ -51,6 +49,16 @@ import java.util.Stack;
  * The main class of the application.
  */
 public final class Datavyu extends SingleFrameApplication implements KeyEventDispatcher, TitleNotifier {
+
+    /**
+     * All the supported platforms that Datavyu runs on.
+     */
+    public enum Platform {
+        MAC, // Generic Mac platform. I.e. Tiger, Leopard, Snow Leopard
+        WINDOWS, // Generic openWindows platform. I.e. XP, vista, etc.
+        LINUX, // Generic Linux platform.
+        UNKNOWN
+    }
 
     private static final NativeLibraryManager nativeLibraryManager;
 
@@ -102,6 +110,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         } catch (Exception e) {
             logger.error("Error finding resource URL " + e);
         }
+
         switch (getPlatform()) {
             case MAC:
                 logger.info("Detected platform: MAC");
@@ -110,9 +119,9 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                 } catch (Exception e) {
                     logger.error("Could not load library quaqua64 for mac OS " + e);
                 }
-                if (getOSXPressAndHoldValue()) {
+                if (MacOS.isOSXPressAndHoldEnabled()) {
                     osxPressAndHoldEnabled = true;
-                    setOSXPressAndHoldValue(false);
+                    MacOS.setOSXPressAndHoldValue(false);
                 }
                 break;
 
@@ -121,10 +130,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                 try {
                     if (System.getProperty("sun.arch.data.model").equals("32")) {
                         logger.info("Loading libraries for 32 bit QT");
-                        //NativeLibraryLoader.load("QTJNative");
-                        //NativeLibraryLoader.load("QTJavaNative");
-                        //System.loadLibrary("QTJNative");
-                        //System.loadLibrary("QTJavaNative");
                         NativeLibraryLoader.extract("QTJNative");
                         NativeLibraryLoader.extractAndLoad("QTJavaNative");
                         QTDataViewer.librariesFound = true;
@@ -140,16 +145,33 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         }
     }
 
+    /**
+     * @return The platform that Datavyu is running on.
+     */
+    public static Platform getPlatform() {
+        String os = System.getProperty("os.name");
+        if (os.contains("Mac")) {
+            return Platform.MAC;
+        }
+        if (os.contains("Win")) {
+            return Platform.WINDOWS;
+        }
+        if (os.contains("Linux")) {
+            return Platform.LINUX;
+        }
+        return Platform.UNKNOWN;
+    }
+
     public boolean ready = false;
 
     /** The view to use when displaying information about Datavyu updates */
-    private UpdateV updateWindow;
+    private UpdateVersion updateWindow;
 
     /** Tracks if a NumPad key has been pressed */
     private boolean numKeyDown = false;
 
-    /** Opened windows */
-    private Stack<Window> windows;
+    /** Open windows */
+    private Stack<Window> openWindows;
 
     /** File path from the command line */
     private String commandLineFile;
@@ -216,89 +238,8 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      * Datavyu.
      */
     public static ScriptEngine getScriptingEngine() {
-        System.out.println("Returning: " + sef.getEngineName() + " " + sef.getEngineVersion());
+        logger.info("Script engine: " + sef.getEngineName() + ", version: " + sef.getEngineVersion());
         return sef.getScriptEngine();
-    }
-
-    /**
-     * @return The platform that Datavyu is running on.
-     */
-    public static Platform getPlatform() {
-        String os = System.getProperty("os.name");
-        if (os.contains("Mac")) {
-            return Platform.MAC;
-        }
-        if (os.contains("Win")) {
-            return Platform.WINDOWS;
-        }
-        if (os.contains("Linux")) {
-            return Platform.LINUX;
-        }
-        return Platform.UNKNOWN;
-    }
-
-    private static boolean getOSXPressAndHoldValue() {
-        Runtime rt = Runtime.getRuntime();
-        String[] commands = {"defaults", "read", "-g ApplePressAndHoldEnabled"};
-        try {
-            Process process =
-                    new ProcessBuilder(new String[]{"bash", "-c", "defaults read -g ApplePressAndHoldEnabled"})
-                            .redirectErrorStream(true)
-                            .directory(new File("./"))
-                            .start();
-
-            ArrayList<String> output = new ArrayList<String>();
-            BufferedReader br = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()));
-            String line = null;
-            while ((line = br.readLine()) != null)
-                output.add(line);
-
-            if (output.size() > 0 && output.get(0).equals("0")) {
-                return false;
-            } else {
-                return true;
-            }
-        } catch (Exception e) {
-            logger.error("Error: " + e.getMessage());
-            //Warning: doing this is no good in high quality applications.
-            //Instead, present appropriate error messages to the user.
-            //But it's perfectly fine for prototyping.
-        }
-        return true;
-    }
-
-    private static void setOSXPressAndHoldValue(boolean bool) {
-        String strVal;
-        if (bool) {
-            strVal = "true";
-        } else {
-            strVal = "false";
-        }
-        try {
-            Process process =
-                    new ProcessBuilder(new String[]{"bash", "-c", "defaults write -g ApplePressAndHoldEnabled -bool " + strVal})
-                            .redirectErrorStream(true)
-                            .directory(new File("./"))
-                            .start();
-
-            ArrayList<String> output = new ArrayList<String>();
-            BufferedReader br = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()));
-            String line = null;
-            while ((line = br.readLine()) != null)
-                output.add(line);
-
-        } catch (Exception e) {
-            logger.error("Error occured when processing press and hold " + e);
-            //Warning: doing this is no good in high quality applications.
-            //Instead, present appropriate error messages to the user.
-            //But it's perfectly fine for prototyping.
-
-//            return null;
-        }
-
-//        return true;
     }
 
     /**
@@ -307,23 +248,16 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      * @param args The command line arguments passed to Datavyu.
      */
     public static void main(final String[] args) {
-        // If we are running on a MAC set some additional properties:
+        // If we are running on a MAC set system properties
         if (Datavyu.getPlatform() == Platform.MAC) {
             System.setProperty("apple.laf.useScreenMenuBar", "true");
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Datavyu");
             System.setProperty("Quaqua.jniIsPreloaded", "true");
         }
-
         launch(Datavyu.class, args);
-
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-//			System.err.println("ERROR: Force shutdown command caught. Initiating shutdown.");
-//			Datavyu.getApplication().shutdown();
-            }
-        });
     }
 
+    // TODO: Why do we have these two project controllers?
     public static ProjectController getProjectController() {
         if (datavyuView != null && datavyuView.getSpreadsheetPanel() != null
                 && datavyuView.getSpreadsheetPanel().getProjectController() != null) {
@@ -751,9 +685,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      * Action for showing the about window.
      */
     public void showUpdateWindow() {
-        JFrame mainFrame = Datavyu.getApplication().getMainFrame();
-        updateWindow = new UpdateV(mainFrame, true);
-        Datavyu.getApplication().show(updateWindow);
+        Datavyu.getApplication().show(new UpdateVersion(Datavyu.getApplication().getMainFrame(), true));
     }
 
     /**
@@ -988,7 +920,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
             commandLineFile = args[0];
         }
 
-        windows = new Stack<>();
+        openWindows = new Stack<>();
         LocalStorage ls = Datavyu.getApplication().getContext().getLocalStorage();
         ResourceMap rMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
 
@@ -1004,11 +936,9 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         // Initialize plugin manager
         PluginManager.getInstance();
 
-        // Check for updates on startup
-        JFrame mainFrame = Datavyu.getApplication().getMainFrame();
-        updateWindow = new UpdateV(mainFrame, true);
-        if (updateWindow.Available() && !updateWindow.IgnoreVersion()) {
-            Datavyu.getApplication().show(updateWindow);
+        // Check for updates
+        if (DatavyuVersion.isUpdateAvailable() && !DatavyuVersion.isIgnoreVersion()) {
+            Datavyu.getApplication().show(new UpdateVersion(Datavyu.getApplication().getMainFrame(), true));
         }
     }
 
@@ -1018,12 +948,12 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
     @Override
     protected void startup() {
 
-        // Make view the new view so we can keep track of it for hotkeys.
+        // Make view the new view so we can keep track of it for hot keys
         datavyuView = new DatavyuView(this);
         show(datavyuView);
         datavyuView.getFileSplitPane().setDividerLocation(0.75);
 
-        // BugzID:435 - Correct size if a small size is detected.
+        // BugzID:435 - Correct size if a small size is detected
         int width = (int) getMainFrame().getSize().getWidth();
         int height = (int) getMainFrame().getSize().getHeight();
 
@@ -1033,7 +963,15 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
             getMainFrame().setSize(x, y);
         }
 
-        addExitListener(new ExitListenerImpl());
+        addExitListener(new ExitListener() {
+            @Override
+            public boolean canExit(EventObject eventObject) {
+                return safeQuit();
+            }
+
+            @Override
+            public void willExit(EventObject eventObject) { /* nothing to do here */ }
+        });
 
         // Create video controller.
 //        projectController = new ProjectController();
@@ -1072,7 +1010,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
     @Override
     public void shutdown() {
         if (getPlatform() == Platform.MAC && osxPressAndHoldEnabled) {
-            setOSXPressAndHoldValue(true);
+            MacOS.setOSXPressAndHoldValue(true);
         }
         nativeLibraryManager.purge();
         super.shutdown();
@@ -1086,13 +1024,11 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      * @param root The parent window.
      */
     @Override
-    protected void configureWindow(final java.awt.Window root) {}
+    protected void configureWindow(final Window root) {}
 
-    /**
-     * Asks the main frame to update its title.
-     */
     @Override
     public void updateTitle() {
+        // Update the main title
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -1105,79 +1041,19 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
 
     @Override
     public void show(final JDialog dialog) {
-        if (windows == null) {
-            windows = new Stack<>();
+        if (openWindows == null) {
+            openWindows = new Stack<>();
         }
-        windows.push(dialog);
+        openWindows.push(dialog);
         super.show(dialog);
     }
 
     @Override
     public void show(final JFrame frame) {
-        if (windows == null) {
-            windows = new Stack<>();
+        if (openWindows == null) {
+            openWindows = new Stack<>();
         }
-        windows.push(frame);
+        openWindows.push(frame);
         super.show(frame);
-    }
-
-    public void resetApp() {
-        closeOpenedWindows();
-        this.dataController.dispose();
-        this.dataController = new VideoController(Datavyu.getApplication()
-                .getMainFrame(), false);
-    }
-
-    public void closeOpenedWindows() {
-        if (windows == null) {
-            windows = new Stack<>();
-        }
-        while (!windows.empty()) {
-            Window window = windows.pop();
-            window.setVisible(false);
-            window.dispose();
-        }
-    }
-
-    /**
-     * All the supported platforms that Datavyu runs on.
-     */
-    public enum Platform {
-        MAC, // Generic Mac platform. I.e. Tiger, Leopard, Snow Leopard
-        WINDOWS, // Generic windows platform. I.e. XP, vista, etc.
-        LINUX, // Generic Linux platform.
-        UNKNOWN
-    }
-
-    /**
-     * Handles exit requests.
-     */
-    private class ExitListenerImpl implements ExitListener {
-
-        /**
-         * Default constructor.
-         */
-        public ExitListenerImpl() {
-        }
-
-        /**
-         * Calls safeQuit to check if we can exit.
-         *
-         * @param arg0 The event generating the quit call.
-         * @return True if the application can quit, false otherwise.
-         */
-        @Override
-        public boolean canExit(final EventObject arg0) {
-            return safeQuit();
-        }
-
-        /**
-         * Cleanup would occur here, but we choose to do nothing for now.
-         *
-         * @param arg0 The event generating the quit call.
-         */
-        @Override
-        public void willExit(final EventObject arg0) {
-        }
     }
 }

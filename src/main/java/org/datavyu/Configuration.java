@@ -102,7 +102,7 @@ public final class Configuration {
     /**
      * The logger for this class.
      */
-    private static Logger logger = LogManager.getLogger();
+    private static Logger logger = LogManager.getLogger(Configuration.class);
     /**
      * The configuration properties.
      */
@@ -117,11 +117,11 @@ public final class Configuration {
      */
     private Configuration() {
         super();
-
-        // Try loading configuration properties
+        // Loading configuration properties
         try {
             LocalStorage ls = Datavyu.getApplication().getContext().getLocalStorage();
             properties = (ConfigProperties) ls.load(CONFIG_FILE);
+            logger.info("Found properties " + properties);
         } catch (IOException e) {
             logger.error("Unable to load configuration file ", e);
         }

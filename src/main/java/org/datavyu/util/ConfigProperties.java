@@ -18,35 +18,25 @@ import java.awt.*;
 import java.io.Serializable;
 
 /**
- * The properties to use for configuration. Access to the configuration properties should be done via
- * org.datavyu.Configuration. This class is a JavaBean to easily save it.
+ * The properties to use for configuration. Access through via org.datavyu.Configuration.
  */
 public final class ConfigProperties implements Serializable {
 
-    /**
-     * The unique Identifier for this serial version.
-     */
+    /** Unique identifier for this serial version */
     private static final long serialVersionUID = 4L;
 
-    /**
-     * The spreadsheet data font.
-     */
+    /** The spreadsheet data font */
     private Font spreadsheetDataFont;
 
-    /**
-     * The spreadsheet label font.
-     */
+    /** The spreadsheet label font */
     private Font spreadsheetLabelFont;
 
-    /**
-     * The spreadsheet background colour.
-     */
-    private Color spreadsheetBackgroundColour;
+    /** The spreadsheet background color */
+    private Color spreadsheetBackgroundColor;
 
-    /**
-     * The spreadsheet foreground colour.
-     */
-    private Color spreadsheetForegroundColour;
+    /** The spreadsheet foreground color */
+    private Color spreadsheetForegroundColor;
+
 
     /**
      * The foreground colour of the spreadsheet ordinal.
@@ -109,7 +99,7 @@ public final class ConfigProperties implements Serializable {
     private boolean columnNameWarnings = true;
 
     /**
-     * true if prereleases are preferred
+     * true if pre releases are preferred
      */
     private boolean prereleasePreference;
     
@@ -156,7 +146,7 @@ public final class ConfigProperties implements Serializable {
      * @return The spreadsheet background colour.
      */
     public Color getSSBackgroundColour() {
-        return spreadsheetBackgroundColour;
+        return spreadsheetBackgroundColor;
     }
 
     /**
@@ -165,14 +155,14 @@ public final class ConfigProperties implements Serializable {
      * @param newColour The new colour to use for the spreadsheet background.
      */
     public void setSSBackgroundColour(final Color newColour) {
-        spreadsheetBackgroundColour = newColour;
+        spreadsheetBackgroundColor = newColour;
     }
 
     /**
      * @return The spreadsheet foreground colour.
      */
     public Color getSSForegroundColour() {
-        return spreadsheetForegroundColour;
+        return spreadsheetForegroundColor;
     }
 
     /**
@@ -181,7 +171,7 @@ public final class ConfigProperties implements Serializable {
      * @param newColour The new colour to use for the spreadsheet foreground.
      */
     public void setSSForegroundColour(final Color newColour) {
-        spreadsheetForegroundColour = newColour;
+        spreadsheetForegroundColor = newColour;
     }
 
     /**
