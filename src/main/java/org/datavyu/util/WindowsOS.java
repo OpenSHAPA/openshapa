@@ -33,6 +33,31 @@ public class WindowsOS {
     private static Logger logger = LogManager.getLogger();
 
     /**
+     * Get options for a dialog in Windows with three responses.
+     *
+     * @param yesOption The yes option.
+     * @param noOption The no option.
+     * @param cancelOption The cancel option.
+     *
+     * @return A string array with three options: yesOption, noOption, cancelOption.
+     */
+    public static String[] getOptions(String yesOption, String noOption, String cancelOption) {
+        return new String[] {yesOption, noOption, cancelOption};
+    }
+
+    /**
+     * Get options for a dialog in Windows with two responses.
+     *
+     * @param defaultOption The default option.
+     * @param alternativeOption The alternative option.
+     *
+     * @return A string array with the options: alternativeOption, defaultOption.
+     */
+    public static String[] getOptions(String defaultOption, String alternativeOption) {
+        return new String[]{alternativeOption, defaultOption};
+    }
+
+    /**
      * Log the contents from the reader to info.
      *
      * @param reader The reader with the contents.

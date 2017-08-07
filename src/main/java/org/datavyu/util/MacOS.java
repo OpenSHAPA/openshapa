@@ -21,6 +21,31 @@ public class MacOS {
     private static Logger logger = LogManager.getLogger(DatavyuVersion.class);
 
     /**
+     * Get options for dialog on Mac with three responses.
+     *
+     * @param yesOption The option for yes.
+     * @param noOption The option for no.
+     * @param cancelOption The option for cancel.
+     *
+     * @return A string array with three options in the order: yesOption, cancelOption, noOption.
+     */
+    public static String[] getOptions(String yesOption, String noOption, String cancelOption) {
+        return new String[]{yesOption, cancelOption, noOption};
+    }
+
+    /**
+     * Get options for dialog on Mac with two responses.
+     *
+     * @param defaultOption The default option.
+     * @param alternativeOption The alternative option.
+     *
+     * @return A string array with two options in the order: defaultOption, alternativeOption.
+     */
+    public static String[] getOptions(String defaultOption, String alternativeOption) {
+        return new String[]{defaultOption, alternativeOption};
+    }
+
+    /**
      * Get version for the MacOS.
      *
      * @return Version number.

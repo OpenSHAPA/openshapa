@@ -572,7 +572,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      * Action for showing the video converter.
      */
     public void showVideoConverter() {
-        //JFrame mainFrame = Datavyu.getApplication().getMainFrame();
         VideoConverterV videoConverter = new VideoConverterV();
         Datavyu.getApplication().show(videoConverter);
     }
@@ -592,8 +591,8 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      */
     public void showHistory() {
         JFrame mainFrame = Datavyu.getApplication().getMainFrame();
-        SpreadsheetUndoManager undomanager = Datavyu.getApplication().getView().getSpreadsheetUndoManager();
-        UndoHistoryWindow history = new UndoHistoryWindow(mainFrame, false, undomanager);
+        SpreadsheetUndoManager undoManager = getView().getSpreadsheetUndoManager();
+        UndoHistoryWindow history = new UndoHistoryWindow(mainFrame, false, undoManager);
         Datavyu.getApplication().show(history);
     }
 
@@ -661,18 +660,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
     }
 
     /**
-     * Show a fatal error dialog to the user.
-     */
-    public void showErrorDialog() {
-        JFrame mainFrame = Datavyu.getApplication().getMainFrame();
-        ResourceMap resourceMap = Application.getInstance(Datavyu.class).getContext()
-                .getResourceMap(Datavyu.class);
-        JOptionPane.showMessageDialog(mainFrame,
-                resourceMap.getString("ErrorDialog.message"),
-                resourceMap.getString("ErrorDialog.title"), JOptionPane.ERROR_MESSAGE);
-    }
-
-    /**
      * User quits- check for save needed. Note that this can be used even in
      * situations when the application is not truly "quitting", but just the
      * database information is being lost (e.g. on an "open" or "new"
@@ -691,29 +678,12 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                     getView().getTabbedPane().setSelectedComponent(sp);
                     // Ask to save if this spreadsheet has been changed
                     if (sp.getProjectController().isChanged()) {
-                        String cancel = "Cancel";
-                        String no = "Don't save";
-                        String yes = "Save";
-                        int yesIndex;
-                        int cancelIndex;
+                        String cancelOption = "Cancel";
+                        String noOption = "Don't save";
+                        String yesOption = "Save";
 
-                        String[] options = new String[3];
-                        //Mac and Windows typically order these buttons differently
-                        if (getPlatform() == Platform.MAC) {
-                            options[0] = yes;
-                            options[1] = cancel;
-                            options[2] = no;
-                            yesIndex = 0;
-                            cancelIndex = 1;
-
-                        } else {
-                            options[0] = yes;
-                            options[1] = no;
-                            options[2] = cancel;
-                            yesIndex = 0;
-                            cancelIndex = 2;
-
-                        }
+                        String[] options = getPlatform() == Platform.MAC ? MacOS.getOptions(yesOption, noOption, cancelOption) :
+                                WindowsOS.getOptions(yesOption, noOption, cancelOption);
 
                         // Get name of spreadsheet.  Check in both project and datastore.
                         String projectName = sp.getProjectController().getProjectName();
@@ -722,20 +692,17 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                             projectName = sp.getDataStore().getName();
                         }
 
-                        int selection = JOptionPane.showOptionDialog(mainFrame,
+                        int selectedOption = JOptionPane.showOptionDialog(mainFrame,
                                 resourceMap.getString("UnsavedDialog.message",projectName),
                                 resourceMap.getString("UnsavedDialog.title"),
                                 JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
-                                null, options, yes);
+                                null, options, yesOption);
 
-                        if (selection == yesIndex) {
+                        if (selectedOption == 0) {
                             getView().save();
                         }
 
-                        // If the user cancels, break and return that it isnt safe to quit
-                        if (selection == cancelIndex) {
-                            return false;
-                        }
+                        return getPlatform() == Platform.MAC ? !(selectedOption == 1) : !(selectedOption == 2);
                     }
                 }
             }
@@ -757,42 +724,31 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         if (spreadsheetPanel.getProjectController().isChanged()) {
             getView().getTabbedPane().setSelectedComponent(spreadsheetPanel);
 
-            String cancel = "Cancel";
-            String no = "Don't save";
-            String yes = "Save";
-            int yesIndex;
-            int cancelIndex;
+            String cancelOption = "Cancel";
+            String noOption = "Don't save";
+            String yesOption = "Save";
 
-            String[] options = new String[3];
-            //Mac and Windows typically order these buttons differently
-            if (getPlatform() == Platform.MAC) {
-                options[0] = yes;
-                options[1] = cancel;
-                options[2] = no;
-                yesIndex = 0;
-                cancelIndex = 1;
-            } else {
-                options[0] = yes;
-                options[1] = no;
-                options[2] = cancel;
-                yesIndex = 0;
-                cancelIndex = 2;
-            }
+            String[] options = getPlatform() == Platform.MAC ? MacOS.getOptions(yesOption, noOption, cancelOption) :
+                    WindowsOS.getOptions(yesOption, noOption, cancelOption);
 
             // Get project name.
             String projName = spreadsheetPanel.getProjectController().getProjectName();
-            if(projName==null) projName = spreadsheetPanel.getDataStore().getName();
+            if (projName == null) {
+                projName = spreadsheetPanel.getDataStore().getName();
+            }
             
-            int selection = JOptionPane.showOptionDialog(mainFrame,
+            int selectedOption = JOptionPane.showOptionDialog(mainFrame,
                     resourceMap.getString("UnsavedDialog.tabmessage", projName),
                     resourceMap.getString("UnsavedDialog.title"),
                     JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
-                    null, options, yes);
+                    null, options, yesOption);
 
-            if (selection == yesIndex) getView().save();
+            if (selectedOption == 0) {
+                getView().save();
+            }
 
-            // If the user cancels, break and return that it isnt safe to quit
-            return !(selection == cancelIndex);
+            // Mac: yes | cancel | no   and Windows: yes | no | cancel
+            return getPlatform() == Platform.MAC ? !(selectedOption == 1) : !(selectedOption == 2);
         } else {
             return true;
         }
@@ -817,51 +773,45 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      */
     public boolean overwriteExisting() {
         JFrame mainFrame = Datavyu.getApplication().getMainFrame();
-        ResourceMap rMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
-        String defaultOpt = "Cancel";
-        String altOpt = "Overwrite";
-        String[] a = new String[2];
+        ResourceMap resourceMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
+        String defaultOption = "Cancel";
+        String alternativeOption = "Overwrite";
+        String[] options = getPlatform() == Platform.MAC ? MacOS.getOptions(defaultOption, alternativeOption) :
+                WindowsOS.getOptions(defaultOption, alternativeOption);
 
-        // TODO: Create a static method in os specifics class and use throughout
-        if (getPlatform() == Platform.MAC) {
-            a[0] = defaultOpt; // This has int value 0 if selected
-            a[1] = altOpt; // This has int value 1 if selected.
-        } else {
-            a[1] = defaultOpt; // This has int value 1 if selected
-            a[0] = altOpt; // This has int value 0 if selected.
-        }
+        int selectedOption = JOptionPane.showOptionDialog(
+                mainFrame,
+                resourceMap.getString("OverwriteDialog.message"),
+                resourceMap.getString("OverwriteDialog.title"),
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                defaultOption);
 
-        int sel = JOptionPane.showOptionDialog(mainFrame,
-                        rMap.getString("OverwriteDialog.message"),
-                        rMap.getString("OverwriteDialog.title"),
-                        JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
-                        null, a, defaultOpt);
-
-        // Button depends on platform now.
-        if (getPlatform() == Platform.MAC) {
-            return (sel == 1);
-        } else {
-            return (sel == 0);
-        }
+        return getPlatform() == Platform.MAC ? selectedOption == 1 : selectedOption == 0;
     }
 
     @Override
     protected void initialize(final String[] args) {
-        if (getPlatform() == Platform.MAC) {
-            try {
-                UIManager.setLookAndFeel(QuaquaManager.getLookAndFeel());
-            } catch (UnsupportedLookAndFeelException e) {
-                logger.error("Failed to set Quaqua LNF " + e);
-            }
-            MacOS.loadCompileHandler();
-        }
-        // BugzID:1288
-        if (getPlatform() == Platform.WINDOWS) {
-            try {
-                WindowsOS.associate(".opf", WindowsOS.cwd().toString());
-            } catch (Win32Exception e) {
-                logger.error("Could not associate .opf " + e);
-            }
+
+        switch (getPlatform()) {
+            case MAC:
+                try {
+                    UIManager.setLookAndFeel(QuaquaManager.getLookAndFeel());
+                } catch (UnsupportedLookAndFeelException e) {
+                    logger.error("Failed to set Quaqua LNF " + e);
+                }
+                MacOS.loadCompileHandler();
+                break;
+            case WINDOWS:
+                // BugzID:1288
+                try {
+                    WindowsOS.associate(".opf", WindowsOS.cwd().toString());
+                } catch (Win32Exception e) {
+                    logger.error("Could not associate .opf " + e);
+                }
+                break;
         }
 
         // This is for handling files opened from the command line.
