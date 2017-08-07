@@ -4,7 +4,6 @@ import org.datavyu.models.Identifier;
 import org.datavyu.plugins.CustomActions;
 import org.datavyu.plugins.DataViewer;
 import org.datavyu.plugins.ViewerStateListener;
-import org.datavyu.util.DataViewerUtils;
 import org.datavyu.views.component.DefaultTrackPainter;
 import org.datavyu.views.component.TrackPainter;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
@@ -346,7 +345,18 @@ public class VLCDataViewer implements DataViewer {
     public void loadSettings(final InputStream is) {
 
         try {
-            DataViewerUtils.loadDefaults(this, is);
+            if (is == null) {
+                throw new NullPointerException();
+            }
+
+            Properties props = new Properties();
+            props.load(is);
+
+            String property = props.getProperty("offset");
+
+            if ((property != null) && !"".equals(property)) {
+                setStartTime(Long.parseLong(property));
+            }
         } catch (IOException ex) {
             ex.printStackTrace();
         }

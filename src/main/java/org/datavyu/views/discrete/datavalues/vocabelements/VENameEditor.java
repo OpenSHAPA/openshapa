@@ -20,7 +20,6 @@ import org.datavyu.Datavyu;
 import org.datavyu.models.db.Argument;
 import org.datavyu.models.db.UserWarningException;
 import org.datavyu.models.db.Variable;
-import org.datavyu.util.SequentialNumberGenerator;
 import org.datavyu.views.discrete.EditorComponent;
 
 import javax.swing.text.JTextComponent;
@@ -140,6 +139,9 @@ public final class VENameEditor extends EditorComponent {
         return (RESERVED_CHARS.indexOf(aChar) >= 0);
     }
 
+
+
+    private static int sequentialNumber = 0;
     /**
      * Action to take by this editor when a key is pressed.
      *
@@ -153,7 +155,7 @@ public final class VENameEditor extends EditorComponent {
                 if (!getText().equals("")) {
                     model.name = getText();
                 } else {
-                    model.name = "unnamed" + Integer.toString(SequentialNumberGenerator.getNextSeqNum());
+                    model.name = "unnamed" + Integer.toString(sequentialNumber++);
                 }
 
                 parentView.getParentDialog().updateDialogState();
@@ -167,7 +169,7 @@ public final class VENameEditor extends EditorComponent {
                 if (!getText().equals("")) {
                     model.name = getText();
                 } else {
-                    model.name = "unnamed" + Integer.toString(SequentialNumberGenerator.getNextSeqNum());
+                    model.name = "unnamed" + Integer.toString(sequentialNumber++);
                 }
 
                 parentView.getParentDialog().updateDialogState();

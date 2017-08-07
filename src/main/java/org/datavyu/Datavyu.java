@@ -853,7 +853,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
             } catch (UnsupportedLookAndFeelException e) {
                 logger.error("Failed to set Quaqua LNF " + e);
             }
-            new MacHandler();
+            MacOS.loadCompileHandler();
         }
         // BugzID:1288
         if (getPlatform() == Platform.WINDOWS) {

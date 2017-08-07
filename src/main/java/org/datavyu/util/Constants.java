@@ -15,7 +15,7 @@
 package org.datavyu.util;
 
 /**
- * Class containing common constants for Datavyu.
+ * Common constants.
  */
 public final class Constants {
 

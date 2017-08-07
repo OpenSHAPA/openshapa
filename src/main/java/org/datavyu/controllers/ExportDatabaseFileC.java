@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -233,7 +234,12 @@ public final class ExportDatabaseFileC {
 
             // Get the variables, sort them, and cache the cells
             List<Variable> variables = ds.getAllVariables();
-            Collections.sort(variables, new org.datavyu.util.VariableSort());
+            Collections.sort(variables, new Comparator<Variable>() {
+                @Override
+                public int compare(Variable o1, Variable o2) {
+                    return o1.getName().compareTo(o2.getName());
+                }
+            });
 
             ArrayList<List<Cell>> cellCache = new ArrayList<List<Cell>>();
             int[] currentIndex = new int[variables.size()];

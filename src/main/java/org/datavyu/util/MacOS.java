@@ -2,10 +2,15 @@ package org.datavyu.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.datavyu.Datavyu;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 
 /**
@@ -14,6 +19,21 @@ import java.util.ArrayList;
 public class MacOS {
     /** The logger for this class */
     private static Logger logger = LogManager.getLogger(DatavyuVersion.class);
+
+    /**
+     * Get version for the MacOS.
+     *
+     * @return Version number.
+     */
+    public static int getOSVersion() {
+        try {
+            String osVersion = System.getProperty("os.version");
+            return Integer.valueOf(osVersion.split("\\.")[1]); // get major version
+        } catch (Exception e) {
+            logger.error("Could not get major version number", e);
+        }
+        return -1;
+    }
 
     /**
      * Test whether the Apple press and hold functionality is enable.d
@@ -61,5 +81,117 @@ public class MacOS {
         } catch (Exception e) {
             logger.error("Error occured when processing press and hold " + e);
         }
+    }
+
+    /**
+     * InvocationHandler for the ApplicationAdapter to override some methods.
+     */
+    private final static class HandlerForApplicationAdapter implements InvocationHandler {
+        /**
+         * Called when a method in the proxy object is being invoked.
+         *
+         * @param proxy  The object we are proxying.
+         * @param method The method that is being invoked.
+         * @param args   The arguments being supplied to the method.
+         * @return Value for the method being invoked.
+         */
+        public Object invoke(final Object proxy, final Method method,
+                             final Object[] args) {
+            try {
+                Class ae = Class.forName("com.apple.eawt.ApplicationEvent");
+                Method setHandled;
+                String methodName = method.getName();
+                switch (methodName) {
+                    case "handleAbout":
+                        Datavyu.getApplication().showAboutWindow();
+                        setHandled = ae.getMethod("setHandled", boolean.class);
+                        setHandled.invoke(args[0], true);
+                        break;
+                    case "handleSupportOpen":
+                        Datavyu.getApplication().openSupportSite();
+                        setHandled = ae.getMethod("setHandled", boolean.class);
+                        setHandled.invoke(args[0], true);
+                        break;
+                    case "handleGuideOpen":
+                        Datavyu.getApplication().openGuideSite();
+                        setHandled = ae.getMethod("setHandled", boolean.class);
+                        setHandled.invoke(args[0], true);
+                        break;
+                    case "handleUpdate":
+                        Datavyu.getApplication().showUpdateWindow();
+                        setHandled = ae.getMethod("setHandled", boolean.class);
+                        setHandled.invoke(args[0], true);
+                        break;
+                    case "handleQuit":
+                        boolean shouldQuit = Datavyu.getApplication().safeQuit();
+                        if (shouldQuit) {
+                            Datavyu.getApplication().getMainFrame().setVisible(false);
+                            Datavyu.getApplication().shutdown();
+                        }
+                        setHandled = ae.getMethod("setHandled", boolean.class);
+                        setHandled.invoke(args[0], shouldQuit);
+                        break;
+                    case "handleOpenFile":
+                        Method getFilename = ae.getMethod("getFilename", null);
+                        String fileName = (String) getFilename.invoke(args[0],null);
+                        if (Datavyu.getApplication().ready) {
+                            Datavyu.getApplication().getView().openExternalFile(new File(fileName));
+                        } else {
+                            Datavyu.getApplication().setCommandLineFile(fileName);
+                        }
+                        setHandled = ae.getMethod("setHandled", boolean.class);
+                        setHandled.invoke(args[0], true);
+                        break;
+                    default:
+                        logger.info("Tried to invoke method " + methodName + " which is not registered");
+                }
+            } catch (NoSuchMethodException e) {
+                logger.error("Unable to access method in application", e);
+            } catch (IllegalAccessException e) {
+                logger.error("Unable to access application excapeion", e);
+            } catch (InvocationTargetException e) {
+                logger.error("Unable to invocate target", e);
+            } catch (ClassNotFoundException e) {
+                logger.error("Unable to find apple classes", e);
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Load compile handler for MacOS.
+     *
+     * @return True if load was successful; otherwise false.
+     */
+    public static boolean loadCompileHandler() {
+        // This curly piece of work is a bit body of reflection to basically achieve the following snippet of code that
+        // will ultimately compile on any platform.
+        // public class MacOSAboutHandler extends Application {
+        // public MacOSAboutHandler() { addApplicationListener(new AboutBoxHandler()); }
+        // class AboutBoxHandler extends ApplicationAdapter { public void
+        // handleAbout(ApplicationEvent event) {
+        // Datavyu.getApplication().showAboutWindow(); event.setHandled(true); } } }
+        try {
+            Class appc = Class.forName("com.apple.eawt.Application");
+            Object app = appc.newInstance();
+            Class applc = Class.forName("com.apple.eawt.ApplicationListener");
+            Object listener = Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
+                    new Class[]{applc}, new HandlerForApplicationAdapter());
+            // Add the listener to the application.
+            Method m = appc.getMethod("addApplicationListener", applc);
+            m.invoke(app, listener);
+            return true;
+        } catch (ClassNotFoundException e) {
+            logger.error("Unable to find apple classes", e);
+        } catch (InstantiationException e) {
+            logger.error("Unable to instantiate apple application", e);
+        } catch (IllegalAccessException e) {
+            logger.error("Unable to access application excapeion", e);
+        } catch (NoSuchMethodException e) {
+            logger.error("Unable to access method in application", e);
+        } catch (InvocationTargetException e) {
+            logger.error("Unable to invocate target", e);
+        }
+        return false;
     }
 }

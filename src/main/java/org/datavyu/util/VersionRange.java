@@ -1,21 +1,35 @@
 package org.datavyu.util;
 
 /**
- * Created by jesse on 5/30/16.
+ * This class represents a version range.
  */
 public class VersionRange {
-    public int lowVersion;
-    public int highVersion;
-    public VersionRange(int l, int h) {
-        lowVersion = l;
-        highVersion = h;
+
+    /** Minimum version in range */
+    private int minVersion;
+
+    /** Maximum version in range */
+    private int maxVersion;
+
+    /**
+     * Create a version range from [min, ..., max]. Both values are inclusive.
+     *
+     * @param min The minimum version number.
+     * @param max The maximum version number.
+     */
+    public VersionRange(int min, int max) {
+        minVersion = min;
+        maxVersion = max;
     }
 
-    public boolean checkInRange(int v) {
-        if(v >= lowVersion && v <= highVersion) {
-            return true;
-        } else {
-            return false;
-        }
+    /**
+     * Check if the version is within range.
+     *
+     * @param version The version number.
+     *
+     * @return True if in range; otherwise false.
+     */
+    public boolean isInRange(int version) {
+        return version >= minVersion && version <= maxVersion;
     }
 }

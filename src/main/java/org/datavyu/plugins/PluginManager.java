@@ -22,7 +22,7 @@ import org.datavyu.plugins.javafx.JavaFxPlugin;
 import org.datavyu.plugins.nativeosxplayer.NativeOSXPlayerFactory;
 import org.datavyu.plugins.quicktime.QTDataViewer;
 import org.datavyu.plugins.quicktime.QTPlugin;
-import org.datavyu.util.MacHandler;
+import org.datavyu.util.MacOS;
 import org.jdesktop.application.LocalStorage;
 
 import javax.swing.filechooser.FileFilter;
@@ -278,7 +278,7 @@ public final class PluginManager {
                     }
 
                     if (Datavyu.getPlatform() == Datavyu.Platform.MAC) {
-                        if (!p.getValidVersions().checkInRange(MacHandler.getOSVersion())) {
+                        if (!p.getValidVersions().isInRange(MacOS.getOSVersion())) {
                             return;
                         }
                     }
