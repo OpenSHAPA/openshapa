@@ -25,85 +25,55 @@ public final class ConfigProperties implements Serializable {
     /** Unique identifier for this serial version */
     private static final long serialVersionUID = 4L;
 
-    /** The spreadsheet data font */
-    private Font spreadsheetDataFont;
+    /** Spread sheet data font */
+    private Font spreadSheetDataFont;
 
-    /** The spreadsheet label font */
-    private Font spreadsheetLabelFont;
+    /** Spread sheet label font */
+    private Font spreadSheetLabelFont;
 
-    /** The spreadsheet background color */
-    private Color spreadsheetBackgroundColor;
+    /** Spread sheet background color */
+    private Color spreadSheetBackgroundColor;
 
-    /** The spreadsheet foreground color */
-    private Color spreadsheetForegroundColor;
+    /** Spreadsheet foreground color */
+    private Color spreadSheetForegroundColor;
 
+    /** Foreground color for the spreadsheet ordinal */
+    private Color spreadSheetOrdinalForegroundColor;
 
-    /**
-     * The foreground colour of the spreadsheet ordinal.
-     */
-    private Color spreadsheetOrdinalForeground;
+    /** Foreground color of for spreadsheet timestamp */
+    private Color spreadSheetTimeStampForegroundColor;
 
-    /**
-     * The foreground colour of the spreadsheet ordinal.
-     */
-    private Color spreadsheetTimestampForeground;
+    /** Spreadsheet selection color */
+    private Color spreadSheetSelectedColor;
 
-    /**
-     * The spreadsheet selection colour.
-     */
-    private Color spreadsheetSelectedColour;
+    /** Spreadsheet overlap color */
+    private Color spreadSheetOverlapColor;
 
-    /**
-     * The spreadsheet selection colour.
-     */
-    private Color spreadsheetOverlapColour;
+    /** Last chosen directory */
+    private String lastChosenDirectory;
 
-    /**
-     * The last location the user navigated too using a file chooser.
-     */
-    private String lastChooserDirectory;
+    /** Color of a carriage in the unselected state */
+    private Color mixerUnselectedCarriageColor;
 
-    /**
-     * User has given permission to send usage logs to LogManager.
-     */
-    private Boolean canSendLogs;
+    /** Outline color of a carriage in the unselected/normal state */
+    private Color mixerUnselectedOutlineColor;
 
-    /**
-     * Fill colour of a carriage in the unselected/normal state
-     */
-    private Color mixerInterfaceNormalCarriageColour;
+    /** Fill colour of a carriage in the selected state */
+    private Color mixerSelectedCarriageColor;
 
-    /**
-     * Outline colour of a carriage in the unselected/normal state
-     */
-    private Color mixerInterfaceNormalOutlineColour;
+    /** Outline colour of a carriage in the selected state */
+    private Color mixerSelectedOutlineColor;
 
-    /**
-     * Fill colour of a carriage in the selected state
-     */
-    private Color mixerInterfaceSelectedCarriageColour;
-
-    /**
-     * Outline colour of a carriage in the selected state
-     */
-    private Color mixerInterfaceSelectedOutlineColour;
-
-    /**
-     * Version number to ignore for update reminders
-     */
+    /** Version number to ignore for update reminders */
     private String ignoreVersion;
     
-    /**
-     * true if column name warnings should be displayed
-     */
-    private boolean columnNameWarnings = true;
+    /** True if column name warnings should be displayed */
+    private boolean doWarnOnColumnNames = true;
 
-    /**
-     * true if pre releases are preferred
-     */
-    private boolean prereleasePreference;
+    /** True if pre releases are preferred */
+    private boolean usePreRelease;
     
-    private String favouritesFolder = "favourites";
+    private String favoritesFolder = "favorites";
 
     /**
      * Default constructor.
@@ -113,8 +83,8 @@ public final class ConfigProperties implements Serializable {
     /**
      * @return The spreadsheet data font.
      */
-    public Font getSSDataFont() {
-        return spreadsheetDataFont;
+    public Font getSpreadSheetDataFont() {
+        return spreadSheetDataFont;
     }
 
     /**
@@ -122,15 +92,15 @@ public final class ConfigProperties implements Serializable {
      *
      * @param font The new font to use for spreadsheet data.
      */
-    public void setSSDataFont(final Font font) {
-        spreadsheetDataFont = font;
+    public void setSpreadSheetDataFont(final Font font) {
+        spreadSheetDataFont = font;
     }
 
     /**
      * @return The spreadsheet data font.
      */
-    public Font getSSLabelFont() {
-        return spreadsheetLabelFont;
+    public Font getSpreadSheetLabelFont() {
+        return spreadSheetLabelFont;
     }
 
     /**
@@ -138,192 +108,176 @@ public final class ConfigProperties implements Serializable {
      *
      * @param font The new font to use for spreadsheet data.
      */
-    public void setSSLabelFont(final Font font) {
-        spreadsheetLabelFont = font;
+    public void setSpreadSheetLabelFont(final Font font) {
+        spreadSheetLabelFont = font;
     }
 
     /**
      * @return The spreadsheet background colour.
      */
-    public Color getSSBackgroundColour() {
-        return spreadsheetBackgroundColor;
+    public Color getSpreadSheetBackgroundColour() {
+        return spreadSheetBackgroundColor;
     }
 
     /**
      * Sets the spreadsheet background colour.
      *
-     * @param newColour The new colour to use for the spreadsheet background.
+     * @param color The new colour to use for the spreadsheet background.
      */
-    public void setSSBackgroundColour(final Color newColour) {
-        spreadsheetBackgroundColor = newColour;
+    public void setSpreadSheetBackgroundColour(final Color color) {
+        spreadSheetBackgroundColor = color;
     }
 
     /**
      * @return The spreadsheet foreground colour.
      */
-    public Color getSSForegroundColour() {
-        return spreadsheetForegroundColor;
+    public Color getSpreadSheetForegroundColour() {
+        return spreadSheetForegroundColor;
     }
 
     /**
      * Sets the spreadsheet foreground colour.
      *
-     * @param newColour The new colour to use for the spreadsheet foreground.
+     * @param color The new colour to use for the spreadsheet foreground.
      */
-    public void setSSForegroundColour(final Color newColour) {
-        spreadsheetForegroundColor = newColour;
+    public void setSpreadSheetForegroundColour(final Color color) {
+        spreadSheetForegroundColor = color;
     }
 
     /**
      * @return The spreadsheet ordinal foreground colour.
      */
-    public Color getSSOrdinalColour() {
-        return spreadsheetOrdinalForeground;
+    public Color getSpreadSheetOrdinalForegroundColour() {
+        return spreadSheetOrdinalForegroundColor;
     }
 
     /**
      * Sets the spreadsheet ordinal foreground colour.
      *
-     * @param newColour The new colour to use for the spreadsheet foreground.
+     * @param color to use for the spreadsheet foreground.
      */
-    public void setSSOrdinalColour(final Color newColour) {
-        spreadsheetOrdinalForeground = newColour;
+    public void setSpreadSheetOrdinalForegroundColour(final Color color) {
+        spreadSheetOrdinalForegroundColor = color;
     }
 
     /**
      * Sets the spreadsheet timestamp foreground colour.
      *
-     * @param newColour The new colour to use for the spreadsheet foreground.
+     * @param color The new colour to use for the spreadsheet foreground.
      */
-    public void setSSTimestampColour(final Color newColour) {
-        spreadsheetTimestampForeground = newColour;
+    public void setSpreadSheetTimeStampForegroundColor(final Color color) {
+        spreadSheetTimeStampForegroundColor = color;
     }
 
     /**
      * @return The spreadsheet timestamp foreground colour.
      */
-    public Color getSSTimestampeColour() {
-        return spreadsheetTimestampForeground;
+    public Color getSpreadSheetTimeStampForegroundColor() {
+        return spreadSheetTimeStampForegroundColor;
     }
 
     /**
      * @return The spreadsheet selections colour.
      */
-    public Color getSSSelectedColour() {
-        return spreadsheetSelectedColour;
+    public Color getSpreadSheetSelectedColor() {
+        return spreadSheetSelectedColor;
     }
 
     /**
      * Sets the spreadsheet selected colour.
      *
-     * @param newColour The new colour to use for spreadsheet selections.
+     * @param color The new colour to use for spreadsheet selections.
      */
-    public void setSSSelectedColour(final Color newColour) {
-        spreadsheetSelectedColour = newColour;
+    public void setSpreadSheetSelectedColor(final Color color) {
+        spreadSheetSelectedColor = color;
     }
 
     /**
      * @return The spreadsheet overlap colour.
      */
-    public Color getSSOverlapColour() {
-        return spreadsheetOverlapColour;
+    public Color getSpreadSheetOverlapColor() {
+        return spreadSheetOverlapColor;
     }
 
     /**
      * Sets the spreadsheet overlap colour.
      *
-     * @param newColour The new colour to use for spreadsheet overlaps.
+     * @param color The new colour to use for spreadsheet overlaps.
      */
-    public void setSSOverlapColour(final Color newColour) {
-        spreadsheetOverlapColour = newColour;
+    public void setSpreadSheetOverlapColour(final Color color) {
+        spreadSheetOverlapColor = color;
     }
 
     /**
      * @return The last chooser directory that the user nominated.
      */
-    public String getLCDirectory() {
-        return lastChooserDirectory;
+    public String getLastChosenDirectory() {
+        return lastChosenDirectory;
     }
 
     /**
      * Sets the last chooser directory that the user nominated.
      *
-     * @param location The last location the user nominated.
+     * @param directory The last location the user nominated.
      */
-    public void setLCDirectory(final String location) {
-        lastChooserDirectory = location;
+    public void setLastChosenDirectory(final String directory) {
+        lastChosenDirectory = directory;
     }
 
     /**
-     * @return True if we can send usage logs to LogManager.
+     * @return the mixerUnselectedCarriageColor
      */
-    public Boolean getCanSendLogs() {
-        return canSendLogs;
+    public Color getMixerUnselectedCarriageColor() {
+        return mixerUnselectedCarriageColor;
     }
 
     /**
-     * Set if we are able to transmit logs or not to LogManager.
-     *
-     * @param send Can we send logs to LogManager?
+     * @param color the mixerUnselectedCarriageColor to set
      */
-    public void setCanSendLogs(final Boolean send) {
-        canSendLogs = send;
+    public void setMixerUnselectedCarriageColor(final Color color) {
+        mixerUnselectedCarriageColor = color;
     }
 
     /**
-     * @return the mixerInterfaceNormalCarriageColour
+     * @return the mixerUnselectedOutlineColor
      */
-    public Color getMixerInterfaceNormalCarriageColour() {
-        return mixerInterfaceNormalCarriageColour;
+    public Color getMixerUnselectedOutlineColor() {
+        return mixerUnselectedOutlineColor;
     }
 
     /**
-     * @param newColour the mixerInterfaceNormalCarriageColour to set
+     * @param color the mixerUnselectedOutlineColor to set
      */
-    public void setMixerInterfaceNormalCarriageColour(final Color newColour) {
-        mixerInterfaceNormalCarriageColour = newColour;
+    public void setMixerUnselectedOutlineColor(final Color color) {
+        mixerUnselectedOutlineColor = color;
     }
 
     /**
-     * @return the mixerInterfaceNormalOutlineColour
+     * @return the mixerSelectedCarriageColor
      */
-    public Color getMixerInterfaceNormalOutlineColour() {
-        return mixerInterfaceNormalOutlineColour;
+    public Color getMixerSelectedCarriageColor() {
+        return mixerSelectedCarriageColor;
     }
 
     /**
-     * @param newColour the mixerInterfaceNormalOutlineColour to set
+     * @param color the mixerSelectedCarriageColor to set
      */
-    public void setMixerInterfaceNormalOutlineColour(final Color newColour) {
-        mixerInterfaceNormalOutlineColour = newColour;
+    public void setMixerSelectedCarriageColor(final Color color) {
+        mixerSelectedCarriageColor = color;
     }
 
     /**
-     * @return the mixerInterfaceSelectedCarriageColour
+     * @return the mixerSelectedOutlineColor
      */
-    public Color getMixerInterfaceSelectedCarriageColour() {
-        return mixerInterfaceSelectedCarriageColour;
+    public Color getMixerSelectedOutlineColor() {
+        return mixerSelectedOutlineColor;
     }
 
     /**
-     * @param newColour the mixerInterfaceSelectedCarriageColour to set
+     * @param color the mixerSelectedOutlineColor to set
      */
-    public void setMixerInterfaceSelectedCarriageColour(final Color newColour) {
-        mixerInterfaceSelectedCarriageColour = newColour;
-    }
-
-    /**
-     * @return the mixerInterfaceSelectedOutlineColour
-     */
-    public Color getMixerInterfaceSelectedOutlineColour() {
-        return mixerInterfaceSelectedOutlineColour;
-    }
-
-    /**
-     * @param newColour the mixerInterfaceSelectedOutlineColour to set
-     */
-    public void setMixerInterfaceSelectedOutlineColour(final Color newColour) {
-        mixerInterfaceSelectedOutlineColour = newColour;
+    public void setMixerSelectedOutlineColor(final Color color) {
+        mixerSelectedOutlineColor = color;
     }
 
     /**
@@ -343,38 +297,38 @@ public final class ConfigProperties implements Serializable {
     /**
      * @return whether or not to display warnings for illegal column names
      */    
-    public boolean getColumnNameWarning()
+    public boolean getDoWarnOnColumnNames()
     {
-        return columnNameWarnings;
+        return doWarnOnColumnNames;
     }
     
     /**
-     * @param b whether or not to display warnings for illegal column names
+     * @param doWarn whether or not to display warnings for illegal column names
      */    
-    public void setColumnNameWarning(final boolean b)
+    public void setDoWarnOnColumnNames(final boolean doWarn)
     {
-        columnNameWarnings = b;
+        doWarnOnColumnNames = doWarn;
     }
 
     /**
      * @return the prerelease preference
      */
-    public boolean getPrereleasePreference() {
-        return prereleasePreference;
+    public boolean getUsePreRelease() {
+        return usePreRelease;
     }
 
     /**
-     * @param preference true if prereleases are preferred
+     * @param usePreRelease true if prereleases are preferred
      */
-    public void setPrereleasePreference(boolean preference) {
-        prereleasePreference = preference;
+    public void setUsePreRelease(boolean usePreRelease) {
+        this.usePreRelease = usePreRelease;
     }
     
-    public String getFavouritesFolder(){
-        return favouritesFolder;
+    public String getFavoritesFolder(){
+        return favoritesFolder;
     }
     
-    public void setFavouritesFolder(String path){
-        favouritesFolder = path;
+    public void setFavoritesFolder(String pathName){
+        favoritesFolder = pathName;
     }
 }

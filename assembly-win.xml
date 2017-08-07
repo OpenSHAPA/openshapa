@@ -8,8 +8,8 @@
   <!-- Include the samples directory. -->
   <fileSets>
     <fileSet>
-      <directory>src/main/favourites/</directory>
-      <outputDirectory>favourites</outputDirectory>
+      <directory>src/main/favorites/</directory>
+      <outputDirectory>favorites</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>${basedir}/packaged_docs/</directory>

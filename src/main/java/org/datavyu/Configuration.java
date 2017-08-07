@@ -28,7 +28,6 @@ import java.io.IOException;
  * Singleton object containing global configuration definitions for the user interface.
  */
 // TODO: Cleanup un-used properties
-// TODO: Why are some of these properties hard coded here and not ALL of them loaded from properties files?
 public final class Configuration {
 
     /** The colour to use for the border */
@@ -38,89 +37,70 @@ public final class Configuration {
     // TODO: This file does not seem to be anymore present in the project?
     private static final String CONFIG_FILE = "settings.xml";
 
-    /** The default font to be used by Datavyu */
+    /** Default font */
     private static final Font DEFAULT_FONT = new Font("Arial", Font.PLAIN, 14);
 
-    /**
-     * The default font to be used by Datavyu labels.
-     */
+    /** Default font for labels */
     private static final Font LABEL_FONT = new Font("Arial", Font.PLAIN, 12);
 
-    /**
-     * The default data font size to be used by Datavyu labels.
-     */
+    /** Default data font size */
     private static final float DATA_FONT_SIZE = 14;
 
-    /**
-     * The default label font size to be used by Datavyu labels.
-     */
+    /** Default label font size */
     private static final float LABEL_FONT_SIZE = 12;
-    /**
-     * The default spreadsheet background colour.
-     */
+
+    /** Default spreadsheet background color */
     private static final Color DEFAULT_BACKGROUND = new Color(249, 249, 249);
-    /**
-     * The default spreadsheet foreground colour.
-     */
+
+    /** Default spreadsheet foreground color */
     private static final Color DEFAULT_FOREGROUND = new Color(58, 58, 58);
-    /**
-     * The default spreadsheet ordinal foreground colour.
-     */
+
+    /** Default spreadsheet ordinal foreground colour */
     private static final Color DEFAULT_ORDINAL = new Color(175, 175, 175);
-    /**
-     * The default spreadsheet time stamp foreground colour.
-     */
+
+    /** Default spreadsheet time stamp foreground color */
     private static final Color DEFAULT_TIMESTAMP = new Color(90, 90, 90);
-    /**
-     * The default spreadsheet selected colour.
-     */
+
+    /** Default spreadsheet selected color */
     private static final Color DEFAULT_SELECTED = new Color(176, 197, 227);
-    /**
-     * The default spreadsheet overlap colour.
-     */
+
+    /** Default spreadsheet overlap color */
     private static final Color DEFAULT_OVERLAP = Color.RED;
-    /**
-     * Fill colour of a carriage in the unselected/normal state.
-     */
-    private static final Color DEFAULT_NORMAL_CARRIAGE_COLOR = new Color(169, 218, 248);
-    /**
-     * Outline colour of a carriage in the unselected/normal state.
-     */
-    private static final Color DEFAULT_NORMAL_OUTLINE_COLOR = new Color(129, 167, 188);
-    /**
-     * Fill colour of a carriage in the selected state.
-     */
+
+    /** Fill color of a carriage in the unselected state */
+    private static final Color DEFAULT_UNSELECTED_CARRIAGE_COLOR = new Color(169, 218, 248);
+
+    /** Outline color of a carriage in the unselected/normal state */
+    private static final Color DEFAULT_UNSELECTED_OUTLINE_COLOR = new Color(129, 167, 188);
+
+    /** Fill color of a carriage in the selected state */
     private static final Color DEFAULT_SELECTED_CARRIAGE_COLOR = new Color(138, 223, 162);
-    /**
-     * Outline colour of a carriage in the selected state.
-     */
+
+    /** Outline color of a carriage in the selected state */
     private static final Color DEFAULT_SELECTED_OUTLINE_COLOR = new Color(105, 186, 128);
-    /**
-     * The single instance of the configuration object for Datavyu.
-     */
-    private static Configuration instance = null;
-    /**
-     * The logger for this class.
-     */
-    private static Logger logger = LogManager.getLogger(Configuration.class);
-    /**
-     * The configuration properties.
-     */
+
+    /** The configuration properties */
     private ConfigProperties properties;
-    /**
-     * Default font type.
-     */
-    private Font newFont = null;
+
+    /** Instance of the configuration object for Datavyu */
+    private static Configuration instance = null;
+
+    /** The logger for this class */
+    private static Logger logger = LogManager.getLogger(Configuration.class);
+
+    /** Default font type */
+    private Font defaultFont = null;
 
     /**
      * Default constructor.
      */
     private Configuration() {
-        super();
+
         // Loading configuration properties
         try {
             LocalStorage ls = Datavyu.getApplication().getContext().getLocalStorage();
             properties = (ConfigProperties) ls.load(CONFIG_FILE);
+            logger.info("Configuration loaded from directory " + ls.getDirectory().getAbsolutePath());
             logger.info("Found properties " + properties);
         } catch (IOException e) {
             logger.error("Unable to load configuration file ", e);
@@ -133,55 +113,51 @@ public final class Configuration {
         if (properties == null) {
             logger.info("Setting default properties");
             properties = new ConfigProperties();
-            properties.setSSDataFont(DEFAULT_FONT);
-            properties.setSSLabelFont(LABEL_FONT);
-            properties.setSSSelectedColour(DEFAULT_SELECTED);
-            properties.setSSOverlapColour(DEFAULT_OVERLAP);
-            properties.setMixerInterfaceNormalCarriageColour(
-                    DEFAULT_NORMAL_CARRIAGE_COLOR);
-            properties.setMixerInterfaceNormalOutlineColour(
-                    DEFAULT_NORMAL_OUTLINE_COLOR);
-            properties.setMixerInterfaceSelectedCarriageColour(
-                    DEFAULT_SELECTED_CARRIAGE_COLOR);
-            properties.setMixerInterfaceSelectedOutlineColour(
-                    DEFAULT_SELECTED_OUTLINE_COLOR);
+            properties.setSpreadSheetDataFont(DEFAULT_FONT);
+            properties.setSpreadSheetLabelFont(LABEL_FONT);
+            properties.setSpreadSheetSelectedColor(DEFAULT_SELECTED);
+            properties.setSpreadSheetOverlapColour(DEFAULT_OVERLAP);
+            properties.setMixerUnselectedCarriageColor(DEFAULT_UNSELECTED_CARRIAGE_COLOR);
+            properties.setMixerUnselectedOutlineColor(DEFAULT_UNSELECTED_OUTLINE_COLOR);
+            properties.setMixerSelectedCarriageColor(DEFAULT_SELECTED_CARRIAGE_COLOR);
+            properties.setMixerSelectedOutlineColor(DEFAULT_SELECTED_OUTLINE_COLOR);
             properties.setIgnoreVersion("");
-            properties.setColumnNameWarning(true);
-            properties.setPrereleasePreference(false);
+            properties.setDoWarnOnColumnNames(true);
+            properties.setUsePreRelease(false);
             save();
         }
 
         try {
-            newFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream(fontFileName));
-            properties.setSSDataFont(newFont.deriveFont(DATA_FONT_SIZE));
-            properties.setSSLabelFont(newFont.deriveFont(LABEL_FONT_SIZE));
+            defaultFont = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream(fontFileName));
+            properties.setSpreadSheetDataFont(defaultFont.deriveFont(DATA_FONT_SIZE));
+            properties.setSpreadSheetLabelFont(defaultFont.deriveFont(LABEL_FONT_SIZE));
         } catch (Exception e) {
             logger.error("Error, unable to load font " + fontFileName + ". The error is " + e);
         }
 
-        properties.setSSOrdinalColour(DEFAULT_ORDINAL);
-        properties.setSSTimestampColour(DEFAULT_TIMESTAMP);
-        properties.setSSBackgroundColour(DEFAULT_BACKGROUND);
-        properties.setSSForegroundColour(DEFAULT_FOREGROUND);
+        properties.setSpreadSheetOrdinalForegroundColour(DEFAULT_ORDINAL);
+        properties.setSpreadSheetTimeStampForegroundColor(DEFAULT_TIMESTAMP);
+        properties.setSpreadSheetBackgroundColour(DEFAULT_BACKGROUND);
+        properties.setSpreadSheetForegroundColour(DEFAULT_FOREGROUND);
 
-        if (properties.getLCDirectory() == null) {
-            properties.setLCDirectory(System.getProperty("user.home"));
+        if (properties.getLastChosenDirectory() == null) {
+            properties.setLastChosenDirectory(System.getProperty("user.home"));
             save();
         }
 
         // Assume that user wants their selected colour overridden too.
-        if (properties.getSSOverlapColour() == null) {
-            properties.setSSSelectedColour(DEFAULT_SELECTED);
-            properties.setSSOverlapColour(DEFAULT_OVERLAP);
+        if (properties.getSpreadSheetOverlapColor() == null) {
+            properties.setSpreadSheetSelectedColor(DEFAULT_SELECTED);
+            properties.setSpreadSheetOverlapColour(DEFAULT_OVERLAP);
             save();
         }
 
         // If one property is null, just reset all.
-        if (properties.getMixerInterfaceNormalCarriageColour() == null) {
-            properties.setMixerInterfaceNormalCarriageColour(DEFAULT_NORMAL_CARRIAGE_COLOR);
-            properties.setMixerInterfaceNormalOutlineColour(DEFAULT_NORMAL_OUTLINE_COLOR);
-            properties.setMixerInterfaceSelectedCarriageColour(DEFAULT_SELECTED_CARRIAGE_COLOR);
-            properties.setMixerInterfaceSelectedOutlineColour(DEFAULT_SELECTED_OUTLINE_COLOR);
+        if (properties.getMixerUnselectedCarriageColor() == null) {
+            properties.setMixerUnselectedCarriageColor(DEFAULT_UNSELECTED_CARRIAGE_COLOR);
+            properties.setMixerUnselectedOutlineColor(DEFAULT_UNSELECTED_OUTLINE_COLOR);
+            properties.setMixerSelectedCarriageColor(DEFAULT_SELECTED_CARRIAGE_COLOR);
+            properties.setMixerSelectedOutlineColor(DEFAULT_SELECTED_OUTLINE_COLOR);
             save();
         }
     }
@@ -200,7 +176,7 @@ public final class Configuration {
      * @return The data font to use for the spreadsheet.
      */
     public Font getSSDataFont() {
-        return properties.getSSDataFont();
+        return properties.getSpreadSheetDataFont();
     }
 
     /**
@@ -210,7 +186,7 @@ public final class Configuration {
      * @param font The new data font to use on the spreadsheet.
      */
     public void setSSDataFont(final Font font) {
-        properties.setSSDataFont(font);
+        properties.setSpreadSheetDataFont(font);
         save();
     }
 
@@ -220,7 +196,7 @@ public final class Configuration {
      * @param size new font size
      */
     public void setSSDataFontSize(final float size) {
-        properties.setSSDataFont(newFont.deriveFont(size));
+        properties.setSpreadSheetDataFont(defaultFont.deriveFont(size));
         save();
     }
 
@@ -228,7 +204,7 @@ public final class Configuration {
      * @return The data font to use for the spreadsheet.
      */
     public Font getSSLabelFont() {
-        return properties.getSSLabelFont();
+        return properties.getSpreadSheetLabelFont();
     }
 
     /**
@@ -238,7 +214,7 @@ public final class Configuration {
      * @param font The new data font to use on the spreadsheet.
      */
     public void setSSLabelFont(final Font font) {
-        properties.setSSLabelFont(font);
+        properties.setSpreadSheetLabelFont(font);
         save();
     }
 
@@ -246,7 +222,7 @@ public final class Configuration {
      * @return The background colour for the spreadsheet.
      */
     public Color getSSBackgroundColour() {
-        return properties.getSSBackgroundColour();
+        return properties.getSpreadSheetBackgroundColour();
     }
 
     /**
@@ -256,7 +232,7 @@ public final class Configuration {
      * @param colour The new colour to use for the spreadsheet background.
      */
     public void setSSBackgroundColour(final Color colour) {
-        properties.setSSBackgroundColour(colour);
+        properties.setSpreadSheetBackgroundColour(colour);
         save();
     }
 
@@ -264,7 +240,7 @@ public final class Configuration {
      * @return The foreground colour of the spreadsheet.
      */
     public Color getSSForegroundColour() {
-        return properties.getSSForegroundColour();
+        return properties.getSpreadSheetForegroundColour();
     }
 
     /**
@@ -274,7 +250,7 @@ public final class Configuration {
      * @param colour The new colour to use for the spreadsheet foreground.
      */
     public void setSSForegroundColour(final Color colour) {
-        properties.setSSForegroundColour(colour);
+        properties.setSpreadSheetForegroundColour(colour);
         save();
     }
 
@@ -282,7 +258,7 @@ public final class Configuration {
      * @return The ordinal foreground colour of the spreadsheet.
      */
     public Color getSSOrdinalColour() {
-        return properties.getSSOrdinalColour();
+        return properties.getSpreadSheetOrdinalForegroundColour();
     }
 
     /**
@@ -292,7 +268,7 @@ public final class Configuration {
      * @param colour The new colour to use for the spreadsheet ordinal foreground.
      */
     public void setSSOrdinalColour(final Color colour) {
-        properties.setSSOrdinalColour(colour);
+        properties.setSpreadSheetOrdinalForegroundColour(colour);
         save();
     }
 
@@ -300,7 +276,7 @@ public final class Configuration {
      * @return The ordinal foreground colour of the spreadsheet.
      */
     public Color getSSTimestampColour() {
-        return properties.getSSTimestampeColour();
+        return properties.getSpreadSheetTimeStampForegroundColor();
     }
 
     /**
@@ -310,7 +286,7 @@ public final class Configuration {
      * @param colour The new colour to use for the spreadsheet ordinal foreground.
      */
     public void setSSTimestampColour(final Color colour) {
-        properties.setSSTimestampColour(colour);
+        properties.setSpreadSheetTimeStampForegroundColor(colour);
         save();
     }
 
@@ -318,7 +294,7 @@ public final class Configuration {
      * @return The selected colour of the spreadsheet.
      */
     public Color getSSSelectedColour() {
-        return properties.getSSSelectedColour();
+        return properties.getSpreadSheetSelectedColor();
     }
 
     /**
@@ -328,7 +304,7 @@ public final class Configuration {
      * @param colour The new colour to use for spreadsheet selections.
      */
     public void setSSSelectedColour(final Color colour) {
-        properties.setSSSelectedColour(colour);
+        properties.setSpreadSheetSelectedColor(colour);
         save();
     }
 
@@ -336,7 +312,7 @@ public final class Configuration {
      * @return The overlap colour of the spreadsheet.
      */
     public Color getSSOverlapColour() {
-        return properties.getSSOverlapColour();
+        return properties.getSpreadSheetOverlapColor();
     }
 
     /**
@@ -346,15 +322,15 @@ public final class Configuration {
      * @param colour The new colour to use for spreadsheet overlaps.
      */
     public void setSSOverlapColour(final Color colour) {
-        properties.setSSOverlapColour(colour);
+        properties.setSpreadSheetOverlapColour(colour);
         save();
     }
 
     /**
      * @return The last directory the user navigated too in a file chooser.
      */
-    public File getLCDirectory() {
-        return new File(properties.getLCDirectory());
+    public File getLastChosenDirectory() {
+        return new File(properties.getLastChosenDirectory());
     }
 
     /**
@@ -363,17 +339,8 @@ public final class Configuration {
      *
      * @param location The last location that the user navigated too.
      */
-    public void setLCDirectory(final File location) {
-        properties.setLCDirectory(location.toString());
-        save();
-    }
-
-    public Boolean getCanSendLogs() {
-        return properties.getCanSendLogs();
-    }
-
-    public void setCanSendLogs(final Boolean send) {
-        properties.setCanSendLogs(send);
+    public void setLastChosenDirectory(final File location) {
+        properties.setLastChosenDirectory(location.toString());
         save();
     }
 
@@ -381,14 +348,14 @@ public final class Configuration {
      * @return the mixerInterfaceSelectedCarriageColour
      */
     public Color getMixerInterfaceSelectedCarriageColour() {
-        return properties.getMixerInterfaceSelectedCarriageColour();
+        return properties.getMixerSelectedCarriageColor();
     }
 
     /**
      * @param newColour the mixerInterfaceSelectedCarriageColour to set
      */
     public void setMixerInterfaceSelectedCarriageColour(final Color newColour) {
-        properties.setMixerInterfaceSelectedCarriageColour(newColour);
+        properties.setMixerSelectedCarriageColor(newColour);
         save();
     }
 
@@ -396,14 +363,14 @@ public final class Configuration {
      * @return the mixerInterfaceSelectedOutlineColour
      */
     public Color getMixerInterfaceSelectedOutlineColour() {
-        return properties.getMixerInterfaceSelectedOutlineColour();
+        return properties.getMixerSelectedOutlineColor();
     }
 
     /**
      * @param newColour the mixerInterfaceSelectedOutlineColour to set
      */
     public void setMixerInterfaceSelectedOutlineColour(final Color newColour) {
-        properties.setMixerInterfaceSelectedOutlineColour(newColour);
+        properties.setMixerSelectedOutlineColor(newColour);
         save();
     }
 
@@ -427,24 +394,24 @@ public final class Configuration {
      */    
     public boolean getColumnNameWarning()
     {
-        return properties.getColumnNameWarning();
+        return properties.getDoWarnOnColumnNames();
     }
     
     /**
      * @param setWarning whether or not to display warnings for illegal column names
      */    
     public void setColumnNameWarning(final boolean setWarning) {
-        properties.setColumnNameWarning(setWarning);
+        properties.setDoWarnOnColumnNames(setWarning);
         save();
     }
 
     public String getFavouritesFolder() {
-        return properties.getFavouritesFolder();
+        return properties.getFavoritesFolder();
     }
     
     public void setFavouritesFolder(final String path) {
         logger.info("Setting Favourites folder to " + path);
-        properties.setFavouritesFolder(path);
+        properties.setFavoritesFolder(path);
         save();
     }
 
@@ -452,14 +419,14 @@ public final class Configuration {
      * @return the pre-release preference
      */
     public boolean getPrereleasePreference() {
-        return properties.getPrereleasePreference();
+        return properties.getUsePreRelease();
     }
 
     /**
      * @param preference true if prereleases are preferred
      */
     public void setPrereleasePreference(boolean preference) {
-        properties.setPrereleasePreference(preference);
+        properties.setUsePreRelease(preference);
         save();
     }
 
@@ -467,14 +434,14 @@ public final class Configuration {
      * @return the mixerInterfaceNormalCarriageColour
      */
     public Color getMixerInterfaceNormalCarriageColour() {
-        return properties.getMixerInterfaceNormalCarriageColour();
+        return properties.getMixerUnselectedCarriageColor();
     }
 
     /**
      * @param newColour the mixerInterfaceNormalCarriageColour to set
      */
     public void setMixerInterfaceNormalCarriageColour(final Color newColour) {
-        properties.setMixerInterfaceNormalCarriageColour(newColour);
+        properties.setMixerUnselectedCarriageColor(newColour);
         save();
     }
 
@@ -482,14 +449,14 @@ public final class Configuration {
      * @return the mixerInterfaceNormalOutlineColour
      */
     public Color getMixerInterfaceNormalOutlineColour() {
-        return properties.getMixerInterfaceNormalOutlineColour();
+        return properties.getMixerUnselectedOutlineColor();
     }
 
     /**
      * @param newColour the mixerInterfaceNormalOutlineColour to set
      */
     public void setMixerInterfaceNormalOutlineColour(final Color newColour) {
-        properties.setMixerInterfaceNormalOutlineColour(newColour);
+        properties.setMixerUnselectedOutlineColor(newColour);
         save();
     }
 

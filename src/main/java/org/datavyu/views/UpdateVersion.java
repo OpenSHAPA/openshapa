@@ -31,7 +31,6 @@ public class UpdateVersion extends JDialog {
 
     private DatavyuVersion serverVersion;
 
-
     private void prepareDialog() {
         Configuration configuration = Configuration.getInstance();
         checkPreRelease.setSelected(configuration.getPrereleasePreference());

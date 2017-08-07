@@ -38,12 +38,12 @@ public final class DatavyuFileChooser extends JFileChooser {
      */
     @Override
     public int showOpenDialog(final Component parent) {
-        this.setCurrentDirectory(Configuration.getInstance().getLCDirectory());
+        this.setCurrentDirectory(Configuration.getInstance().getLastChosenDirectory());
 
         this.setFileHidingEnabled(false);
 
         int result = super.showOpenDialog(parent);
-        Configuration.getInstance().setLCDirectory(this.getCurrentDirectory());
+        Configuration.getInstance().setLastChosenDirectory(this.getCurrentDirectory());
 
         return result;
     }
@@ -61,10 +61,10 @@ public final class DatavyuFileChooser extends JFileChooser {
      */
     @Override
     public int showSaveDialog(final Component parent) {
-        this.setCurrentDirectory(Configuration.getInstance().getLCDirectory());
+        this.setCurrentDirectory(Configuration.getInstance().getLastChosenDirectory());
 
         int result = super.showSaveDialog(parent);
-        Configuration.getInstance().setLCDirectory(this.getCurrentDirectory());
+        Configuration.getInstance().setLastChosenDirectory(this.getCurrentDirectory());
 
         return result;
     }

@@ -21,7 +21,6 @@ import org.apache.logging.log4j.Logger;
 import org.datavyu.controllers.project.ProjectController;
 import org.datavyu.models.db.TitleNotifier;
 import org.datavyu.models.db.UserWarningException;
-import org.datavyu.plugins.PluginManager;
 import org.datavyu.plugins.quicktime.QTDataViewer;
 import org.datavyu.plugins.vlcfx.NativeLibraryManager;
 import org.datavyu.undoableedits.SpreadsheetUndoManager;
@@ -30,20 +29,12 @@ import org.datavyu.views.*;
 import org.datavyu.views.discrete.SpreadsheetPanel;
 import org.jdesktop.application.*;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptEngineManager;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.EventObject;
-import java.util.Stack;
 
 /**
  * The main class of the application.
@@ -59,6 +50,8 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         LINUX, // Generic Linux platform.
         UNKNOWN
     }
+    /** The logger for this class */
+    private static Logger logger = LogManager.getLogger(Datavyu.class);
 
     private static final NativeLibraryManager nativeLibraryManager;
 
@@ -68,8 +61,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
     /** The desired minimum initial height */
     private static final int INIT_MIN_Y = 700;
 
-    public static boolean scriptRunning = false;
-
     private static boolean osxPressAndHoldEnabled;
 
     /**
@@ -77,15 +68,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      * Initialized in startup().
      */
     private static DatavyuView datavyuView;
-
-    /** The scripting engine manager that we use with Datavyu */
-    private static ScriptEngineManager m2;
-
-    /** The scripting engine factory that we use with Datavyu */
-    private static ScriptEngineFactory sef;
-
-    /** The logger for this class */
-    private static Logger logger = LogManager.getLogger(Datavyu.class);
 
     /** The view to use for the video controller */
     private static VideoController dataController;
@@ -95,21 +77,13 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
 
     /** Load native libraries */
     static {
-        String tempDir = System.getProperty("java.io.tmpdir") + File.separator + "vlc" + File.separator;
-
         logger.info("Working directory is: " + System.getProperty("user.dir"));
         logger.info("Class path is: " + System.getProperty("java.class.path"));
-        logger.info("JNA library path is: " + System.getProperty("jna.library.path"));
         logger.info("The java library path is: " + System.getProperty("java.library.path"));
 
-        nativeLibraryManager = new NativeLibraryManager(tempDir);
-
-        try {
-            URL resource = Datavyu.class.getClassLoader().getResource("../");
-            logger.info("The resource URL is: " + resource);
-        } catch (Exception e) {
-            logger.error("Error finding resource URL " + e);
-        }
+        // TODO: move this into respective viewers!
+        nativeLibraryManager = new NativeLibraryManager(System.getProperty("java.io.tmpdir")
+                + File.separator + "vlc" + File.separator);
 
         switch (getPlatform()) {
             case MAC:
@@ -164,14 +138,8 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
 
     public boolean ready = false;
 
-    /** The view to use when displaying information about Datavyu updates */
-    private UpdateVersion updateWindow;
-
     /** Tracks if a NumPad key has been pressed */
     private boolean numKeyDown = false;
-
-    /** Open windows */
-    private Stack<Window> openWindows;
 
     /** File path from the command line */
     private String commandLineFile;
@@ -225,24 +193,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
     }
 
     /**
-     * A convenient static getter for the application session storage.
-     *
-     * @return The SessionStorage for the Datavyu application.
-     */
-    public static SessionStorage getSessionStorage() {
-        return Datavyu.getApplication().getContext().getSessionStorage();
-    }
-
-    /**
-     * @return The single instance of the scripting engine we use with
-     * Datavyu.
-     */
-    public static ScriptEngine getScriptingEngine() {
-        logger.info("Script engine: " + sef.getEngineName() + ", version: " + sef.getEngineVersion());
-        return sef.getScriptEngine();
-    }
-
-    /**
      * Main method launching the application.
      *
      * @param args The command line arguments passed to Datavyu.
@@ -274,8 +224,9 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         return datavyuView;
     }
 
-    public void setCommandLineFile(String s) {
-        commandLineFile = s;
+    public void setCommandLineFile(String commandLineFile) {
+        logger.info("Command line file set to " + commandLineFile);
+        this.commandLineFile = commandLineFile;
     }
 
     /**
@@ -866,11 +817,9 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      */
     public boolean overwriteExisting() {
         JFrame mainFrame = Datavyu.getApplication().getMainFrame();
-        ResourceMap rMap = Application.getInstance(Datavyu.class).getContext()
-                .getResourceMap(Datavyu.class);
+        ResourceMap rMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
         String defaultOpt = "Cancel";
         String altOpt = "Overwrite";
-
         String[] a = new String[2];
 
         // TODO: Create a static method in os specifics class and use throughout
@@ -920,22 +869,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
             commandLineFile = args[0];
         }
 
-        openWindows = new Stack<>();
-        LocalStorage ls = Datavyu.getApplication().getContext().getLocalStorage();
-        ResourceMap rMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
-
-        // If the user hasn't specified, we don't send error logs.
-        Configuration.getInstance().setCanSendLogs(false);
-
-        // Init scripting engine
-        System.setProperty("org.jruby.embed.localvariable.behavior", "transient");
-        m2 = new ScriptEngineManager();
-
-        // Init ruby factory
-        sef = m2.getEngineByName("jruby").getFactory();
-        // Initialize plugin manager
-        PluginManager.getInstance();
-
         // Check for updates
         if (DatavyuVersion.isUpdateAvailable() && !DatavyuVersion.isIgnoreVersion()) {
             Datavyu.getApplication().show(new UpdateVersion(Datavyu.getApplication().getMainFrame(), true));
@@ -974,18 +907,16 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         });
 
         // Create video controller.
-//        projectController = new ProjectController();
+        projectController = new ProjectController();
         dataController = datavyuView.getSpreadsheetPanel().getDataController();
 
-        final Dimension screenSize = Toolkit.getDefaultToolkit()
-                .getScreenSize();
+        final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int x = getView().getFrame().getX();
 
         // don't let the data viewer fall below the bottom of the primary
         // screen, but also don't let it creep up above the screen either
         int y = getView().getFrame().getY() + getView().getFrame().getHeight();
-        y = (int) Math.max(Math.min(y,
-                screenSize.getHeight() - dataController.getHeight()), 0);
+        y = (int) Math.max(Math.min(y, screenSize.getHeight() - dataController.getHeight()), 0);
         dataController.setLocation(x, y);
         show(dataController);
         datavyuView.checkForAutosavedFile();
@@ -1037,23 +968,5 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                 }
             }
         });
-    }
-
-    @Override
-    public void show(final JDialog dialog) {
-        if (openWindows == null) {
-            openWindows = new Stack<>();
-        }
-        openWindows.push(dialog);
-        super.show(dialog);
-    }
-
-    @Override
-    public void show(final JFrame frame) {
-        if (openWindows == null) {
-            openWindows = new Stack<>();
-        }
-        openWindows.push(frame);
-        super.show(frame);
     }
 }

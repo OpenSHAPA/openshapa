@@ -26,10 +26,7 @@ import org.jruby.embed.AttributeName;
 import rcaller.RCaller;
 import rcaller.RCode;
 
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
-import javax.script.SimpleScriptContext;
+import javax.script.*;
 import javax.swing.*;
 import java.io.*;
 import java.util.*;
@@ -40,10 +37,6 @@ import java.util.*;
  */
 public final class RunScriptC extends SwingWorker<Object, String> {
 
-    /**
-     * the maximum size of the recently ran script list.
-     */
-    private static final int MAX_RECENT_SCRIPT_SIZE = 5;
     /**
      * The logger for this class.
      */
@@ -80,12 +73,10 @@ public final class RunScriptC extends SwingWorker<Object, String> {
      */
     public RunScriptC() throws IOException {
         DatavyuFileChooser jd = new DatavyuFileChooser();
-        //jd.addChoosableFileFilter(RFilter.ID_CONTROLLER);
         jd.addChoosableFileFilter(RbFilter.INSTANCE);
         jd.setFileFilter(RbFilter.INSTANCE);
 
-        int result = jd.showOpenDialog(Datavyu.getApplication()
-                .getMainFrame());
+        int result = jd.showOpenDialog(Datavyu.getApplication().getMainFrame());
 
         if (result == JFileChooser.APPROVE_OPTION) {
             scriptFile = jd.getSelectedFile();
@@ -158,15 +149,22 @@ public final class RunScriptC extends SwingWorker<Object, String> {
         return null;
     }
 
+    private static boolean rubyScriptIsRunning = false;
+
     private void runRubyScript(File scriptFile) {
-        if (Datavyu.scriptRunning)
-        {
-            JOptionPane.showMessageDialog(null, "Hey! One script at a time!");
+        /** The scripting engine factory that we use with Datavyu */
+
+        if (rubyScriptIsRunning) {
+            JOptionPane.showMessageDialog(null, "A script is running. One script at a time!");
             return;
         }
-        Datavyu.scriptRunning = true;
+        rubyScriptIsRunning = true;
         outString = new StringBuilder("");
-        ScriptEngine rubyEngine = Datavyu.getScriptingEngine();
+        // init script engine
+        System.setProperty("org.jruby.embed.localvariable.behavior", "transient");
+        ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
+        ScriptEngineFactory scriptEngineFactory = scriptEngineManager.getEngineByName("jruby").getFactory();
+        ScriptEngine rubyEngine = scriptEngineFactory.getScriptEngine();
         ScriptContext rubyContext = new SimpleScriptContext();
 //        rubyContext.setAttribute("db", Datavyu.getProjectController().getDataStore(), ScriptContext.ENGINE_SCOPE);
 
@@ -250,7 +248,7 @@ public final class RunScriptC extends SwingWorker<Object, String> {
             System.out.println("IOEXCEPTION!!!! " + ioe.getMessage());
             ioe.printStackTrace();
         } finally{
-            Datavyu.scriptRunning = false;
+            rubyScriptIsRunning = false;
         }
         Datavyu.getView().getSpreadsheetPanel().redrawCells();
     }

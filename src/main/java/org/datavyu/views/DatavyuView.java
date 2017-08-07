@@ -792,15 +792,9 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     public void updateTitle() {
         // Show the project name instead of database.
         JFrame mainFrame = Datavyu.getApplication().getMainFrame();
-        ResourceMap rMap = Datavyu.getApplication().getContext()
-                .getResourceMap(Datavyu.class);
-        String postFix = "  ";
+        ResourceMap resourceMap = Datavyu.getApplication().getContext().getResourceMap(Datavyu.class);
         ProjectController projectController = getSpreadsheetPanel().getProjectController();
-
-        if (projectController.isChanged()) {
-            postFix = "*";
-        }
-
+        String postFix = projectController.isChanged() ? "  *" : "  ";
         String extension = "";
         final FileFilter lastSaveOption = projectController.getLastSaveOption();
 
@@ -819,15 +813,14 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
             projectName = "untitled";
         }
 
-
-        String title = rMap.getString("Application.title") + " - " + projectName + extension + postFix;
+        String title = resourceMap.getString("Application.title") + " - " + projectName + extension + postFix;
         String tabTitle = projectName + postFix;
 
-        if(isQuickKeyMode()) {
+        if (isQuickKeyMode()) {
             title = title + " <QUICK KEY MODE>";
         }
 
-        if(isHighlightAndFocusMode()) {
+        if (isHighlightAndFocusMode()) {
             title = title + " <HIGHLIGHT AND FOCUS MODE>";
         }
 
@@ -835,7 +828,6 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         mainFrame.setTitle(title);
         this.getSpreadsheetPanel().setName(tabTitle);
         tabbedPane.setTitleAt(tabbedPane.getSelectedIndex(), tabTitle);
-//        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         this.getFrame().setTitle(title);
     }
@@ -1406,12 +1398,9 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     }
 
     public void openExternalFile(final File f) {
-//        Datavyu.getApplication().resetApp();
-
         DatavyuFileChooser jd = new DatavyuFileChooser();
         jd.setSelectedFile(f);
         jd.setFileFilter(OpfFilter.INSTANCE);
-
         open(jd);
     }
 
@@ -2342,7 +2331,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         scriptMenuPermanentsList.add("runRecentScriptMenu");
 
         setFavouritesMenuItem.setName("setFavouritesMenuItem");
-        setFavouritesMenuItem.setAction(actionMap.get("setFavouritesFolder"));
+        setFavouritesMenuItem.setAction(actionMap.get("setFavoritesFolder"));
         scriptMenu.add(setFavouritesMenuItem);
         scriptMenuPermanentsList.add("setFavouritesMenuItem");
 
