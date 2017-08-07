@@ -17,7 +17,7 @@ package org.datavyu.controllers;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
-import org.datavyu.RecentFiles;
+import org.datavyu.FileHistory;
 import org.datavyu.models.db.*;
 import org.datavyu.util.FileFilters.RbFilter;
 import org.datavyu.views.ConsoleV;
@@ -131,7 +131,7 @@ public final class RunScriptC extends SwingWorker<Object, String> {
         ReaderThread t = new ReaderThread();
         t.start();
 
-        RecentFiles.rememberScript(scriptFile);
+        FileHistory.rememberScript(scriptFile);
 
         if (scriptFile.getName().endsWith(".rb")) {
             runRubyScript(scriptFile);

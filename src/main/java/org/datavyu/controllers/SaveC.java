@@ -17,7 +17,7 @@ package org.datavyu.controllers;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
-import org.datavyu.RecentFiles;
+import org.datavyu.FileHistory;
 import org.datavyu.models.db.DataStore;
 import org.datavyu.models.db.UserWarningException;
 import org.datavyu.models.project.Project;
@@ -85,7 +85,7 @@ public final class SaveC {
         SaveDatabaseFileC saveDBC = new SaveDatabaseFileC();
         saveDBC.saveDatabase(databaseFile, dataStore);
         if (remember) {
-            RecentFiles.rememberProject(databaseFile);
+            FileHistory.rememberProject(databaseFile);
         }
     }
 
@@ -151,7 +151,7 @@ public final class SaveC {
             fos.close();
 
             if (remember) {
-                RecentFiles.rememberProject(projectFile);
+                FileHistory.rememberProject(projectFile);
             }
 
         } catch (FileNotFoundException e) {

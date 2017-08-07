@@ -21,7 +21,7 @@ import org.apache.logging.log4j.Logger;
 import org.datavyu.Configuration;
 import org.datavyu.Datavyu;
 import org.datavyu.Datavyu.Platform;
-import org.datavyu.RecentFiles;
+import org.datavyu.FileHistory;
 import org.datavyu.controllers.*;
 import org.datavyu.controllers.project.ProjectController;
 import org.datavyu.event.component.FileDropEvent;
@@ -2399,7 +2399,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
             openRecentFileMenu.remove(1);
         }
 
-        for (File file : RecentFiles.getRecentProjects()) {
+        for (File file : FileHistory.getRecentProjects()) {
             openRecentFileMenu.add(createRecentFileMenuItem(file));
         }
 
@@ -2453,7 +2453,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
             runRecentScriptMenu.remove(1);
         }
 
-        for (File f : RecentFiles.getRecentScripts()) {
+        for (File f : FileHistory.getRecentScripts()) {
             runRecentScriptMenu.add(createScriptMenuItemFromFile(f));
         }
     } // GEN-LAST:event_populateRecentScripts
@@ -2877,7 +2877,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
             pController.getDataStore().markAsUnchanged();
 
             // Update the list of recently opened files.
-            RecentFiles.rememberProject(jd.getSelectedFile());
+            FileHistory.rememberProject(jd.getSelectedFile());
 
             setProgress(100);
 
