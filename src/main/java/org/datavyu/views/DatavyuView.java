@@ -33,7 +33,7 @@ import org.datavyu.undoableedits.RemoveVariableEdit;
 import org.datavyu.undoableedits.RunScriptEdit;
 import org.datavyu.undoableedits.SpreadsheetUndoManager;
 import org.datavyu.util.ArrayDirection;
-import org.datavyu.util.DragAndDrop.GhostGlassPane;
+import org.datavyu.util.DragAndDrop.TransparentPanel;
 import org.datavyu.util.FileFilters.*;
 import org.datavyu.util.FileSystemTreeModel;
 import org.datavyu.views.discrete.SpreadsheetColumn;
@@ -219,7 +219,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         initComponents();
         new JFXPanel();
 
-        this.getFrame().setGlassPane(new GhostGlassPane());
+        this.getFrame().setGlassPane(new TransparentPanel());
         this.getFrame().setVisible(true);
         this.getFrame().getGlassPane().setVisible(true);
 

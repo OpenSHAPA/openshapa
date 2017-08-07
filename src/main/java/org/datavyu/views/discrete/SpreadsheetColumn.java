@@ -22,7 +22,7 @@ import org.datavyu.models.db.*;
 import org.datavyu.undoableedits.ChangeNameVariableEdit;
 import org.datavyu.util.ClockTimer;
 import org.datavyu.util.Constants;
-import org.datavyu.util.DragAndDrop.GhostGlassPane;
+import org.datavyu.util.DragAndDrop.TransparentPanel;
 import org.jdesktop.application.Action;
 
 import javax.swing.*;
@@ -137,7 +137,7 @@ public final class SpreadsheetColumn extends JLabel
      */
     private int offsetPadding = 0;
 
-    private GhostGlassPane glassPane = (GhostGlassPane) Datavyu.getView().getFrame().getGlassPane();
+    private TransparentPanel transparentPanel = (TransparentPanel) Datavyu.getView().getFrame().getGlassPane();
 
     private int previouslyFocusedCellIdx = -1;
 
@@ -607,15 +607,13 @@ public final class SpreadsheetColumn extends JLabel
 
             Component c = me.getComponent();
 
-            Point p = (Point) me.getPoint().clone();
-            SwingUtilities.convertPointToScreen(p, c);
+            Point destionation = (Point) me.getPoint().clone();
+            SwingUtilities.convertPointToScreen(destionation, c);
+            SwingUtilities.convertPointFromScreen(destionation, transparentPanel);
 
-            Point eventPoint = (Point) p.clone();
-            SwingUtilities.convertPointFromScreen(p, glassPane);
-
-            glassPane.setPoint(p);
-            glassPane.setVisible(false);
-            glassPane.setImage(null);
+            transparentPanel.setDestination(destionation);
+            transparentPanel.setVisible(false);
+            transparentPanel.setImage(null);
 
             int x = me.getX();
             System.out.println("Released X: " + x);
@@ -689,33 +687,33 @@ public final class SpreadsheetColumn extends JLabel
                 this.setWidth(newWidth);
             }
         } else if (moveable) {
-            if (glassPane.getImage() == null) {
+            if (transparentPanel.getImage() == null) {
                 Component c = me.getComponent();
 
                 BufferedImage image = new BufferedImage(c.getWidth(), c.getHeight(), BufferedImage.TYPE_INT_ARGB);
                 Graphics g = image.getGraphics();
                 c.paint(g);
 
-                glassPane.setVisible(true);
+                transparentPanel.setVisible(true);
 
-                Point p = (Point) me.getPoint().clone();
-                SwingUtilities.convertPointToScreen(p, c);
-                SwingUtilities.convertPointFromScreen(p, glassPane);
+                Point destination = (Point) me.getPoint().clone();
+                SwingUtilities.convertPointToScreen(destination, c);
+                SwingUtilities.convertPointFromScreen(destination, transparentPanel);
 
-                glassPane.setPoint(p);
-                glassPane.setImage(image);
-                glassPane.setBackground(Color.BLACK);
-                glassPane.repaint();
+                transparentPanel.setDestination(destination);
+                transparentPanel.setImage(image);
+                transparentPanel.setBackground(Color.BLACK);
+                transparentPanel.repaint();
             }
 
             Component c = me.getComponent();
 
-            Point p = (Point) me.getPoint().clone();
-            SwingUtilities.convertPointToScreen(p, c);
-            SwingUtilities.convertPointFromScreen(p, glassPane);
-            glassPane.setPoint(p);
+            Point destination = (Point) me.getPoint().clone();
+            SwingUtilities.convertPointToScreen(destination, c);
+            SwingUtilities.convertPointFromScreen(destination, transparentPanel);
+            transparentPanel.setDestination(destination);
 
-            glassPane.repaint();
+            transparentPanel.repaint();
         }
     }
 
