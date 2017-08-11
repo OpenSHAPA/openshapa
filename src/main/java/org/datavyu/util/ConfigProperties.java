@@ -14,71 +14,184 @@
  */
 package org.datavyu.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.datavyu.Datavyu;
+import org.jdesktop.application.LocalStorage;
+
 import java.awt.*;
+import java.io.IOException;
 import java.io.Serializable;
 
 /**
- * The properties to use for configuration. Access through via org.datavyu.Configuration.
+ * ConfigProperties holds configuration properties that are loaded from a settings.xml file.
+ * TODO: Where do we need to place the settings.xml file that the local storage loader finds it?
  */
 public final class ConfigProperties implements Serializable {
 
     /** Unique identifier for this serial version */
     private static final long serialVersionUID = 4L;
 
+    /** The colour to use for the border */
+    public static final Color DEFAULT_BORDER_COLOUR = new Color(175, 175, 175);
+
+    /** Default data font size */
+    private static final float DEFAULT_DATA_FONT_SIZE = 14;
+
+    /** Default label font size */
+    private static final float DEFAULT_LABEL_FONT_SIZE = 12;
+
+    /** Default font */
+    private static final Font DEFAULT_SPREAD_SHEET_DATA_FONT = new Font("Arial", Font.PLAIN, 14);
+
     /** Spread sheet data font */
     private Font spreadSheetDataFont;
+
+    /** Default font for labels */
+    private static final Font DEFAULT_SPREAD_SHEET_LABEL_FONT = new Font("Arial", Font.PLAIN, 12);
 
     /** Spread sheet label font */
     private Font spreadSheetLabelFont;
 
+    /** Default spreadsheet background color */
+    private static final Color DEFAULT_SPREAD_SHEET_BACKGROUND_COLOR = new Color(249, 249, 249);
+
     /** Spread sheet background color */
     private Color spreadSheetBackgroundColor;
+
+    /** Default spreadsheet foreground color */
+    private static final Color DEFAULT_SPREAD_SHEET_FOREGROUND_COLOR = new Color(58, 58, 58);
 
     /** Spreadsheet foreground color */
     private Color spreadSheetForegroundColor;
 
+    /** Default spreadsheet ordinal foreground colour */
+    private static final Color DEFAULT_SPREAD_SHEET_ORDINAL_FOREGROUND_COLOR = new Color(175, 175, 175);
+
     /** Foreground color for the spreadsheet ordinal */
     private Color spreadSheetOrdinalForegroundColor;
+
+    /** Default spreadsheet time stamp foreground color */
+    private static final Color DEFAULT_SPREAD_SHEET_TIME_STAMP_FOREGROUND_COLOR = new Color(90, 90, 90);
 
     /** Foreground color of for spreadsheet timestamp */
     private Color spreadSheetTimeStampForegroundColor;
 
+    /** Default spreadsheet selected color */
+    private static final Color DEFAULT_SPREAD_SHEET_SELECTED_COLOR = new Color(176, 197, 227);
+
     /** Spreadsheet selection color */
     private Color spreadSheetSelectedColor;
+
+    /** Default spreadsheet overlap color */
+    private static final Color DEFAULT_SPREAD_SHEET_OVERLAP_COLOR = Color.RED;
 
     /** Spreadsheet overlap color */
     private Color spreadSheetOverlapColor;
 
+    /** Default for the last chosen directory */
+    private static final String DEFAULT_LAST_CHOSEN_DIRECTORY = System.getProperty("user.home");
+
     /** Last chosen directory */
     private String lastChosenDirectory;
 
-    /** Color of a carriage in the unselected state */
-    private Color mixerUnselectedCarriageColor;
-
-    /** Outline color of a carriage in the unselected/normal state */
-    private Color mixerUnselectedOutlineColor;
-
-    /** Fill colour of a carriage in the selected state */
-    private Color mixerSelectedCarriageColor;
-
-    /** Outline colour of a carriage in the selected state */
-    private Color mixerSelectedOutlineColor;
+    private static final String DEFAULT_IGNORE_VERSION = "";
 
     /** Version number to ignore for update reminders */
     private String ignoreVersion;
-    
+
+    /** Default value for warn on column names */
+    private static final boolean DO_WARN_ON_COLUMN_NAMES = true;
+
     /** True if column name warnings should be displayed */
-    private boolean doWarnOnColumnNames = true;
+    private boolean doWarnOnColumnNames;
+
+    /** Default on use of pre release */
+    private static final boolean USE_PRE_RELEASE = false;
 
     /** True if pre releases are preferred */
     private boolean usePreRelease;
-    
-    private String favoritesFolder = "favorites";
+
+    /** Default for favorites folder */
+    private static final String DEFAULT_FAVORITES_FOLDER = "favorites";
+
+    /** Favorites folder */
+    private String favoritesFolder;
+
+    /** Default for support site url */
+    private static final String DEFAULT_SUPPORT_SITE_URL = "http://www.datavyu.org/support";
+
+    /** URL for the support site */
+    private String supportSiteUrl;
+
+    /** Default for the user guide url */
+    private static final String DEFAULT_USER_GUIDE_URL = "http://www.datavyu.org/user-guide/index.html";
+
+    /** URL for the user guide site */
+    private String userGuideUrl;
+
+    /** This is the only instance for the configuration properties that is loaded at start-up */
+    private static ConfigProperties configProperties = null;
+
+    /** The logger for this class */
+    private static Logger logger = LogManager.getLogger(ConfigProperties.class);
+
+    static {
+        try {
+            LocalStorage localStorage = Datavyu.getApplication().getContext().getLocalStorage();
+            // TODO: Fix directory + filename loading
+            //localStorage.setDirectory(new File("resources"));
+            logger.info("Configuration loaded from directory " + localStorage.getDirectory().getAbsolutePath());
+            configProperties = (ConfigProperties) localStorage.load(Constants.CONFIGURATION_FILE);
+            logger.info("Loaded configuration properties: " + configProperties);
+        } catch (IOException io) {
+            logger.error("Unable to load configuration file " + io.getMessage());
+            logger.info("Setting default properties.");
+            configProperties = new ConfigProperties();
+            configProperties.setSpreadSheetDataFont(DEFAULT_SPREAD_SHEET_DATA_FONT);
+            configProperties.setSpreadSheetLabelFont(DEFAULT_SPREAD_SHEET_LABEL_FONT);
+            configProperties.setSpreadSheetSelectedColor(DEFAULT_SPREAD_SHEET_SELECTED_COLOR);
+            configProperties.setSpreadSheetOverlapColour(DEFAULT_SPREAD_SHEET_OVERLAP_COLOR);
+            configProperties.setIgnoreVersion(DEFAULT_IGNORE_VERSION);
+            configProperties.setDoWarnOnColumnNames(DO_WARN_ON_COLUMN_NAMES);
+            configProperties.setUsePreRelease(USE_PRE_RELEASE);
+            configProperties.setFavoritesFolder(DEFAULT_FAVORITES_FOLDER);
+            configProperties.setSupportSiteUrl(DEFAULT_SUPPORT_SITE_URL);
+            configProperties.setUserGuideUrl(DEFAULT_USER_GUIDE_URL);
+            configProperties.setSpreadSheetOrdinalForegroundColour(DEFAULT_SPREAD_SHEET_ORDINAL_FOREGROUND_COLOR);
+            configProperties.setSpreadSheetTimeStampForegroundColor(DEFAULT_SPREAD_SHEET_TIME_STAMP_FOREGROUND_COLOR);
+            configProperties.setSpreadSheetBackgroundColour(DEFAULT_SPREAD_SHEET_BACKGROUND_COLOR);
+            configProperties.setSpreadSheetForegroundColour(DEFAULT_SPREAD_SHEET_FOREGROUND_COLOR);
+            configProperties.setLastChosenDirectory(DEFAULT_LAST_CHOSEN_DIRECTORY);
+            configProperties.setSpreadSheetSelectedColor(DEFAULT_SPREAD_SHEET_SELECTED_COLOR);
+            configProperties.setSpreadSheetOverlapColour(DEFAULT_SPREAD_SHEET_OVERLAP_COLOR);
+            try {
+                Font defaultFont = Font.createFont(Font.TRUETYPE_FONT,
+                        configProperties.getClass().getResourceAsStream(Constants.DEFAULT_FONT_FILE));
+                configProperties.setSpreadSheetDataFont(defaultFont.deriveFont(DEFAULT_DATA_FONT_SIZE));
+                configProperties.setSpreadSheetLabelFont(defaultFont.deriveFont(DEFAULT_LABEL_FONT_SIZE));
+            } catch (Exception e) {
+                logger.error("Error, unable to load font " + Constants.DEFAULT_FONT_FILE + ". The error is " + e);
+            }
+            configProperties.save();
+        }
+    }
+
+    public static ConfigProperties getInstance() {
+        return configProperties;
+    }
 
     /**
-     * Default constructor.
+     * Saves the configuration properties in local storage of the swing application framework.
      */
-    public ConfigProperties() {}
+    private void save() {
+        try {
+            LocalStorage ls = Datavyu.getApplication().getContext().getLocalStorage();
+            ls.save(this, Constants.CONFIGURATION_FILE);
+        } catch (IOException e) {
+            logger.error("Unable to save configuration " + e.getMessage());
+        }
+    }
 
     /**
      * @return The spreadsheet data font.
@@ -93,7 +206,12 @@ public final class ConfigProperties implements Serializable {
      * @param font The new font to use for spreadsheet data.
      */
     public void setSpreadSheetDataFont(final Font font) {
-        spreadSheetDataFont = font;
+        configProperties.spreadSheetDataFont = font;
+        save();
+    }
+
+    public void setSpreadSheetDataFontSize(final float size) {
+        setSpreadSheetDataFont(getSpreadSheetDataFont().deriveFont(size));
     }
 
     /**
@@ -109,7 +227,9 @@ public final class ConfigProperties implements Serializable {
      * @param font The new font to use for spreadsheet data.
      */
     public void setSpreadSheetLabelFont(final Font font) {
-        spreadSheetLabelFont = font;
+
+        configProperties.spreadSheetLabelFont = font;
+        save();
     }
 
     /**
@@ -125,7 +245,9 @@ public final class ConfigProperties implements Serializable {
      * @param color The new colour to use for the spreadsheet background.
      */
     public void setSpreadSheetBackgroundColour(final Color color) {
-        spreadSheetBackgroundColor = color;
+
+        configProperties.spreadSheetBackgroundColor = color;
+        save();
     }
 
     /**
@@ -141,7 +263,9 @@ public final class ConfigProperties implements Serializable {
      * @param color The new colour to use for the spreadsheet foreground.
      */
     public void setSpreadSheetForegroundColour(final Color color) {
-        spreadSheetForegroundColor = color;
+
+        configProperties.spreadSheetForegroundColor = color;
+        save();
     }
 
     /**
@@ -157,7 +281,8 @@ public final class ConfigProperties implements Serializable {
      * @param color to use for the spreadsheet foreground.
      */
     public void setSpreadSheetOrdinalForegroundColour(final Color color) {
-        spreadSheetOrdinalForegroundColor = color;
+        configProperties.spreadSheetOrdinalForegroundColor = color;
+        save();
     }
 
     /**
@@ -166,7 +291,8 @@ public final class ConfigProperties implements Serializable {
      * @param color The new colour to use for the spreadsheet foreground.
      */
     public void setSpreadSheetTimeStampForegroundColor(final Color color) {
-        spreadSheetTimeStampForegroundColor = color;
+        configProperties.spreadSheetTimeStampForegroundColor = color;
+        save();
     }
 
     /**
@@ -189,7 +315,9 @@ public final class ConfigProperties implements Serializable {
      * @param color The new colour to use for spreadsheet selections.
      */
     public void setSpreadSheetSelectedColor(final Color color) {
-        spreadSheetSelectedColor = color;
+
+        configProperties.spreadSheetSelectedColor = color;
+        save();
     }
 
     /**
@@ -205,7 +333,9 @@ public final class ConfigProperties implements Serializable {
      * @param color The new colour to use for spreadsheet overlaps.
      */
     public void setSpreadSheetOverlapColour(final Color color) {
-        spreadSheetOverlapColor = color;
+
+        configProperties.spreadSheetOverlapColor = color;
+        save();
     }
 
     /**
@@ -221,63 +351,9 @@ public final class ConfigProperties implements Serializable {
      * @param directory The last location the user nominated.
      */
     public void setLastChosenDirectory(final String directory) {
-        lastChosenDirectory = directory;
-    }
 
-    /**
-     * @return the mixerUnselectedCarriageColor
-     */
-    public Color getMixerUnselectedCarriageColor() {
-        return mixerUnselectedCarriageColor;
-    }
-
-    /**
-     * @param color the mixerUnselectedCarriageColor to set
-     */
-    public void setMixerUnselectedCarriageColor(final Color color) {
-        mixerUnselectedCarriageColor = color;
-    }
-
-    /**
-     * @return the mixerUnselectedOutlineColor
-     */
-    public Color getMixerUnselectedOutlineColor() {
-        return mixerUnselectedOutlineColor;
-    }
-
-    /**
-     * @param color the mixerUnselectedOutlineColor to set
-     */
-    public void setMixerUnselectedOutlineColor(final Color color) {
-        mixerUnselectedOutlineColor = color;
-    }
-
-    /**
-     * @return the mixerSelectedCarriageColor
-     */
-    public Color getMixerSelectedCarriageColor() {
-        return mixerSelectedCarriageColor;
-    }
-
-    /**
-     * @param color the mixerSelectedCarriageColor to set
-     */
-    public void setMixerSelectedCarriageColor(final Color color) {
-        mixerSelectedCarriageColor = color;
-    }
-
-    /**
-     * @return the mixerSelectedOutlineColor
-     */
-    public Color getMixerSelectedOutlineColor() {
-        return mixerSelectedOutlineColor;
-    }
-
-    /**
-     * @param color the mixerSelectedOutlineColor to set
-     */
-    public void setMixerSelectedOutlineColor(final Color color) {
-        mixerSelectedOutlineColor = color;
+        configProperties.lastChosenDirectory = directory;
+        save();
     }
 
     /**
@@ -291,7 +367,8 @@ public final class ConfigProperties implements Serializable {
      * @param version the version to set
      */
     public void setIgnoreVersion(final String version) {
-        ignoreVersion = version;
+        configProperties.ignoreVersion = version;
+        save();
     }
     
     /**
@@ -305,13 +382,14 @@ public final class ConfigProperties implements Serializable {
     /**
      * @param doWarn whether or not to display warnings for illegal column names
      */    
-    public void setDoWarnOnColumnNames(final boolean doWarn)
-    {
-        doWarnOnColumnNames = doWarn;
+    public void setDoWarnOnColumnNames(final boolean doWarn) {
+
+        configProperties.doWarnOnColumnNames = doWarn;
+        save();
     }
 
     /**
-     * @return the prerelease preference
+     * @return the pre-release preference
      */
     public boolean getUsePreRelease() {
         return usePreRelease;
@@ -321,14 +399,43 @@ public final class ConfigProperties implements Serializable {
      * @param usePreRelease true if prereleases are preferred
      */
     public void setUsePreRelease(boolean usePreRelease) {
-        this.usePreRelease = usePreRelease;
+
+        configProperties.usePreRelease = usePreRelease;
+        save();
     }
-    
+
+    /**
+     * @return favorites folder
+     */
     public String getFavoritesFolder(){
         return favoritesFolder;
     }
-    
+
+    /**
+     * @param pathName path for the favorites folder
+     */
     public void setFavoritesFolder(String pathName){
-        favoritesFolder = pathName;
+
+        configProperties.favoritesFolder = pathName;
+        save();
+    }
+
+    public String getSupportSiteUrl() {
+        return supportSiteUrl;
+    }
+
+    public void setSupportSiteUrl(String supportSiteUrl) {
+
+        configProperties.supportSiteUrl = supportSiteUrl;
+        save();
+    }
+
+    public String getUserGuideUrl() {
+        return userGuideUrl;
+    }
+
+    public void setUserGuideUrl(String userGuideUrl) {
+        configProperties.userGuideUrl = userGuideUrl;
+        save();
     }
 }

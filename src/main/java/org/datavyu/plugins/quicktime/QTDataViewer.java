@@ -299,6 +299,6 @@ public final class QTDataViewer extends BaseDataViewer {
 
     @Override
     protected void cleanUp() {
-        //TODO
+        // TODO: Check if we need to do some cleanup?
     }
 }

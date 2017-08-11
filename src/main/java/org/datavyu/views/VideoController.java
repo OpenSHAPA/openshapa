@@ -38,6 +38,8 @@ import org.datavyu.plugins.PluginManager;
 import org.datavyu.util.ClockTimer;
 import org.datavyu.util.ClockTimer.ClockListener;
 import org.datavyu.util.FloatingPointUtils;
+import org.datavyu.util.MacOS;
+import org.datavyu.util.WindowsOS;
 import org.datavyu.views.component.TrackPainter;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
@@ -872,24 +874,16 @@ public final class VideoController extends DatavyuDialog
      */
     private boolean shouldRemove() {
         ResourceMap rMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
-        String cancel = "Cancel";
-        String ok = "OK";
-        // TODO: This pattern appears all over find a good place to put the general code for this
-        String[] options = new String[2];
-        if (Datavyu.getPlatform() == Platform.MAC) {
-            options[0] = cancel;
-            options[1] = ok;
-        } else {
-            options[0] = ok;
-            options[1] = cancel;
-        }
-        int selection = JOptionPane.showOptionDialog(this,
+        String defaultOption = "Cancel";
+        String alternativeOption = "OK";
+        String[] options = Datavyu.getPlatform() == Platform.MAC ? MacOS.getOptions(defaultOption, alternativeOption) :
+                WindowsOS.getOptions(defaultOption, alternativeOption);
+        int selectedOption = JOptionPane.showOptionDialog(this,
                 rMap.getString("ClosePluginDialog.message"),
                 rMap.getString("ClosePluginDialog.title"),
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
-                null, options, cancel);
-        // Button behaviour is platform dependent.
-        return (Datavyu.getPlatform() == Platform.MAC) ? (selection == 1) : (selection == 0);
+                null, options, defaultOption);
+        return (Datavyu.getPlatform() == Platform.MAC) ? (selectedOption == 1) : (selectedOption == 0);
     }
 
     /**

@@ -23,6 +23,7 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -126,7 +127,7 @@ public class FileHistory {
             writer = new FileWriter(historyFile);
             yaml.dump(historyMap, writer);
         } catch (IOException e) {
-            logger.error("Couldn't save history", e);
+            logger.error("Couldn't save history " + e.getMessage());
         } finally {
             IOUtils.closeQuietly(writer);
         }
@@ -145,9 +146,11 @@ public class FileHistory {
 
             Map data = (Map) yaml.load(reader);
 
+            @SuppressWarnings("unchecked") // Ok here and there is no good way to check
             List<String> projectPaths = (List) data.get("projects");
             projects = pathsToFiles(projectPaths);
 
+            @SuppressWarnings("unchecked") // Ok here and there is no good way to check
             List<String> scriptPaths = (List) data.get("scripts");
             scripts = pathsToFiles(scriptPaths);
 

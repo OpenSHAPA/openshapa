@@ -31,4 +31,9 @@ public final class Constants {
     /** The margin size to use down the sides of the columns. */
     public static final int BORDER_SIZE = 1;
 
+    /** The name of the configuration file */
+    public static final String CONFIGURATION_FILE = "settings.xml";
+
+    /** Font file name */
+    public static final String DEFAULT_FONT_FILE = "/fonts/DejaVuSansCondensed.ttf";
 }

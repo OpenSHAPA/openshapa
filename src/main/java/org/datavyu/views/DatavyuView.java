@@ -18,7 +18,6 @@ import javafx.embed.swing.JFXPanel;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.Configuration;
 import org.datavyu.Datavyu;
 import org.datavyu.Datavyu.Platform;
 import org.datavyu.FileHistory;
@@ -33,6 +32,7 @@ import org.datavyu.undoableedits.RemoveVariableEdit;
 import org.datavyu.undoableedits.RunScriptEdit;
 import org.datavyu.undoableedits.SpreadsheetUndoManager;
 import org.datavyu.util.ArrayDirection;
+import org.datavyu.util.ConfigProperties;
 import org.datavyu.util.DragAndDrop.TransparentPanel;
 import org.datavyu.util.FileFilters.*;
 import org.datavyu.util.FileSystemTreeModel;
@@ -88,7 +88,8 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     private static boolean redraw = true;
     private final Icon rubyIcon = new ImageIcon(getClass().getResource("/icons/ruby.png"));
     private final Icon opfIcon = new ImageIcon(getClass().getResource("/icons/datavyu.png"));
-    String fav_dir_config = Configuration.getInstance().getFavouritesFolder();
+    String favoritesFolder = ConfigProperties.getInstance().getFavoritesFolder();
+
     /**
      * undo system elements
      */
@@ -298,7 +299,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         fileTree = new FileSystemTreeModel(new File("."));
         fileDrawer = new JTree(fileTree);
 
-        favTree = new FileSystemTreeModel(new File(fav_dir_config));
+        favTree = new FileSystemTreeModel(new File(favoritesFolder));
         favDrawer = new JTree(favTree);
 
         fileDrawer.setCellRenderer(new DefaultTreeCellRenderer() {
@@ -486,7 +487,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
                 if (selRow != -1) {
                     String path = convertTreePathToString(selPath);
-                    String baseDir = Configuration.getInstance().getFavouritesFolder();
+                    String baseDir = ConfigProperties.getInstance().getFavoritesFolder();
                     baseDir = baseDir.substring(0, baseDir.lastIndexOf(File.separator));
                     final File f = new File(baseDir + File.separator + path);
 
@@ -1699,7 +1700,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     @Action
     public void setFavouritesFolder() {
         try {
-            Configuration config = Configuration.getInstance();
+            ConfigProperties config = ConfigProperties.getInstance();
             JFileChooser jd = new JFileChooser();
             FileFilter directoryFilter = new FileFilter() {
                 public boolean accept(File file) {
@@ -1722,10 +1723,10 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
                 val = jd.getSelectedFile().toString();
             }
             if (!(val == null)) {
-                config.setFavouritesFolder(val);
-                fav_dir_config = val;
+                config.setFavoritesFolder(val);
+                favoritesFolder = val;
                 populateFavourites(null);
-                favTree = new FileSystemTreeModel(new File(fav_dir_config));
+                favTree = new FileSystemTreeModel(new File(favoritesFolder));
                 favDrawer.setModel(favTree);
                 updateFavDrawerLabel();
             }
@@ -1735,7 +1736,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     }
 
     private void updateFavDrawerLabel() {
-        favScrollPane.setColumnHeaderView(new JLabel(fav_dir_config));
+        favScrollPane.setColumnHeaderView(new JLabel(favoritesFolder));
     }
 
     /**
@@ -2480,7 +2481,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         }
 
         // Get list of favourite scripts from the favourites folder.
-        File favouritesDir = new File(fav_dir_config);
+        File favouritesDir = new File(favoritesFolder);
         FilenameFilter rubies = new FilenameFilter() {
             public boolean accept(File file, String s) {
                 return s.endsWith(".rb");
@@ -2493,7 +2494,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         if (children != null) {
 
             for (String s : children) {
-                File f = new File(fav_dir_config + File.separatorChar + s);
+                File f = new File(favoritesFolder + File.separatorChar + s);
                 scriptMenu.add(createScriptMenuItemFromFile(f));
             }
         }
@@ -2536,8 +2537,8 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     private void resetZoomMenuItemActionPerformed(
             final java.awt.event.ActionEvent evt) { // GEN-FIRST:event_resetZoomMenuItemActionPerformed
 
-        Configuration config = Configuration.getInstance();
-        Font f = config.getSSDataFont();
+        ConfigProperties config = ConfigProperties.getInstance();
+        Font f = config.getSpreadSheetDataFont();
 
         changeFontSize(ZOOM_DEFAULT_SIZE - f.getSize());
     } // GEN-LAST:event_resetZoomMenuItemActionPerformed
@@ -2681,8 +2682,8 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
      * @param sizeDif The number to add to the current font size.
      */
     public void changeFontSize(final int sizeDif) {
-        Configuration config = Configuration.getInstance();
-        Font f = config.getSSDataFont();
+        ConfigProperties config = ConfigProperties.getInstance();
+        Font f = config.getSpreadSheetDataFont();
         int size = f.getSize();
         size = size + sizeDif;
 
@@ -2692,7 +2693,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
             size = ZOOM_MAX_SIZE;
         }
 
-        config.setSSDataFontSize(size);
+        config.setSpreadSheetDataFontSize(size);
 
         // Create and redraw fresh window pane so all of the fonts are new
         // again.

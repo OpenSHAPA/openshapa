@@ -128,7 +128,7 @@ public class VLCFXDataViewer extends BaseDataViewer {
     }
 
     public void setFramesPerSecond(float fpsIn) {
-        // TODO: Check me!
+        // TODO: Set the fps correctly
         //fps = fpsIn;
         //assumedFPS = false;
     }

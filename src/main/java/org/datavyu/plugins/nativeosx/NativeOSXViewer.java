@@ -273,7 +273,7 @@ public final class NativeOSXViewer extends BaseDataViewer {
 
     @Override
     protected void cleanUp() {
-        //TODO
+        // TODO: Check if the release is required?s
 //        movie.release();
     }
 }

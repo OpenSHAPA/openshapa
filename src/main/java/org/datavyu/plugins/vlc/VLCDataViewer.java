@@ -393,11 +393,6 @@ public class VLCDataViewer implements DataViewer {
         mediaPlayerFactory.release();
     }
 
-    //@Override
-    //public void setDataStore(final DataStore sDB) {
-    //    // TODO Auto-generated method stub
-    //}
-
     public boolean isAssumedFramesPerSecond() {
         return assumedFPS;
     }

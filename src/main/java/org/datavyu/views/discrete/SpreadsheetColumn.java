@@ -16,11 +16,11 @@ package org.datavyu.views.discrete;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.Configuration;
 import org.datavyu.Datavyu;
 import org.datavyu.models.db.*;
 import org.datavyu.undoableedits.ChangeNameVariableEdit;
 import org.datavyu.util.ClockTimer;
+import org.datavyu.util.ConfigProperties;
 import org.datavyu.util.Constants;
 import org.datavyu.util.DragAndDrop.TransparentPanel;
 import org.jdesktop.application.Action;
@@ -408,7 +408,7 @@ public final class SpreadsheetColumn extends JLabel
         this.selected = isSelected;
 
         if (selected) {
-            setBackground(Configuration.getInstance().getSSSelectedColour());
+            setBackground(ConfigProperties.getInstance().getSpreadSheetSelectedColor());
         } else {
             setBackground(backColor);
         }

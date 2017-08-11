@@ -14,11 +14,12 @@
  */
 package org.datavyu.views;
 
-import org.datavyu.Configuration;
 import org.datavyu.plugins.Plugin;
+import org.datavyu.util.ConfigProperties;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 
 /**
  * Custom file chooser with plugin selection.
@@ -38,7 +39,7 @@ public abstract class PluginChooser extends JFileChooser {
      */
     @Override
     public int showOpenDialog(final Component parent) {
-        this.setCurrentDirectory(Configuration.getInstance().getLastChosenDirectory());
+        this.setCurrentDirectory(new File(ConfigProperties.getInstance().getLastChosenDirectory()));
 
         // Work around for new OSX not showing /Volumes anymore
         this.setFileHidingEnabled(false);
@@ -46,7 +47,7 @@ public abstract class PluginChooser extends JFileChooser {
         //setFileFilter(getAcceptAllFileFilter());
 
         int result = super.showOpenDialog(parent);
-        Configuration.getInstance().setLastChosenDirectory(this.getCurrentDirectory());
+        ConfigProperties.getInstance().setLastChosenDirectory(this.getCurrentDirectory().getAbsolutePath());
 
         return result;
     }
@@ -64,10 +65,10 @@ public abstract class PluginChooser extends JFileChooser {
      */
     @Override
     public int showSaveDialog(final Component parent) {
-        this.setCurrentDirectory(Configuration.getInstance().getLastChosenDirectory());
+        this.setCurrentDirectory(new File(ConfigProperties.getInstance().getLastChosenDirectory()));
 
         int result = super.showSaveDialog(parent);
-        Configuration.getInstance().setLastChosenDirectory(this.getCurrentDirectory());
+        ConfigProperties.getInstance().setLastChosenDirectory(this.getCurrentDirectory().getAbsolutePath());
 
         return result;
     }

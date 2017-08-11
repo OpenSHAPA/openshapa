@@ -16,9 +16,9 @@ package org.datavyu.controllers;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.Configuration;
 import org.datavyu.Datavyu;
 import org.datavyu.models.db.*;
+import org.datavyu.util.ConfigProperties;
 
 import javax.swing.*;
 import java.io.*;
@@ -727,16 +727,13 @@ public final class OpenDatabaseFileC {
             this.names = names;
         }
         
-        public void run()
-        {
-            Configuration config = Configuration.getInstance();
-            if(config.getColumnNameWarning())
-            {
-             if (JOptionPane.showConfirmDialog(null, "The following: \n" + names + " is/are no longer a valid column name(s).\nColumn names should begin with letter, and underscore is the only permitted special character.\nIt is highly recommended you manually rename this column immediately or use the nifty script in favourites.\nContinue showing this warning in the future?", "Warning!", JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION){
-                 config.setColumnNameWarning(false);
-             }
+        public void run() {
+            ConfigProperties config = ConfigProperties.getInstance();
+            if (config.getDoWarnOnColumnNames()) {
+                if (JOptionPane.showConfirmDialog(null, "The following: \n" + names + " is/are no longer a valid column name(s).\nColumn names should begin with letter, and underscore is the only permitted special character.\nIt is highly recommended you manually rename this column immediately or use the nifty script in favourites.\nContinue showing this warning in the future?", "Warning!", JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION){
+                    config.setDoWarnOnColumnNames(false);
+                }
             }
-
         }
     }
 }
