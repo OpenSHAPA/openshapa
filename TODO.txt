@@ -1,5 +1,4 @@
 - Code cleanup/documentation (around plugins)
-- Refactor ffplayer to ffmpegplayer
 - Check to remove DataStore
 - Simplify the VideoController (removed, Identifier interface, IDController, ID->Identifier, DataStorage)
 - Simplify the ClockTimer
