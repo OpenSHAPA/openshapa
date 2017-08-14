@@ -3,7 +3,7 @@
  */
 package org.datavyu.views;
 
-import org.datavyu.util.ConfigProperties;
+import org.datavyu.util.ConfigurationProperties;
 import org.datavyu.util.DatavyuVersion;
 
 import javax.swing.*;
@@ -32,7 +32,7 @@ public class UpdateVersion extends JDialog {
     private DatavyuVersion serverVersion;
 
     private void prepareDialog() {
-        ConfigProperties configuration = ConfigProperties.getInstance();
+        ConfigurationProperties configuration = ConfigurationProperties.getInstance();
         checkPreRelease.setSelected(configuration.getUsePreRelease());
 
         DatavyuVersion localVersion = DatavyuVersion.getLocalVersion();
@@ -91,7 +91,7 @@ public class UpdateVersion extends JDialog {
         updateNowButton.setToolTipText("Take me to the download page");
         updateNowButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                ConfigProperties configuration = ConfigProperties.getInstance();
+                ConfigurationProperties configuration = ConfigurationProperties.getInstance();
                 String url = configuration.getUsePreRelease() ? PRE_DOWNLOAD_PAGE : DOWNLOAD_PAGE;
                 try {
                     Desktop.getDesktop().browse(java.net.URI.create(url));
@@ -126,7 +126,7 @@ public class UpdateVersion extends JDialog {
                 // If the 'later' button is clicked, clear the ignoreVersion; unless we're dealing with the case where
                 // the server could not be accessed
                 if (serverVersion.hasVersion()) {
-                    ConfigProperties.getInstance().setIgnoreVersion("");
+                    ConfigurationProperties.getInstance().setIgnoreVersion("");
                 }
             }
         });
@@ -138,7 +138,7 @@ public class UpdateVersion extends JDialog {
         updateNeverButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 dispose();
-                ConfigProperties.getInstance().setIgnoreVersion(serverVersion.getVersion());
+                ConfigurationProperties.getInstance().setIgnoreVersion(serverVersion.getVersion());
             }
         });
 
@@ -162,7 +162,7 @@ public class UpdateVersion extends JDialog {
                     }
                 }
 
-                ConfigProperties.getInstance().setUsePreRelease(checkPreRelease.getSelectedObjects() != null);
+                ConfigurationProperties.getInstance().setUsePreRelease(checkPreRelease.getSelectedObjects() != null);
 
                 prepareDialog();
             }

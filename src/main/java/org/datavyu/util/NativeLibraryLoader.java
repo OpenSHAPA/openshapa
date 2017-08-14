@@ -40,9 +40,6 @@ public class NativeLibraryLoader {
     /** Logger for this native library loader */
     private static Logger logger = LogManager.getLogger(NativeLibraryLoader.class);
 
-    /** Buffer size for unzipping native libraries */
-    private static final int BUFFER = 16*1024; // 16 kB
-
     /**
      * Folder where we unzip libraries must be current working directory for the library loader to find dependent
      * libraries.
@@ -125,10 +122,10 @@ public class NativeLibraryLoader {
         InputStream in = url.openStream();
         File outfile = new File(libraryFolder, destName + getExtension(destName));
         FileOutputStream out = new FileOutputStream(outfile);
-        BufferedOutputStream dest = new BufferedOutputStream(out, BUFFER);
+        BufferedOutputStream dest = new BufferedOutputStream(out, Constants.BUFFER_COPY_SIZE);
         int count;
-        byte[] data = new byte[BUFFER];
-        while ((count = in.read(data, 0, BUFFER)) != -1) {
+        byte[] data = new byte[Constants.BUFFER_COPY_SIZE];
+        while ((count = in.read(data, 0, Constants.BUFFER_COPY_SIZE)) != -1) {
             dest.write(data, 0, count);
         }
         dest.close();  // close flushes

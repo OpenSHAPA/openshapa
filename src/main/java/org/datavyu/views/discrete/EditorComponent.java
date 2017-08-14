@@ -16,7 +16,7 @@ package org.datavyu.views.discrete;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.util.ConfigProperties;
+import org.datavyu.util.ConfigurationProperties;
 
 import javax.swing.text.JTextComponent;
 import java.awt.*;
@@ -88,7 +88,7 @@ public abstract class EditorComponent implements ClipboardOwner {
     public EditorComponent(final JTextComponent tc) {
         this();
         parentComp = tc;
-        parentComp.setBackground(ConfigProperties.getInstance().getSpreadSheetBackgroundColour());
+        parentComp.setBackground(ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor());
     }
 
     /**

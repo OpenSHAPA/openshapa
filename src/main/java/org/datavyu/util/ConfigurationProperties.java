@@ -23,9 +23,12 @@ import java.awt.*;
 import java.io.*;
 
 /**
- * ConfigProperties holds configuration properties that are loaded from a settings.xml file.
+ * Configuration properties that are loaded from the settings.xml file in the resource folder.
+ *
+ * This file gets copied from the resource folder to the local temp directory where this application managers its
+ * settings through the Swing Application Framework.
  */
-public final class ConfigProperties implements Serializable {
+public final class ConfigurationProperties implements Serializable {
 
     /** Unique identifier for this serial version */
     private static final long serialVersionUID = 4L;
@@ -102,7 +105,7 @@ public final class ConfigProperties implements Serializable {
     private static final boolean DO_WARN_ON_COLUMN_NAMES = true;
 
     /** True if column name warnings should be displayed */
-    private boolean doWarnOnColumnNames;
+    private boolean doWarnOnIllegalColumnNames;
 
     /** Default on use of pre release */
     private static final boolean USE_PRE_RELEASE = false;
@@ -129,10 +132,10 @@ public final class ConfigProperties implements Serializable {
     private String userGuideUrl;
 
     /** This is the only instance for the configuration properties that is loaded at start-up */
-    private static ConfigProperties configProperties = new ConfigProperties();
+    private static ConfigurationProperties configurationProperties = new ConfigurationProperties();
 
     /** The logger for this class */
-    private static Logger logger = LogManager.getLogger(ConfigProperties.class);
+    private static Logger logger = LogManager.getLogger(ConfigurationProperties.class);
 
     static {
         LocalStorage localStorage = Datavyu.getApplication().getContext().getLocalStorage();
@@ -143,7 +146,7 @@ public final class ConfigProperties implements Serializable {
         try {
             logger.info("Copying " + Constants.CONFIGURATION_FILE + " to " + localDirectory);
             // It is important that the path into the resource with "/"
-            InputStream inputStream = configProperties.getClass().getResourceAsStream(
+            InputStream inputStream = configurationProperties.getClass().getResourceAsStream(
                                                                         "/" + Constants.CONFIGURATION_FILE);
             FileOutputStream fileOutputStream = new FileOutputStream(new File(localDirectory,
                                                                               Constants.CONFIGURATION_FILE));
@@ -164,61 +167,61 @@ public final class ConfigProperties implements Serializable {
         // Try to load the configuration
         try {
             logger.info("Configuration loaded from directory " + localDirectory);
-            configProperties = (ConfigProperties) localStorage.load(Constants.CONFIGURATION_FILE);
-            logger.info("Loaded configuration properties: " + configProperties);
+            configurationProperties = (ConfigurationProperties) localStorage.load(Constants.CONFIGURATION_FILE);
+            logger.info("Loaded configuration properties: " + configurationProperties);
         } catch (IOException io) {
             logger.error("Unable to load configuration file " + io.getMessage());
             logger.info("Setting default properties.");
-            configProperties = new ConfigProperties();
+            configurationProperties = new ConfigurationProperties();
         }
 
         // If values are not set/loaded set their defaults
-        if (!configProperties.hasSpreadSheetDataFont()) {
-            configProperties.setSpreadSheetDataFont(DEFAULT_SPREAD_SHEET_DATA_FONT);
+        if (!configurationProperties.hasSpreadSheetDataFont()) {
+            configurationProperties.setSpreadSheetDataFont(DEFAULT_SPREAD_SHEET_DATA_FONT);
         }
-        if (!configProperties.hasSpreadSheetLabelFont()) {
-            configProperties.setSpreadSheetLabelFont(DEFAULT_SPREAD_SHEET_LABEL_FONT);
+        if (!configurationProperties.hasSpreadSheetLabelFont()) {
+            configurationProperties.setSpreadSheetLabelFont(DEFAULT_SPREAD_SHEET_LABEL_FONT);
         }
-        if (!configProperties.hasSpreadSheetSelectedColor()) {
-            configProperties.setSpreadSheetSelectedColor(DEFAULT_SPREAD_SHEET_SELECTED_COLOR);
+        if (!configurationProperties.hasSpreadSheetSelectedColor()) {
+            configurationProperties.setSpreadSheetSelectedColor(DEFAULT_SPREAD_SHEET_SELECTED_COLOR);
         }
-        if (!configProperties.hasSpreadSheetOverlapColor()) {
-            configProperties.setSpreadSheetOverlapColor(DEFAULT_SPREAD_SHEET_OVERLAP_COLOR);
+        if (!configurationProperties.hasSpreadSheetOverlapColor()) {
+            configurationProperties.setSpreadSheetOverlapColor(DEFAULT_SPREAD_SHEET_OVERLAP_COLOR);
         }
-        if (!configProperties.hasIgnoreVersion()) {
-            configProperties.setIgnoreVersion(DEFAULT_IGNORE_VERSION);
+        if (!configurationProperties.hasIgnoreVersion()) {
+            configurationProperties.setIgnoreVersion(DEFAULT_IGNORE_VERSION);
         }
-        configProperties.setDoWarnOnColumnNames(DO_WARN_ON_COLUMN_NAMES);
-        configProperties.setUsePreRelease(USE_PRE_RELEASE);
-        if (!configProperties.hasFavoritesFolder()) {
-            configProperties.setFavoritesFolder(DEFAULT_FAVORITES_FOLDER);
+        configurationProperties.setDoWarnOnIllegalColumnNames(DO_WARN_ON_COLUMN_NAMES);
+        configurationProperties.setUsePreRelease(USE_PRE_RELEASE);
+        if (!configurationProperties.hasFavoritesFolder()) {
+            configurationProperties.setFavoritesFolder(DEFAULT_FAVORITES_FOLDER);
         }
-        if (!configProperties.hasSupportSiteUrl()) {
-            configProperties.setSupportSiteUrl(DEFAULT_SUPPORT_SITE_URL);
+        if (!configurationProperties.hasSupportSiteUrl()) {
+            configurationProperties.setSupportSiteUrl(DEFAULT_SUPPORT_SITE_URL);
         }
-        if (!configProperties.hasUserGuideUrl()) {
-            configProperties.setUserGuideUrl(DEFAULT_USER_GUIDE_URL);
+        if (!configurationProperties.hasUserGuideUrl()) {
+            configurationProperties.setUserGuideUrl(DEFAULT_USER_GUIDE_URL);
         }
-        if (!configProperties.hasSpreadSheetOrdinalForegroundColor()) {
-            configProperties.setSpreadSheetOrdinalForegroundColor(DEFAULT_SPREAD_SHEET_ORDINAL_FOREGROUND_COLOR);
+        if (!configurationProperties.hasSpreadSheetOrdinalForegroundColor()) {
+            configurationProperties.setSpreadSheetOrdinalForegroundColor(DEFAULT_SPREAD_SHEET_ORDINAL_FOREGROUND_COLOR);
         }
-        if (!configProperties.hasSpreadSheetTimeStampeForegroundColor()) {
-            configProperties.setSpreadSheetTimeStampForegroundColor(DEFAULT_SPREAD_SHEET_TIME_STAMP_FOREGROUND_COLOR);
+        if (!configurationProperties.hasSpreadSheetTimeStampForegroundColor()) {
+            configurationProperties.setSpreadSheetTimeStampForegroundColor(DEFAULT_SPREAD_SHEET_TIME_STAMP_FOREGROUND_COLOR);
         }
-        if (!configProperties.hasSpreadSheetBackgroundColor()) {
-            configProperties.setSpreadSheetBackgroundColor(DEFAULT_SPREAD_SHEET_BACKGROUND_COLOR);
+        if (!configurationProperties.hasSpreadSheetBackgroundColor()) {
+            configurationProperties.setSpreadSheetBackgroundColor(DEFAULT_SPREAD_SHEET_BACKGROUND_COLOR);
         }
-        if (!configProperties.hasSpreadSheetForegroundColor()) {
-            configProperties.setSpreadSheetForegroundColor(DEFAULT_SPREAD_SHEET_FOREGROUND_COLOR);
+        if (!configurationProperties.hasSpreadSheetForegroundColor()) {
+            configurationProperties.setSpreadSheetForegroundColor(DEFAULT_SPREAD_SHEET_FOREGROUND_COLOR);
         }
-        if (!configProperties.hasLastChosenDirectory()) {
-            configProperties.setLastChosenDirectory(DEFAULT_LAST_CHOSEN_DIRECTORY);
+        if (!configurationProperties.hasLastChosenDirectory()) {
+            configurationProperties.setLastChosenDirectory(DEFAULT_LAST_CHOSEN_DIRECTORY);
         }
         try {
             Font defaultFont = Font.createFont(Font.TRUETYPE_FONT,
-                    configProperties.getClass().getResourceAsStream(Constants.DEFAULT_FONT_FILE));
-            configProperties.setSpreadSheetDataFont(defaultFont.deriveFont(DEFAULT_DATA_FONT_SIZE));
-            configProperties.setSpreadSheetLabelFont(defaultFont.deriveFont(DEFAULT_LABEL_FONT_SIZE));
+                    configurationProperties.getClass().getResourceAsStream(Constants.DEFAULT_FONT_FILE));
+            configurationProperties.setSpreadSheetDataFont(defaultFont.deriveFont(DEFAULT_DATA_FONT_SIZE));
+            configurationProperties.setSpreadSheetLabelFont(defaultFont.deriveFont(DEFAULT_LABEL_FONT_SIZE));
         } catch (Exception e) {
             logger.error("Error, unable to load font " + Constants.DEFAULT_FONT_FILE + ". The error is " + e);
         }
@@ -232,30 +235,32 @@ public final class ConfigProperties implements Serializable {
      *
      * Public to be accessible by the XMLReader for JavaBeans to create an object instance.
      */
-    public ConfigProperties() {}
+    public ConfigurationProperties() {}
 
     /**
      * Get the static instance for the configuration.
      *
-     * @return
+     * @return The configuration properties.
      */
-    public static ConfigProperties getInstance() {
-        return configProperties;
+    public static ConfigurationProperties getInstance() {
+        return configurationProperties;
     }
 
     /**
-     * Saves the configuration properties in local storage of the swing application framework.
+     * Saves the configuration properties in local storage using the Swing Application Framework.
      */
     public static void save() {
         try {
             LocalStorage ls = Datavyu.getApplication().getContext().getLocalStorage();
-            ls.save(configProperties, Constants.CONFIGURATION_FILE);
+            ls.save(configurationProperties, Constants.CONFIGURATION_FILE);
         } catch (IOException e) {
             logger.error("Unable to save configuration " + e.getMessage());
         }
     }
 
     /**
+     * Get the spread sheet data font.
+     *
      * @return The spreadsheet data font.
      */
     public Font getSpreadSheetDataFont() {
@@ -263,24 +268,36 @@ public final class ConfigProperties implements Serializable {
     }
 
     /**
-     * Sets the spreadsheet data font.
+     * Sets the spread sheet data font.
      *
-     * @param font The new font to use for spreadsheet data.
+     * @param font to use for spread sheet data.
      */
     public void setSpreadSheetDataFont(final Font font) {
         spreadSheetDataFont = font;
     }
 
+    /**
+     * Sets the spread sheet data font size.
+     *
+     * @param size to set.
+     */
     public void setSpreadSheetDataFontSize(final float size) {
         setSpreadSheetDataFont(getSpreadSheetDataFont().deriveFont(size));
     }
 
+    /**
+     * Did we set the spread sheet data font?
+     *
+     * @return Returns true if the spread sheet data font is set; otherwise false.
+     */
     public boolean hasSpreadSheetDataFont() {
         return spreadSheetDataFont != null;
     }
 
     /**
-     * @return The spreadsheet data font.
+     * Get the spread sheet label font.
+     *
+     * @return The spread sheet data font.
      */
     public Font getSpreadSheetLabelFont() {
         return spreadSheetLabelFont;
@@ -289,65 +306,86 @@ public final class ConfigProperties implements Serializable {
     /**
      * Sets the spreadsheet data font.
      *
-     * @param font The new font to use for spreadsheet data.
+     * @param font to use for spread sheet data.
      */
     public void setSpreadSheetLabelFont(final Font font) {
         spreadSheetLabelFont = font;
     }
 
+    /**
+     * Did we set the spread sheet label font?
+     *
+     * @return True if the spread sheet label font; otherwise false.
+     */
     public boolean hasSpreadSheetLabelFont() {
         return spreadSheetLabelFont != null;
     }
 
     /**
-     * @return The spreadsheet background colour.
+     * Get the spread sheet background color.
+     *
+     * @return spread sheet background color.
      */
-    public Color getSpreadSheetBackgroundColour() {
+    public Color getSpreadSheetBackgroundColor() {
         return spreadSheetBackgroundColor;
     }
 
     /**
-     * Sets the spreadsheet background colour.
+     * Sets the spread sheet background colour.
      *
-     * @param color The new colour to use for the spreadsheet background.
+     * @param color to use for the spread sheet background.
      */
     public void setSpreadSheetBackgroundColor(final Color color) {
         spreadSheetBackgroundColor = color;
     }
 
+    /**
+     * Did we set the spread sheet background color?
+     *
+     * @return True if the spread sheet background color was set; otherwise False.
+     */
     public boolean hasSpreadSheetBackgroundColor() {
         return spreadSheetBackgroundColor != null;
     }
 
     /**
-     * @return The spreadsheet foreground colour.
+     * Get the spread sheet foreground color.
+     *
+     * @return spread sheet foreground color.
      */
     public Color getSpreadSheetForegroundColor() {
         return spreadSheetForegroundColor;
     }
 
     /**
-     * Sets the spreadsheet foreground colour.
+     * Sets the spreadsheet foreground color.
      *
-     * @param color The new colour to use for the spreadsheet foreground.
+     * @param color to use for the spreadsheet foreground.
      */
     public void setSpreadSheetForegroundColor(final Color color) {
         spreadSheetForegroundColor = color;
     }
 
+    /**
+     * Did we set the spread sheet foreground color?
+     *
+     * @return The spread sheet foreground color.
+     */
     public boolean hasSpreadSheetForegroundColor() {
         return spreadSheetForegroundColor != null;
     }
 
     /**
-     * @return The spreadsheet ordinal foreground colour.
+     * Get the spread sheet ordinal foreground color.
+     *
+     * @return The spread sheet ordinal foreground colour.
      */
-    public Color getSpreadSheetOrdinalForegroundColour() {
+    public Color getSpreadSheetOrdinalForegroundColor() {
         return spreadSheetOrdinalForegroundColor;
     }
 
     /**
-     * Sets the spreadsheet ordinal foreground colour.
+     * Sets the spreadsheet ordinal foreground color.
      *
      * @param color to use for the spreadsheet foreground.
      */
@@ -355,175 +393,264 @@ public final class ConfigProperties implements Serializable {
         spreadSheetOrdinalForegroundColor = color;
     }
 
+    /**
+     * Did we set the spread sheet ordinal foreground color?
+     *
+     * @return True if we set the spread sheet ordinal foreground color; otherwise False.
+     */
     public boolean hasSpreadSheetOrdinalForegroundColor() {
         return spreadSheetOrdinalForegroundColor != null;
     }
 
     /**
-     * Sets the spreadsheet timestamp foreground colour.
+     * Sets the spread sheet time tamp foreground color.
      *
-     * @param color The new colour to use for the spreadsheet foreground.
+     * @param color to use for the spread sheet foreground.
      */
     public void setSpreadSheetTimeStampForegroundColor(final Color color) {
         spreadSheetTimeStampForegroundColor = color;
     }
 
-    public boolean hasSpreadSheetTimeStampeForegroundColor() {
+    /**
+     * Did we set the spread sheet time stamp foreground color?
+     *
+     * @return True if we set the spread sheet time stamp foreground color; otherwise False.
+     */
+    public boolean hasSpreadSheetTimeStampForegroundColor() {
         return spreadSheetTimeStampForegroundColor != null;
     }
 
     /**
-     * @return The spreadsheet timestamp foreground colour.
+     * Get the spread sheet time stamp foreground color.
+     *
+     * @return The spread sheet timestamp foreground colour.
      */
     public Color getSpreadSheetTimeStampForegroundColor() {
         return spreadSheetTimeStampForegroundColor;
     }
 
     /**
-     * @return The spreadsheet selections colour.
+     * Get the spread sheet selected color.
+     *
+     * @return The spread sheet selections color.
      */
     public Color getSpreadSheetSelectedColor() {
         return spreadSheetSelectedColor;
     }
 
     /**
-     * Sets the spreadsheet selected colour.
+     * Sets the spread sheet selected color.
      *
-     * @param color The new colour to use for spreadsheet selections.
+     * @param color to use for spread sheet selections.
      */
     public void setSpreadSheetSelectedColor(final Color color) {
         spreadSheetSelectedColor = color;
     }
 
+    /**
+     * Did we set the spread sheet selected color?
+     *
+     * @return True if we set the spread sheet selected color; otherwise False.
+     */
     public boolean hasSpreadSheetSelectedColor() {
         return spreadSheetSelectedColor != null;
     }
 
     /**
-     * @return The spreadsheet overlap colour.
+     * Get the spread sheet overlap color.
+     *
+     * @return The spread sheet overlap color.
      */
     public Color getSpreadSheetOverlapColor() {
         return spreadSheetOverlapColor;
     }
 
     /**
-     * Sets the spreadsheet overlap colour.
+     * Sets the spread sheet overlap color.
      *
-     * @param color The new colour to use for spreadsheet overlaps.
+     * @param color to use for spread sheet overlap color.
      */
     public void setSpreadSheetOverlapColor(final Color color) {
         spreadSheetOverlapColor = color;
     }
 
+    /**
+     * Did we set the spread sheet overlap color?
+     *
+     * @return True if we set the spread sheet overlap color; otherwise False.
+     */
     public boolean hasSpreadSheetOverlapColor() {
         return spreadSheetOverlapColor != null;
     }
 
     /**
-     * @return The last chooser directory that the user nominated.
+     * Get the last chosen directory.
+     *
+     * @return The last chosen directory.
      */
     public String getLastChosenDirectory() {
         return lastChosenDirectory;
     }
 
     /**
-     * Sets the last chooser directory that the user nominated.
+     * Sets the last chosen directory.
      *
-     * @param directory The last location the user nominated.
+     * @param directory last chosen.
      */
     public void setLastChosenDirectory(final String directory) {
         lastChosenDirectory = directory;
     }
 
+    /**
+     * Did we set the last chosen directory?
+     *
+     * @return True if the last chosen directory is set; otherwise False.
+     */
     public boolean hasLastChosenDirectory() {
         return lastChosenDirectory != null;
     }
 
     /**
-     * @return the ignoreVersion
+     * Get the ignore version.
+     *
+     * @return The ignore version.
      */
     public String getIgnoreVersion() {
         return ignoreVersion;
     }
 
     /**
-     * @param version the version to set
+     * Set the ignore version.
+     *
+     * @param version The ignore version that is set.
      */
     public void setIgnoreVersion(final String version) {
         ignoreVersion = version;
     }
 
+    /**
+     * Did we set the ignore version?
+     *
+     * @return True if we set the ignore version; otherwise False.
+     */
     public boolean hasIgnoreVersion() {
         return ignoreVersion != null;
     }
 
     /**
+     * Get the flag for that we set to warn on illegal column names.
+     *
      * @return whether or not to display warnings for illegal column names
      */    
-    public boolean getDoWarnOnColumnNames()
+    public boolean getDoWarnOnIllegalColumnNames()
     {
-        return doWarnOnColumnNames;
+        return doWarnOnIllegalColumnNames;
     }
     
     /**
-     * @param doWarn whether or not to display warnings for illegal column names
+     * Set the warn flag for illegal column names.
+     *
+     * @param doWarn whether or not to display warnings for illegal column names.
      */    
-    public void setDoWarnOnColumnNames(final boolean doWarn) {
-        doWarnOnColumnNames = doWarn;
+    public void setDoWarnOnIllegalColumnNames(final boolean doWarn) {
+        doWarnOnIllegalColumnNames = doWarn;
     }
 
     /**
-     * @return the pre-release preference
+     * Get the user pre-release.
+     *
+     * @return The pre-release preference.
      */
     public boolean getUsePreRelease() {
         return usePreRelease;
     }
 
     /**
-     * @param usePreRelease true if prereleases are preferred
+     * Set the user pre-release flag.
+     *
+     * @param usePreRelease True if pre-releases are preferred; otherwise False.
      */
     public void setUsePreRelease(boolean usePreRelease) {
         this.usePreRelease = usePreRelease;
     }
 
     /**
-     * @return favorites folder
+     * Get the favorites folder.
+     *
+     * @return favorites folder is returned.
      */
     public String getFavoritesFolder(){
         return favoritesFolder;
     }
 
     /**
-     * @param pathName path for the favorites folder
+     * Set the favorites folder.
+     *
+     * @param favoritesFolder for the favorites folder.
      */
-    public void setFavoritesFolder(String pathName){
-        favoritesFolder = pathName;
+    public void setFavoritesFolder(String favoritesFolder){
+        this.favoritesFolder = favoritesFolder;
     }
 
+    /**
+     * Did we set the favorites folder?
+     *
+     * @return True if the favorites folder was set; otherwise False.
+     */
     public boolean hasFavoritesFolder() {
         return favoritesFolder != null;
     }
 
+    /**
+     * Get the support site URL.
+     *
+     * @return The support site URL.
+     */
     public String getSupportSiteUrl() {
         return supportSiteUrl;
     }
 
+    /**
+     * Set the support site URL.
+     *
+     * @param supportSiteUrl The support site URL.
+     */
     public void setSupportSiteUrl(String supportSiteUrl) {
         this.supportSiteUrl = supportSiteUrl;
     }
 
+    /**
+     * Did we set the support site URL?
+     *
+     * @return True if we set support site ULR; otherwise False.
+     */
     public boolean hasSupportSiteUrl() {
         return supportSiteUrl != null;
     }
 
+    /**
+     * Get the user guide URL.
+     *
+     * @return The user guide URL.
+     */
     public String getUserGuideUrl() {
         return userGuideUrl;
     }
 
+    /**
+     * Set the user guide URL.
+     *
+     * @param userGuideUrl The user guide URL.
+     */
     public void setUserGuideUrl(String userGuideUrl) {
         this.userGuideUrl = userGuideUrl;
     }
 
+    /**
+     * Did we set the user guide URL?
+     *
+     * @return True if we set the user guide URL; otherwise False.
+     */
     public boolean hasUserGuideUrl() {
         return userGuideUrl != null;
     }

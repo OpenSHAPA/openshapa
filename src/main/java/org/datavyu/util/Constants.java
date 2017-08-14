@@ -36,4 +36,7 @@ public final class Constants {
 
     /** Font file name */
     public static final String DEFAULT_FONT_FILE = "/fonts/DejaVuSansCondensed.ttf";
+
+    /** Buffer size when copying files from streams */
+    public static final int BUFFER_COPY_SIZE = 16*1024; // 16 kB
 }

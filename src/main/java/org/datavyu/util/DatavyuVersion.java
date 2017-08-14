@@ -114,7 +114,7 @@ public class DatavyuVersion {
      * @return True if the server side version is the ignore version; otherwise false.
      */
     public static boolean isIgnoreVersion() {
-        String ignoreVersion = ConfigProperties.getInstance().getIgnoreVersion();
+        String ignoreVersion = ConfigurationProperties.getInstance().getIgnoreVersion();
         return !(ignoreVersion == null) && ignoreVersion.equals(serverVersion.getVersion());
     }
 
@@ -188,6 +188,6 @@ public class DatavyuVersion {
      * @return The server datavyu version.
      */
     private static DatavyuVersion initServerVersion() {
-        return initServerVersion(ConfigProperties.getInstance().getUsePreRelease() ? PRE_VERSION_FILE : VERSION_FILE);
+        return initServerVersion(ConfigurationProperties.getInstance().getUsePreRelease() ? PRE_VERSION_FILE : VERSION_FILE);
     }
 }

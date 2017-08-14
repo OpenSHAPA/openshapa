@@ -19,7 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.controllers.CreateNewCellC;
 import org.datavyu.models.db.Variable;
-import org.datavyu.util.ConfigProperties;
+import org.datavyu.util.ConfigurationProperties;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 
@@ -52,7 +52,7 @@ public class SpreadsheetEmptyCell extends JPanel implements MouseListener {
     /**
      * Border to use for normal cell. No extra information to show.
      */
-    private static final Border NORMAL_BORDER = new MatteBorder(0, 0, 1, 1, ConfigProperties.DEFAULT_BORDER_COLOUR);
+    private static final Border NORMAL_BORDER = new MatteBorder(0, 0, 1, 1, ConfigurationProperties.DEFAULT_BORDER_COLOUR);
 
     /**
      * The panel that displays the cell.
@@ -128,36 +128,36 @@ public class SpreadsheetEmptyCell extends JPanel implements MouseListener {
         topPanel = new JPanel();
         topPanel.addMouseListener(this);
         ord = new JLabel("+");
-        ord.setFont(ConfigProperties.getInstance().getSpreadSheetLabelFont());
-        ord.setForeground(addAlpha(ConfigProperties.getInstance().getSpreadSheetOrdinalForegroundColour(), ALPHA));
+        ord.setFont(ConfigurationProperties.getInstance().getSpreadSheetLabelFont());
+        ord.setForeground(addAlpha(ConfigurationProperties.getInstance().getSpreadSheetOrdinalForegroundColor(), ALPHA));
         ord.setToolTipText(rMap.getString("ord.tooltip"));
         ord.addMouseListener(this);
         ord.setFocusable(true);
 
         onset = new JLabel("--:--:--:---");
-        onset.setFont(ConfigProperties.getInstance().getSpreadSheetLabelFont());
-        onset.setForeground(addAlpha(ConfigProperties.getInstance().getSpreadSheetTimeStampForegroundColor(), ALPHA));
+        onset.setFont(ConfigurationProperties.getInstance().getSpreadSheetLabelFont());
+        onset.setForeground(addAlpha(ConfigurationProperties.getInstance().getSpreadSheetTimeStampForegroundColor(), ALPHA));
         onset.setToolTipText(rMap.getString("onset.tooltip"));
         onset.addMouseListener(this);
         onset.setName("onsetTextField");
 
         offset = new JLabel("--:--:--:---");
-        offset.setFont(ConfigProperties.getInstance().getSpreadSheetLabelFont());
-        offset.setForeground(addAlpha(ConfigProperties.getInstance().getSpreadSheetTimeStampForegroundColor(), ALPHA));
+        offset.setFont(ConfigurationProperties.getInstance().getSpreadSheetLabelFont());
+        offset.setForeground(addAlpha(ConfigurationProperties.getInstance().getSpreadSheetTimeStampForegroundColor(), ALPHA));
         offset.setToolTipText(rMap.getString("offset.tooltip"));
         offset.addMouseListener(this);
         offset.setName("offsetTextField");
 
         dataPanel = new JLabel(rMap.getString("empty.text"));
-        dataPanel.setFont(ConfigProperties.getInstance().getSpreadSheetLabelFont());
-        dataPanel.setForeground(addAlpha(ConfigProperties.getInstance().getSpreadSheetForegroundColour(), ALPHA));
+        dataPanel.setFont(ConfigurationProperties.getInstance().getSpreadSheetLabelFont());
+        dataPanel.setForeground(addAlpha(ConfigurationProperties.getInstance().getSpreadSheetForegroundColor(), ALPHA));
 
         dataPanel.setOpaque(false);
         dataPanel.addMouseListener(this);
         dataPanel.setName("cellValue");
 
         // Set the appearance of the spreadsheet cell.
-        cellPanel.setBackground(addAlpha(ConfigProperties.getInstance().getSpreadSheetBackgroundColour(), ALPHA));
+        cellPanel.setBackground(addAlpha(ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor(), ALPHA));
         cellPanel.setBorder(NORMAL_BORDER);
         cellPanel.setLayout(new BorderLayout());
 
@@ -302,7 +302,7 @@ public class SpreadsheetEmptyCell extends JPanel implements MouseListener {
     public void paint(final Graphics g) {
         // BugzID:474 - Set the size at paint time - somewhere else may have
         // altered the font.
-        dataPanel.setFont(ConfigProperties.getInstance().getSpreadSheetDataFont());
+        dataPanel.setFont(ConfigurationProperties.getInstance().getSpreadSheetDataFont());
         super.paint(g);
     }
 }

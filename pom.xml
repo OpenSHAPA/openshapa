@@ -613,9 +613,9 @@
                         <fileSet>
                             <directory>src/main/</directory>
                             <includes>
-                                <include>favourites/*.rb</include>
-                                <include>favourites/*.opf</include>
-                                <include>favourites/*.cha</include>
+                                <include>favorites/*.rb</include>
+                                <include>favorites/*.opf</include>
+                                <include>favorites/*.cha</include>
                             </includes>
                         </fileSet>
                         <fileSet>
@@ -631,7 +631,7 @@
                     <iconFile>${basedir}/src/main/resources/icons/datavyu.icns</iconFile>
                     <javaApplicationStub>${basedir}/src/main/mac-resources/JavaApplicationStub</javaApplicationStub>
                     <dictionaryFile>${basedir}/Info.plist</dictionaryFile>
-                    <!-- see teh antrun goal - need to create snapshot directory before this will work. -->
+                    <!-- see the antrun goal - need to create snapshot directory before this will work. -->
                     <diskImageFile>
                         ${project.build.directory}/site/snapshots/${project.build.finalName}-OSX-${buildNumber}.dmg
                     </diskImageFile>

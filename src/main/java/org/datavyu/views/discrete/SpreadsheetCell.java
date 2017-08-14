@@ -22,7 +22,7 @@ import org.datavyu.models.db.CellListener;
 import org.datavyu.models.db.DataStore;
 import org.datavyu.models.db.Value;
 import org.datavyu.util.ClockTimer;
-import org.datavyu.util.ConfigProperties;
+import org.datavyu.util.ConfigurationProperties;
 import org.datavyu.views.discrete.datavalues.MatrixRootView;
 import org.datavyu.views.discrete.datavalues.TimeStampDataValueEditor.TimeStampSource;
 import org.datavyu.views.discrete.datavalues.TimeStampTextField;
@@ -49,10 +49,10 @@ public class SpreadsheetCell extends JPanel
      */
     public static final Border OVERLAP_BORDER = new CompoundBorder(
             new CompoundBorder(
-                    new MatteBorder(0, 0, 1, 0, ConfigProperties.DEFAULT_BORDER_COLOUR),
-                    new MatteBorder(0, 0, 3, 0, ConfigProperties.getInstance().getSpreadSheetOverlapColor())),
+                    new MatteBorder(0, 0, 1, 0, ConfigurationProperties.DEFAULT_BORDER_COLOUR),
+                    new MatteBorder(0, 0, 3, 0, ConfigurationProperties.getInstance().getSpreadSheetOverlapColor())),
             new MatteBorder(3,
-                    3, 0, 3, ConfigProperties.getInstance().getSpreadSheetBackgroundColour()));
+                    3, 0, 3, ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor()));
 
     /**
      * Width of spacer between onset and offset timestamps.
@@ -62,17 +62,17 @@ public class SpreadsheetCell extends JPanel
      * Border to use when a cell is highlighted.
      */
     private static final Border HIGHLIGHT_BORDER = new CompoundBorder(
-            new MatteBorder(0, 0, 1, 0, ConfigProperties.DEFAULT_BORDER_COLOUR),
-            new MatteBorder(3, 3, 3, 3, ConfigProperties.getInstance().getSpreadSheetSelectedColor()));
+            new MatteBorder(0, 0, 1, 0, ConfigurationProperties.DEFAULT_BORDER_COLOUR),
+            new MatteBorder(3, 3, 3, 3, ConfigurationProperties.getInstance().getSpreadSheetSelectedColor()));
     /**
      * Border to use when a cell is highlighted and overlapping cell.
      */
     private static final Border HIGHLIGHT_OVERLAP_BORDER = new CompoundBorder(
             new CompoundBorder(
-                    new MatteBorder(0, 0, 1, 0, ConfigProperties.DEFAULT_BORDER_COLOUR),
-                    new MatteBorder(0, 0, 3, 0, ConfigProperties.getInstance().getSpreadSheetOverlapColor())),
+                    new MatteBorder(0, 0, 1, 0, ConfigurationProperties.DEFAULT_BORDER_COLOUR),
+                    new MatteBorder(0, 0, 3, 0, ConfigurationProperties.getInstance().getSpreadSheetOverlapColor())),
             new MatteBorder(3,
-                    3, 0, 3, ConfigProperties.getInstance().getSpreadSheetSelectedColor()));
+                    3, 0, 3, ConfigurationProperties.getInstance().getSpreadSheetSelectedColor()));
     /**
      * Border to use when a cell is selected.
      */
@@ -82,19 +82,19 @@ public class SpreadsheetCell extends JPanel
      */
     private static final Border FILL_BORDER = new CompoundBorder(
             new CompoundBorder(
-                    new MatteBorder(0, 0, 1, 0, ConfigProperties.DEFAULT_BORDER_COLOUR),
-                    new MatteBorder(0, 0, 3, 0, ConfigProperties.getInstance().getSpreadSheetSelectedColor())),
+                    new MatteBorder(0, 0, 1, 0, ConfigurationProperties.DEFAULT_BORDER_COLOUR),
+                    new MatteBorder(0, 0, 3, 0, ConfigurationProperties.getInstance().getSpreadSheetSelectedColor())),
             new MatteBorder(3,
-                    3, 0, 3, ConfigProperties.getInstance().getSpreadSheetSelectedColor()));
+                    3, 0, 3, ConfigurationProperties.getInstance().getSpreadSheetSelectedColor()));
     /**
      * Border to use for normal cell. No extra information to show.
      */
     private static final Border NORMAL_BORDER = new CompoundBorder(
             new CompoundBorder(
-                    new MatteBorder(1, 0, 1, 0, ConfigProperties.DEFAULT_BORDER_COLOUR),
-                    new MatteBorder(0, 0, 3, 0, ConfigProperties.getInstance().getSpreadSheetBackgroundColour())),
+                    new MatteBorder(1, 0, 1, 0, ConfigurationProperties.DEFAULT_BORDER_COLOUR),
+                    new MatteBorder(0, 0, 3, 0, ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor())),
             new MatteBorder(3, 3, 0, 3,
-                    ConfigProperties.getInstance().getSpreadSheetBackgroundColour()));
+                    ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor()));
     /**
      * The logger for this class.
      */
@@ -184,31 +184,31 @@ public class SpreadsheetCell extends JPanel
         topPanel = new JPanel();
         topPanel.addMouseListener(this);
         ord = new JLabel();
-        ord.setFont(ConfigProperties.getInstance().getSpreadSheetLabelFont());
-        ord.setForeground(ConfigProperties.getInstance().getSpreadSheetOrdinalForegroundColour());
+        ord.setFont(ConfigurationProperties.getInstance().getSpreadSheetLabelFont());
+        ord.setForeground(ConfigurationProperties.getInstance().getSpreadSheetOrdinalForegroundColor());
         ord.setToolTipText(rMap.getString("ord.tooltip"));
         ord.addMouseListener(this);
         ord.setFocusable(true);
 
         onset = new TimeStampTextField(model, TimeStampSource.Onset);
-        onset.setFont(ConfigProperties.getInstance().getSpreadSheetLabelFont());
-        onset.setForeground(ConfigProperties.getInstance().getSpreadSheetTimeStampForegroundColor());
+        onset.setFont(ConfigurationProperties.getInstance().getSpreadSheetLabelFont());
+        onset.setForeground(ConfigurationProperties.getInstance().getSpreadSheetTimeStampForegroundColor());
         onset.setToolTipText(rMap.getString("onset.tooltip"));
         onset.addFocusListener(this);
         onset.addMouseListener(this);
         onset.setName("onsetTextField");
 
         offset = new TimeStampTextField(model, TimeStampSource.Offset);
-        offset.setFont(ConfigProperties.getInstance().getSpreadSheetLabelFont());
-        offset.setForeground(ConfigProperties.getInstance().getSpreadSheetTimeStampForegroundColor());
+        offset.setFont(ConfigurationProperties.getInstance().getSpreadSheetLabelFont());
+        offset.setForeground(ConfigurationProperties.getInstance().getSpreadSheetTimeStampForegroundColor());
         offset.setToolTipText(rMap.getString("offset.tooltip"));
         offset.addFocusListener(this);
         offset.addMouseListener(this);
         offset.setName("offsetTextField");
 
         dataPanel = new MatrixRootView(model, cell.getValue());
-        dataPanel.setFont(ConfigProperties.getInstance().getSpreadSheetDataFont());
-        dataPanel.setForeground(ConfigProperties.getInstance().getSpreadSheetForegroundColour());
+        dataPanel.setFont(ConfigurationProperties.getInstance().getSpreadSheetDataFont());
+        dataPanel.setForeground(ConfigurationProperties.getInstance().getSpreadSheetForegroundColor());
 
         dataPanel.setOpaque(false);
         dataPanel.addFocusListener(this);
@@ -216,7 +216,7 @@ public class SpreadsheetCell extends JPanel
         dataPanel.setName("cellValue");
 
         // Set the appearance of the spreadsheet cell.
-        cellPanel.setBackground(ConfigProperties.getInstance().getSpreadSheetBackgroundColour());
+        cellPanel.setBackground(ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor());
         // Cell is highlighted by default.
         cellPanel.setBorder(NORMAL_BORDER);
         cellPanel.setLayout(new BorderLayout());
@@ -474,21 +474,21 @@ public class SpreadsheetCell extends JPanel
             } else {
                 cellPanel.setBorder(FILL_BORDER);
             }
-            cellPanel.setBackground(ConfigProperties.getInstance().getSpreadSheetSelectedColor());
+            cellPanel.setBackground(ConfigurationProperties.getInstance().getSpreadSheetSelectedColor());
         } else {
             if (cellOverlap) {
                 cellPanel.setBorder(OVERLAP_BORDER);
             } else {
                 cellPanel.setBorder(NORMAL_BORDER);
             }
-            cellPanel.setBackground(ConfigProperties.getInstance().getSpreadSheetBackgroundColour());
+            cellPanel.setBackground(ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor());
         }
 
         if (Datavyu.getDataController().getCellHighlightAndFocus()) {
             if (model.isPastTimeWindow(Datavyu.getDataController().getCurrentTime())) {
                 cellPanel.setBackground(pastTimeHighlightColor);
             } else if (cellPanel.getBackground() == pastTimeHighlightColor) {
-                cellPanel.setBackground(ConfigProperties.getInstance().getSpreadSheetBackgroundColour());
+                cellPanel.setBackground(ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor());
             }
         }
 
@@ -497,7 +497,7 @@ public class SpreadsheetCell extends JPanel
                 cellPanel.getBackground() != timeHighlightColor) {
             cellPanel.setBackground(timeHighlightColor);
         } else if (cellPanel.getBackground() == timeHighlightColor) {
-            cellPanel.setBackground(ConfigProperties.getInstance().getSpreadSheetBackgroundColour());
+            cellPanel.setBackground(ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor());
         }
 
     }
@@ -685,7 +685,7 @@ public class SpreadsheetCell extends JPanel
     public void paint(final Graphics g) {
         // BugzID:474 - Set the size at paint time - somewhere else may have
         // altered the font.
-        dataPanel.setFont(ConfigProperties.getInstance().getSpreadSheetDataFont());
+        dataPanel.setFont(ConfigurationProperties.getInstance().getSpreadSheetDataFont());
         super.paint(g);
     }
 

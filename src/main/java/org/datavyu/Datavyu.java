@@ -609,7 +609,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      * Action for opening the support site
      */
     public void openSupportSite() {
-        String url = ConfigProperties.getInstance().getSupportSiteUrl();
+        String url = ConfigurationProperties.getInstance().getSupportSiteUrl();
         try {
             java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
         } catch (java.io.IOException e) {
@@ -621,7 +621,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      * Action for opening the guide site
      */
     public void openGuideSite() {
-        String url = ConfigProperties.getInstance().getUserGuideUrl();
+        String url = ConfigurationProperties.getInstance().getUserGuideUrl();
         try {
             java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
         } catch (java.io.IOException e) {
@@ -892,6 +892,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
             MacOS.setOSXPressAndHoldValue(true);
         }
         nativeLibraryManager.purge();
+        ConfigurationProperties.save();
         super.shutdown();
     }
 
