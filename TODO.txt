@@ -5,3 +5,4 @@
 
 - Add a class that uses native control for playback speed
 - Add playback speed at 0.5x (and others) preferably through filter in ffmpeg
+- Replace Swing Application Framework with JavaFX

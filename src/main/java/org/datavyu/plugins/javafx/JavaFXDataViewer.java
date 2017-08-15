@@ -4,10 +4,7 @@ import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
 import javafx.stage.Stage;
 import org.datavyu.models.db.DataStore;
-import org.datavyu.plugins.CustomActions;
-import org.datavyu.plugins.CustomActionsAdapter;
-import org.datavyu.plugins.ViewerStateListener;
-import org.datavyu.plugins.BaseDataViewer;
+import org.datavyu.plugins.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,9 +14,6 @@ import java.util.concurrent.CountDownLatch;
 
 
 public class JavaFXDataViewer extends BaseDataViewer {
-
-    private static final float FALLBACK_FRAME_RATE = 24.0f;
-    private static final String VIDEO = "file:///Users/jesse/Desktop/country_life_butter.mp4";
 
     /**
      * Data viewer offset.
@@ -33,35 +27,11 @@ public class JavaFXDataViewer extends BaseDataViewer {
      * Boolean to keep track of whether or not we are playing
      */
     private boolean playing;
-    /**
-     * Data viewer state listeners.
-     */
-    private List<ViewerStateListener> stateListeners;
-    /**
-     * Action button for demo purposes.
-     */
-    private JButton sampleButton;
-    /**
-     * Supported custom actions.
-     */
-    private CustomActions actions = new CustomActionsAdapter() {
-        @Override
-        public AbstractButton getActionButton1() {
-            return sampleButton;
-        }
-    };
-    /**
-     * Surface on which we will display video
-     */
-    private Canvas videoSurface;
+
     /**
      * FPS of the video, calculated on launch
      */
     private float fps;
-    /**
-     * Length of the video, calculated on launch
-     */
-    private long length;
 
     /**
      * The last jog position, making sure we are only calling jog once
@@ -75,14 +45,13 @@ public class JavaFXDataViewer extends BaseDataViewer {
     public JavaFXDataViewer(final Frame parent, final boolean modal) {
         super(parent, modal);
         javafxapp = new JavaFXApplication(null);
-//        new JFXPanel();
-//        stateListeners = new ArrayList<ViewerStateListener>();
-
     }
 
     public static void runAndWait(final Runnable action) {
         if (action == null)
             throw new NullPointerException("action");
+
+        VlcLibraryLoader.load();
 
         // run synchronously on JavaFX thread
         System.out.println("AM I THE JAVAFX THREAD?:" + Platform.isFxApplicationThread());
@@ -91,8 +60,6 @@ public class JavaFXDataViewer extends BaseDataViewer {
             return;
         }
 
-        // queue on JavaFX thread and wait for completion
-//        final CountDownLatch doneLatch = new CountDownLatch(1);
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
@@ -102,17 +69,11 @@ public class JavaFXDataViewer extends BaseDataViewer {
                     action.run();
                     System.out.println("I RAN THE ACTION");
                 } finally {
-//                    doneLatch.countDown();
                 }
             }
         });
 
         System.out.println("TESTING WEHTEHR IT RETURNS");
-//        try {
-//            doneLatch.await();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
     }
 
     @Override
@@ -238,7 +199,6 @@ public class JavaFXDataViewer extends BaseDataViewer {
     @Override
     protected void resizeVideo(final float scale) {
         javafxapp.setScale(scale);
-
         notifyChange();
     }
 
@@ -269,14 +229,7 @@ public class JavaFXDataViewer extends BaseDataViewer {
 
     @Override
     public void seek(final long position) {
-
-//        Platform.runLater(new Runnable() {
-//            @Override
-//            public void run() {
         javafxapp.seek(position);
-//            }
-//        });
-
     }
 
     @Override
@@ -287,13 +240,7 @@ public class JavaFXDataViewer extends BaseDataViewer {
     @Override
     public void stop() {
         playing = false;
-
-//        Platform.runLater(new Runnable() {
-//            @Override
-//            public void run() {
         javafxapp.pause();
-//            }
-//        });
     }
 
     @Override
@@ -304,18 +251,12 @@ public class JavaFXDataViewer extends BaseDataViewer {
     @Override
     public void play() {
         playing = true;
-
-//        Platform.runLater(new Runnable() {
-//            @Override
-//            public void run() {
         javafxapp.play();
-//            }
-//        });
     }
 
     @Override
     protected void cleanUp() {
-
+        VlcLibraryLoader.purge();
     }
 
     @Override
@@ -324,11 +265,6 @@ public class JavaFXDataViewer extends BaseDataViewer {
         javafxapp.setVisible(false);
         javafxapp.closeAndDestroy();
     }
-
-    //@Override
-    //public void setDataStore(final DataStore sDB) {
-    //    // TODO Auto-generated method stub
-    //}
 
     public boolean isAssumedFramesPerSecond() {
         return assumedFPS;

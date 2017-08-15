@@ -21,7 +21,6 @@ import org.apache.logging.log4j.Logger;
 import org.datavyu.controllers.project.ProjectController;
 import org.datavyu.models.db.TitleNotifier;
 import org.datavyu.models.db.UserWarningException;
-import org.datavyu.plugins.quicktime.QTDataViewer;
 import org.datavyu.plugins.vlcfx.NativeLibraryManager;
 import org.datavyu.undoableedits.SpreadsheetUndoManager;
 import org.datavyu.util.*;
@@ -53,8 +52,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
     /** The logger for this class */
     private static Logger logger = LogManager.getLogger(Datavyu.class);
 
-    private static final NativeLibraryManager nativeLibraryManager;
-
     /** The desired minimum initial width */
     private static final int INIT_MIN_X = 600;
 
@@ -81,13 +78,10 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         logger.info("Class path is: " + System.getProperty("java.class.path"));
         logger.info("The java library path is: " + System.getProperty("java.library.path"));
 
-        // TODO: move this into respective viewers!
-        nativeLibraryManager = new NativeLibraryManager(System.getProperty("java.io.tmpdir")
-                + File.separator + "vlc" + File.separator);
-
         switch (getPlatform()) {
             case MAC:
                 logger.info("Detected platform: MAC");
+                // Load library for look and feel under Mac OSX
                 try {
                     NativeLibraryLoader.extractAndLoad("quaqua64");
                 } catch (Exception e) {
@@ -100,17 +94,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                 break;
 
             case WINDOWS:
-                logger.info("Detected platform: WINDOWS");
-                try {
-                    if (System.getProperty("sun.arch.data.model").equals("32")) {
-                        logger.info("Loading libraries for 32 bit QT");
-                        NativeLibraryLoader.extract("QTJNative");
-                        NativeLibraryLoader.extractAndLoad("QTJavaNative");
-                        QTDataViewer.librariesFound = true;
-                    }
-                } catch (Exception e) {
-                    logger.error("Could not load libraries for QT " + e);
-                }
+                // nothing to do here
                 break;
 
             default:
@@ -143,25 +127,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
 
     /** File path from the command line */
     private String commandLineFile;
-
-    // TODO: Move this into the QTDataViewer class!!
-    public static boolean hasQuicktimeLibs() {
-        boolean found = false;
-        try {
-            Class.forName("quicktime.QTSession");
-            found = true;
-            QTDataViewer.librariesFound = true;
-        } catch (UnsatisfiedLinkError noLink) {
-            logger.error("No link: " + noLink.getMessage());
-        } catch (NoClassDefFoundError noClass) {
-            logger.error("No class found: " + noClass.getMessage());
-        } catch (ClassNotFoundException ce) {
-            logger.error("Class not found: " + ce.getMessage());
-        } catch (Exception e) {
-            logger.error("General exception: " + e.getMessage());
-        }
-        return found;
-    }
 
     /**
      * Gets the single instance of the data controller that is currently used
@@ -891,7 +856,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         if (getPlatform() == Platform.MAC && osxPressAndHoldEnabled) {
             MacOS.setOSXPressAndHoldValue(true);
         }
-        nativeLibraryManager.purge();
         ConfigurationProperties.save();
         super.shutdown();
     }

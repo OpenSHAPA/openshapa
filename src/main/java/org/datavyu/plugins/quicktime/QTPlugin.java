@@ -18,20 +18,27 @@ import com.google.common.collect.Lists;
 import com.sun.jna.Platform;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.plugins.DataViewer;
 import org.datavyu.plugins.Filter;
 import org.datavyu.plugins.FilterNames;
 import org.datavyu.plugins.Plugin;
 import org.datavyu.plugins.quicktime.QTDataViewer;
+import org.datavyu.util.NativeLibraryLoader;
 
 import javax.swing.*;
+import java.io.File;
 import java.io.FileFilter;
 import java.net.URL;
 import java.util.List;
 
 
 public final class QTPlugin implements Plugin {
+
+    /** The logger for this class */
+    private static Logger logger = LogManager.getLogger(QTPlugin.class);
 
     private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(Datavyu.Platform.WINDOWS);
 
@@ -59,6 +66,50 @@ public final class QTPlugin implements Plugin {
             return ext;
         }
     };
+
+    private static boolean librariersLoaded = false;
+
+    // TODO: Move this into the QTDataViewer class!!
+    public static boolean hasQuicktimeLibs() {
+        boolean found = false;
+        try {
+            Class.forName("quicktime.QTSession");
+            found = true;
+            librariersLoaded = true;
+        } catch (UnsatisfiedLinkError noLink) {
+            logger.error("No link: " + noLink.getMessage());
+        } catch (NoClassDefFoundError noClass) {
+            logger.error("No class found: " + noClass.getMessage());
+        } catch (ClassNotFoundException ce) {
+            logger.error("Class not found: " + ce.getMessage());
+        } catch (Exception e) {
+            logger.error("General exception: " + e.getMessage());
+        }
+        return found;
+    }
+
+    public static boolean isLibrariersLoaded() {
+        return librariersLoaded;
+    }
+
+    static {
+        if (Datavyu.getPlatform() == Datavyu.Platform.WINDOWS) {
+            logger.info("Detected platform: WINDOWS");
+            try {
+                if (System.getProperty("sun.arch.data.model").equals("32")) {
+                    logger.info("Loading libraries for 32 bit QT");
+                    File libraryFile = NativeLibraryLoader.extract("QTJNative");
+                    System.setProperty("java.library.path", System.getProperty("java.library.path") + File.pathSeparator
+                            + libraryFile.getAbsolutePath());
+                    NativeLibraryLoader.extractAndLoad("QTJavaNative");
+                    //QTDataViewer.librariesFound = true;
+                    librariersLoaded = true;
+                }
+            } catch (Exception e) {
+                logger.error("Could not load libraries for QT " + e);
+            }
+        }
+    }
 
     @Override
     public DataViewer getNewDataViewer(final java.awt.Frame parent,

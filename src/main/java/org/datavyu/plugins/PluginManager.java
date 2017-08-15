@@ -382,7 +382,7 @@ public final class PluginManager {
                 @Override
                 public int compare(final Plugin o1, final Plugin o2) {
 
-                    if(QTDataViewer.librariesFound) {
+                    if (QTPlugin.isLibrariersLoaded()) {
                         if ("QuickTime Video".equals(o1.getPluginName())) {
                             return -1;
                         }

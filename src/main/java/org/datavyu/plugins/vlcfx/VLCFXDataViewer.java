@@ -5,6 +5,8 @@ import javafx.embed.swing.JFXPanel;
 import javafx.stage.Stage;
 import org.datavyu.models.Identifier;
 import org.datavyu.plugins.BaseDataViewer;
+import org.datavyu.plugins.VlcLibraryLoader;
+import org.datavyu.plugins.vlc.VLCDataViewer;
 import org.datavyu.views.component.DefaultTrackPainter;
 import org.datavyu.views.component.TrackPainter;
 
@@ -49,6 +51,8 @@ public class VLCFXDataViewer extends BaseDataViewer {
     public static void runAndWait(final Runnable action) {
         if (action == null)
             throw new NullPointerException("action");
+
+        VlcLibraryLoader.load();
 
         // run synchronously on JavaFX thread
         if (Platform.isFxApplicationThread()) {
@@ -245,8 +249,8 @@ public class VLCFXDataViewer extends BaseDataViewer {
 
     @Override
     protected void cleanUp() {
+        VlcLibraryLoader.purge();
         clearSourceFile();
-
     }
 
     @Override

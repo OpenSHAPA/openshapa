@@ -49,7 +49,7 @@ public final class QTDataViewer extends BaseDataViewer {
     /** How many frames to check when correcting the FPS */
     private static final int CORRECTION_FRAMES = 5;
 
-    public static boolean librariesFound = false;
+    //public static boolean librariesFound = false;
 
     /** The logger for this class */
     private static Logger logger = LogManager.getLogger(QTDataViewer.class);

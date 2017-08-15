@@ -35,6 +35,7 @@ import org.datavyu.models.component.*;
 import org.datavyu.plugins.DataViewer;
 import org.datavyu.plugins.Plugin;
 import org.datavyu.plugins.PluginManager;
+import org.datavyu.plugins.quicktime.QTPlugin;
 import org.datavyu.util.ClockTimer;
 import org.datavyu.util.ClockTimer.ClockListener;
 import org.datavyu.util.FloatingPointUtils;
@@ -973,7 +974,7 @@ public final class VideoController extends DatavyuDialog
         addDataButton.setName("addDataButton");
         addDataButton.addActionListener(new ActionListener() {
             public void actionPerformed(final ActionEvent evt) {
-                if (!qtWarningShown && !Datavyu.hasQuicktimeLibs()) {
+                if (!qtWarningShown && !QTPlugin.hasQuicktimeLibs()) {
                     qtWarningShown = true;
                 }
                 openVideoButtonActionPerformed(evt);

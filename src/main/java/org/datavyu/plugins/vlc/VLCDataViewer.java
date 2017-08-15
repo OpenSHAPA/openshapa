@@ -1,9 +1,7 @@
 package org.datavyu.plugins.vlc;
 
 import org.datavyu.models.Identifier;
-import org.datavyu.plugins.CustomActions;
-import org.datavyu.plugins.DataViewer;
-import org.datavyu.plugins.ViewerStateListener;
+import org.datavyu.plugins.*;
 import org.datavyu.views.component.DefaultTrackPainter;
 import org.datavyu.views.component.TrackPainter;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
@@ -20,9 +18,9 @@ import java.util.List;
 import java.util.Properties;
 
 
-public class VLCDataViewer implements DataViewer {
+public class VLCDataViewer extends BaseDataViewer {
 
-    private static final float FALLBACK_FRAME_RATE = 24.0f;
+    private static float fallbackFrameRate = 24.0f;
 
     /** Data viewer Identifier */
     private Identifier id;
@@ -60,6 +58,7 @@ public class VLCDataViewer implements DataViewer {
     private boolean assumedFPS = false;
 
     public VLCDataViewer(final Frame parent, final boolean modal) {
+        super(parent, modal);
 
         playing = false;
         vlcDialog = new JDialog(parent, modal);
@@ -99,6 +98,31 @@ public class VLCDataViewer implements DataViewer {
 
         stateListeners = new ArrayList<>();
 
+    }
+
+    public static void setFallbackFrameRate(float fallbackFrameRate) {
+        VLCDataViewer.fallbackFrameRate = fallbackFrameRate;
+    }
+
+    @Override
+    protected void setPlayerSourceFile(File videoFile) {
+        // TODO: implement
+    }
+
+    @Override
+    protected void setPlayerVolume(float volume) {
+        // TODO: implement
+    }
+
+    @Override
+    protected Dimension getOriginalVideoSize() {
+        // TODO: implement
+        return null;
+    }
+
+    @Override
+    protected float getPlayerFramesPerSecond() {
+        return fps;
     }
 
     private void launchEdtTaskNow(Runnable edtTask) {
@@ -177,6 +201,9 @@ public class VLCDataViewer implements DataViewer {
 
     @Override
     public void setSourceFile(final File dataFeed) {
+        VlcLibraryLoader.load();
+
+
         sourceFile = dataFeed;
         vlcDialog.setVisible(true);
         vlcDialog.setName(vlcDialog.getName() + "-" + dataFeed.getName());
@@ -226,14 +253,14 @@ public class VLCDataViewer implements DataViewer {
         if (fps < 1.0) {
             // VLC can't read the framerate for this video for some reason.
             // Set it to the fallback rate so it is still usable for coding.
-            fps = FALLBACK_FRAME_RATE;
+            fps = fallbackFrameRate;
             /*
             JOptionPane.showMessageDialog(vlcDialog,
                     "Warning: Unable to detect framerate in video.\n"
                             + "This video may not behave properly. "
                             + "Please try converting to H.264.\n\n"
                             + "This can be done under Controller->Convert Videos.\n"
-                            + "Setting framerate to " + FALLBACK_FRAME_RATE);
+                            + "Setting framerate to " + fallbackFrameRate);
                     */
         }
     }
@@ -244,7 +271,7 @@ public class VLCDataViewer implements DataViewer {
     }
 
     @Override
-    public long getCurrentTime() throws Exception {
+    public long getCurrentTime() {
         return mediaPlayer.getTime();
     }
 
@@ -391,6 +418,11 @@ public class VLCDataViewer implements DataViewer {
         videoSurface.setVisible(false);
         vlcDialog.setVisible(false);
         mediaPlayerFactory.release();
+    }
+
+    @Override
+    protected void cleanUp() {
+        VlcLibraryLoader.purge();
     }
 
     public boolean isAssumedFramesPerSecond() {
