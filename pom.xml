@@ -974,11 +974,12 @@
             <version>7.0.1</version>
         </dependency>
 
-        <dependency>
-            <groupId>ca.beq</groupId>
-            <artifactId>jregistrykey</artifactId>
-            <version>1.4.5</version>
-        </dependency>
+        <!-- This dependency was not used only the exception Win32Exception -->
+        <!--<dependency>-->
+            <!--<groupId>ca.beq</groupId>-->
+            <!--<artifactId>jregistrykey</artifactId>-->
+            <!--<version>1.4.5</version>-->
+        <!--</dependency>-->
 
         <dependency>
             <groupId>rcaller</groupId>

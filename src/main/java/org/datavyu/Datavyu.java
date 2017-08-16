@@ -14,14 +14,12 @@
  */
 package org.datavyu;
 
-import ca.beq.util.win32.registry.Win32Exception;
 import ch.randelshofer.quaqua.QuaquaManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.controllers.project.ProjectController;
 import org.datavyu.models.db.TitleNotifier;
 import org.datavyu.models.db.UserWarningException;
-import org.datavyu.plugins.vlcfx.NativeLibraryManager;
 import org.datavyu.undoableedits.SpreadsheetUndoManager;
 import org.datavyu.util.*;
 import org.datavyu.views.*;
@@ -771,8 +769,8 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                 // BugzID:1288
                 try {
                     WindowsOS.associate(".opf", WindowsOS.cwd().toString());
-                } catch (Win32Exception e) {
-                    logger.error("Could not associate .opf " + e);
+                } catch (Exception e) {
+                    logger.error("Could not associate .opf " + e.getMessage());
                 }
                 break;
         }
