@@ -368,7 +368,7 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
         setPlayerSourceFile(sourceFile);
 
         originalVideoSize = getOriginalVideoSize();
-        System.out.println("SETTING SIZE TO:" + originalVideoSize);
+        logger.info("Setting video size to:" + originalVideoSize);
         setPreferredSize(originalVideoSize);
         setBounds(getX(), getY(), (int) originalVideoSize.getWidth(),
                 (int) originalVideoSize.getHeight());
@@ -378,8 +378,7 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
             framesPerSecond = getPlayerFramesPerSecond();
         } // otherwise we loaded it from the settings
 
-        System.out.println("FPS:");
-        System.out.println(framesPerSecond);
+        logger.info("Frames per second: " + framesPerSecond);
 
         // Display the first frame
         seek(0L);

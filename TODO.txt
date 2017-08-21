@@ -2,6 +2,8 @@
 - Check to remove DataStore
 - Simplify the VideoController (removed, Identifier interface, IDController, ID->Identifier, DataStorage)
 - Simplify the ClockTimer
+- Check if we can remove the detected frame rate from the players!! It most cases it is not used properly. In the same
+  task check if we can remove the isAssumedFrameRate flag.
 
 - Add a class that uses native control for playback speed
 - Add playback speed at 0.5x (and others) preferably through filter in ffmpeg

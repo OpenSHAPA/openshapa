@@ -24,7 +24,7 @@ import org.datavyu.undoableedits.AddCellEdit;
 import org.datavyu.undoableedits.ChangeCellEdit;
 import org.datavyu.undoableedits.ChangeOffsetCellEdit;
 import org.datavyu.util.ArrayDirection;
-import org.datavyu.views.discrete.SpreadsheetPanel;
+import org.datavyu.views.discrete.SpreadSheetPanel;
 
 import javax.swing.undo.UndoableEdit;
 import java.util.List;
@@ -43,7 +43,7 @@ public final class CreateNewCellC {
     /**
      * The view (the spreadsheet) for this controller.
      */
-    private SpreadsheetPanel view;
+    private SpreadSheetPanel view;
 
     /**
      * The model (the database) for this controller.
@@ -55,7 +55,7 @@ public final class CreateNewCellC {
      */
     public CreateNewCellC() {
         // The spreadsheet is the view for this controller.
-        view = (SpreadsheetPanel) Datavyu.getView().getComponent();
+        view = (SpreadSheetPanel) Datavyu.getView().getComponent();
         model = Datavyu.getProjectController().getDataStore();
     }
 
@@ -70,7 +70,7 @@ public final class CreateNewCellC {
      */
     public CreateNewCellC(final List<Cell> sourceCells,
                           final ArrayDirection direction) {
-        view = (SpreadsheetPanel) Datavyu.getView().getComponent();
+        view = (SpreadSheetPanel) Datavyu.getView().getComponent();
         model = Datavyu.getProjectController().getDataStore();
 
         Cell newCell = null;
@@ -123,7 +123,7 @@ public final class CreateNewCellC {
      */
     public CreateNewCellC(final long milliseconds, boolean setPrevOffset) {
         // The spreadsheet is the view for this controller.
-        view = (SpreadsheetPanel) Datavyu.getView().getComponent();
+        view = (SpreadSheetPanel) Datavyu.getView().getComponent();
         model = Datavyu.getProjectController().getDataStore();
 
         // BugzID:758 - Before creating a new cell and setting onset. We need

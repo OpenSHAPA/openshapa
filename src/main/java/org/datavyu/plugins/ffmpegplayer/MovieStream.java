@@ -1,11 +1,11 @@
 package org.datavyu.plugins.ffmpegplayer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.util.NativeLibraryLoader;
 
 import java.awt.color.ColorSpace;
-import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Native;
 import java.nio.ByteBuffer;
 
 import javax.sound.sampled.AudioFormat;
@@ -13,9 +13,13 @@ import javax.sound.sampled.AudioFormat.Encoding;
 
 public class MovieStream implements VideoStream, AudioStream {
 
+	/** Logger for this class */
+	private static Logger logger = LogManager.getLogger(MovieStream.class.getName());
+
 	/** Load the native library that interfaces to ffmpeg */
 	static {
 		try {
+			logger.info("Extracting and loading libraries for ffmpeg.");
 			NativeLibraryLoader.extract("avutil-55");
 			NativeLibraryLoader.extract("swscale-4");
 			NativeLibraryLoader.extract("swresample-2");
@@ -24,7 +28,7 @@ public class MovieStream implements VideoStream, AudioStream {
 			// Ensure that the above dependent libraries are extracted first before loading MovieStream.
 			NativeLibraryLoader.extractAndLoad("MovieStream");
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Failed loading libraries. Error: ", e);
 		}
 	}
 

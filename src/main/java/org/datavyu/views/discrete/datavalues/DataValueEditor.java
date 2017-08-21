@@ -222,11 +222,12 @@ public abstract class DataValueEditor extends EditorComponent {
             setText(model.getPlaceholderString());
             selectAll();
         }
+        /*
+        // Don't think this is necessary, but not entirely confident
         if (!canSubSelect() && hasFocus()) {
             //selectAll();
-            //System.out.println("selectAll thanks to " + this.getClass().getName());
-            //don't think the above is necessary, but not entirely confident. leaving note here for easy return just in case
         }
+        */
     }
 
     /**

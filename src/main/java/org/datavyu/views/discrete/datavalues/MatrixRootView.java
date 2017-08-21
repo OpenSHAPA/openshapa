@@ -14,12 +14,15 @@
  */
 package org.datavyu.views.discrete.datavalues;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.models.db.Cell;
 import org.datavyu.models.db.Value;
 import org.datavyu.models.db.Variable;
 import org.datavyu.undoableedits.ChangeCellEdit;
 import org.datavyu.undoableedits.ChangeValCellEdit;
+import org.datavyu.views.DatavyuView;
 import org.datavyu.views.discrete.EditorComponent;
 import org.datavyu.views.discrete.EditorTracker;
 
@@ -36,6 +39,9 @@ import java.util.List;
  * JTextArea view of the Matrix (database cell) data.
  */
 public final class MatrixRootView extends JTextArea implements FocusListener {
+
+    /** Logger for this class */
+    private static Logger logger = LogManager.getLogger(MatrixRootView.class);
 
     /**
      * The parent cell for this JPanel.
@@ -57,9 +63,8 @@ public final class MatrixRootView extends JTextArea implements FocusListener {
     /**
      * Creates a new instance of MatrixV.
      *
-     * @param cell   The parent cell for this spreadsheet cell.
-     * @param matrix The Matrix holding datavalues that this view label will
-     *               represent.
+     * @param cell  The parent cell for this spread sheet cell.
+     * @param value The Matrix holding data values that this view label will represent.
      */
     public MatrixRootView(final Cell cell, final Value value) {
         super();
@@ -68,14 +73,15 @@ public final class MatrixRootView extends JTextArea implements FocusListener {
         setWrapStyleWord(true);
 
         parentCell = cell;
-        allEditors = new ArrayList<EditorComponent>();
+        allEditors = new ArrayList<>();
         edTracker = new EditorTracker(this, allEditors);
 
         setMatrix(value);
 
         addFocusListener(this);
         addFocusListener(edTracker);
-        //for funny behaviors with the return key
+
+        // Funny behavior for the return key
         addKeyListener(new KeyListener() {
                    public void keyPressed(KeyEvent e) {
                        if ((Character.isLetter(e.getKeyChar()) || Character.isDigit(e.getKeyChar())
@@ -92,11 +98,11 @@ public final class MatrixRootView extends JTextArea implements FocusListener {
                    {
                         if (e.getKeyCode() == KeyEvent.VK_ENTER)
                         {
-                            //the below should happen rarely if ever, so verbose debug output is ok
+                            // Verbose debug output
                             if (!generateText().equals(getText())) {
-                                
-                                System.out.println("MatrixRootview rebuilt due to funny return key");
-                                System.out.println("\tGenerated contents" + generateText().length() + ": " + generateText() + "\n\tTextbox contents " + getText().length() + " : " + getText());
+                                logger.info("MatrixRootview rebuilt due to funny return key");
+                                logger.info("\tGenerated contents" + generateText().length() + ": " + generateText()
+                                        + "\n\tTextbox contents " + getText().length() + " : " + getText());
                                 rebuildText();
                             }
                         }

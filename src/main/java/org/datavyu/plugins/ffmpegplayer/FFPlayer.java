@@ -2,6 +2,7 @@ package org.datavyu.plugins.ffmpegplayer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.datavyu.util.DatavyuVersion;
 
 import javax.sound.sampled.AudioFormat;
 import javax.swing.*;
@@ -72,13 +73,14 @@ public class FFPlayer extends JPanel {
 					reqAudioFormat.isBigEndian());
 			
 			// Open the stream
-	        movieStreamProvider.open(fileName, "0.0.1", reqColorSpace, input);
+			DatavyuVersion localVersion = DatavyuVersion.getLocalVersion();
+	        movieStreamProvider.open(fileName, localVersion.getVersion(), reqColorSpace, input);
 	        
 	        // Load and display first frame.
 	        movieStreamProvider.nextImageFrame();
 		} catch (IOException io) {
-			io.printStackTrace();
-		}        
+			logger.info("Unable to open movie. Error: ", io);
+		}
 	}
 	
 	/**
@@ -220,8 +222,7 @@ public class FFPlayer extends JPanel {
 			int h = movieStreamProvider.getHeightOfStream();
 			movieStreamProvider.setView(0, 0, w, h);
 		} catch (IndexOutOfBoundsException iob) {
-			System.err.println("Could not reset view: " + iob.getMessage());
-			iob.printStackTrace();
+			System.err.println("Could not reset view. Error: " + iob);
 		} finally {
 			movieStreamProvider.start();
 		}

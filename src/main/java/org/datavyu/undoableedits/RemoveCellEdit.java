@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Undoable edit for removing cells.
  */
-public class RemoveCellEdit extends SpreadsheetEdit {
+public class RemoveCellEdit extends SpreadSheetEdit {
     /**
      * The logger for this class.
      */

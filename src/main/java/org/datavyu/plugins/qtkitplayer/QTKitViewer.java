@@ -31,8 +31,8 @@ public final class QTKitViewer extends BaseDataViewer {
     /** The logger for this class */
     private static Logger logger = LogManager.getLogger(QTKitViewer.class);
 
-    /** Previous seek time */
-    private long previousSeekTime = -1;
+    /** Last seek time */
+    private long lastSeekTime = -1;
 
     /** The player this viewer is displaying */
     private QTKitPlayer player;
@@ -66,7 +66,7 @@ public final class QTKitViewer extends BaseDataViewer {
         this.add(player, BorderLayout.CENTER);
         EventQueue.invokeLater(() -> {
             try {
-                // Make sure that the player is loaded
+                // Make sure that the player is loaded by setting the volume
                 player.setVolume(0.7F, player.id);
             } catch (Exception e) {
                 // Oops! Back out
@@ -99,7 +99,7 @@ public final class QTKitViewer extends BaseDataViewer {
     @Override
     public void play() {
         super.play();
-        System.err.println("Playing at " + getPlaybackSpeed());
+        logger.info("Playing at speed: " + getPlaybackSpeed());
         try {
             if (player != null) {
                 EventQueue.invokeLater(() -> {
@@ -120,20 +120,18 @@ public final class QTKitViewer extends BaseDataViewer {
     @Override
     public void stop() {
         super.stop();
-        System.out.println("HIT STOP");
+        logger.info("HIT STOP");
         final double time = System.currentTimeMillis();
         try {
             if (player != null) {
                 EventQueue.invokeLater(() -> {
-                    System.out.println("EXECUTING STOP");
-                    System.out.println(System.currentTimeMillis() - time);
+                    logger.info("EXECUTING STOPPING AT TIME: " + (System.currentTimeMillis() - time));
                     player.stop(player.id);
-                    System.out.println("STOPPED");
-                    System.out.println(System.currentTimeMillis() - time);
+                    logger.info("STOPPED AT TIME: " + (System.currentTimeMillis() - time));
                 });
             }
         } catch (Exception e) {
-            logger.error("Unable to stop", e);
+            logger.error("Failed to stop! Error: ", e);
         }
     }
 
@@ -143,8 +141,9 @@ public final class QTKitViewer extends BaseDataViewer {
     @Override
     public void seek(final long position) {
         try {
-            if (player != null && (previousSeekTime != position)) {
-                previousSeekTime = position;
+            if (player != null && (lastSeekTime != position)) {
+                lastSeekTime = position;
+                logger.info("Seeking position: " + position);
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         boolean wasPlaying = isPlaying();
@@ -160,7 +159,7 @@ public final class QTKitViewer extends BaseDataViewer {
 
             }
         } catch (Exception e) {
-            logger.error("Unable to find", e);
+            logger.error("Unable to seek! Error: ", e);
         }
     }
 
@@ -169,19 +168,17 @@ public final class QTKitViewer extends BaseDataViewer {
      */
     @Override
     public long getCurrentTime() {
-
         try {
             return player.getCurrentTime(player.id);
         } catch (Exception e) {
-            logger.error("Unable to get time", e);
+            logger.error("Unable to get current time! Error: ", e);
         }
-
         return 0;
     }
 
     @Override
     protected void cleanUp() {
-        //TODO
+        // TODO: Do we need to release the player here?
 //        player.release();
     }
 }

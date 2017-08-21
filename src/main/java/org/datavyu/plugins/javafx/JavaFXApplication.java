@@ -12,11 +12,15 @@ import javafx.scene.media.MediaView;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.datavyu.controllers.RunScriptC;
 
 import java.io.File;
 
 public class JavaFXApplication extends Application {
 
+    private static Logger logger = LogManager.getLogger(JavaFXApplication.class);
     private File dataFile;
     private boolean init = false;
     private MediaPlayer mp;
@@ -29,23 +33,15 @@ public class JavaFXApplication extends Application {
         dataFile = file;
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
-
     public void seek(long time) {
-        if (lastSeekTime == time) {
-
-        } else {
-            System.out.println("SEEKING TO: " + time);
+        if (lastSeekTime != time) {
+            logger.info("Seeking to: " + time);
             double rate = 0;
             if (mp.getCurrentRate() != 0) {
                 mp.pause();
                 rate = mp.getCurrentRate();
             }
-
-            // NOTE: JavaFX only seems to be able to seek accurately in 2.2 when the rate != 0,
-            // so lets fake that here.
+            // NOTE: JavaFX only seems to be able to seek accurately in 2.2 when the rate != 0, so lets fake that here.
             mp.setRate(1);
             mp.seek(Duration.millis(time));
             mp.setRate(rate);
@@ -54,7 +50,7 @@ public class JavaFXApplication extends Application {
     }
 
     public void pause() {
-        System.out.println(mp.getCurrentTime());
+        logger.info("Pausing at time: " + mp.getCurrentTime());
         mp.pause();
     }
 
@@ -145,7 +141,7 @@ public class JavaFXApplication extends Application {
         mp.setOnReady(new Runnable() {
             @Override
             public void run() {
-                System.out.println("Creating new media view");
+                logger.info("Creating a new media view.");
                 mv = new MediaView(mp);
 
 
@@ -168,12 +164,7 @@ public class JavaFXApplication extends Application {
                 primaryStage.setTitle(dataFile.getName());
                 primaryStage.show();
 
-
-                System.out.println("Setting init to true");
-                System.out.println(mp.getTotalDuration().toMillis());
-
                 init = true;
-                System.out.println(init);
             }
         });
     }

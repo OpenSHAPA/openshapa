@@ -81,5 +81,11 @@
   <void property="userGuideUrl">
    <string>http://www.datavyu.org/user-guide/index.html</string>
   </void>
+  <void property="downloadUrl">
+   <string>http://www.datavyu.org/download.html</string>
+  </void>
+  <void property="conversionUrl">
+   <string>https://handbrake.fr/</string>
+  </void>
  </object>
 </java>

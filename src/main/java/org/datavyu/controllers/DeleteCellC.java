@@ -18,7 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.models.db.Cell;
-import org.datavyu.views.discrete.SpreadsheetPanel;
+import org.datavyu.views.discrete.SpreadSheetPanel;
 
 import java.util.List;
 
@@ -39,7 +39,7 @@ public final class DeleteCellC {
         LOGGER.info("delete cells");
 
         // The spreadsheet is the view for this controller.
-        SpreadsheetPanel view = (SpreadsheetPanel) Datavyu.getView().getComponent();
+        SpreadSheetPanel view = (SpreadSheetPanel) Datavyu.getView().getComponent();
         view.deselectAll();
 
         for (Cell c : cellsToDelete) {

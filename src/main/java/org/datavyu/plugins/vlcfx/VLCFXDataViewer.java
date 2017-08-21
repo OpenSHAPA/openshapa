@@ -3,10 +3,11 @@ package org.datavyu.plugins.vlcfx;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.stage.Stage;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.models.Identifier;
 import org.datavyu.plugins.BaseDataViewer;
 import org.datavyu.plugins.VlcLibraryLoader;
-import org.datavyu.plugins.vlc.VLCDataViewer;
 import org.datavyu.views.component.DefaultTrackPainter;
 import org.datavyu.views.component.TrackPainter;
 
@@ -21,26 +22,23 @@ import java.util.concurrent.CountDownLatch;
 
 public class VLCFXDataViewer extends BaseDataViewer {
 
-    /**
-     * Data viewer Identifier.
-     */
+    /** Logger for this class */
+    private static Logger logger = LogManager.getLogger(NativeLibraryManager.class);
+
+    /** Data viewer Identifier */
     private Identifier id;
 
-    /**
-     * Data viewer offset.
-     */
+    /** Data viewer offset */
     private long offset;
-    /**
-     * Data to visualize.
-     */
-    private File data;
 
-    /**
-     * The last jog position, making sure we are only calling jog once
-     * VLC has issues when trying to go to the same spot multiple times
-     */
+    /** Data to visualize */
+    private File sourceFile;
+
+    /** The last jog position, making sure we are only calling jog once VLC has issues when trying to go to the same
+     * spot multiple times */
     private JDialog dialog = new JDialog();
 
+    /** VLC application */
     private VLCApplication vlcFxApp;
 
     public VLCFXDataViewer(final Frame parent, final boolean modal) {
@@ -49,8 +47,9 @@ public class VLCFXDataViewer extends BaseDataViewer {
     }
 
     public static void runAndWait(final Runnable action) {
-        if (action == null)
-            throw new NullPointerException("action");
+        if (action == null) {
+            throw new NullPointerException("Action object " + action + " is null!");
+        }
 
         VlcLibraryLoader.load();
 
@@ -67,6 +66,8 @@ public class VLCFXDataViewer extends BaseDataViewer {
             public void run() {
                 try {
                     action.run();
+                } catch (Exception e){
+                    logger.error("Error when trying to run the application: ", e);
                 } finally {
                     doneLatch.countDown();
                 }
@@ -75,8 +76,8 @@ public class VLCFXDataViewer extends BaseDataViewer {
 
         try {
             doneLatch.await();
-        } catch (InterruptedException e) {
-            // ignore exception
+        } catch (InterruptedException ie) {
+            logger.error("Interrupt when waiting for the latch: ", ie);
         }
     }
 
@@ -91,7 +92,7 @@ public class VLCFXDataViewer extends BaseDataViewer {
             try {
                 SwingUtilities.invokeAndWait(edtTask);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Error: ", e);
             }
         }
     }
@@ -103,7 +104,7 @@ public class VLCFXDataViewer extends BaseDataViewer {
             try {
                 SwingUtilities.invokeLater(edtTask);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Error: ", e);
             }
         }
     }
@@ -139,6 +140,7 @@ public class VLCFXDataViewer extends BaseDataViewer {
 
     @Override
     public float getDetectedFrameRate() {
+        // TODO: Correct to detect a frame rate
         return 30;
     }
 
@@ -179,13 +181,12 @@ public class VLCFXDataViewer extends BaseDataViewer {
 
     @Override
     public File getSourceFile() {
-        return data;
+        return sourceFile;
     }
 
     @Override
     public void setSourceFile(final File sourceFile) {
-        data = sourceFile;
-
+        this.sourceFile = sourceFile;
 
         // Needed to init JavaFX stuff
         new JFXPanel();
@@ -200,20 +201,18 @@ public class VLCFXDataViewer extends BaseDataViewer {
 
 
         // Wait for javafx to initialize
-        while (!vlcFxApp.isInit()) {
+        // TODO: We need to change this, because it can lead to hang-up (e.g. timeout)
+        while (!vlcFxApp.isInitialized()) {
         }
 
         // Hide our fake dialog box
         dialog.setVisible(false);
 
-        // TODO Add in function to guess framerate
+        // TODO: Add in function to guess framerate
     }
 
     @Override
-    public long getDuration() {
-//        System.out.println("DURATION: " + vlcFxApp.getDuration());
-        return vlcFxApp.getDuration();
-    }
+    public long getDuration() { return vlcFxApp.getDuration(); }
 
     @Override
     public long getCurrentTime() {
@@ -273,10 +272,9 @@ public class VLCFXDataViewer extends BaseDataViewer {
             settings.setProperty("visible", Boolean.toString(vlcFxApp.isVisible()));
             settings.setProperty("height", Integer.toString(vlcFxApp.getHeight()));
             settings.setProperty("fps", Float.toString(vlcFxApp.getFrameRate()));
-
             settings.store(os, null);
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (IOException io) {
+            logger.error("Unable to save the settings. Error: ", io);
         }
     }
 }

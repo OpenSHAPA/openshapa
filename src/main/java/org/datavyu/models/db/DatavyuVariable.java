@@ -23,17 +23,22 @@
 
 package org.datavyu.models.db;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
+import org.datavyu.controllers.RunScriptC;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Maps a variable object to a datastore.
+ * Maps a Datavyu variable to a data store.
  */
 public final class DatavyuVariable implements Variable {
-    // All the listeners for variables in teh datastore.
-    static Map<UUID, List<VariableListener>> allListeners = new HashMap<UUID, List<VariableListener>>();
+
+    // All the listeners for variables in the data store
+    private static Logger logger = LogManager.getLogger(DatavyuVariable.class);
+    private static Map<UUID, List<VariableListener>> allListeners = new HashMap<UUID, List<VariableListener>>();
     private static CellComparator CellComparator = new CellComparator();
     final private UUID variableId = UUID.randomUUID();
     private List<Cell> cells = new CopyOnWriteArrayList<>();
@@ -84,8 +89,6 @@ public final class DatavyuVariable implements Variable {
      * @return The list of listeners for the specified variableId.
      */
     private static List<VariableListener> getListeners(UUID variableId) {
-        //allListeners.computeIfAbsent(variableId, key -> new ArrayList<>());
-        //return allListeners.get(variableId);
         List<VariableListener> result = allListeners.get(variableId);
         if (result == null) {
             result = new ArrayList<>();
@@ -355,11 +358,8 @@ public final class DatavyuVariable implements Variable {
     private void markDB() {
         if (owningDatastore != null) {
             owningDatastore.markAsChanged();
-        } else if (Datavyu.getProjectController() != null) {
-            //uncomment the below when markAsChanged is non-static
-            //owningDatastore.markAsChanged();
         } else {
-            System.out.println("FAILED TO MARK DATASTORE");
+            logger.error("Failed to mark data store because no owning data store was set.");
         }
     }
 }

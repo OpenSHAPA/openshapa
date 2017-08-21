@@ -1,5 +1,9 @@
 package org.datavyu.plugins.nativeosx;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.datavyu.Datavyu;
+import org.datavyu.plugins.mplayer.MPlayerDataViewer;
 import org.datavyu.util.NativeLibraryLoader;
 
 import java.awt.*;
@@ -7,37 +11,45 @@ import java.io.File;
 
 public class NativeOSXPlayer extends Canvas {
 
-    protected static int playerCount = 0;
+    private static Logger logger = LogManager.getLogger(MPlayerDataViewer.class);
+
+    private static int playerCount = 0;
 
     static {
-        // Standard JNI: load the native library
-
+        try {
+            if (Datavyu.getPlatform() == Datavyu.Platform.MAC) {
+                NativeLibraryLoader.extractAndLoad("NativeOSXCanvas");
+            }
+        } catch (Exception e) {
+            logger.error("Unable to load the native library: ", e);
+        }
     }
 
     public final int id;
-    File fileToLoad;
+
+    private File sourceFile;
+
+    public static void incPlayerCount() {
+        playerCount++;
+    }
+
+    public static void decPlayerCount() {
+        playerCount--;
+    }
 
     public NativeOSXPlayer(File fileToLoad) {
-        super();
-        try {
-            //NativeLibraryLoader.load("NativeOSXCanvas");
-            NativeLibraryLoader.extractAndLoad("NativeOSXCanvas");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         this.id = NativeOSXPlayer.playerCount;
-        NativeOSXPlayer.playerCount += 1;
-        this.fileToLoad = fileToLoad;
+        incPlayerCount();
+        this.sourceFile = fileToLoad;
     }
 
     public void addNotify() {
         super.addNotify();
-        System.out.println("Opening video file: " + fileToLoad.toURI().getPath());
+        logger.info("Opening video file: " + sourceFile.toURI().getPath());
         try {
-            addNativeOSXCoreAnimationLayer("file://" + fileToLoad.toURI().getPath());
+            addNativeOSXCoreAnimationLayer("file://" + sourceFile.toURI().getPath());
         } catch (Exception e) {
-            System.out.println("ERROR CAUGHT");
-            e.printStackTrace();
+            logger.error("Error when opening native core animation layer ", e);
         }
     }
 

@@ -23,7 +23,7 @@ import javax.swing.undo.CannotUndoException;
 /**
  * An undoable edit for adding a cell to the spreadsheet.
  */
-public class AddCellEdit extends SpreadsheetEdit {
+public class AddCellEdit extends SpreadSheetEdit {
     /**
      * Variable name *
      */

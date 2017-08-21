@@ -22,7 +22,7 @@ import org.datavyu.models.db.DataStore;
 import org.datavyu.views.DatavyuView;
 import org.datavyu.views.discrete.SpreadsheetCell;
 import org.datavyu.views.discrete.SpreadsheetColumn;
-import org.datavyu.views.discrete.SpreadsheetPanel;
+import org.datavyu.views.discrete.SpreadSheetPanel;
 
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
@@ -33,14 +33,15 @@ import java.util.Date;
 /**
  * An undoable edit for altering the contents of a spreadsheet.
  */
-public abstract class SpreadsheetEdit extends AbstractUndoableEdit {
+public abstract class SpreadSheetEdit extends AbstractUndoableEdit {
+
     private Date timestamp; // when the action was done
 
     protected ProjectController controller;
     protected DataStore model;
     protected DatavyuView view;
 
-    public SpreadsheetEdit() {
+    public SpreadSheetEdit() {
         super();
         timestamp = new Date();
         controller = Datavyu.getProjectController();
@@ -98,7 +99,7 @@ public abstract class SpreadsheetEdit extends AbstractUndoableEdit {
         }
     }
 
-    protected SpreadsheetPanel getSpreadsheet() {
+    protected SpreadSheetPanel getSpreadsheet() {
         return view.getSpreadsheetPanel();
     }
 

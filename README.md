@@ -36,6 +36,9 @@ Documentation on using this framework is limited and one of the best places to f
 Also, notice that underneath the Swing Application Framwork uses JavaBeans to provide additional storage; aside from the internal mechanism of saving state of the windows in properties files. This mechanism uses the LocalStorage class; see Example 19 (http://www.oracle.com/technetwork/articles/javase/index-141957.html#code19). 
 A tutorial on avaBeans is here: http://docs.oracle.com/javaee/5/tutorial/doc/bnair.html.
 
+## Deployment Information
+pre_version.txt, version.txt
+
 ## More Information
 
 See the [wiki](https://github.com/databrary/datavyu/wiki) for more information on how to code and contribute improvements to Datavyu.

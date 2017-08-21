@@ -27,7 +27,7 @@ import javax.swing.undo.CannotUndoException;
 /**
  *
  */
-public class ChangeNameVariableEdit extends SpreadsheetEdit {
+public class ChangeNameVariableEdit extends SpreadSheetEdit {
     /**
      * The logger for this class.
      */

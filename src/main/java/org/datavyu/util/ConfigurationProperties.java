@@ -131,6 +131,18 @@ public final class ConfigurationProperties implements Serializable {
     /** URL for the user guide site */
     private String userGuideUrl;
 
+    /** Default download url */
+    private static final String DEFAULT_DOWNLOAD_URL = "http://www.datavyu.org/download.html";
+
+    /** URL for the download url */
+    private String downloadUrl;
+
+    /** Default conversion url */
+    private static final String DEFAULT_CONVERSION_URL = "https://handbrake.fr";
+
+    /** URL for the conversion url */
+    private String conversionUrl;
+
     /** This is the only instance for the configuration properties that is loaded at start-up */
     private static ConfigurationProperties configurationProperties = new ConfigurationProperties();
 
@@ -201,6 +213,12 @@ public final class ConfigurationProperties implements Serializable {
         }
         if (!configurationProperties.hasUserGuideUrl()) {
             configurationProperties.setUserGuideUrl(DEFAULT_USER_GUIDE_URL);
+        }
+        if (!configurationProperties.hasDownloadUrl()) {
+            configurationProperties.setDownloadUrl(DEFAULT_DOWNLOAD_URL);
+        }
+        if (!configurationProperties.hasConversionUrl()) {
+            configurationProperties.setConversionUrl(DEFAULT_CONVERSION_URL);
         }
         if (!configurationProperties.hasSpreadSheetOrdinalForegroundColor()) {
             configurationProperties.setSpreadSheetOrdinalForegroundColor(DEFAULT_SPREAD_SHEET_ORDINAL_FOREGROUND_COLOR);
@@ -629,29 +647,83 @@ public final class ConfigurationProperties implements Serializable {
     }
 
     /**
-     * Get the user guide URL.
+     * Get the user guide url.
      *
-     * @return The user guide URL.
+     * @return The user guide url.
      */
     public String getUserGuideUrl() {
         return userGuideUrl;
     }
 
     /**
-     * Set the user guide URL.
+     * Set the user guide url.
      *
-     * @param userGuideUrl The user guide URL.
+     * @param userGuideUrl The user guide url.
      */
     public void setUserGuideUrl(String userGuideUrl) {
         this.userGuideUrl = userGuideUrl;
     }
 
     /**
-     * Did we set the user guide URL?
+     * Did we set the user guide url?
      *
      * @return True if we set the user guide URL; otherwise False.
      */
     public boolean hasUserGuideUrl() {
         return userGuideUrl != null;
+    }
+
+    /**
+     * Get the download url.
+     *
+     * @return Download url.
+     */
+    public String getDownloadUrl() {
+        return downloadUrl;
+    }
+
+    /**
+     * Set the download url.
+     *
+     * @param downloadUrl The download url.
+     */
+    public void setDownloadUrl(String downloadUrl) {
+        this.downloadUrl = downloadUrl;
+    }
+
+    /**
+     * Did we set the download url?
+     *
+     * @return True if the url is set; otherwise false.
+     */
+    public boolean hasDownloadUrl() {
+        return downloadUrl != null;
+    }
+
+    /**
+     * Get the conversion url.
+     *
+     * @return conversion url.
+     */
+    public String getConversionUrl() {
+        return conversionUrl;
+    }
+
+    /**
+     * Sets the conversion url.
+     *
+     * @param conversionUrl The conversion url.
+     */
+    public void setConversionUrl(String conversionUrl) {
+        this.conversionUrl = conversionUrl;
+    }
+
+    /**
+     * Did we set the conversion URL?
+     *
+     * @return True if we set the url; otherwise false.
+     */
+    public boolean hasConversionUrl() {
+        return conversionUrl != null;
     }
 }

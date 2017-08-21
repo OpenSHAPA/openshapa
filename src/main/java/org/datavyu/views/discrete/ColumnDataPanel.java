@@ -35,7 +35,7 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
     /**
      * The logger for this class.
      */
-    private static final Logger LOGGER = LogManager.getLogger(ColumnDataPanel.class);
+    private static final Logger logger = LogManager.getLogger(ColumnDataPanel.class);
     /**
      * Width of the column.
      */
@@ -87,21 +87,22 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
         // Store member variables.
         columnWidth = width;
         columnHeight = 0;
-        cells = new ArrayList<SpreadsheetCell>();
-        viewMap = new HashMap<Cell, SpreadsheetCell>();
+        cells = new ArrayList<>();
+        viewMap = new HashMap<>();
         cellSelectionL = cellSelL;
         model = variable;
 
         setLayout(null);
-        //setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        setBorder(BorderFactory.createMatteBorder(0, 0, 0, Constants.BORDER_SIZE, new Color(175, 175, 175)));
+        setBorder(BorderFactory.createMatteBorder(0, 0, 0, Constants.BORDER_SIZE,
+                new Color(175, 175, 175)));
 
         newCellButton = new SpreadsheetEmptyCell(variable);
         this.add(newCellButton);
 
         padding = new JPanel();
         padding.setBackground(new Color(237, 237, 237));
-        padding.setBorder(BorderFactory.createMatteBorder(0, 0, 0, Constants.BORDER_SIZE, new Color(175, 175, 175)));
+        padding.setBorder(BorderFactory.createMatteBorder(0, 0, 0, Constants.BORDER_SIZE,
+                new Color(175, 175, 175)));
         this.add(padding);
 
         // Populate the data column with spreadsheet cells.
@@ -113,8 +114,7 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
      * this class of events.
      */
     public void registerListeners() {
-        KeyboardFocusManager.getCurrentKeyboardFocusManager()
-                .addKeyEventDispatcher(this);
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(this);
     }
 
     /**
@@ -122,8 +122,7 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
      * notifying this class of events.
      */
     public void deregisterListeners() {
-        KeyboardFocusManager.getCurrentKeyboardFocusManager()
-                .removeKeyEventDispatcher(this);
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(this);
     }
 
     /**
@@ -134,8 +133,7 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
      * @param cellSelL Spreadsheet listener to notify about cell selection
      *                 changes.
      */
-    private void buildDataPanelCells(final DataStore db,
-                                     final Variable variable,
+    private void buildDataPanelCells(final DataStore db, final Variable variable,
                                      final CellSelectionListener cellSelL) {
 
         // traverse and build the cells
@@ -193,9 +191,7 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
      * @param cellSelL SpreadsheetCellSelectionListener to notify of changes in
      *                 selection.
      */
-    public void insertCell(final DataStore ds,
-                           final Cell cell,
-                           final CellSelectionListener cellSelL) {
+    public void insertCell(final DataStore ds, final Cell cell, final CellSelectionListener cellSelL) {
 
         SpreadsheetCell nCell = new SpreadsheetCell(ds, cell, cellSelL);
         nCell.setWidth(this.getWidth());
@@ -249,19 +245,16 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
      * @return The SpreadsheetCells in this column temporally.
      */
     public List<SpreadsheetCell> getCellsTemporally() {
-        ArrayList<SpreadsheetCell> result = new ArrayList<SpreadsheetCell>();
+        ArrayList<SpreadsheetCell> result = new ArrayList<>();
 
         int ord = 1;
         for (Cell c : model.getCellsTemporally()) {
             SpreadsheetCell sc = viewMap.get(c);
-//            sc.forceCellRefresh();
             if (sc != null) {
-                sc.setOrdinal(ord);
-                ord++;
+                sc.setOrdinal(ord++);
                 result.add(sc);
             }
         }
-
         return result;
     }
 
@@ -306,28 +299,24 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
 
         // Quick filter - if we aren't dealing with a key press or up and down
         // arrow. Forget about it - just chuck it back to Java to deal with.
-        if ((e.getID() != KeyEvent.KEY_PRESSED)
-                && ((e.getKeyCode() != KeyEvent.VK_UP)
+        if ((e.getID() != KeyEvent.KEY_PRESSED) && ((e.getKeyCode() != KeyEvent.VK_UP)
                 || (e.getKeyCode() != KeyEvent.VK_DOWN))) {
             return false;
         }
 
         SpreadsheetCell[] components = this.getCellsTemporally().toArray(new SpreadsheetCell[0]);
-        int numCells = components.length;
+        int nCells = components.length;
 
         // For each of the cells in the column - see if one has focus.
-        for (int i = 0; i < numCells; i++) {
+        for (int iCell = 0; iCell < nCells; iCell++) {
 
-            if (components[i].isFocusOwner()
-                    && components[i].getClass().equals(JButton.class)) { //what is this about? eliminate? haven't found a way to make this happen
+            // What is this about? eliminate? haven't found a way to make this happen
+            if (components[iCell].isFocusOwner() && components[iCell].getClass().equals(JButton.class)) {
 
-                if ((e.getKeyCode() == KeyEvent.VK_UP) && (i > 0)) {
-                    SpreadsheetCell sc = (SpreadsheetCell) components[i - 1];
+                if ((e.getKeyCode() == KeyEvent.VK_UP) && (iCell > 0)) {
+                    SpreadsheetCell sc = (SpreadsheetCell) components[iCell - 1];
                     EditorTracker et = sc.getDataView().getEdTracker();
                     EditorComponent ec = et.getCurrentEditor();
-
-                    
-// /*
                     try {
 
                         // Determine if we are at the top of a multi-lined cell,
@@ -350,22 +339,18 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
                             return true;
                         }
                     } catch (BadLocationException be) {
-                        LOGGER.error("BadLocation on arrow up", be);
+                        logger.error("BadLocation on arrow up", be);
                     }
-// */
                 }
-
                 return false;
-
             }
 
             // The current cell has focus.
-            if (components[i].isFocusOwner()
-                    && components[i].getClass().equals(SpreadsheetCell.class)) {
+            if (components[iCell].isFocusOwner() && components[iCell].getClass().equals(SpreadsheetCell.class)) {
 
                 // Get the current editor tracker and component for the cell
                 // that has focus.
-                SpreadsheetCell scCur = (SpreadsheetCell) components[i];
+                SpreadsheetCell scCur = (SpreadsheetCell) components[iCell];
                 EditorTracker etCur = scCur.getDataView().getEdTracker();
                 EditorComponent ecCur = etCur.getCurrentEditor();
 
@@ -377,18 +362,13 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
                 // The key stroke is up - select the editor component in the
                 // cell above, setting the caret position to what we just found
                 // in the current cell.
-                if ((e.getKeyCode() == KeyEvent.VK_UP) && (i > 0)) {
-
+                if ((e.getKeyCode() == KeyEvent.VK_UP) && (iCell > 0)) {
                     try {
-
-                        //System.out.println("Up pressed from cell at index " + i);
-
                         // Determine if we are at the top of a multi-lined cell,
                         // if we are not on the top line - pressing up should
                         // select the line above.
-
-                        if (a.getLineOfOffset(a.getCaretPosition()) == 0 && components[i - 1] instanceof SpreadsheetCell) {
-                            SpreadsheetCell scNew = (SpreadsheetCell) components[i - 1];
+                        if (a.getLineOfOffset(a.getCaretPosition()) == 0 && components[iCell - 1] instanceof SpreadsheetCell) {
+                            SpreadsheetCell scNew = (SpreadsheetCell) components[iCell - 1];
                             EditorTracker etNew = scNew.getDataView().getEdTracker();
                             EditorComponent ecNew = etNew.getEditorAtIndex(etCur.indexOfCurrentEditor());
                             etNew.setEditor(ecNew);
@@ -402,46 +382,34 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
                             return true;
                         }
                     } catch (BadLocationException be) {
-                        be.printStackTrace();
-                        LOGGER.error("BadLocation on arrow up", be);
+                        logger.error("BadLocation on arrow up", be);
                     }
                 }
-                if ((e.getKeyCode() == KeyEvent.VK_UP) && (i == 0))
-                {
-                    try{                       
-                        if(a.getLineOfOffset(a.getCaretPosition()) == 0)
-                        {
+                if ((e.getKeyCode() == KeyEvent.VK_UP) && (iCell == 0)) {
+                    try {
+                        if (a.getLineOfOffset(a.getCaretPosition()) == 0) {
                             //skip to first arg of current cell
                             etCur = scCur.getDataView().getEdTracker();
                             etCur.setEditor(etCur.firstEditor());
-
-                            //System.out.println("CEILING!");
                             return true;
                         }
-                    }
-                    catch (BadLocationException be){
-                        be.printStackTrace();
-                        LOGGER.error("BadLocation on arrow up", be);        
+                    } catch (BadLocationException be){
+                        logger.error("BadLocation on arrow up", be);
                     }
                 }
 
                 // The key stroke is down - select the editor component in the
                 // cell below, setting the caret position to what we found from
                 // the current cell.
-                if ((e.getKeyCode() == KeyEvent.VK_DOWN)
-                        && ((i + 1) < numCells)) {
-
+                if ((e.getKeyCode() == KeyEvent.VK_DOWN) && ((iCell + 1) < nCells)) {
                     try {
-
                         // Determine if we are at the bottom of a multi-lined
                         // cell, if we are not on the bottom line - pressing
                         // down should select the line below.
-                        if ((a.getLineOfOffset(a.getCaretPosition()) + 1)
-                                >= a.getLineCount()) {
-                            components[i + 1].requestFocus();
-
-                            if (components[i + 1] instanceof SpreadsheetCell) {
-                                SpreadsheetCell scNew = (SpreadsheetCell) components[i + 1];
+                        if ((a.getLineOfOffset(a.getCaretPosition()) + 1) >= a.getLineCount()) {
+                            components[iCell + 1].requestFocus();
+                            if (components[iCell + 1] instanceof SpreadsheetCell) {
+                                SpreadsheetCell scNew = (SpreadsheetCell) components[iCell + 1];
                                 EditorTracker etNew = scNew.getDataView().getEdTracker();
                                 EditorComponent ecNew = etNew.getEditorAtIndex(etCur.indexOfCurrentEditor());
                                 etNew.setEditor(ecNew);
@@ -453,31 +421,24 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
                                 scCur.getCell().setHighlighted(false);
                                 cellSelectionL.clearCellSelection();
                             }
-
                             e.consume();
-
                             return true;
                         }
                     } catch (BadLocationException be) {
-                        LOGGER.error("BadLocation on arrow down", be);
+                        logger.error("BadLocation on arrow down", be);
                     }
                 }
-                if ((e.getKeyCode() == KeyEvent.VK_DOWN) && ((i + 1) == numCells)) 
-                {
+                if ((e.getKeyCode() == KeyEvent.VK_DOWN) && ((iCell + 1) == nCells)) {
                     try{                       
-                        if ((a.getLineOfOffset(a.getCaretPosition()) + 1)
-                                >= a.getLineCount()){
+                        if ((a.getLineOfOffset(a.getCaretPosition()) + 1) >= a.getLineCount()){
                             //skip to first arg of current cell
                             etCur = scCur.getDataView().getEdTracker();
                             etCur.setEditor(etCur.lastEditor());
-
-                            //System.out.println("FLOOR!");
                             return true;
                         }
                     }
                     catch (BadLocationException be){
-                        be.printStackTrace();
-                        LOGGER.error("BadLocation on arrow down", be);        
+                        logger.error("BadLocation on arrow down", be);
                     }
                 }
                 return false;

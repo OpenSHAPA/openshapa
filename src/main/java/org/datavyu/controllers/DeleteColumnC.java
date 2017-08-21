@@ -19,7 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.models.db.DataStore;
 import org.datavyu.models.db.Variable;
-import org.datavyu.views.discrete.SpreadsheetPanel;
+import org.datavyu.views.discrete.SpreadSheetPanel;
 
 import java.util.List;
 
@@ -42,7 +42,7 @@ public final class DeleteColumnC {
         LOGGER.info("delete columns");
 
         // The spreadsheet is the view for this controller.
-        SpreadsheetPanel view = (SpreadsheetPanel) Datavyu.getView().getComponent();
+        SpreadSheetPanel view = (SpreadSheetPanel) Datavyu.getView().getComponent();
         DataStore dataStore = Datavyu.getProjectController().getDataStore();
 
         // Deselect everything.

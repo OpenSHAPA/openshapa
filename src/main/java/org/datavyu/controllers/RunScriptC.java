@@ -40,7 +40,7 @@ public final class RunScriptC extends SwingWorker<Object, String> {
     /**
      * The logger for this class.
      */
-    private static Logger LOGGER = LogManager.getLogger(RunScriptC.class);
+    private static Logger logger = LogManager.getLogger(RunScriptC.class);
     /**
      * The path to the script file we are executing.
      */
@@ -126,7 +126,7 @@ public final class RunScriptC extends SwingWorker<Object, String> {
 
     @Override
     protected Object doInBackground() {
-        LOGGER.info("run script");
+        logger.info("run script");
 
         ReaderThread t = new ReaderThread();
         t.start();
@@ -143,7 +143,7 @@ public final class RunScriptC extends SwingWorker<Object, String> {
         try {
             consoleWriterAfter.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Write Failed! Error: ", e);
         }
 
         return null;
@@ -177,13 +177,8 @@ public final class RunScriptC extends SwingWorker<Object, String> {
                 consoleWriter.flush();
 
                 // Place reference to various Datavyu functionality.
-                System.out.println(Datavyu.getProjectController().getDataStore());
-//                rubyEngine.put("db", Datavyu.getProjectController().getDataStore());
-//                rubyEngine.put("pj_handle", Datavyu.getProjectController().getProject());
-//                rubyEngine.put("mixer_handle", Datavyu.getDataController().getMixerController());
-//                rubyEngine.put("viewers_handle", Datavyu.getDataController());
-//                rubyEngine.getContext().setAttribute("db_handle", Datavyu.getProjectController().getDataStore(),
-//                        ScriptContext.ENGINE_SCOPE);
+
+                logger.info("Project controller uses data store: " + Datavyu.getProjectController().getDataStore());
                 String path = System.getProperty("user.dir") + File.separator;
                 
                 rubyEngine.put("path", path);
@@ -191,7 +186,6 @@ public final class RunScriptC extends SwingWorker<Object, String> {
                 FileReader scriptReader = new FileReader(scriptFile);
                 LineNumberReader lineReader = new LineNumberReader(
                         fileReaderIntoStringReader(scriptReader));
-                //System.out.println(wholeScript);
 
                 rubyEngine.setContext(rubyContext);
                 rubyEngine.getContext().setWriter(consoleWriter);
@@ -203,14 +197,7 @@ public final class RunScriptC extends SwingWorker<Object, String> {
                 try{
                     rubyEngine.eval("load 'Datavyu_API.rb'\n");
                     rubyEngine.eval(lineReader);
-                    //System.out.println("SCRIPT OVER");
                     consoleWriter.close();
-                    
-                    // Remove references.
-//                    rubyEngine.put("db", null);
-//                    rubyEngine.put("pj", null);
-//                    rubyEngine.put("mixer", null);
-//                    rubyEngine.put("viewers", null);
 
                     consoleWriterAfter.write("\nScript has finished running.");
                     consoleWriterAfter.flush();
@@ -218,8 +205,8 @@ public final class RunScriptC extends SwingWorker<Object, String> {
                     lineReader.close();
                 }
                 catch (ScriptException e) {
-                    //System.out.println("LINE: " + lineReader.getLineNumber()); 
-                    //unfortunately the bove seems to always be final line not line of error. still, no noticeable performance difference, so im leaving the LineNumberReader wrap
+                    //unfortunately the above seems to always be final line not line of error. still, no noticeable
+                    // performance difference, so im leaving the LineNumberReader wrap
                     String msg = makeFriendlyRubyErrorMsg(outString.toString(), e);
                     consoleWriter.flush();
                     consoleWriter.close();
@@ -227,26 +214,20 @@ public final class RunScriptC extends SwingWorker<Object, String> {
                     consoleWriterAfter.write(msg);
                     consoleWriterAfter.write("\n*************************\n");
                     consoleWriterAfter.flush();
-
-                    System.out.println("Script Error");
-
-                    LOGGER.error("Unable to execute script: ", e);
-
+                    logger.error("Unable to execute script: ", e);
                 }
                 finally {
                     lineReader.close();
-                    lineReader = null;
                 }
             } catch (FileNotFoundException e) {
                 consoleWriter.close();
                 consoleWriterAfter.write("File not found: " + e.getMessage());;
                 
                 consoleWriterAfter.flush();
-                LOGGER.error("Unable to execute script: ", e);
+                logger.error("Unable to execute script: ", e);
             }
         } catch (IOException ioe) {
-            System.out.println("IOEXCEPTION!!!! " + ioe.getMessage());
-            ioe.printStackTrace();
+            logger.error("IO Exception occurred when executing the ruby script", ioe);
         } finally{
             rubyScriptIsRunning = false;
         }
@@ -308,8 +289,6 @@ public final class RunScriptC extends SwingWorker<Object, String> {
         // Initialize RCaller and tell it where the rscript application is
         RCaller caller = new RCaller();
         try {
-
-
             if (System.getProperty("os.name").startsWith("Windows")) {
                 // We have to find it because Windows doesn't keep
                 // anything in reasonable places.
@@ -332,8 +311,7 @@ public final class RunScriptC extends SwingWorker<Object, String> {
                 caller.setRscriptExecutable("/usr/bin/rscript");
             }
         } catch (Exception e) {
-            // Ut oh, R isn't installed.
-            e.printStackTrace();
+            logger.error("Failed to run R script. Error: ", e);
         }
         caller.redirectROutputToStream(sIn);
 
@@ -342,7 +320,7 @@ public final class RunScriptC extends SwingWorker<Object, String> {
         HashMap db = convertDbToColStrings();
         HashMap<String, File> temp_files = new HashMap<String, File>();
 
-        // Write the database out to tempory files
+        // Write the database out to temporary files
         Iterator it = db.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pairs = (Map.Entry) it.next();
@@ -356,9 +334,8 @@ public final class RunScriptC extends SwingWorker<Object, String> {
 
                 temp_files.put((String) pairs.getKey(), outfile);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Writing output to temporary files failed. Error: ", e);
             }
-
             it.remove(); // avoids a ConcurrentModificationException
         }
 
@@ -377,11 +354,10 @@ public final class RunScriptC extends SwingWorker<Object, String> {
                 it.remove(); // avoids a ConcurrentModificationException
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Loading of temporary files failed. Error: ", e);
         }
 
-        // Set up plotting. If something gets plotted, display it.
-        // Otherwise, just run the code.
+        // Set up plotting. If something gets plotted, display it. Otherwise, just run the code.
         try {
             File plt = code.startPlot();
             code.R_source(scriptFile.getPath());
@@ -392,13 +368,12 @@ public final class RunScriptC extends SwingWorker<Object, String> {
                 code.showPlot(plt);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed when plotting. Error: ", e);
         }
     }
 
-    // TODO
     private void updateDbFromR() {
-
+        // TODO: Fill in the code here
     }
 
     /**
@@ -406,8 +381,9 @@ public final class RunScriptC extends SwingWorker<Object, String> {
      * This allows for easy reading into R.
      */
     private HashMap<String, String> convertDbToColStrings() {
+        // TODO: Use StringBuilder here
         DataStore db = Datavyu.getProjectController().getDataStore();
-        HashMap<String, String> str_db = new HashMap<String, String>();
+        HashMap<String, String> str_db = new HashMap<>();
 
         String str_var;
         for (Variable v : db.getAllVariables()) {
@@ -445,16 +421,12 @@ public final class RunScriptC extends SwingWorker<Object, String> {
     }
 
     @Override
-    protected void done() {
-
-    }
+    protected void done() {}
 
     @Override
     protected void process(final List<String> chunks) {
-
         for (String chunk : chunks) {
             console.append(chunk);
-
             // Make sure the last line is always visible
             console.setCaretPosition(console.getDocument().getLength());
         }
@@ -488,7 +460,6 @@ public final class RunScriptC extends SwingWorker<Object, String> {
                         // Publish output from script in the console.
                         String s = new String(buf, 0, len);
                         outString.append(s);
-                        //System.out.println(s);
                         publish(s);
                     }
 
@@ -497,25 +468,19 @@ public final class RunScriptC extends SwingWorker<Object, String> {
 
                 }
                 consoleOutputStream.close();
-                //System.out.println("while switch");
                 while ((len = consoleOutputStreamAfter.read(buf)) != -1) {
                     if (len > 0) {
                         // Publish output from script in the console.
                         String s = new String(buf, 0, len);
                         outString.append(s);
-                        //System.out.println(s);
                         publish(s);
                     }
-
                     // Allow other threads to do stuff.
                     Thread.yield();
-
-
                 }
                 consoleOutputStreamAfter.close();
             } catch (IOException e) {
-                LOGGER.error("Unable to run console thread.", e);
-                e.printStackTrace();
+                logger.error("Unable to run console thread. Error: ", e);
             }
         }
     }

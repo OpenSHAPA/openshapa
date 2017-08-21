@@ -26,7 +26,7 @@ import javax.swing.undo.CannotUndoException;
 /**
  * An undoable edit for altering the contents of a cell.
  */
-abstract public class ChangeCellEdit extends SpreadsheetEdit {
+abstract public class ChangeCellEdit extends SpreadSheetEdit {
     /**
      * Column's index
      */

@@ -75,7 +75,6 @@ public final class QTDataViewer extends BaseDataViewer {
             QTSession.open();
         } catch (Throwable e) {
             logger.error("Unable to create " + this.getClass().getName(), e);
-            e.printStackTrace();
         }
     }
 

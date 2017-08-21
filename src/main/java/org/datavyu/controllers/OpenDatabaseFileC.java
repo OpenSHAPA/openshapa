@@ -45,17 +45,13 @@ public final class OpenDatabaseFileC {
      */
     private static final int DATA_INDEX = 2;
     /**
-     * Value to put into values we cannot read in the event of an error
-     */
-    private static final String error_value = "XXXXX";
-    /**
      * Bool so we know whether or not we've had an error while reading in a file
      */
     private static boolean parse_error = false;
     /**
      * The logger for this class.
      */
-    private static Logger LOGGER = LogManager.getLogger(OpenDatabaseFileC.class);
+    private static Logger logger = LogManager.getLogger(OpenDatabaseFileC.class);
     private int numVarsRead = 0;
 
     /**
@@ -88,11 +84,7 @@ public final class OpenDatabaseFileC {
      * @return populated database on success, null otherwise.
      */
     public DataStore openAsMacSHAPADB(final File sFile) {
-
-        // Currently no implementation of opening older MacSHAPA database.
-        // ... One day.
-
-        // Error occured - return null.
+        logger.error("Open as mac SHAPA DB is not implemented.");
         return null;
     }
 
@@ -104,21 +96,17 @@ public final class OpenDatabaseFileC {
      * @return populated database on success, null otherwise.
      */
     public DataStore openAsCSV(final File sFile) {
-
         try {
-            LOGGER.info("open csv database from file");
+            logger.info("open csv database from file");
 
             FileInputStream fis = new FileInputStream(sFile);
             DataStore result = openAsCSV(fis);
             fis.close();
 
             return result;
-        } catch (Exception fe) {
-            LOGGER.error("Unable to open as CSV", fe);
-            fe.printStackTrace();
+        } catch (Exception e) {
+            logger.error("Unable to open as CSV. Error: ", e);
         }
-
-        // Error encountered - return null.
         return null;
     }
 
@@ -132,7 +120,7 @@ public final class OpenDatabaseFileC {
      */
     public DataStore openAsCSV(final InputStream inStream) {
         try {
-            LOGGER.info("open csv database from stream");
+            logger.info("open csv database from stream");
 
             DataStore db = DataStoreFactory.newDataStore();
             db.setTitleNotifier(Datavyu.getApplication());
@@ -151,9 +139,8 @@ public final class OpenDatabaseFileC {
                 while (line != null) {
                     line = parseVariable(csvFile, line, db, "#4");
                 }
-                if(!db.getExemptionVariables().isEmpty())
-                {
-                    System.out.println("WE HAVE EXEMPTION VARIABLES");
+                if (!db.getExemptionVariables().isEmpty()) {
+                    logger.info("We have excemption variables");
                     SwingUtilities.invokeLater(new NameWarning(db.getExemptionVariables()));
                 }
             } else if ("#3".equalsIgnoreCase(line)) {
@@ -186,11 +173,9 @@ public final class OpenDatabaseFileC {
 
             return db;
         } catch (IOException e) {
-            LOGGER.error("Unable to read line from CSV file", e);
-            e.printStackTrace();
+            logger.error("Unable to read line from CSV file. Error: ", e);
         } catch (UserWarningException e) {
-            LOGGER.error("Unable to create new variable.", e);
-            e.printStackTrace();
+            logger.error("Unable to create new variable. Error: ", e);
         }
 
         // Error encountered - return null.
@@ -378,24 +363,19 @@ public final class OpenDatabaseFileC {
      * in the CSV file.
      * @throws IOException If unable to read the file correctly.
      */
-    private String parseEntries(final BufferedReader csvFile,
-                                final Variable var,
-                                final EntryPopulator populator)
+    private String parseEntries(final BufferedReader csvFile, final Variable var, final EntryPopulator populator)
             throws IOException {
 
-        // Keep parsing lines and putting them in the newly formed nominal
-        // variable until we get to a line indicating the end of file or a new
-        // variable section.
+        // Keep parsing lines and putting them in the newly formed nominal variable until we get to a line indicating
+        // the end of file or a new variable section
         String line = csvFile.readLine();
 
-        boolean error_line = false;
-        int error_count = 0;
+        boolean hasError = false;
+        int nError = 0;
 
         while ((line != null) && Character.isDigit(line.charAt(0))) {
 
-            // Remove backslashes if there are more than would be used for 
-            // newline escapes
-
+            // Remove backslashes if there are more than would be used for newline escapes
             if (line.contains("\\")) {
                 if (line.endsWith("\\") || line.endsWith("\\\\")) {
                     line = line.replace("\\", "") + "\\";
@@ -405,15 +385,13 @@ public final class OpenDatabaseFileC {
             }
 
             try {
-                // Split the line into tokens using a comma delimiter.
+                // Split the line into tokens using a comma delimiter
                 String[] tokens = line.split(",");
 
                 // BugzID: 1075 - If the line ends with an escaped new line - add
                 // the next line to the current text field.
-                while ((line != null) && line.endsWith("\\")
-                        && !line.endsWith("\\\\")) {
+                while ((line != null) && line.endsWith("\\") && !line.endsWith("\\\\")) {
                     line = csvFile.readLine();
-
                     String content = tokens[tokens.length - 1];
                     content = content.substring(0, content.length() - 1);
                     tokens[tokens.length - 1] = content + '\n' + line;
@@ -421,36 +399,34 @@ public final class OpenDatabaseFileC {
 
                 Cell newCell = var.createCell();
 
-                // Set the onset and offset from tokens in the line.
+                // Set the onset and offset from tokens in the line
                 newCell.setOnset(tokens[DATA_ONSET]);
                 newCell.setOffset(tokens[DATA_OFFSET]);
                 populator.populate(tokens, newCell.getValue());
 
-                // Get the next line in the file for reading.
+                // Get the next line in the file for reading
                 line = csvFile.readLine();
 
                 // Test to see if the new line is an error line
                 if ((line != null) && !Character.isDigit(line.charAt(0))) {
                     if (testForCorruptLine(line)) {
-                        error_line = true;
-                        error_count += 1;
+                        hasError = true;
+                        nError += 1;
                         line = fixCorruptLine(line);
-                        System.out.println("ERROR: " + line);
+                        logger.error("Error in line " + line);
                     }
                 }
             } catch (Exception e) {
-                // TODO: Add in fix here for matrix cells that
-                // are corrupted in the data values
-                e.printStackTrace();
-                error_line = true;
-                error_count += 1;
-                System.out.println("ERROR: " + line);
+                // TODO: Add in fix here for matrix cells that are corrupted in the data values
+                hasError = true;
+                nError += 1;
+                logger.error("Error in line: " + line + " Error: ", e);
             }
         }
 
-        if (error_line) {
+        if (hasError) {
             JOptionPane.showMessageDialog(null,
-                    "Error reading file. " + String.valueOf(error_count) +
+                    "Error reading file. " + String.valueOf(nError) +
                             " cells could not be read.\nRecovered files have time 99:00:00:000.\nPlease send this file to Datavyu Support for further analysis!",
                     "Error reading file: Corrupted cells",
                     JOptionPane.ERROR_MESSAGE);
@@ -544,17 +520,16 @@ public final class OpenDatabaseFileC {
         // Determine the variable name and type.
         String[] tokens = line.split("\\(");
         String varName = this.stripEscChars(tokens[0].trim());
-        String varType = null;
-        String varComment = "";
+        String varType;
         boolean varVisible = true;
 
-        System.out.println(line);
-        System.out.println(tokens.length);
+        logger.info("Parsing variable from line: " + line);
+        logger.info("Found " + tokens.length + " tokens");
         if (version.equals("#4")) {
             String[] varArgs = tokens[1].split(",");
             varType = varArgs[0];
             varVisible = Boolean.parseBoolean(varArgs[1]);
-            varComment = varArgs[2].substring(0, varArgs[2].indexOf(")"));
+            //varComment = varArgs[2].substring(0, varArgs[2].indexOf(")"));
         } else if (version.equals("#3")) {
             varType = tokens[1].substring(0, tokens[1].indexOf(","));
             varVisible = Boolean.parseBoolean(tokens[1].substring(

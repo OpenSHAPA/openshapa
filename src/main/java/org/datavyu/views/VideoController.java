@@ -1676,7 +1676,6 @@ public final class VideoController extends DatavyuDialog
     @Action
     public void playAction() {
         logger.info("Play");
-        System.out.println("Play button...");
 
         // BugzID:464 - When stopped at the end of the region of interest.
         // pressing play jumps the stream back to the start of the video before

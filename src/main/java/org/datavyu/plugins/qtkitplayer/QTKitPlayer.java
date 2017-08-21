@@ -47,6 +47,8 @@
 
 package org.datavyu.plugins.qtkitplayer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.util.NativeLibraryLoader;
 
 import java.awt.*;
@@ -54,41 +56,44 @@ import java.io.File;
 
 public class QTKitPlayer extends Canvas {
 
-    protected static int playerCount = 0;
+    private static Logger logger = LogManager.getLogger(QTKitPlayer.class);
+
+    private static int playerCount = 0;
 
     public final int id;
 
-    File sourceFile;
+    private File sourceFile;
+
+    private static final String LIB_NAME = "QTKitCanvas";
 
     public QTKitPlayer(File sourceFile) {
         super();
         try {
-            //NativeLibraryLoader.load("QTKitCanvas");
-            NativeLibraryLoader.extractAndLoad("QTKitCanvas");
+            logger.info("Trying to extract and load: " + LIB_NAME);
+            NativeLibraryLoader.extractAndLoad(LIB_NAME);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed loading: " + LIB_NAME + ". Error is: ", e);
         }
         this.id = QTKitPlayer.playerCount;
         QTKitPlayer.incPlayerCount();
         this.sourceFile = sourceFile;
     }
 
-    protected static void incPlayerCount() {
+    private static void incPlayerCount() {
         playerCount++;
     }
 
-    protected static void decPlayerCount() {
+    public static void decPlayerCount() {
         playerCount--;
     }
 
     public void addNotify() {
         super.addNotify();
-        System.out.println("Opening video file: " + sourceFile.toURI().getPath());
+        logger.info("Opening video: " + sourceFile.toURI().getPath());
         try {
             addNativeCoreAnimationLayer("file://" + sourceFile.toURI().getPath());
         } catch (Exception e) {
-            System.out.println("ERROR CAUGHT");
-            e.printStackTrace();
+            logger.error("Unable to load " + sourceFile.toURI().getPath() + ". Error: ", e);
         }
     }
 

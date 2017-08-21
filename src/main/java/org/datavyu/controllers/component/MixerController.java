@@ -827,7 +827,7 @@ public final class MixerController implements PropertyChangeListener,
             enableHighlight.setText("Disable Cell Highlighting");
         }
 
-        Datavyu.getProjectController().getSpreadsheetPanel().redrawCells();
+        Datavyu.getProjectController().getSpreadSheetPanel().redrawCells();
     }
 
     public void enableHighlightAndFocusHandler(final ActionEvent e) {
@@ -840,7 +840,7 @@ public final class MixerController implements PropertyChangeListener,
             enableHighlightAndFocus.setText("Disable Highlight and Focus");
         }
 
-        Datavyu.getProjectController().getSpreadsheetPanel().redrawCells();
+        Datavyu.getProjectController().getSpreadSheetPanel().redrawCells();
     }
 
     /**

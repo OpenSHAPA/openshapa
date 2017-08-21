@@ -117,8 +117,8 @@ public class NativeLibraryLoader {
      * @throws Exception When extracting or loading the library.
      */
     public static File extract(final String destName) throws Exception {
+        logger.info("Attempting to extract " + destName);
         URL url = getResource(destName);
-        logger.info("Attempting to extract " + url.toString());
         InputStream in = url.openStream();
         File outfile = new File(libraryFolder, destName + getExtension(destName));
         FileOutputStream out = new FileOutputStream(outfile);

@@ -56,15 +56,13 @@ import java.util.stream.Collectors;
 
 
 /**
- * Spreadsheetpanel is a custom component for viewing the contents of the
- * Datavyu database as a spreadsheet.
+ * Custom view of contents of the Datavyu database as a spread sheet
  */
-public final class SpreadsheetPanel extends JPanel
-        implements DataStoreListener,
-        CellSelectionListener,
-        ColumnSelectionListener,
-        ColumnVisibilityListener,
-        KeyEventDispatcher {
+public final class SpreadSheetPanel extends JPanel implements DataStoreListener, CellSelectionListener,
+        ColumnSelectionListener, ColumnVisibilityListener, KeyEventDispatcher {
+
+    /** The logger for this class */
+    private static Logger logger = LogManager.getLogger(SpreadSheetPanel.class);
 
     /**
      * To use when navigating left.
@@ -77,7 +75,7 @@ public final class SpreadsheetPanel extends JPanel
     /**
      * The logger for this class.
      */
-    private static final Logger LOGGER = LogManager.getLogger(SpreadsheetPanel.class);
+    private static final Logger LOGGER = LogManager.getLogger(SpreadSheetPanel.class);
     private static int numNewSheets = 1;
     /**
      * List containing listeners interested in file drop events.
@@ -135,11 +133,11 @@ public final class SpreadsheetPanel extends JPanel
      */
     private SheetLayoutType currentLayoutType;
 
-    //    public SpreadsheetPanel(final DataStore db, DVProgressBar progressBar) {
+    //    public SpreadSheetPanel(final DataStore db, DVProgressBar progressBar) {
 //        ProjectController pc = new ProjectController(null, this);
-//        new SpreadsheetPanel(pc, progressBar);
+//        new SpreadSheetPanel(pc, progressBar);
 //    }
-    public SpreadsheetPanel(final ProjectController pc, DVProgressBar progressBar) {
+    public SpreadSheetPanel(final ProjectController pc, DVProgressBar progressBar) {
         setName(this.getClass().getSimpleName());
         setLayout(new BorderLayout());
 
@@ -175,7 +173,7 @@ public final class SpreadsheetPanel extends JPanel
         scrollPane.setCorner(ScrollPaneConstants.UPPER_RIGHT_CORNER, rightCorner);
 
         ResourceMap rMap = Application.getInstance(Datavyu.class).getContext()
-                .getResourceMap(SpreadsheetPanel.class);
+                .getResourceMap(SpreadSheetPanel.class);
 
         
         // Set up the add new variable button
@@ -184,7 +182,7 @@ public final class SpreadsheetPanel extends JPanel
         newVar.setToolTipText(rMap.getString("add.tooltip"));
         
         ActionMap aMap = Application.getInstance(Datavyu.class).getContext()
-                .getActionMap(SpreadsheetPanel.class, this);
+                .getActionMap(SpreadSheetPanel.class, this);
         newVar.setAction(aMap.get("openNewVarMenu"));
         newVar.setText(" + ");
         headerView.add(newVar);
@@ -209,7 +207,7 @@ public final class SpreadsheetPanel extends JPanel
         //layout the columns
         projectController = pc;
         buildColumns(progressBar);
-        pc.setSpreadsheetPanel(this);
+        pc.setSpreadSheetPanel(this);
 
         setName(dataStore.getName());
         numNewSheets++;
@@ -563,7 +561,7 @@ public final class SpreadsheetPanel extends JPanel
                     }
                     c.setOnset(Datavyu.getDataController().getCurrentTime());
                     c.setOffset(Datavyu.getDataController().getCurrentTime());
-                    Datavyu.getProjectController().getSpreadsheetPanel().redrawCells();
+                    Datavyu.getProjectController().getSpreadSheetPanel().redrawCells();
                     e.consume();
                 }
                 // Add a cell to that column with this key in the first argument
@@ -733,7 +731,7 @@ public final class SpreadsheetPanel extends JPanel
         if (source == destination) {
             return;
         }
-        System.out.println(source + ", " + destination);
+        logger.info(source + ", " + destination);
 
 
         synchronized(this.getTreeLock()) {

@@ -33,7 +33,7 @@ public final class OpenC {
     /**
      * The logger for this class.
      */
-    private static Logger LOGGER = LogManager.getLogger(OpenC.class);
+    private static Logger logger = LogManager.getLogger(OpenC.class);
     /**
      * A reference to the database that this controller opened.
      */
@@ -73,12 +73,12 @@ public final class OpenC {
 
         // If project is archive - open it as such.
         if (projectFile.getName().endsWith(".opf")) {
-            LOGGER.info("open project archive");
+            logger.info("open project archive");
             openProjectArchive(projectFile);
 
             // Otherwise project is uncompressed.
         } else {
-            LOGGER.info("open legacy shapa");
+            logger.info("open legacy shapa");
 
             OpenProjectFileC opc = new OpenProjectFileC();
             project = opc.open(projectFile);
@@ -142,8 +142,7 @@ public final class OpenC {
 
             zf.close();
         } catch (Exception e) {
-            LOGGER.error("Unable to open project archive", e);
-            e.printStackTrace();
+            logger.error("Unable to open project archive", e);
         }
 
         database.deselectAll();

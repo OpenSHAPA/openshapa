@@ -31,6 +31,7 @@ public class VlcLibraryLoader {
      */
     public static void load() {
         String vlcLibDir = System.getProperty("java.io.tmpdir") + File.separator + "vlc" + File.separator;
+        logger.info("Loading vlc libraries into folder: " + vlcLibDir);
         if (!loaded) {
             try {
                 nativeLibraryManager = new NativeLibraryManager(vlcLibDir);

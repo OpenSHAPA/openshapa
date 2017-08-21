@@ -1,7 +1,10 @@
 package org.datavyu.plugins.vlc;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.models.Identifier;
 import org.datavyu.plugins.*;
+import org.datavyu.plugins.javafx.JavaFXDataViewer;
 import org.datavyu.views.component.DefaultTrackPainter;
 import org.datavyu.views.component.TrackPainter;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
@@ -19,6 +22,8 @@ import java.util.Properties;
 
 
 public class VLCDataViewer extends BaseDataViewer {
+
+    private static Logger logger = LogManager.getLogger(BaseDataViewer.class);
 
     private static float fallbackFrameRate = 24.0f;
 
@@ -132,7 +137,7 @@ public class VLCDataViewer extends BaseDataViewer {
             try {
                 SwingUtilities.invokeAndWait(edtTask);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Failed edit task now. Error: ", e);
             }
         }
     }
@@ -144,7 +149,7 @@ public class VLCDataViewer extends BaseDataViewer {
             try {
                 SwingUtilities.invokeLater(edtTask);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Failed edit task later. Error: ", e);
             }
         }
     }
@@ -201,67 +206,54 @@ public class VLCDataViewer extends BaseDataViewer {
 
     @Override
     public void setSourceFile(final File dataFeed) {
-        VlcLibraryLoader.load();
 
+        // TODO: Standardize on where we load the libraries. For some plugins we load in the static section; others in the constructor and again others (like this one) in the setSource method
+        VlcLibraryLoader.load();
 
         sourceFile = dataFeed;
         vlcDialog.setVisible(true);
         vlcDialog.setName(vlcDialog.getName() + "-" + dataFeed.getName());
         mediaPlayer.startMedia(dataFeed.getAbsolutePath());
 
-        // Grab FPS and duration
-
-        // Because of the way VLC works, we have to wait for the metadata to become
-        // available a short time after we start playing.
-        // TODO: reimplement this using the video output event
+        // Because of the way VLC works, we have to wait for the metadata to become available a short time after we
+        // start playing
+        // TODO: Reimplement this using the video output event
         try {
             int i = 0;
             while (mediaPlayer.getVideoDimension() == null) {
-                if (i > 100)
+                // TODO: Why 100 here?
+                if (i > 100) {
                     break;
+                }
                 Thread.sleep(5);
                 i++;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to read video dimension. Error: ", e);
         }
 
         fps = mediaPlayer.getFps();
         duration = mediaPlayer.getLength();
-        Dimension d = mediaPlayer.getVideoDimension();
+        Dimension dimension = mediaPlayer.getVideoDimension();
 
-        System.out.println(String.format("FPS: %f", fps));
-        System.out.println(String.format("Length: %d", duration));
+        logger.info("Frames per second: " + fps + " Hz.");
+        logger.info("Duration is " + duration + " sec.");
 
-        // Test to see if we should prompt user to convert the video to
-        // the ideal format
-
-        // Stop the player. This will rewind whatever
-        // frames we just played to get the FPS and duration
+        // Stop the player. This will rewind whatever frames we just played to get the FPS and duration
         mediaPlayer.pause();
         mediaPlayer.setTime(0);
 
         playing = false;
 
-        if (d != null) {
-            vlcDialog.setSize(d);
+        if (dimension != null) {
+            vlcDialog.setSize(dimension);
         }
 
-        // Test to make sure we got the framerate.
-        // If we didn't, alert the user that this
-        // may not work right.
+        // Test to make sure we got the frame rate. If we didn't, alert the user that this may not work right.
         if (fps < 1.0) {
-            // VLC can't read the framerate for this video for some reason.
-            // Set it to the fallback rate so it is still usable for coding.
+            // VLC can't read the frame rate for this video for some reason. Set it to the fallback rate so it is still
+            // usable for coding.
             fps = fallbackFrameRate;
-            /*
-            JOptionPane.showMessageDialog(vlcDialog,
-                    "Warning: Unable to detect framerate in video.\n"
-                            + "This video may not behave properly. "
-                            + "Please try converting to H.264.\n\n"
-                            + "This can be done under Controller->Convert Videos.\n"
-                            + "Setting framerate to " + fallbackFrameRate);
-                    */
         }
     }
 
@@ -363,29 +355,25 @@ public class VLCDataViewer extends BaseDataViewer {
             settings.setProperty("height", Integer.toString(vlcDialog.getHeight()));
             settings.setProperty("fps", Float.toString(fps));
             settings.store(os, null);
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (IOException e) {
+            logger.error("Failed to store settings. Error: ", e);
         }
     }
 
     @Override
     public void loadSettings(final InputStream is) {
-
         try {
             if (is == null) {
                 throw new NullPointerException();
             }
-
             Properties props = new Properties();
             props.load(is);
-
             String property = props.getProperty("offset");
-
             if ((property != null) && !"".equals(property)) {
                 setStartTime(Long.parseLong(property));
             }
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (IOException e) {
+            logger.error("Failed to load settings. Error: ", e);
         }
     }
 

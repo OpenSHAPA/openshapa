@@ -16,6 +16,8 @@ package org.datavyu.controllers.project;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.controllers.VocabEditorC;
 import org.datavyu.controllers.component.MixerController;
@@ -33,7 +35,7 @@ import org.datavyu.plugins.Plugin;
 import org.datavyu.plugins.PluginManager;
 import org.datavyu.util.FileSystemUtils;
 import org.datavyu.views.VideoController;
-import org.datavyu.views.discrete.SpreadsheetPanel;
+import org.datavyu.views.discrete.SpreadSheetPanel;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 
@@ -50,49 +52,34 @@ import java.util.List;
  */
 public final class ProjectController {
 
-    /**
-     * The spreadsheet panel that this controller is associated with
-     */
-    private SpreadsheetPanel spreadsheetPanel;
+    /** Logger for this class */
+    private static Logger logger = LogManager.getLogger(ProjectController.class);
 
-    /**
-     * The current project we are working on.
-     */
+    /** The spread sheet panel that this controller is associated with */
+    private SpreadSheetPanel spreadSheetPanel;
+
+    /** The current project we are working on */
     private Project project;
 
-    /**
-     * The current database we are working on.
-     */
+    /** The current database we are working on */
     private DataStore dataStore = null;
 
-    /**
-     * The last cell that was created.
-     */
+    /** The last cell that was created */
     private Cell lastCreatedCell;
 
-    /**
-     * The last cell that was selected.
-     */
+    /** The last cell that was selected */
     private Cell lastSelectedCell;
 
-    /**
-     * The last variable that was created.
-     */
+    /** The last variable that was created */
     private Variable lastCreatedVariable;
 
-    /**
-     * Controller state encodes that the project been changed since it was created.
-     */
+    /** Project has been changed */
     private boolean changed;
 
-    /**
-     * Is the project new?
-     */
+    /** New project? */
     private boolean newProject;
 
-    /**
-     * Last option used for saving.
-     */
+    /** Last option used for saving */
     private FileFilter lastSaveOption;
 
     /**
@@ -275,9 +262,9 @@ public final class ProjectController {
     public String getFullPath() {
         try {
             return new File(project.getProjectDirectory() + File.separator
-                            + project.getDatabaseFileName()).getCanonicalPath();
+                    + project.getDatabaseFileName()).getCanonicalPath();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Unable to get full path. Error: ", e);
         }
         return null;
     }
@@ -316,7 +303,7 @@ public final class ProjectController {
 
         // Use the plugin manager to load up the data viewers
         PluginManager pm = PluginManager.getInstance();
-        VideoController dataController = spreadsheetPanel.getDataController();
+        VideoController dataController = spreadSheetPanel.getDataController();
 
         // Load the plugins required for each media file
         boolean showController = false;
@@ -507,7 +494,7 @@ public final class ProjectController {
      */
     public void updateProject() {
 
-        VideoController dataController = spreadsheetPanel.getDataController();
+        VideoController dataController = spreadSheetPanel.getDataController();
 
         // Gather the data viewer settings
         List<ViewerSetting> viewerSettings = new LinkedList<ViewerSetting>();
@@ -575,16 +562,16 @@ public final class ProjectController {
      *
      * @return the spreadsheet panel.
      */
-    public SpreadsheetPanel getSpreadsheetPanel() {
-        return spreadsheetPanel;
+    public SpreadSheetPanel getSpreadSheetPanel() {
+        return spreadSheetPanel;
     }
 
     /**
      * Sets the spreadsheet panel.
      *
-     * @param spreadsheetPanel
+     * @param spreadSheetPanel
      */
-    public void setSpreadsheetPanel(SpreadsheetPanel spreadsheetPanel) {
-        this.spreadsheetPanel = spreadsheetPanel;
+    public void setSpreadSheetPanel(SpreadSheetPanel spreadSheetPanel) {
+        this.spreadSheetPanel = spreadSheetPanel;
     }
 }

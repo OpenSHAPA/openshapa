@@ -19,8 +19,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.plugins.javafx.JavaFxPlugin;
-import org.datavyu.plugins.nativeosxplayer.NativeOSXPlayerFactory;
-import org.datavyu.plugins.quicktime.QTDataViewer;
 import org.datavyu.plugins.quicktime.QTPlugin;
 import org.datavyu.util.MacOS;
 import org.jdesktop.application.LocalStorage;
@@ -313,14 +311,11 @@ public final class PluginManager {
                 }
             }
         } catch (ClassNotFoundException e) {
-            logger.error("Unable to find plugin.", e);
-            e.printStackTrace();
+            logger.error("Unable to find plugin. Error: ", e);
         } catch (ClassFormatError e) {
-            logger.error("Plugin with bad class format.", e);
-            e.printStackTrace();
+            logger.error("Plugin with bad class format. Error: ", e);
         } catch (Exception e) {
-            logger.error("Unable to instantiate plugin", e);
-            e.printStackTrace();
+            logger.error("Unable to instantiate plugin. Error: ", e);
         }
     }
 
@@ -445,7 +440,7 @@ public final class PluginManager {
         // FR: What is this doing? (One selects the play back plugin in the open file dialog)
         if (classifier.equals("datavyu.video")) {
             if (Datavyu.getPlatform() == Datavyu.Platform.MAC) {
-                return NativeOSXPlayerFactory.getNativeOSXPlugin();
+                return MacOS.getNativeOSXPlugin();
             }
 
             if (Datavyu.getPlatform() == Datavyu.Platform.WINDOWS) {

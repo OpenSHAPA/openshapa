@@ -3,6 +3,8 @@ package org.datavyu.plugins.javafx;
 import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
 import javafx.stage.Stage;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.models.db.DataStore;
 import org.datavyu.plugins.*;
 
@@ -14,6 +16,8 @@ import java.util.concurrent.CountDownLatch;
 
 
 public class JavaFXDataViewer extends BaseDataViewer {
+
+    private static Logger logger = LogManager.getLogger(JavaFXDataViewer.class);
 
     /**
      * Data viewer offset.
@@ -54,8 +58,9 @@ public class JavaFXDataViewer extends BaseDataViewer {
         VlcLibraryLoader.load();
 
         // run synchronously on JavaFX thread
-        System.out.println("AM I THE JAVAFX THREAD?:" + Platform.isFxApplicationThread());
+
         if (Platform.isFxApplicationThread()) {
+            logger.info("Javax thread running action.");
             action.run();
             return;
         }
@@ -64,16 +69,14 @@ public class JavaFXDataViewer extends BaseDataViewer {
             @Override
             public void run() {
                 try {
-                    System.out.println("RUNNING ACTION");
-                    System.out.println("AM I THE JAVAFX THREAD?:" + Platform.isFxApplicationThread());
+                    logger.info("Running action " + (Platform.isFxApplicationThread() ? " as JavaFx thread." : "."));
                     action.run();
-                    System.out.println("I RAN THE ACTION");
-                } finally {
+                    logger.info("Action ran successful.");
+                } catch (Exception e) {
+                    logger.error("Exception occurred when running action.", e);
                 }
             }
         });
-
-        System.out.println("TESTING WEHTEHR IT RETURNS");
     }
 
     @Override
@@ -88,7 +91,7 @@ public class JavaFXDataViewer extends BaseDataViewer {
             try {
                 SwingUtilities.invokeAndWait(edtTask);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Failed edit task now. Error: ", e);
             }
         }
     }
@@ -100,7 +103,7 @@ public class JavaFXDataViewer extends BaseDataViewer {
             try {
                 SwingUtilities.invokeLater(edtTask);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Failed edit task later. Error: ", e);
             }
         }
     }
@@ -148,21 +151,20 @@ public class JavaFXDataViewer extends BaseDataViewer {
 
     @Override
     public void setSourceFile(final File sourceFile) {
+        logger.info("Set source file: " + sourceFile.getAbsolutePath());
 
         final CountDownLatch latch = new CountDownLatch(1);
-        System.out.println("Setting datafeed");
         data = sourceFile;
         Platform.setImplicitExit(false);
 
         javafxapp = new JavaFXApplication(sourceFile);
 
-        System.out.println(SwingUtilities.isEventDispatchThread());
-        System.out.println(Platform.isFxApplicationThread());
+        logger.info("Is event dispatch thread? " + (SwingUtilities.isEventDispatchThread() ? "Yes" : "No") + ".");
+        logger.info("Is FX application thread? " + (Platform.isFxApplicationThread() ? "Yes" : "No") + ".");
 
         runAndWait(new Runnable() {
             @Override
             public void run() {
-
                 javafxapp.start(new Stage());
                 latch.countDown();
             }
@@ -170,24 +172,24 @@ public class JavaFXDataViewer extends BaseDataViewer {
         try {
             latch.await();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Latch await failed. Error: ", e);
         }
 
         while (!javafxapp.isInit()) {
             try {
                 Thread.sleep(1000);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Thread awakened. Error: ", e);
             }
         }
 
-        System.out.println("Inited, going");
-        System.out.println(javafxapp.getDuration());
+        logger.info("Finished setting source: " + sourceFile);
+        logger.info("Duration is: " + javafxapp.getDuration());
+
         // Hide our fake dialog box
         dialog.setVisible(false);
 
-
-        // TODO Add in function to guess framerate
+        // TODO Add in function to guess frame rate
     }
 
 

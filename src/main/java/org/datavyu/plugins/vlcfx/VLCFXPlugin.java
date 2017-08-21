@@ -18,8 +18,8 @@ import java.util.List;
 
 public class VLCFXPlugin implements Plugin {
 
-    private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(Datavyu.Platform.WINDOWS, Datavyu.Platform.MAC, Datavyu.Platform.LINUX);
-
+    private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(Datavyu.Platform.WINDOWS,
+            Datavyu.Platform.MAC, Datavyu.Platform.LINUX);
 
     private static final Filter VIDEO_FILTER = new Filter() {
         final SuffixFileFilter ff;
@@ -59,8 +59,7 @@ public class VLCFXPlugin implements Plugin {
     }
 
     @Override
-    public DataViewer getNewDataViewer(final Frame parent,
-                                       final boolean modal) {
+    public DataViewer getNewDataViewer(final Frame parent, final boolean modal) {
         return new VLCFXDataViewer(parent, modal);
     }
 
@@ -71,10 +70,7 @@ public class VLCFXPlugin implements Plugin {
 
     @Override
     public ImageIcon getTypeIcon() {
-        URL typeIconURL = getClass().getResource(
-                "/icons/vlc_cone.png");
-
-        return new ImageIcon(typeIconURL);
+        return new ImageIcon(getClass().getResource("/icons/vlc_cone.png"));
     }
 
     @Override

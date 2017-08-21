@@ -14,6 +14,8 @@
  */
 package org.datavyu.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.testng.Assert;
 
 import javax.imageio.ImageIO;
@@ -34,11 +36,15 @@ import java.util.Hashtable;
  */
 public final class UIImageUtils {
 
-    /**
-     * Maximum distance one pixel can be away from another.
-     */
-    public static final double MAX_PIXEL_DISTANCE = Math.sqrt((255 * 255)
-            + (255 * 255) + (255 * 255));
+    /** Logger for this class */
+    private static final Logger logger = LogManager.getLogger(UIImageUtils.class);
+
+    /** Maximum distance one pixel can be away from another */
+    public static final double MAX_PIXEL_DISTANCE = Math.sqrt((255 * 255) + (255 * 255) + (255 * 255));
+
+    // Pixel thresholds
+    private final static double PIXEL_THRESHOLD = 0.15; // Percent
+    private final static double ERROR_THRESHOLD = 0.15;
 
     /**
      * Checks if two images are equal within 15%.
@@ -48,16 +54,8 @@ public final class UIImageUtils {
      * @return true if similar enough
      * @throws IOException on error reading file
      */
-    public static Boolean areImagesEqual(final BufferedImage uiImage,
-                                         final File refFile) throws IOException {
-
-        // CONSTANTS
-        // Pixel threshold as a percentage
-        final double PIXEL_THRESHOLD = 0.15;
-        final double ERROR_THRESHOLD = 0.15;
-
-        return areImagesEqual(uiImage, refFile, PIXEL_THRESHOLD,
-                ERROR_THRESHOLD);
+    public static Boolean areImagesEqual(final BufferedImage uiImage, final File refFile) throws IOException {
+        return areImagesEqual(uiImage, refFile, PIXEL_THRESHOLD, ERROR_THRESHOLD);
     }
 
     /**
@@ -70,32 +68,28 @@ public final class UIImageUtils {
      * @return true if similar enough
      * @throws IOException on error reading file
      */
-    public static Boolean areImagesEqual(final BufferedImage uiImage,
-                                         final File refFile, final double pixThreshold,
+    public static Boolean areImagesEqual(final BufferedImage uiImage, final File refFile, final double pixThreshold,
                                          final double errThreshold) throws IOException {
         final String tempFolder = System.getProperty("java.io.tmpdir");
 
-        String filePrefix = "";
+        String filePrefix;
 
-        int i = 1;
+        int iStack = 1;
 
         do {
-            filePrefix = new Exception().getStackTrace()[i].getMethodName();
-            i++;
-        } while ((filePrefix.equals("areImagesEqual")) && (i < 5));
+            filePrefix = new Exception().getStackTrace()[iStack].getMethodName();
+            iStack++;
+        } while ((filePrefix.equals("areImagesEqual")) && (iStack < 5));
 
         // Load image from file
         BufferedImage refImage = ImageIO.read(refFile);
 
         // Check that images are the same size
-        if (!(uiImage.getHeight() == refImage.getHeight())
-                || !(uiImage.getWidth() == refImage.getWidth())) {
+        if (!(uiImage.getHeight() == refImage.getHeight()) || !(uiImage.getWidth() == refImage.getWidth())) {
             ImageIO.write(uiImage, "png",
-                    new File(tempFolder + "/" + filePrefix
-                            + "sameSize.png"));
-            System.err.println("Image written to: "
-                    + tempFolder + "/" + filePrefix
-                    + "sameSize.png");
+                    new File(tempFolder + "/" + filePrefix + "sameSize.png"));
+
+            logger.info("Image written to: " + tempFolder + "/" + filePrefix + "sameSize.png");
         }
 
         Assert.assertEquals(uiImage.getHeight(), refImage.getHeight());
@@ -107,13 +101,11 @@ public final class UIImageUtils {
         int errorPixels = 0;
 
         // For each pixel, calculate distance
-        for (int x = 0; x < uiImage.getWidth(); x++) {
-
-            for (int y = 0; y < uiImage.getHeight(); y++) {
-                Color col1 = new Color(uiImage.getRGB(x, y));
-                Color col2 = new Color(refImage.getRGB(x, y));
+        for (int iColumn = 0; iColumn < uiImage.getWidth(); iColumn++) {
+            for (int iRow = 0; iRow < uiImage.getHeight(); iRow++) {
+                Color col1 = new Color(uiImage.getRGB(iColumn, iRow));
+                Color col2 = new Color(refImage.getRGB(iColumn, iRow));
                 double pixelDistance = pixelDistance(col1, col2);
-
                 // Check if correct within threshold
                 if (pixelDistance > (pixThreshold * MAX_PIXEL_DISTANCE)) {
                     errorPixels++;
@@ -124,22 +116,16 @@ public final class UIImageUtils {
         // Check if number of error pixels > threshold
         double error = (double) errorPixels / (double) totalPixels;
         boolean withinThreshold = error < errThreshold;
-        System.err.println("Error=" + error);
+        logger.info("Error = " + error);
 
         if (!withinThreshold) {
             ImageIO.write(maskImage(uiImage, refImage), "png",
-                    new File(tempFolder + "/" + filePrefix
-                            + "maskImage.png"));
-            System.err.println("Image written to: "
-                    + tempFolder + "/" + filePrefix
-                    + "maskImage.png");
+                    new File(tempFolder + "/" + filePrefix + "maskImage.png"));
+            logger.info("Image written to: " + tempFolder + "/" + filePrefix + "maskImage.png");
 
             ImageIO.write(uiImage, "png",
-                    new File(tempFolder + "/" + filePrefix
-                            + "capturedImage.png"));
-            System.err.println("Image written to: "
-                    + tempFolder + "/" + filePrefix
-                    + "capturedImage.png");
+                    new File(tempFolder + "/" + filePrefix + "capturedImage.png"));
+            logger.info("Image written to: " + tempFolder + "/" + filePrefix + "capturedImage.png");
         }
 
         return withinThreshold;
@@ -150,7 +136,7 @@ public final class UIImageUtils {
      *
      * @param col1 first color
      * @param col2 second color
-     * @return distance between col1 and col2
+     * @return distance between colors
      */
     private static double pixelDistance(final Color col1, final Color col2) {
         int r1 = col1.getRed();
@@ -159,37 +145,27 @@ public final class UIImageUtils {
         int r2 = col2.getRed();
         int g2 = col2.getGreen();
         int b2 = col2.getBlue();
-
-        double pixelDistance = Math.sqrt(((r1 - r2) * (r1 - r2))
-                + ((g1 - g2)
-                * (g1 - g2)) + ((b1 - b2) * (b1 - b2)));
-
-        return pixelDistance;
+        return Math.sqrt(((r1 - r2) * (r1 - r2)) + ((g1 - g2) * (g1 - g2)) + ((b1 - b2) * (b1 - b2)));
     }
 
     /**
-     * Captures screenshot of component and saves to a file.
+     * Captures screenshot of component and saves to a file
      *
      * @param component JComponent to capture screenshot
      * @param saveAs    file name
      */
-    public static void captureAsScreenshot(final JComponent component,
-                                           final File saveAs) {
-
+    public static void captureAsScreenshot(final JComponent component, final File saveAs) {
         try {
             Robot robot = new Robot();
-
             // Create Rectangle around component
             Point locOnScreen = component.getLocationOnScreen();
             Rectangle bounds = component.getBounds();
             bounds.setLocation(locOnScreen);
-
-            BufferedImage bi = robot.createScreenCapture(bounds);
-            ImageIO.write(bi, "png", saveAs);
+            ImageIO.write(robot.createScreenCapture(bounds), "png", saveAs);
         } catch (AWTException e) {
-            e.printStackTrace();
+            logger.error("Screen capture failed. Error: ", e);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Screen capture failed due to IO. Error: ", e);
         }
     }
 
@@ -197,20 +173,16 @@ public final class UIImageUtils {
      * Captures screenshot of component and saves to a file.
      *
      * @param frame  JComponent to capture screenshot
-     * @param saveAs file name
+     * @param saveAs file name to be saved
      */
-    public static void captureAsScreenshot(final Frame frame,
-                                           final File saveAs) {
-
+    public static void captureAsScreenshot(final Frame frame, final File saveAs) {
         try {
             Robot robot = new Robot();
-            Rectangle bounds = getInternalRectangle(frame);
-            BufferedImage bi = robot.createScreenCapture(bounds);
-            ImageIO.write(bi, "png", saveAs);
+            ImageIO.write(robot.createScreenCapture(getInternalRectangle(frame)), "png", saveAs);
         } catch (AWTException e) {
-            e.printStackTrace();
+            logger.error("Screen capture failed. Error: ", e);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Screen catpure failed due to IO. Error: ", e);
         }
     }
 
@@ -220,18 +192,14 @@ public final class UIImageUtils {
      * @param dialog JComponent to capture screenshot
      * @param saveAs file name
      */
-    public static void captureAsScreenshot(final Dialog dialog,
-                                           final File saveAs) {
-
+    public static void captureAsScreenshot(final Dialog dialog, final File saveAs) {
         try {
             Robot robot = new Robot();
-            Rectangle bounds = getInternalRectangle(dialog);
-            BufferedImage bi = robot.createScreenCapture(bounds);
-            ImageIO.write(bi, "png", saveAs);
+            ImageIO.write(robot.createScreenCapture(getInternalRectangle(dialog)), "png", saveAs);
         } catch (AWTException e) {
-            e.printStackTrace();
+            logger.error("Screen capture failed. Error: ", e);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Screen capture failed due to IO. Error: ", e);
         }
     }
 
@@ -242,17 +210,14 @@ public final class UIImageUtils {
      * @return BufferedImage of screenshot
      */
     public static BufferedImage captureAsScreenshot(final Dialog dialog) {
-        BufferedImage bi = null;
-
+        BufferedImage bufferedImage = null;
         try {
             Robot robot = new Robot();
-            Rectangle bounds = getInternalRectangle(dialog);
-            bi = robot.createScreenCapture(bounds);
+            bufferedImage = robot.createScreenCapture(getInternalRectangle(dialog));
         } catch (AWTException e) {
-            e.printStackTrace();
+            logger.error("Screen capture failed. Error: ", e);
         }
-
-        return bi;
+        return bufferedImage;
     }
 
     /**
@@ -271,10 +236,8 @@ public final class UIImageUtils {
         locOnScreen.setLocation(locOnScreen.x + frame.getInsets().left,
                 locOnScreen.y + frame.getInsets().top);
         bounds.setRect(0, 0,
-                bounds.getWidth() - frame.getInsets().left
-                        - frame.getInsets().right,
-                bounds.getHeight() - frame.getInsets().top
-                        - frame.getInsets().bottom);
+                bounds.getWidth() - frame.getInsets().left - frame.getInsets().right,
+                bounds.getHeight() - frame.getInsets().top - frame.getInsets().bottom);
 
         bounds.setLocation(locOnScreen);
 
@@ -314,22 +277,18 @@ public final class UIImageUtils {
      * @return BufferedImage screenshot of component
      */
     public static BufferedImage captureAsScreenshot(final Component component) {
-        BufferedImage bi = null;
-
+        BufferedImage bufferedImage = null;
         try {
             Robot robot = new Robot();
-
             // Create Rectangle around component
-            Point locOnScreen = component.getLocationOnScreen();
+            Point locationOnScreen = component.getLocationOnScreen();
             Rectangle bounds = component.getBounds();
-            bounds.setLocation(locOnScreen);
-
-            bi = robot.createScreenCapture(bounds);
+            bounds.setLocation(locationOnScreen);
+            bufferedImage = robot.createScreenCapture(bounds);
         } catch (AWTException e) {
-            e.printStackTrace();
+            logger.error("Screen capture failed. Error: ", e);
         }
-
-        return bi;
+        return bufferedImage;
     }
 
     /**
@@ -339,22 +298,15 @@ public final class UIImageUtils {
      * @return BufferedImage screenshot of component
      */
     public static BufferedImage captureAsScreenshot(final Frame frame) {
-        BufferedImage bi = null;
-
+        BufferedImage bufferedImage = null;
         try {
             Robot robot = new Robot();
-
-            // Create Rectangle around component
-            Rectangle bounds = getInternalRectangle(frame);
-
-            bi = robot.createScreenCapture(bounds);
+            bufferedImage = robot.createScreenCapture(getInternalRectangle(frame));
         } catch (AWTException e) {
-            e.printStackTrace();
+            logger.error("Screen capture failed. Error: ", e);
         }
-
-        return bi;
+        return bufferedImage;
     }
-
 
     /**
      * Masks second image over the first.
@@ -366,39 +318,29 @@ public final class UIImageUtils {
      * @param img2 a mask image to lay over first
      * @return masked image
      */
-    public static BufferedImage maskImage(final BufferedImage img1,
-                                          final BufferedImage img2) {
+    public static BufferedImage maskImage(final BufferedImage img1, final BufferedImage img2) {
 
         // Assert false if images are not an equal size.
         Assert.assertEquals(img1.getHeight(), img2.getHeight());
         Assert.assertEquals(img1.getWidth(), img2.getWidth());
 
-        BufferedImage result = new BufferedImage(img1.getWidth(),
-                img1.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage result = new BufferedImage(img1.getWidth(), img1.getHeight(), BufferedImage.TYPE_INT_ARGB);
         Color i1Color, i2Color;
 
-        for (int x = 0; x < img1.getWidth(); x++) {
-
-            for (int y = 0; y < img1.getHeight(); y++) {
-                i1Color = new Color(img1.getRGB(x, y));
-                i2Color = new Color(img2.getRGB(x, y));
-
+        for (int iColumn = 0; iColumn < img1.getWidth(); iColumn++) {
+            for (int iRow = 0; iRow < img1.getHeight(); iRow++) {
+                i1Color = new Color(img1.getRGB(iColumn, iRow));
+                i2Color = new Color(img2.getRGB(iColumn, iRow));
                 // Get normalized difference
-                double normDistance = pixelDistance(i1Color, i2Color)
-                        / MAX_PIXEL_DISTANCE * 255;
-
-                int color = i1Color.getRGB() & 0x00FFFFFF; // mask away any
-                // alpha
-
-                int mask = (int) normDistance << 24; // shift blue (normed
-                // pixelDistance) into
-                // alpha bits
-
+                double normDistance = pixelDistance(i1Color, i2Color) / MAX_PIXEL_DISTANCE * 255;
+                // Mask away any alpha
+                int color = i1Color.getRGB() & 0x00FFFFFF;
+                // shift blue (normed pixelDistance) into alpha bits
+                int mask = (int) normDistance << 24;
                 color |= mask;
-                result.setRGB(x, y, color);
+                result.setRGB(iColumn, iRow, color);
             }
         }
-
         return result;
     }
 
@@ -410,28 +352,22 @@ public final class UIImageUtils {
      * @param img2 an image to subtract.
      * @return difference image
      */
-    public static BufferedImage subtractImage(final BufferedImage img1,
-                                              final BufferedImage img2) {
-
+    public static BufferedImage subtractImage(final BufferedImage img1, final BufferedImage img2) {
         // Assert false if images are not an equal size.
         Assert.assertEquals(img1.getHeight(), img2.getHeight());
         Assert.assertEquals(img1.getWidth(), img2.getWidth());
 
-        BufferedImage result = new BufferedImage(img1.getWidth(),
-                img1.getHeight(), BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = new BufferedImage(img1.getWidth(), img1.getHeight(), BufferedImage.TYPE_INT_RGB);
         int i1Color, i2Color;
 
-        for (int x = 0; x < img1.getWidth(); x++) {
-
-            for (int y = 0; y < img1.getHeight(); y++) {
-                i1Color = img1.getRGB(x, y);
-                i2Color = img2.getRGB(x, y);
-                result.setRGB(x, y, subtractColors(i1Color, i2Color));
+        for (int iColumn = 0; iColumn < img1.getWidth(); iColumn++) {
+            for (int iRow = 0; iRow < img1.getHeight(); iRow++) {
+                i1Color = img1.getRGB(iColumn, iRow);
+                i2Color = img2.getRGB(iColumn, iRow);
+                result.setRGB(iColumn, iRow, subtractColors(i1Color, i2Color));
             }
         }
-
         return result;
-
     }
 
     /**
@@ -442,10 +378,8 @@ public final class UIImageUtils {
      * @param img2 an image to subtract.
      * @return difference image
      */
-    public static BufferedImage subtractImage(final RenderedImage img1,
-                                              final RenderedImage img2) {
-        return subtractImage(convertRenderedImage(img1),
-                convertRenderedImage(img2));
+    public static BufferedImage subtractImage(final RenderedImage img1, final RenderedImage img2) {
+        return subtractImage(convertRenderedImage(img1), convertRenderedImage(img2));
     }
 
     /**
@@ -461,8 +395,7 @@ public final class UIImageUtils {
         int red = subtractColor(color1.getRed(), color2.getRed());
         int green = subtractColor(color1.getGreen(), color2.getGreen());
         int blue = subtractColor(color1.getBlue(), color2.getBlue());
-
-        return (new Color(red, green, blue).getRGB());
+        return new Color(red, green, blue).getRGB();
     }
 
     /**
@@ -473,45 +406,38 @@ public final class UIImageUtils {
      * @return int difference between rgb1 and rgb2
      */
     private static int subtractColor(final int color1, final int color2) {
-
-        if (color1 >= color2) {
-            return (color1 - color2);
-        } else {
-            return (color1 - color2 + 0Xff);
-        }
+        return color1 >= color2 ? (color1 - color2) : (color1 - color2 + 0Xff);
     }
 
     /**
      * Converts RenderedImage to BufferedImage.
      *
-     * @param img RenderedImage
-     * @return BufferedImage conversion of RenderedImage img
+     * @param image RenderedImage
+     * @return BufferedImage conversion of RenderedImage image
      */
-    private static BufferedImage convertRenderedImage(final RenderedImage img) {
+    private static BufferedImage convertRenderedImage(final RenderedImage image) {
 
-        if (img instanceof BufferedImage) {
-            return (BufferedImage) img;
+        if (image instanceof BufferedImage) {
+            return (BufferedImage) image;
         }
 
-        ColorModel cm = img.getColorModel();
-        int width = img.getWidth();
-        int height = img.getHeight();
-        WritableRaster raster = cm.createCompatibleWritableRaster(width,
-                height);
-        boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+        ColorModel colorModel = image.getColorModel();
+        int width = image.getWidth();
+        int height = image.getHeight();
+        WritableRaster raster = colorModel.createCompatibleWritableRaster(width, height);
+        boolean isAlphaPremultiplied = colorModel.isAlphaPremultiplied();
         Hashtable properties = new Hashtable();
-        String[] keys = img.getPropertyNames();
+        String[] keys = image.getPropertyNames();
 
         if (keys != null) {
-
-            for (int i = 0; i < keys.length; i++) {
-                properties.put(keys[i], img.getProperty(keys[i]));
+            for (String key : keys) {
+                properties.put(key, image.getProperty(key));
             }
         }
 
-        BufferedImage result = new BufferedImage(cm, raster,
+        BufferedImage result = new BufferedImage(colorModel, raster,
                 isAlphaPremultiplied, properties);
-        img.copyData(raster);
+        image.copyData(raster);
 
         return result;
     }

@@ -3,6 +3,8 @@
  */
 package org.datavyu.views;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.util.ConfigurationProperties;
 import org.datavyu.util.DatavyuVersion;
 
@@ -11,14 +13,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-// TODO: Load this font from the rest?
-// TODO: What about language?
-// TODO: Put the URLs into the config file
+// TODO: Support language specifics?
 public class UpdateVersion extends JDialog {
 
-    private static final String DOWNLOAD_PAGE = "http://www.datavyu.org/download.html";
-
-    private static final String PRE_DOWNLOAD_PAGE = "http://www.datavyu.org/download.html";
+    private static Logger logger = LogManager.getLogger(UpdateVersion.class);
 
     private JLabel localVersionLabel;
     private JLabel serverVersionLabel;
@@ -91,14 +89,13 @@ public class UpdateVersion extends JDialog {
         updateNowButton.setToolTipText("Take me to the download page");
         updateNowButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                ConfigurationProperties configuration = ConfigurationProperties.getInstance();
-                String url = configuration.getUsePreRelease() ? PRE_DOWNLOAD_PAGE : DOWNLOAD_PAGE;
+                String url = ConfigurationProperties.getInstance().getDownloadUrl();
                 try {
+                    logger.info("Open download url " + url + " in default browser.");
                     Desktop.getDesktop().browse(java.net.URI.create(url));
                     dispose();
                 } catch (java.io.IOException e) {
-                    System.out.println(e.getMessage());
-
+                    logger.error("Error when opening download page: " + e);
                     setTitle("Error Opening Website");
                     updateMessage.setText("Please visit " + url);
                     updateLaterButton.setText("Close");

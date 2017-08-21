@@ -25,33 +25,29 @@ import org.datavyu.views.discrete.EditorComponent;
 import javax.swing.text.JTextComponent;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
-import java.util.logging.Level;
 
 /**
  * This class is the character editor of a NominalDataValue.
  */
 public final class VENameEditor extends EditorComponent {
 
-    /**
-     * String holding the reserved characters.
-     */
+    /** String holding the reserved characters */
     private static final String RESERVED_CHARS = ")(<>|,;\t\r\n .-!@#$%^&*()+=\\'\"";
-    /**
-     * The logger for this class.
-     */
-    private static Logger LOGGER = LogManager.getLogger(VENameEditor.class);
-    /**
-     * Parent Vocab Element.
-     */
+
+    /** The logger for this class */
+    private static Logger logger = LogManager.getLogger(VENameEditor.class);
+
+    /** Parent Vocab Element */
     private Argument model;
-    /**
-     * Parent Variable.
-     */
+
+    /** Parent Variable */
     private Variable varModel;
-    /**
-     * The parent editor window that this argument belongs too.
-     */
+
+    /** The parent editor window that this argument belongs too */
     private VocabElementV parentView;
+
+    /** Counter */
+    private static int sequentialNumber = 0;
 
     /**
      * Constructor.
@@ -60,10 +56,7 @@ public final class VENameEditor extends EditorComponent {
      * @param ve The parent Argument the editor is in.
      * @param pv The parent VocabElementV the editor is in.
      */
-    public VENameEditor(final JTextComponent ta,
-                        final Argument ve,
-                        final Variable var,
-                        final VocabElementV pv) {
+    public VENameEditor(final JTextComponent ta, final Argument ve, final Variable var, final VocabElementV pv) {
         super(ta);
         setEditable(true);
         parentView = pv;
@@ -112,20 +105,15 @@ public final class VENameEditor extends EditorComponent {
         attemptRename(new StringBuilder(getText()));
     }
     
-    private void attemptRename(StringBuilder currentValue)
-    {
-        if (Datavyu.getProjectController().getDataStore().getVariable(currentValue.toString()) == null)
-        {
+    private void attemptRename(StringBuilder currentValue) {
+        if (Datavyu.getProjectController().getDataStore().getVariable(currentValue.toString()) == null) {
             try {
-                    varModel.setName(currentValue.toString());
-                } catch (UserWarningException ex) {
-                    System.out.println("Invalid edit. Last good name: " + varModel.getName());
-                    java.util.logging.Logger.getLogger(VENameEditor.class.getName()).log(Level.SEVERE, null, ex);
-                }
-        }
-        else
-        {
-            System.out.println("DUPLICATE kthx");
+                varModel.setName(currentValue.toString());
+            } catch (UserWarningException ex) {
+                logger.info("Invalid edit. Last good name: " + varModel.getName() + " Error: ", ex);
+            }
+        } else {
+            logger.info("Duplicate");
         }
         parentView.setInvalid(isCurrentNameInvalid(), varModel.getName());
     }
@@ -141,7 +129,6 @@ public final class VENameEditor extends EditorComponent {
 
 
 
-    private static int sequentialNumber = 0;
     /**
      * Action to take by this editor when a key is pressed.
      *

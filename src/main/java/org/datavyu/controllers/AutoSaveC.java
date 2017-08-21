@@ -29,18 +29,18 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 
-public class AutosaveC implements ActionListener {
+public class AutoSaveC implements ActionListener {
 
-    /**
-     * The logger for this class.
-     */
-    private static Logger LOGGER = LogManager.getLogger(DeleteColumnC.class);
+    /** Logger for this class */
+    private static Logger logger = LogManager.getLogger(DeleteColumnC.class);
 
+    /** Timer for this class */
     private static Timer timer;
-    private static File f;
 
-    private AutosaveC() {
-    }
+    /** File to auto save */
+    private static File file;
+
+    private AutoSaveC() {}
 
     public static void setInterval(int interval) {
         if (interval == 0) {
@@ -52,7 +52,7 @@ public class AutosaveC implements ActionListener {
         }
         interval *= 60000;
         if (timer == null) {
-            timer = new Timer(interval, new AutosaveC());
+            timer = new Timer(interval, new AutoSaveC());
             timer.start();
         } else {
             timer.setDelay(interval);
@@ -69,18 +69,17 @@ public class AutosaveC implements ActionListener {
     public void actionPerformed(ActionEvent evt) {
         String baseName;
         String ext;
-        // save the project
         try {
-            if (f != null) {
-                f.delete();
+            if (file != null) {
+                file.delete();
             }
             ProjectController projController = Datavyu.getProjectController();
             SaveC saveController = new SaveC();
             if (projController.isNewProject() || (projController.getProjectName() == null)) {
                 baseName = "~noname_";
                 ext = ".opf";
-                f = File.createTempFile(baseName, ext);
-                saveController.saveProject(f, projController.getProject(),
+                file = File.createTempFile(baseName, ext);
+                saveController.saveProject(file, projController.getProject(),
                         projController.getDataStore(), false);
             } else {
                 if ((projController.getLastSaveOption() instanceof ShapaFilter)
@@ -88,24 +87,24 @@ public class AutosaveC implements ActionListener {
                         instanceof OpfFilter)) {
                     baseName = "~" + projController.getProjectName() + "_";
                     ext = ".opf";
-                    f = File.createTempFile(baseName, ext);
-                    saveController.saveProject(f, projController.getProject(),
+                    file = File.createTempFile(baseName, ext);
+                    saveController.saveProject(file, projController.getProject(),
                             projController.getDataStore(), false);
                     // Save content just as a database.
                 } else {
                     String filename = "~" + projController.getDatabaseFileName();
                     baseName = FilenameUtils.getBaseName(filename) + "_";
                     ext = "." + FilenameUtils.getExtension(filename);
-                    f = File.createTempFile(baseName, ext);
-                    saveController.saveDatabase(f, projController.getDataStore(), false);
+                    file = File.createTempFile(baseName, ext);
+                    saveController.saveDatabase(file, projController.getDataStore(), false);
                 }
             }
         } catch (UserWarningException lee) {
-            LOGGER.error("UserWarningException: Unable to autosave.", lee);
+            logger.error("UserWarningException: Unable to autosave.", lee);
         } catch (IOException ioe) {
-            LOGGER.error("IOException: Unable to autosave.", ioe);
+            logger.error("IOException: Unable to autosave.", ioe);
         } finally {
-            f.deleteOnExit();
+            file.deleteOnExit();
         }
     }
 }

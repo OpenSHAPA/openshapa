@@ -14,15 +14,14 @@
  */
 package org.datavyu.controllers;
 
+import org.apache.commons.io.IOUtils;
 import org.datavyu.models.db.*;
 import org.datavyu.models.project.Project;
-import org.datavyu.util.UIUtils;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
 import static junit.framework.Assert.assertTrue;
 
@@ -32,6 +31,85 @@ import static junit.framework.Assert.assertTrue;
 public class SaveCTest {
     // The location of the test files.
     private static final String TEST_FOLDER = System.getProperty("testPath");
+
+
+    /** BLOCK_SIZE for files */
+    private static final int BLOCK_SIZE = 65536;
+
+    /**
+     * Checks two files for byte equality
+     *
+     * @param file1 First file
+     * @param file2 Second file
+     * @return True if they are equal; otherwise false
+     * @throws IOException exception
+     */
+    public static Boolean areFilesSameByteComp(final File file1, final File file2) throws IOException {
+
+        // Check file sizes first
+        if (file1.length() != file2.length()) {
+            return false;
+        }
+
+        // Compare bytes
+        InputStream i1 = new FileInputStream(file1);
+        InputStream i2 = new FileInputStream(file2);
+        byte[] stream1Block = new byte[BLOCK_SIZE];
+        byte[] stream2Block = new byte[BLOCK_SIZE];
+        int b1, b2;
+
+        do {
+            b1 = i1.read(stream1Block);
+            b2 = i2.read(stream2Block);
+        } while ((b1 == b2) && (b1 != -1));
+
+        i1.close();
+        i2.close();
+
+        // Check if we've reached the end of the file. If we have, they're identical
+        return b1 == -1;
+    }
+
+    /**
+     * Checks if two text files are equal.
+     *
+     * @param file1 First file
+     * @param file2 Second file
+     * @return true if equal, else false
+     * @throws IOException on file read error
+     */
+    public static Boolean areFilesSameLineComp(final File file1, final File file2) throws IOException {
+        FileReader fr1 = new FileReader(file1);
+        FileReader fr2 = new FileReader(file2);
+
+        BufferedReader r1 = new BufferedReader(fr1);
+        BufferedReader r2 = new BufferedReader(fr2);
+
+        String line1 = r1.readLine();
+        String line2 = r2.readLine();
+
+        if ((line1 != null) && !line1.equals(line2)) {
+            return false;
+        }
+
+        while ((line1 != null) || (line2 != null)) {
+
+            if ((line1 != null) && !line1.equals(line2)) {
+                return false;
+            }
+
+            line1 = r1.readLine();
+            line2 = r2.readLine();
+        }
+
+        IOUtils.closeQuietly(r1);
+        IOUtils.closeQuietly(r2);
+
+        IOUtils.closeQuietly(fr1);
+        IOUtils.closeQuietly(fr2);
+
+        return true;
+    }
 
     @BeforeClass
     public void spinUp() {
@@ -60,7 +138,7 @@ public class SaveCTest {
         SaveC savec = new SaveC();
         savec.saveDatabase(outFile, ds);
 
-        assertTrue(UIUtils.areFilesSameLineComp(outFile, demoFile));
+        assertTrue(areFilesSameLineComp(outFile, demoFile));
     }
 
     @Test
@@ -84,7 +162,7 @@ public class SaveCTest {
 
         SaveC savec = new SaveC();
         savec.saveProject(outFile, p, ds);
-        assertTrue(UIUtils.areFilesSameByteComp(outFile, demoFile));
+        assertTrue(areFilesSameByteComp(outFile, demoFile));
     }
 
     @Test
@@ -117,6 +195,6 @@ public class SaveCTest {
 
         SaveC savec = new SaveC();
         savec.saveProject(outFile, p, ds);
-        assertTrue(UIUtils.areFilesSameByteComp(outFile, demoFile));
+        assertTrue(areFilesSameByteComp(outFile, demoFile));
     }
 }

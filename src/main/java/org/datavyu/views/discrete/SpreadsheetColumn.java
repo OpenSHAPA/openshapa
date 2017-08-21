@@ -41,11 +41,11 @@ import java.util.ListIterator;
  * This class maintains the visual representation of the column in the
  * Spreadsheet window.
  */
-public final class SpreadsheetColumn extends JLabel
-        implements VariableListener,
-        MouseListener,
-        MouseMotionListener,
+public final class SpreadsheetColumn extends JLabel implements VariableListener, MouseListener, MouseMotionListener,
         ClockTimer.ClockListener {
+
+    /** The logger for this class */
+    private static Logger logger = LogManager.getLogger(SpreadsheetColumn.class);
 
     /**
      * Default column width.
@@ -587,7 +587,7 @@ public final class SpreadsheetColumn extends JLabel
     @Override
     public void mousePressed(final MouseEvent me) {
         if(moveable && !draggable) {
-            System.out.println("Pressed X: " + me.getX());
+            logger.info("Pressed X: " + me.getX());
 
             if(System.getProperty("os.name").startsWith("Mac OS X")){
                 setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -607,19 +607,19 @@ public final class SpreadsheetColumn extends JLabel
 
             Component c = me.getComponent();
 
-            Point destionation = (Point) me.getPoint().clone();
-            SwingUtilities.convertPointToScreen(destionation, c);
-            SwingUtilities.convertPointFromScreen(destionation, transparentPanel);
+            Point destination = (Point) me.getPoint().clone();
+            SwingUtilities.convertPointToScreen(destination, c);
+            SwingUtilities.convertPointFromScreen(destination, transparentPanel);
 
-            transparentPanel.setDestination(destionation);
+            transparentPanel.setDestination(destination);
             transparentPanel.setVisible(false);
             transparentPanel.setImage(null);
 
             int x = me.getX();
-            System.out.println("Released X: " + x);
+            logger.info("Released X: " + x);
             // Iterate over the spreadsheet columns, starting at current column, to figure out how many
             // positions to shift by.
-            SpreadsheetPanel sp = (SpreadsheetPanel) Datavyu.getView().getComponent();
+            SpreadSheetPanel sp = (SpreadSheetPanel) Datavyu.getView().getComponent();
             List<SpreadsheetColumn> cols = sp.getVisibleColumns();
             ListIterator<SpreadsheetColumn> itr = cols.listIterator(cols.indexOf(this));
 

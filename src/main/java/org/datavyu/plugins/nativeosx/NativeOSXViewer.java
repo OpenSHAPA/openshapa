@@ -17,8 +17,6 @@ package org.datavyu.plugins.nativeosx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.plugins.BaseDataViewer;
-import quicktime.std.movies.Track;
-import quicktime.std.movies.media.Media;
 
 import java.awt.*;
 import java.io.File;
@@ -30,12 +28,11 @@ import java.io.File;
  */
 public final class NativeOSXViewer extends BaseDataViewer {
 
-
     private long timeOfPrevSeek = 0;
     /**
      * The logger for this class.
      */
-    private static Logger LOGGER = LogManager.getLogger(NativeOSXViewer.class);
+    private static Logger logger = LogManager.getLogger(NativeOSXViewer.class);
 
     long prevSeekTime = -1;
     /**
@@ -72,14 +69,20 @@ public final class NativeOSXViewer extends BaseDataViewer {
     @Override
     public long getDuration() {
 
-        if(movie.getDuration(movie.id) < 0) {
-            try { Thread.sleep(2000); } catch (Exception e) { e.printStackTrace(); }
-            System.out.println("Error: Could not get duration. Sleeping");
+        // If we cannot read the duration of the video wait for 2 sec and the retry!
+        if (movie.getDuration(movie.id) < 0) {
+            try {
+                Thread.sleep(2000);
+            } catch (Exception e) {
+                logger.error("Thread slept. Error: ", e);
+            }
         }
 
-        if(duration == 0) {
+        // Retry getting the duration after 2 sec wait time
+        if (duration == 0) {
             duration = movie.getDuration(movie.id);
         }
+
         return duration;
     }
 
@@ -98,24 +101,13 @@ public final class NativeOSXViewer extends BaseDataViewer {
                 try {
                     // Make sure movie is actually loaded
                     movie.setVolume(0.7F, movie.id);
-//                    movie.setRate(1.0f, movie.id);
-//                    while(movie.getCurrentTime(movie.id) < 1000) {}
-//                    System.out.println(getCurrentTime());
-//                    movie.stop(movie.id);
-//                    movie.setTime(0, movie.id);
                 } catch (Exception e) {
                     // Oops! Back out
-                    NativeOSXPlayer.playerCount -= 1;
+                    NativeOSXPlayer.decPlayerCount();
                     throw e;
                 }
             }
         });
-
-//        setPlaybackSpeed(1.0f);
-//        play();
-//        while(movie.getCurrentTime(movie.id) < 1000) {}
-//        stop();
-
     }
 
     @Override
@@ -135,7 +127,7 @@ public final class NativeOSXViewer extends BaseDataViewer {
                     return fps;
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error("Thread slept. Error: ", e);
             }
             isAssumedFramesPerSecond = true;
             return 29.97f;
@@ -148,17 +140,15 @@ public final class NativeOSXViewer extends BaseDataViewer {
         super.setPlaybackSpeed(rate);
     }
 
-
     /**
      * {@inheritDoc}
      */
     @Override
     public void play() {
         super.play();
-        System.err.println("Playing at " + getPlaybackSpeed());
+        logger.info("Playing at speed: " + getPlaybackSpeed());
 
         try {
-
             if (movie != null) {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
@@ -169,10 +159,10 @@ public final class NativeOSXViewer extends BaseDataViewer {
                     }
                 });
             } else {
-                System.err.println("WARNING: Movie is currently null");
+                logger.info("No movie loaded!");
             }
         } catch (Exception e) {
-            LOGGER.error("Unable to play", e);
+            logger.error("Unable to play! Error: ", e);
         }
     }
 
@@ -182,24 +172,21 @@ public final class NativeOSXViewer extends BaseDataViewer {
     @Override
     public void stop() {
         super.stop();
-
-        System.out.println("HIT STOP");
+        logger.info("Player stopped");
         final double time = System.currentTimeMillis();
         try {
 
             if (movie != null) {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        System.out.println("EXECUTING STOP");
-                        System.out.println(System.currentTimeMillis() - time);
+                        logger.info("STOPPING EXECUTING AT: " + (System.currentTimeMillis() - time));
                         movie.stop(movie.id);
-                        System.out.println("STOPPED");
-                        System.out.println(System.currentTimeMillis() - time);
+                        logger.info("STOPPED EXECUTION AT: " + (System.currentTimeMillis() - time));
                     }
                 });
             }
         } catch (Exception e) {
-            LOGGER.error("Unable to stop", e);
+            logger.error("Unable to stop", e);
         }
     }
 
@@ -209,10 +196,8 @@ public final class NativeOSXViewer extends BaseDataViewer {
     @Override
     public void seek(final long position) {
 
-//        System.out.println("ASKED FOR SEEK TO " + position);
-//        System.out.println(Arrays.toString(Thread.currentThread().getStackTrace()));
+        // TODO: Check what is this 35 magic (this seems the only place)?
         if(System.currentTimeMillis() - timeOfPrevSeek < 35) {
-//            System.out.println("skipping seek");
             return;
         }
 
@@ -223,21 +208,17 @@ public final class NativeOSXViewer extends BaseDataViewer {
                     prevSeekTime = position;
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
-                            System.out.println("Seeking to " + position);
+                            logger.info("Seeking to position: " + position);
                             boolean wasPlaying = isPlaying();
                             float prevRate = getPlaybackSpeed();
                             if (isPlaying()) {
-//                                System.out.println("Stopping playback");
                                 movie.stop(movie.id);
                             }
-                            if(prevRate >= 0 && prevRate <= 8) {
-//                                System.out.println("Precise seeking!");
+                            if (prevRate >= 0 && prevRate <= 8) {
                                 movie.setTimePrecise(position, movie.id);
                             } else if (prevRate < 0  && prevRate > -8) {
-//                                System.out.println("Moderate seeking!");
                                 movie.setTimeModerate(position, movie.id);
                             } else {
-//                                System.out.println("Fast seeking!");
                                 movie.setTime(position, movie.id);
                             }
                             if (wasPlaying) {
@@ -248,10 +229,9 @@ public final class NativeOSXViewer extends BaseDataViewer {
                             seeking = false;
                         }
                     });
-
                 }
             } catch (Exception e) {
-                LOGGER.error("Unable to find", e);
+                logger.error("Unable to find", e);
             }
         }
     }
@@ -265,7 +245,7 @@ public final class NativeOSXViewer extends BaseDataViewer {
         try {
             return movie.getCurrentTime(movie.id);
         } catch (Exception e) {
-            LOGGER.error("Unable to get time", e);
+            logger.error("Unable to get time", e);
         }
 
         return 0;
@@ -273,7 +253,7 @@ public final class NativeOSXViewer extends BaseDataViewer {
 
     @Override
     protected void cleanUp() {
-        // TODO: Check if the release is required?s
+        // TODO: Check if the release is required?
 //        movie.release();
     }
 }

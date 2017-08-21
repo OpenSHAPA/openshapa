@@ -24,7 +24,7 @@ import javax.swing.undo.CannotUndoException;
 /**
  *
  */
-public abstract class VocabEditorEdit extends SpreadsheetEdit {
+public abstract class VocabEditorEdit extends SpreadSheetEdit {
     /**
      * The logger for this class.
      */

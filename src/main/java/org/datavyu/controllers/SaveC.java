@@ -40,7 +40,7 @@ public final class SaveC {
     /**
      * The logger for this class.
      */
-    private static Logger LOGGER = LogManager.getLogger(SaveC.class);
+    private static Logger logger = LogManager.getLogger(SaveC.class);
 
     /**
      * Saves only a database to disk.
@@ -80,7 +80,7 @@ public final class SaveC {
                              final DataStore dataStore,
                              boolean remember)
             throws UserWarningException {
-        LOGGER.info("saving database");
+        logger.info("saving database");
 
         SaveDatabaseFileC saveDBC = new SaveDatabaseFileC();
         saveDBC.saveDatabase(databaseFile, dataStore);
@@ -116,13 +116,11 @@ public final class SaveC {
      * @throws UserWarningException If unable to save the entire project to
      *                              disk.
      */
-    public void saveProject(final File projectFile,
-                            final Project project,
-                            final DataStore dataStore,
-                            boolean remember) throws UserWarningException {
+    public void saveProject(final File projectFile, final Project project, final DataStore dataStore, boolean remember)
+            throws UserWarningException {
 
         try {
-            LOGGER.info("save project");
+            logger.info("Save project.");
 
             FileOutputStream fos = new FileOutputStream(projectFile);
             ZipOutputStream zos = new ZipOutputStream(fos);
@@ -155,16 +153,13 @@ public final class SaveC {
             }
 
         } catch (FileNotFoundException e) {
-            ResourceMap rMap = Application.getInstance(Datavyu.class)
-                    .getContext().getResourceMap(Datavyu.class);
-            e.printStackTrace();
+            ResourceMap rMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
+            logger.error("Failed to save project. Error: ", e);
             throw new UserWarningException(rMap.getString("UnableToSave.message", projectFile), e);
         } catch (IOException e) {
-            ResourceMap rMap = Application.getInstance(Datavyu.class)
-                    .getContext().getResourceMap(Datavyu.class);
-            e.printStackTrace();
+            ResourceMap rMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
+            logger.error("Failed to save project. Error: ", e);
             throw new UserWarningException(rMap.getString("UnableToSave.message", projectFile), e);
         }
     }
-
 }

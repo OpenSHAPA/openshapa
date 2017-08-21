@@ -35,31 +35,28 @@ import java.util.List;
 /**
  * Controller for saving the database to disk.
  */
+// TODO: Use StringBuilder for various strings that are put together in methods here!
 public final class ExportDatabaseFileC {
 
-    /**
-     * The logger for this class.
-     */
-    private static Logger LOGGER = LogManager.getLogger(ExportDatabaseFileC.class);
+    /** Logger for this class */
+    private static Logger logger = LogManager.getLogger(ExportDatabaseFileC.class);
 
     /**
      * Saves the database to the specified destination in a CSV format.
      *
      * @param outFile The path of the file to use when writing to disk.
-     * @param ds      The datastore to save as a CSV file.
+     * @param ds      The data store to save as a CSV file.
      * @throws UserWarningException When unable to save the database as a CSV to
      *                              disk (usually because of permissions errors).
      */
-    public void exportByFrame(final String outFile, final DataStore ds)
-            throws UserWarningException {
-
+    public void exportByFrame(final String outFile, final DataStore ds) throws UserWarningException {
         try {
             FileOutputStream fos = new FileOutputStream(outFile);
             PrintStream ps = new PrintStream(fos);
 
             List<Variable> variables = ds.getAllVariables();
 
-            ArrayList<List<Cell>> cellCache = new ArrayList<List<Cell>>();
+            ArrayList<List<Cell>> cellCache = new ArrayList<>();
             int[] currentIndex = new int[variables.size()];
 
             // Get all of the cells from the DB and store them locally
@@ -68,43 +65,45 @@ public final class ExportDatabaseFileC {
             }
 
             // Now obtain the first and last time point by sweeping over the cells
-            long first_time = Long.MAX_VALUE;
-            long last_time = 0;
+            long firstTime = Long.MAX_VALUE;
+            long lastTime = 0;
 
             for (int i = 0; i < variables.size(); i++) {
                 List<Cell> cells = cellCache.get(i);
                 if (cells.isEmpty()) {
                     continue;
                 }
-                if (cells.get(0).getOnset() < first_time) {
-                    first_time = cells.get(0).getOnset();
+                if (cells.get(0).getOnset() < firstTime) {
+                    firstTime = cells.get(0).getOnset();
                 }
-                if (cells.get(0).getOffset() < first_time) {
-                    first_time = cells.get(0).getOffset();
+                if (cells.get(0).getOffset() < firstTime) {
+                    firstTime = cells.get(0).getOffset();
                 }
 
-                if (cells.get(cells.size() - 1).getOnset() > last_time) {
-                    last_time = cells.get(cells.size() - 1).getOnset();
+                if (cells.get(cells.size() - 1).getOnset() > lastTime) {
+                    lastTime = cells.get(cells.size() - 1).getOnset();
                 }
-                if (cells.get(cells.size() - 1).getOffset() > last_time) {
-                    last_time = cells.get(cells.size() - 1).getOffset();
+                if (cells.get(cells.size() - 1).getOffset() > lastTime) {
+                    lastTime = cells.get(cells.size() - 1).getOffset();
                 }
             }
 
             // Now that we have the first and last time, we loop over it using
-            // playback model's framerate as step size. Fallback is 30.0
-            double framerate = 30.0;
+            // playback model's frameRate as step size. Fallback is 30.0
+            double frameRate = 30.0;
             try{
                 float fromDVC = Datavyu.getDataController().getCurrentFPS();
-                if (fromDVC > 1.0) framerate = Datavyu.getDataController().getCurrentFPS();
+                if (fromDVC > 1.0) {
+                    frameRate = Datavyu.getDataController().getCurrentFPS();
+                }
+            } catch(Exception e) {
+                frameRate = 30.0;
+                logger.error("Unable to get frame rate. Assuming value: " + frameRate);
             }
-            catch(Exception e) {
-                framerate = 30.0;
-            }
-            long current_time = first_time;
+            long current_time = firstTime;
 
             // Print header
-            String header = "framenum,time,";
+            String header = "nFrame,time,";
             for (Variable v : variables) {
 
                 header += v.getName() + ".ordinal";
@@ -127,17 +126,14 @@ public final class ExportDatabaseFileC {
             // Write header
             ps.println(header);
 
-            int framenum = 1;
-            while (current_time <= last_time + 1000.0 / framerate) {
+            int nFrame = 1;
+            while (current_time <= lastTime + 1000.0 / frameRate) {
                 // Update the currentIndex list
                 for (int i = 0; i < variables.size(); i++) {
                     if (!cellCache.get(i).isEmpty()) {
                         Cell c = cellCache.get(i).get(currentIndex[i]);
                         if (current_time > c.getOffset()) {
 
-                            if (current_time > 37300) {
-                                System.out.println("test");
-                            }
                             for (int j = currentIndex[i]; j < cellCache.get(i).size(); j++) {
                                 Cell nextCell = cellCache.get(i).get(j);
                                 if (current_time >= nextCell.getOnset()) {
@@ -148,21 +144,18 @@ public final class ExportDatabaseFileC {
                     }
                 }
 
-
                 // Now print each frame as we loop through it
-                String row = Integer.toString(framenum) + "," +
-                        Long.toString(current_time) + ",";
+                String row = Integer.toString(nFrame) + "," + Long.toString(current_time) + ",";
                 for (int i = 0; i < variables.size(); i++) {
                     if (!cellCache.get(i).isEmpty()) {
 
                         Cell cell = cellCache.get(i).get(currentIndex[i]);
 
-
                         if ((cell.getOnset() <= current_time && cell.getOffset() >= current_time) ||
-                                (Math.abs(cell.getOffset() - cell.getOnset()) < 1000.0 / framerate &&
-                                        cell.getOnset() > current_time - 1000.0 / framerate + 1 &&
+                                (Math.abs(cell.getOffset() - cell.getOnset()) < 1000.0 / frameRate &&
+                                        cell.getOnset() > current_time - 1000.0 / frameRate + 1 &&
                                         current_time >= cell.getOnset() &&
-                                        cell.getOnset() < current_time + 1000.0 / framerate - 1)) {
+                                        cell.getOnset() < current_time + 1000.0 / frameRate - 1)) {
 
                             Value value = cell.getValue();
 
@@ -176,8 +169,7 @@ public final class ExportDatabaseFileC {
                                 // Then this is a matrix value, get the sub arguments
                                 MatrixValue mv = (MatrixValue) value;
                                 for (Value v : mv.getArguments()) {
-                                    // Loop over each value and print it with a comma
-                                    // seperator
+                                    // Loop over each value and print it with a comma separator
                                     row += "," + StringUtils.escapeCSVQuotes(v.toString());
                                 }
                             } else {
@@ -198,8 +190,7 @@ public final class ExportDatabaseFileC {
                                 // Then this is a matrix value, get the sub arguments
                                 MatrixValue mv = (MatrixValue) value;
                                 for (Value v : mv.getArguments()) {
-                                    // Loop over each value and print it with a comma
-                                    // seperator
+                                    // Loop over each value and print it with a comma separator
                                     row += ",";
                                 }
                             } else {
@@ -212,16 +203,14 @@ public final class ExportDatabaseFileC {
 
                 }
                 ps.println(row);
-                current_time += 1000.0 / framerate;
-                ++framenum;
-
+                current_time += 1000.0 / frameRate;
+                ++nFrame;
             }
 
             fos.close();
         } catch (IOException ie) {
-            ie.printStackTrace();
-            ResourceMap rMap = Application.getInstance(Datavyu.class)
-                    .getContext().getResourceMap(Datavyu.class);
+            logger.error("Export failed. Error: ", ie);
+            ResourceMap rMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
             throw new UserWarningException(rMap.getString("UnableToSave.message", outFile), ie);
         }
     }
@@ -241,8 +230,7 @@ public final class ExportDatabaseFileC {
                 }
             });
 
-            ArrayList<List<Cell>> cellCache = new ArrayList<List<Cell>>();
-            int[] currentIndex = new int[variables.size()];
+            ArrayList<List<Cell>> cellCache = new ArrayList<>();
 
             int max_length = 0;
             // Get all of the cells from the DB and store them locally
@@ -322,12 +310,10 @@ public final class ExportDatabaseFileC {
             outStream.flush();
             outStream.close();
         } catch (IOException ie) {
-            ie.printStackTrace();
+            logger.error("Export as cells failed. Error: ", ie);
             ResourceMap rMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
             throw new UserWarningException(rMap.getString("UnableToSave.message", outFile), ie);
         }
-
-
     }
 
     /**
@@ -340,7 +326,7 @@ public final class ExportDatabaseFileC {
      */
     public void exportAsCSV(final OutputStream outStream, final DataStore ds)
             throws UserWarningException {
-        LOGGER.info("save database as CSV to stream");
+        logger.info("save database as CSV to stream");
 
         // Dump out an identifier for the version of file.
         PrintStream ps = new PrintStream(outStream);

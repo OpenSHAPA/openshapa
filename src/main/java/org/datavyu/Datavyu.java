@@ -23,7 +23,7 @@ import org.datavyu.models.db.UserWarningException;
 import org.datavyu.undoableedits.SpreadsheetUndoManager;
 import org.datavyu.util.*;
 import org.datavyu.views.*;
-import org.datavyu.views.discrete.SpreadsheetPanel;
+import org.datavyu.views.discrete.SpreadSheetPanel;
 import org.jdesktop.application.*;
 
 import javax.swing.*;
@@ -634,8 +634,8 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         ResourceMap resourceMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
         if (getView().checkAllTabsForChanges()) {
             for (Component tab : getView().getTabbedPane().getComponents()) {
-                if (tab instanceof SpreadsheetPanel) {
-                    SpreadsheetPanel sp = (SpreadsheetPanel) tab;
+                if (tab instanceof SpreadSheetPanel) {
+                    SpreadSheetPanel sp = (SpreadSheetPanel) tab;
                     getView().getTabbedPane().setSelectedComponent(sp);
                     // Ask to save if this spreadsheet has been changed
                     if (sp.getProjectController().isChanged()) {
@@ -681,7 +681,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
     public boolean safeQuit(Component tab) {
         JFrame mainFrame = Datavyu.getApplication().getMainFrame();
         ResourceMap resourceMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
-        SpreadsheetPanel spreadsheetPanel = (SpreadsheetPanel) tab;
+        SpreadSheetPanel spreadsheetPanel = (SpreadSheetPanel) tab;
         if (spreadsheetPanel.getProjectController().isChanged()) {
             getView().getTabbedPane().setSelectedComponent(spreadsheetPanel);
 

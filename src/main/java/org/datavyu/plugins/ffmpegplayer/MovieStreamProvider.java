@@ -1,5 +1,8 @@
 package org.datavyu.plugins.ffmpegplayer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.awt.Frame;
 import java.awt.color.ColorSpace;
 import java.awt.event.WindowAdapter;
@@ -19,7 +22,10 @@ import javax.sound.sampled.AudioFormat;
  *
  */
 public class MovieStreamProvider extends MovieStream {
-	
+
+	/** Logger for this class */
+	private static Logger logger = LogManager.getLogger(MovieStreamProvider.class);
+
 	/** The list of audio listeners */
 	private List<StreamListener> audioListeners;
 	
@@ -229,8 +235,8 @@ public class MovieStreamProvider extends MovieStream {
 				try {
 					video.join();
 				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}				
+					logger.info("Could not join video thread. Error: ", e);
+				}
 			}
 			synchronized (videoListeners) {
 				for (StreamListener listener : videoListeners) {
@@ -253,8 +259,8 @@ public class MovieStreamProvider extends MovieStream {
 				try {
 					audio.join();
 				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}				
+					logger.error("Could not join the audio thread. Error: ", e);
+				}
 				synchronized (audioListeners) {
 					for (StreamListener listener : audioListeners) {
 						listener.streamStopped();
@@ -335,7 +341,7 @@ public class MovieStreamProvider extends MovieStream {
             	try {
             		movieStreamProvider.close();
 				} catch (IOException io) {
-					io.printStackTrace();
+            		logger.error("Failed to close. Error: ", io);
 				}
                 System.exit(0);
             }
@@ -355,7 +361,7 @@ public class MovieStreamProvider extends MovieStream {
 	        f.setBounds(0, 0, width, height);
 	        f.setVisible(true);
 		} catch (IOException io) {
-			io.printStackTrace();
+			logger.error("Unable to open video file. Error: ", io);
 		}
 	}
 }
