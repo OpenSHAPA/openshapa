@@ -5,7 +5,7 @@ import com.sun.jna.Platform;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.datavyu.Datavyu;
-import org.datavyu.plugins.DataViewer;
+import org.datavyu.plugins.StreamViewer;
 import org.datavyu.plugins.Filter;
 import org.datavyu.plugins.FilterNames;
 import org.datavyu.plugins.Plugin;
@@ -41,18 +41,20 @@ public class FFPlugin implements Plugin {
     };
 
     @Override
-    public DataViewer getNewDataViewer(Frame parent, boolean modal) {
-        return Platform.isWindows() ? new FFViewer(parent, modal) : null;
+    public StreamViewer getNewStreamViewer(Frame parent, boolean modal) {
+        return Platform.isWindows() ? new FFViewerDialog(parent, modal) : null;
     }
 
     @Override
-    public Class<? extends DataViewer> getViewerClass() {
-        return Platform.isWindows() ? FFViewer.class : null;
+    public Class<? extends StreamViewer> getViewerClass() {
+
+        return Platform.isWindows() ? FFViewerDialog.class : null;
     }
 
     @Override
     public ImageIcon getTypeIcon() {
-        return new ImageIcon(getClass().getResource("/icons/gstreamerplugin-icon.png"));
+        return new ImageIcon(getClass().getResource(
+                "/icons/gstreamerplugin-icon.png"));
     }
 
     @Override

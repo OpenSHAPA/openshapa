@@ -176,7 +176,7 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
         this.setVisible(!var.isHidden());
         datapanel.setVisible(!var.isHidden());
 
-        Datavyu.getDataController().getClock().registerListener(this);
+        Datavyu.getVideoController().getClock().registerListener(this);
     }
 
     /**
@@ -467,7 +467,7 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
     }
 
     private void focusNextCell() {
-        long time = Datavyu.getDataController().getCurrentTime();
+        long time = Datavyu.getVideoController().getCurrentTime();
         List<SpreadsheetCell> tempCells = getCellsTemporally();
         for(int i = 0; i < tempCells.size(); i++) {
             SpreadsheetCell c = tempCells.get(i);
@@ -741,7 +741,7 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
 
     @Override
     public void clockTick(long time) {
-        if(isSelected() && Datavyu.getDataController().getCellHighlightAndFocus()) {
+        if(isSelected() && Datavyu.getVideoController().getCellHighlightAndFocus()) {
             focusNextCell();
         }
     }
@@ -763,7 +763,7 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
 
     @Override
     public void clockStep(long time) {
-        if(isSelected() && Datavyu.getDataController().getCellHighlightAndFocus()) {
+        if(isSelected() && Datavyu.getVideoController().getCellHighlightAndFocus()) {
             focusNextCell();
         }
     }

@@ -40,7 +40,7 @@ public final class SnapMarkerModel {
     /**
      * Set the time represented by the marker
      *
-     * @param currentTime
+     * @param markerTime
      */
     public void setMarkerTime(final long markerTime) {
         this.markerTime = markerTime;
@@ -63,10 +63,7 @@ public final class SnapMarkerModel {
 
         SnapMarkerModel other = (SnapMarkerModel) obj;
 
-        if (markerTime != other.markerTime)
-            return false;
-
-        return true;
+        return markerTime == other.markerTime;
     }
 
     /*

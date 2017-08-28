@@ -208,7 +208,7 @@ public final class CreateNewCellC {
         List<Cell> cells = v.getCellsTemporally();
 
         long newOnset = 0;
-        newOnset = Datavyu.getDataController().getCurrentTime();
+        newOnset = Datavyu.getVideoController().getCurrentTime();
 
         Cell newCell = v.createCell();
         newCell.setOnset(newOnset);

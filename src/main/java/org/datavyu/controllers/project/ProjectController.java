@@ -30,7 +30,7 @@ import org.datavyu.models.db.Variable;
 import org.datavyu.models.project.Project;
 import org.datavyu.models.project.TrackSettings;
 import org.datavyu.models.project.ViewerSetting;
-import org.datavyu.plugins.DataViewer;
+import org.datavyu.plugins.StreamViewer;
 import org.datavyu.plugins.Plugin;
 import org.datavyu.plugins.PluginManager;
 import org.datavyu.util.FileSystemUtils;
@@ -303,7 +303,7 @@ public final class ProjectController {
 
         // Use the plugin manager to load up the data viewers
         PluginManager pm = PluginManager.getInstance();
-        VideoController dataController = spreadSheetPanel.getDataController();
+        VideoController dataController = spreadSheetPanel.getVideoController();
 
         // Load the plugins required for each media file
         boolean showController = false;
@@ -370,7 +370,7 @@ public final class ProjectController {
                 continue;
             }
 
-            final DataViewer viewer = plugin.getNewDataViewer(Datavyu.getApplication().getMainFrame(), false);
+            final StreamViewer viewer = plugin.getNewStreamViewer(Datavyu.getApplication().getMainFrame(), false);
             viewer.setIdentifier(Identifier.generateIdentifier());
             viewer.setSourceFile(file);
 
@@ -494,14 +494,14 @@ public final class ProjectController {
      */
     public void updateProject() {
 
-        VideoController dataController = spreadSheetPanel.getDataController();
+        VideoController dataController = spreadSheetPanel.getVideoController();
 
         // Gather the data viewer settings
         List<ViewerSetting> viewerSettings = new LinkedList<ViewerSetting>();
 
         int settingsId = 1;
 
-        for (DataViewer viewer : dataController.getDataViewers()) {
+        for (StreamViewer viewer : dataController.getStreamViewers()) {
             ViewerSetting vs = new ViewerSetting();
             vs.setFilePath(viewer.getSourceFile().getAbsolutePath());
             vs.setPluginName(viewer.getClass().getName());

@@ -14,6 +14,8 @@
  */
 package org.datavyu.models.component;
 
+import org.datavyu.controllers.component.MixerController;
+
 public class ViewportModelImpl extends MixerComponentModelImpl implements ViewportModel {
     private volatile ViewportStateImpl viewport;
 
@@ -142,6 +144,6 @@ public class ViewportModelImpl extends MixerComponentModelImpl implements Viewpo
         synchronized (this) {
             newWidth = (viewport != null) ? viewport.getViewWidth() : 0;
         }
-        setViewport(0, MixerConstants.DEFAULT_DURATION, ViewportStateImpl.MINIMUM_MAX_END, newWidth);
+        setViewport(0, MixerController.DEFAULT_DURATION, ViewportStateImpl.MINIMUM_MAX_END, newWidth);
     }
 }

@@ -174,7 +174,7 @@ public final class NewProjectV extends DatavyuDialog {
 //        Datavyu.getApplication().resetApp();
 
         // BugzID:2411 - Show data controller after creating a new project.
-//        Datavyu.getApplication().show(Datavyu.getDataController());
+//        Datavyu.getApplication().show(Datavyu.getVideoController());
     } // GEN-LAST:event_okButtonActionPerformed
 
     private boolean isValidProjectName(final String name) {

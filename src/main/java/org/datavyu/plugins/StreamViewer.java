@@ -34,38 +34,38 @@ import org.datavyu.views.component.TrackPainter;
 
 
 /**
- * DataViewer interface.
+ * Interface that describes the methods to view a stream.
  */
-public interface DataViewer {
+public interface StreamViewer {
 
     /**
-     * Sets the identifier used to identify this data viewer.
+     * Sets the identifier used to identify this viewer.
      *
      * @param id Identifier to use.
      */
     void setIdentifier(Identifier id);
 
     /**
-     * @return Identifier used to identify this data viewer.
+     * @return Identifier used to identify this viewer.
      */
     Identifier getIdentifier();
 
     /**
-     * Retrieve the duration of the underlying data stream.
+     * Retrieve the duration of the underlying stream.
      *
      * @return The duration in milliseconds.
      */
     long getDuration();
 
     /**
-     * Retrieve the start time of the underlying data stream.
+     * Retrieve the start time of the underlying stream.
      *
      * @return Start time in milliseconds.
      */
     long getStartTime();
 
     /**
-     * Set the start time of the underlying data stream.
+     * Set the start time of the underlying stream.
      *
      * @param startTime Start time in milliseconds.
      */
@@ -81,14 +81,14 @@ public interface DataViewer {
     /**
      * Hides or shows the windows associated with this data viewer.
      */
-    void setDataViewerVisible(boolean isVisible);
+    void setViewerVisible(boolean isVisible);
     
     /**
      * Sets the data feed for this viewer.
      *
-     * @param dataFeed The new data feed for this viewer.
+     * @param sourceFile The new data feed for this viewer.
      */
-    void setSourceFile(final File dataFeed);
+    void setSourceFile(final File sourceFile);
 
     /**
      * Return the file of the data.
@@ -103,14 +103,9 @@ public interface DataViewer {
     float getFramesPerSecond();
     
     /**
-     * @param fps framerate to assign
+     * @param framesPerSecond frame rate to assign
      */
-    void setFramesPerSecond(float fps);
-    
-    /**
-     * @return Detected frames per second.
-     */
-    //float getDetectedFrameRate();
+    void setFramesPerSecond(float framesPerSecond);
 
     /**
      * @return The current position within the data feed in milliseconds.
@@ -119,22 +114,22 @@ public interface DataViewer {
     long getCurrentTime() throws Exception;
 
     /**
-     * Plays the continuous data stream at a regular 1x normal speed.
+     * Plays the continuous data stream at set speed.
      */
     void play();
 
     /**
-     * Stops the playback of the continuous data stream.
+     * Stops the play back
      */
     void stop();
 
     /**
-     * Is this data viewer currently playing.
+     * Does this data viewer play?
      */
     boolean isPlaying();
 
     /**
-     * Set the playback speed.
+     * Set the play back speed.
      *
      * @param speed Positive implies forwards, while negative implies reverse.
      */
@@ -190,11 +185,10 @@ public interface DataViewer {
     CustomActions getCustomActions();
 
     /**
-     * Unload all data, to prepare for being closed- essentially the opposite
-     * of setSourceFile. Can be called to reduce the data viewer to a low-resource
-     * state.
+     * Unload all data, to prepare for being closed. Essentially the opposite
+     * of setSourceFile. Call to reduce the data viewer to a low-resource state.
      */
-    void clearSourceFile();
+    void unsetSourceFile();
 
     /**
      * Did we assume the frames per second play back rate?
@@ -202,4 +196,32 @@ public interface DataViewer {
      * @return True if we assumed the playback rate; otherwise false.
      */
     boolean isAssumedFramesPerSecond();
+
+    /**
+     * Use fake playback for this stream viewer.
+     *
+     * @return True if we can use fake play back; otherwise false.
+     */
+    boolean isEnableFakePlayback();
+
+    /**
+     * Enable fake play back.
+     *
+     * @param enableFakePlayback Boolean of fake play back.
+     */
+    void setEnableFakePlayback(boolean enableFakePlayback);
+
+    /**
+     * Is ths in fake play back.
+     *
+     * @return True if this viewer is in fake play back; otherwise false.
+     */
+    boolean isFakePlayback();
+
+    /**
+     * Set the fake play back.
+     *
+     * @param fakePlayback Fake play back state.
+     */
+    void setFakePlayback(boolean fakePlayback);
 }

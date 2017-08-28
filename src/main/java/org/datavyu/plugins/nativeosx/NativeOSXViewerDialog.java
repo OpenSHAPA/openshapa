@@ -16,7 +16,7 @@ package org.datavyu.plugins.nativeosx;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.plugins.BaseDataViewer;
+import org.datavyu.plugins.StreamViewerDialog;
 
 import java.awt.*;
 import java.io.File;
@@ -26,13 +26,13 @@ import java.io.File;
  * The viewer for a quicktime video file.
  * <b>Do not move this class, this is for backward compatibility with 1.07.</b>
  */
-public final class NativeOSXViewer extends BaseDataViewer {
+public final class NativeOSXViewerDialog extends StreamViewerDialog {
 
     private long timeOfPrevSeek = 0;
     /**
      * The logger for this class.
      */
-    private static Logger logger = LogManager.getLogger(NativeOSXViewer.class);
+    private static Logger logger = LogManager.getLogger(NativeOSXViewerDialog.class);
 
     long prevSeekTime = -1;
     /**
@@ -44,7 +44,7 @@ public final class NativeOSXViewer extends BaseDataViewer {
 
     private long duration = 0;
 
-    public NativeOSXViewer(final Frame parent, final boolean modal) {
+    public NativeOSXViewerDialog(final Frame parent, final boolean modal) {
         super(parent, modal);
 
         movie = null;
@@ -87,12 +87,12 @@ public final class NativeOSXViewer extends BaseDataViewer {
     }
 
     @Override
-    protected void setPlayerSourceFile(final File videoFile) {
+    protected void setPlayerSourceFile(final File playerSourceFile) {
 
         // Ensure that the native hierarchy is set up
         this.addNotify();
 
-        movie = new NativeOSXPlayer(videoFile);
+        movie = new NativeOSXPlayer(playerSourceFile);
 
         this.add(movie, BorderLayout.CENTER);
 

@@ -2,16 +2,16 @@ package org.datavyu.plugins.ffmpegplayer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.plugins.BaseDataViewer;
+import org.datavyu.models.Identifier;
+import org.datavyu.plugins.StreamViewerDialog;
 
 import java.awt.*;
 import java.io.File;
 
-// TODO: Add id's
-public class FFViewer extends BaseDataViewer {
+public class FFViewerDialog extends StreamViewerDialog {
 
     /** The logger for this class */
-    private static Logger logger = LogManager.getLogger(FFViewer.class);
+    private static Logger logger = LogManager.getLogger(FFViewerDialog.class);
 
     /** Previous seek time */
     private long previousSeekTime = -1;
@@ -22,7 +22,10 @@ public class FFViewer extends BaseDataViewer {
     /** Currently is seeking */
     private boolean isSeeking = false;
 
-    protected FFViewer(final Frame parent, final boolean modal) {
+    /** Identifier for this dialog */
+    private Identifier id;
+
+    protected FFViewerDialog(final Frame parent, final boolean modal) {
         super(parent, modal);
         player = new FFPlayer();
     }
@@ -33,9 +36,9 @@ public class FFViewer extends BaseDataViewer {
     }
 
     @Override
-    protected void setPlayerSourceFile(File videoFile) {
-        logger.info("Opening file: " + videoFile.getAbsolutePath());
-        player.openFile(videoFile.getAbsolutePath());
+    protected void setPlayerSourceFile(File playerSourceFile) {
+        logger.info("Opening file: " + playerSourceFile.getAbsolutePath());
+        player.openFile(playerSourceFile.getAbsolutePath());
         this.add(player, BorderLayout.CENTER);
     }
 
@@ -72,6 +75,14 @@ public class FFViewer extends BaseDataViewer {
         }
     }
 
+    public void setId(Identifier id) {
+        this.id = id;
+    }
+
+    public Identifier getId() {
+        return id;
+    }
+
     @Override
     public void play() {
         if (player != null) {
@@ -85,6 +96,18 @@ public class FFViewer extends BaseDataViewer {
         if (player != null) {
             super.stop();
             player.stop();
+        }
+    }
+
+    @Override
+    public void setPlaybackSpeed(float speed) {
+        super.setPlaybackSpeed(speed);
+        if (player != null) {
+            if (speed == 0) {
+                player.stop();
+            } else {
+                player.setPlaybackSpeed(speed);
+            }
         }
     }
 

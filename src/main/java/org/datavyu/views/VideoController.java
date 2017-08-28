@@ -32,7 +32,7 @@ import org.datavyu.event.component.TracksControllerListener;
 import org.datavyu.models.Identifier;
 import org.datavyu.models.PlaybackModel;
 import org.datavyu.models.component.*;
-import org.datavyu.plugins.DataViewer;
+import org.datavyu.plugins.StreamViewer;
 import org.datavyu.plugins.Plugin;
 import org.datavyu.plugins.PluginManager;
 import org.datavyu.plugins.quicktime.QTPlugin;
@@ -64,7 +64,7 @@ import java.util.*;
 
 
 /**
- * Video controller.
+ * Video controller
  */
 public final class VideoController extends DatavyuDialog
         implements ClockListener, TracksControllerListener, PropertyChangeListener {
@@ -84,7 +84,7 @@ public final class VideoController extends DatavyuDialog
     /** Rate of playback for fast forwarding */
     private static final float FAST_FORWARD_RATE = 32F;
 
-    /** How often to synchronise the dataViewers with the master clock */
+    /** How often to synchronise the streamViewers with the master clock */
     private static final long SYNC_PULSE = 500;
 
     /** The jump multiplier for shift-jogging */
@@ -94,17 +94,17 @@ public final class VideoController extends DatavyuDialog
     private static final int CTRL_JOG = 10;
 
     /** The 45x45 size for number pad keys */
-    private static final int NUMPAD_KEY_HEIGHT = 45;
+    private static final int NUM_PAD_KEY_HEIGHT = 45;
 
-    private static final int NUMPAD_KEY_WIDTH = 45;
+    private static final int NUM_PAD_KEY_WIDTH = 45;
 
-    private static final String NUMPAD_KEY_SIZE = "w " + NUMPAD_KEY_HEIGHT + "!, h " + NUMPAD_KEY_WIDTH + "!";
+    private static final String NUM_PAD_KEY_SIZE = "w " + NUM_PAD_KEY_HEIGHT + "!, h " + NUM_PAD_KEY_WIDTH + "!";
 
     /** The 45x95 size for tall numpad keys (enter, PC plus) */
-    private static final int TALL_NUMPAD_KEY_HEIGHT = 95;
+    private static final int TALL_NUM_PAD_KEY_HEIGHT = 95;
 
-    private static final String TALL_NUMPAD_KEY_SIZE = "span 1 2, w " + NUMPAD_KEY_WIDTH + "!, h "
-            + TALL_NUMPAD_KEY_HEIGHT + "!";
+    private static final String TALL_NUM_PAD_KEY_SIZE = "span 1 2, w " + NUM_PAD_KEY_WIDTH + "!, h "
+            + TALL_NUM_PAD_KEY_HEIGHT + "!";
 
     /** The 80x40 size for the text fields to the right of numpad */
     private static final int WIDE_TEXT_FIELD_WIDTH = 90;
@@ -124,6 +124,9 @@ public final class VideoController extends DatavyuDialog
     private static final DateFormat CLOCK_FORMAT_HTML;
 
     private static int timeStampFontSize = 15;
+
+    // This only works if all videos are opened with the same plugin
+    private static boolean isFFmpegPlugin = false;
 
 
     // initialize standard date format for clock display.
@@ -146,10 +149,9 @@ public final class VideoController extends DatavyuDialog
         CLOCK_FORMAT_HTML.setTimeZone(new SimpleTimeZone(0, "NO_ZONE"));
     }
 
-    // Initialize SHUTTLE_RATES
-    // TODO: What happens for 0? Stop?
+    // Initialize SHUTTLE_RATES, for 0 players stop
     private static float[] SHUTTLE_RATES = new float[]{
-                -32F, -16F, -8F, -4F, -2F, -1F, -1/2F, -1/4F, -1/8F, -1/16F, -1/32F,
+            -32F, -16F, -8F, -4F, -2F, -1F, -1/2F, -1/4F, -1/8F, -1/16F, -1/32F,
                 0F, 1/32F, 1/16F, 1/8F, 1/4F, 1/2F, 1F, 2F, 4F, 8F, 16F, 32F};
 
     /**
@@ -165,8 +167,8 @@ public final class VideoController extends DatavyuDialog
     /** Determines whether or not 'control' key is being held */
     private boolean ctrlMask = false;
 
-    /** The list of dataViewers associated with this controller */
-    private Set<DataViewer> dataViewers;
+    /** The list of streamViewers associated with this controller */
+    private Set<StreamViewer> streamViewers;
 
     /** Clock timer */
     private ClockTimer clock = new ClockTimer();
@@ -211,7 +213,7 @@ public final class VideoController extends DatavyuDialog
     private javax.swing.JPanel gridButtonPanel;
 
     /** */
-    private javax.swing.JLabel lblSpeed;
+    private javax.swing.JLabel labelSpeed;
 
     /** */
     private javax.swing.JButton pauseButton;
@@ -220,7 +222,7 @@ public final class VideoController extends DatavyuDialog
     private javax.swing.JButton playButton;
 
     /** */
-    private javax.swing.JButton ninesetCellOffsetButton;
+    private javax.swing.JButton nineSetCellOffsetButton;
 
     /** */
     private javax.swing.JButton setCellOffsetButton;
@@ -277,13 +279,11 @@ public final class VideoController extends DatavyuDialog
 
         setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 
-        resourceMap = org.jdesktop.application.Application.getInstance(
-                        org.datavyu.Datavyu.class).getContext().getResourceMap(
-                        VideoController.class);
+        resourceMap = Application.getInstance(org.datavyu.Datavyu.class)
+                                        .getContext().getResourceMap(VideoController.class);
 
-        actionMap = org.jdesktop.application.Application
-                .getInstance(org.datavyu.Datavyu.class).getContext()
-                .getActionMap(VideoController.class, this);
+        actionMap = Application.getInstance(org.datavyu.Datavyu.class)
+                                    .getContext().getActionMap(VideoController.class, this);
 
         if (Datavyu.getPlatform() == Platform.MAC) {
             osModifier = "osx";
@@ -295,17 +295,17 @@ public final class VideoController extends DatavyuDialog
 
         setResizable(false);
         setName(this.getClass().getSimpleName());
-        dataViewers = new LinkedHashSet<>();
+        streamViewers = new LinkedHashSet<>();
 
         playbackModel = new PlaybackModel();
         playbackModel.setPauseRate(0);
-        playbackModel.setLastSync(0);
+        playbackModel.setLastSyncTime(0);
         playbackModel.setMaxDuration(ViewportStateImpl.MINIMUM_MAX_END);
 
-        final int defaultEndTime = (int) MixerConstants.DEFAULT_DURATION;
+        final int defaultEndTime = (int) MixerController.DEFAULT_DURATION;
 
-        playbackModel.setWindowPlayStart(0);
-        playbackModel.setWindowPlayEnd(defaultEndTime);
+        playbackModel.setStartTime(0);
+        playbackModel.setEndTime(defaultEndTime);
 
         mixerController = new MixerController();
         tracksPanel.add(mixerController.getTracksPanel(), "growx");
@@ -314,7 +314,6 @@ public final class VideoController extends DatavyuDialog
         mixerController.getMixerModel().getRegionModel().addPropertyChangeListener(this);
         mixerController.getMixerModel().getNeedleModel().addPropertyChangeListener(this);
 
-        tracksPanelVisible = true;
         showTracksPanel(tracksPanelVisible);
         updateCurrentTimeLabel();
 
@@ -332,7 +331,7 @@ public final class VideoController extends DatavyuDialog
     }
 
     /**
-     * TODO: Put to color utils?
+     * TODO: Put to some color utils?
      *
      * @param color
      * @return
@@ -353,15 +352,17 @@ public final class VideoController extends DatavyuDialog
         new Thread(() -> {
             if (plugin != null) {
                 try {
-                    DataViewer dataViewer = plugin.getNewDataViewer(Datavyu.getApplication().getMainFrame(),
+                    StreamViewer streamViewer = plugin.getNewStreamViewer(Datavyu.getApplication().getMainFrame(),
                             false);
                     Identifier newIdentifier = Identifier.generateIdentifier();
-                    dataViewer.setIdentifier(newIdentifier);
-                    dataViewer.setSourceFile(selectedFile);
-                    dataViewer.seek(clock.getTime());
-                    addDataViewer(plugin.getTypeIcon(), dataViewer, selectedFile, dataViewer.getTrackPainter());
-                    mixerController.bindTrackActions(newIdentifier, dataViewer.getCustomActions());
-                    dataViewer.addViewerStateListener(mixerController.getTracksEditorController()
+                    streamViewer.setIdentifier(newIdentifier);
+                    streamViewer.setSourceFile(selectedFile);
+                    streamViewer.seek(clock.getTime());
+                    // Fake playback is not available for the ffmpeg plugin
+                    streamViewer.setEnableFakePlayback( !"FFmpeg Plugin".equals(plugin.getPluginName()) );
+                    addStreamViewer(plugin.getTypeIcon(), streamViewer, selectedFile, streamViewer.getTrackPainter());
+                    mixerController.bindTrackActions(newIdentifier, streamViewer.getCustomActions());
+                    streamViewer.addViewerStateListener(mixerController.getTracksEditorController()
                                     .getViewerStateListener(newIdentifier));
                 } catch (Throwable t) {
                     logger.error(t);
@@ -440,7 +441,7 @@ public final class VideoController extends DatavyuDialog
         resetSync();
 
         long playTime = time;
-        final long windowPlayStart = playbackModel.getWindowPlayStart();
+        final long windowPlayStart = playbackModel.getStartTime();
 
         if (playTime < windowPlayStart) {
             playTime = windowPlayStart;
@@ -461,7 +462,7 @@ public final class VideoController extends DatavyuDialog
      * Reset the sync.
      */
     private void resetSync() {
-        playbackModel.setLastSync(0);
+        playbackModel.setLastSyncTime(0);
     }
 
     /**
@@ -479,50 +480,80 @@ public final class VideoController extends DatavyuDialog
      * @param time Current clock time in milliseconds.
      */
     public void clockTick(final long time) {
-
         try {
             setCurrentTime(time);
 
-            // We are playing back at a rate which is too fast and probably
-            // won't allow us to stream all the information at the file. We fake
-            // playback by doing a bunch of seek's.
-            if (playbackModel.isFakePlayback()) {
-
-                for (DataViewer v : dataViewers) {
-                    if ((time > v.getStartTime()) && isWithinPlayRange(time, v)) {
-                        v.seek(time - v.getStartTime());
+            for (StreamViewer streamViewer : streamViewers) {
+                // Fake play back; rapid search of times
+                if (streamViewer.isFakePlayback()) {
+                    if ((time > streamViewer.getStartTime()) && isInPlayRange(time, streamViewer)) {
+                        streamViewer.seek(time - streamViewer.getStartTime());
                     }
-                }
+                } else {
+                    // Synchronise streamViewers only if we have exceeded our pulse time.
+                    if ((time - playbackModel.getLastSyncTime())
+                            > (SYNC_PULSE * clock.getRate()) || playbackModel.getLastSyncTime() == 0) {
+                        playbackModel.setLastSyncTime(time);
+                        logger.info("Sync time: " + time);
 
-                // DataViewer is responsible for playing video.
-            } else {
-
-                // Synchronise dataViewers only if we have exceeded our pulse time.
-                if ((time - playbackModel.getLastSync())
-                        > (SYNC_PULSE * clock.getRate()) || playbackModel.getLastSync() == 0) {
-                    playbackModel.setLastSync(time);
-
-                    for (DataViewer v : dataViewers) {
+                        for (StreamViewer v : streamViewers) {
                         /*
                          * Use offsets to determine if the video file should
                          * start playing.
                          */
-                        if (!v.isPlaying() && isWithinPlayRange(time, v)) {
-                            v.play();
-                        }
+                            if (!v.isPlaying() && isInPlayRange(time, v)) {
+                                v.play();
+                            }
 
-                        // BugzID:1797 - Viewers who are "playing" outside their
-                        // timeframe should be asked to stop.
-                        if (v.isPlaying() && !isWithinPlayRange(time, v)) {
-                            v.stop();
+                            // BugzID:1797 - Viewers who are "playing" outside their
+                            // timeframe should be asked to stop.
+                            if (v.isPlaying() && !isInPlayRange(time, v)) {
+                                v.stop();
+                            }
                         }
                     }
                 }
             }
 
+            // We are playing back at a rate which is too fast and probably won't allow us to stream all the
+            // information at the file. We fake playback by doing a bunch of seek's.
+            /*
+            if (playbackModel.isFakePlayback()) {
+
+                for (StreamViewer streamViewer : streamViewers) {
+                    if ((time > streamViewer.getStartTime()) && isInPlayRange(time, streamViewer)) {
+                        streamViewer.seek(time - streamViewer.getStartTime());
+                    }
+                }
+
+                // StreamViewer is responsible for playing video.
+            } else {
+
+                // Synchronise streamViewers only if we have exceeded our pulse time.
+                if ((time - playbackModel.getLastSyncTime())
+                        > (SYNC_PULSE * clock.getRate()) || playbackModel.getLastSyncTime() == 0) {
+                    playbackModel.setLastSyncTime(time);
+                    logger.info("Sync time: " + time);
+
+                    for (StreamViewer v : streamViewers) {
+                        // Use offsets to determine if the video file should start playing.
+                        if (!v.isPlaying() && isInPlayRange(time, v)) {
+                            v.play();
+                        }
+
+                        // BugzID:1797 - Viewers who are "playing" outside their
+                        // timeframe should be asked to stop.
+                        if (v.isPlaying() && !isInPlayRange(time, v)) {
+                            v.stop();
+                        }
+                    }
+                }
+            }
+            */
+
             // BugzID:466 - Prevent rewind wrapping the clock past the start
             // point of the view window.
-            final long windowPlayStart = playbackModel.getWindowPlayStart();
+            final long windowPlayStart = playbackModel.getStartTime();
 
             if (time < windowPlayStart) {
                 setCurrentTime(windowPlayStart);
@@ -531,7 +562,7 @@ public final class VideoController extends DatavyuDialog
             }
 
             // BugzID:756 - don't play video once past the max duration.
-            final long windowPlayEnd = playbackModel.getWindowPlayEnd();
+            final long windowPlayEnd = playbackModel.getEndTime();
 
             if ((time >= windowPlayEnd) && (clock.getRate() >= 0)) {
                 setCurrentTime(windowPlayEnd);
@@ -539,18 +570,18 @@ public final class VideoController extends DatavyuDialog
                 clockStop(windowPlayEnd);
             }
         } catch (Exception e) {
-            logger.error("Unable to Sync dataViewers " + e);
+            logger.error("Unable to Sync streamViewers " + e);
         }
     }
 
     /**
-     * Determines whether a DataViewer has data for the desired time.
+     * Determines whether a StreamViewer has data for the desired time.
      *
      * @param time The time we wish to play at or seek to.
-     * @param view The DataViewer to check.
+     * @param view The StreamViewer to check.
      * @return True if data exists at this time, and false otherwise.
      */
-    private boolean isWithinPlayRange(final long time, final DataViewer view) {
+    private boolean isInPlayRange(final long time, final StreamViewer view) {
         return (time >= view.getStartTime()) && (time < (view.getStartTime() + view.getDuration()));
     }
 
@@ -560,13 +591,14 @@ public final class VideoController extends DatavyuDialog
      * @param time
      */
     private void adjustClock(final long time) {
-        if (dataViewers.size() == 1 && (time < playbackModel.getWindowPlayEnd() && time > playbackModel.getWindowPlayStart())) {
-            // Using an iterator because dataViewers is a set
-            for (DataViewer viewer : dataViewers) {
+        if (streamViewers.size() == 1
+                && (time < playbackModel.getEndTime() && time > playbackModel.getStartTime())) {
+            // Using an iterator because streamViewers is a set
+            for (StreamViewer viewer : streamViewers) {
                 try {
                     long viewerTime = viewer.getCurrentTime();
 
-                    long stepSize = ((ONE_SECOND) / (long) playbackModel.getCurrentFPS());
+                    long stepSize = ((ONE_SECOND) / (long) playbackModel.getCurrentFramesPerSecond());
 
                      /* BugzID:1544 - Preserve precision - force jog to frame markers. */
                     if (!clock.isStopped()) {
@@ -577,11 +609,11 @@ public final class VideoController extends DatavyuDialog
                         }
                     }
 
-                    clock.setTimeWoutNotify(viewerTime);
+                    clock.setTimeWithoutNotify(viewerTime);
                     resetSync();
                     updateCurrentTimeLabel();
                 } catch (Exception e) {
-                    logger.error("Could not adjust clock " + e);
+                    logger.error("Could not adjust clock. Error: " + e);
                 }
             }
         }
@@ -597,16 +629,16 @@ public final class VideoController extends DatavyuDialog
         /*
             This is the new style time reckoning where the timer gets updated from the video
          */
-        if (dataViewers.size() == 1 && (time < playbackModel.getWindowPlayEnd()
-                && time > playbackModel.getWindowPlayStart())) {
-            // Using an iterator because dataViewers is a set
-            for (DataViewer viewer : dataViewers) {
+        if (streamViewers.size() == 1 && (time < playbackModel.getEndTime()
+                && time > playbackModel.getStartTime())) {
+            // Using an iterator because streamViewers is a set
+            for (StreamViewer viewer : streamViewers) {
                 if (viewer.isPlaying()) {
                     viewer.stop();
                     try {
                         long viewerTime = time;
 
-                        long stepSize = ((ONE_SECOND) / (long) playbackModel.getCurrentFPS());
+                        long stepSize = ((ONE_SECOND) / (long) playbackModel.getCurrentFramesPerSecond());
 
                         /* BugzID:1544 - Preserve precision - force jog to frame markers. */
                         long mod = (viewerTime % stepSize);
@@ -617,7 +649,7 @@ public final class VideoController extends DatavyuDialog
 
                         viewer.seek(viewerTime);
 
-                        clock.setTimeWoutNotify(viewerTime);
+                        clock.setTimeWithoutNotify(viewerTime);
                         resetSync();
                         updateCurrentTimeLabel();
                     } catch (Exception e) {
@@ -627,7 +659,7 @@ public final class VideoController extends DatavyuDialog
             }
         } else {
             setCurrentTime(time);
-            for (DataViewer viewer : dataViewers) {
+            for (StreamViewer viewer : streamViewers) {
                 if (viewer.isPlaying()) {
                     viewer.stop();
                 }
@@ -640,34 +672,53 @@ public final class VideoController extends DatavyuDialog
      */
     public void clockRate(final float rate) {
         resetSync();
-        lblSpeed.setText(FloatingPointUtils.doubleToFractionStr(rate));
+        labelSpeed.setText(FloatingPointUtils.doubleToFractionStr(rate));
 
-        long time = getCurrentTime();
 
         // If rate is faster than two times - we need to fake playback to give
         // the illusion of 'smooth'. We do this by stopping the dataviewer and
         // doing many seek's to grab individual frames.
+
+        // TODO: No fake playback when using ffmpeg plugin
         if (Math.abs(rate) > 2.0 || rate < -1) {
+/*
             playbackModel.setFakePlayback(true);
+            long time = getCurrentTime();
 
-            for (DataViewer viewer : dataViewers) {
+            for (StreamViewer viewer : streamViewers) {
                 viewer.stop();
-
-                if (isWithinPlayRange(time, viewer)) {
+                if (isInPlayRange(time, viewer)) {
                     viewer.setPlaybackSpeed(rate);
+                }
+            }
+*/
+            long time = getCurrentTime();
+            for (StreamViewer streamViewer : streamViewers) {
+                if (streamViewer.isEnableFakePlayback()) {
+                    streamViewer.setFakePlayback(true);
+                    streamViewer.stop();
+                    if (isInPlayRange(time, streamViewer)) {
+                        streamViewer.setPlaybackSpeed(rate);
+                    }
+                } else {
+                    streamViewer.setPlaybackSpeed(rate);
+                    if (!clock.isStopped()) {
+                        streamViewer.play();
+                    }
                 }
             }
 
             // Rate is less than two times - use the data viewer internal code
             // to draw every frame.
         } else {
-            playbackModel.setFakePlayback(false);
+            //playbackModel.setFakePlayback(false);
 
-            for (DataViewer viewer : dataViewers) {
-                viewer.setPlaybackSpeed(rate);
+            for (StreamViewer streamViewer : streamViewers) {
+                streamViewer.setFakePlayback(false);
+                streamViewer.setPlaybackSpeed(rate);
 
                 if (!clock.isStopped()) {
-                    viewer.play();
+                    streamViewer.play();
                 }
             }
         }
@@ -679,9 +730,9 @@ public final class VideoController extends DatavyuDialog
     public void clockStep(final long time) {
         resetSync();
         setCurrentTime(time);
-        for (DataViewer viewer : dataViewers) {
+        for (StreamViewer viewer : streamViewers) {
             try {
-                if (isWithinPlayRange(time, viewer) && time != viewer.getCurrentTime()) {
+                if (isInPlayRange(time, viewer) && time != viewer.getCurrentTime()) {
                     viewer.seek(time - viewer.getStartTime());
                 }
             } catch (Exception e) {
@@ -719,8 +770,7 @@ public final class VideoController extends DatavyuDialog
     public void setCurrentTime(final long milliseconds) {
         resetSync();
         updateCurrentTimeLabel();
-        mixerController.getMixerModel().getNeedleModel().setCurrentTime(
-                milliseconds);
+        mixerController.getMixerModel().getNeedleModel().setCurrentTime(milliseconds);
     }
 
     /**
@@ -729,16 +779,15 @@ public final class VideoController extends DatavyuDialog
     public void updateMaxViewerDuration() {
         long maxDuration = ViewportStateImpl.MINIMUM_MAX_END;
 
-        for (DataViewer dataViewer : dataViewers) {
-            if ((dataViewer.getDuration() + dataViewer.getStartTime()) > maxDuration) {
-                maxDuration = dataViewer.getDuration() + dataViewer.getStartTime();
+        for (StreamViewer streamViewer : streamViewers) {
+            if ((streamViewer.getDuration() + streamViewer.getStartTime()) > maxDuration) {
+                maxDuration = streamViewer.getDuration() + streamViewer.getStartTime();
             }
         }
 
-        mixerController.getMixerModel().getViewportModel().setViewportMaxEnd(
-                maxDuration, true);
+        mixerController.getMixerModel().getViewportModel().setViewportMaxEnd(maxDuration, true);
 
-        if (dataViewers.isEmpty()) {
+        if (streamViewers.isEmpty()) {
             mixerController.getNeedleController().resetNeedlePosition();
             mixerController.getMixerModel().getRegionModel()
                     .resetPlaybackRegion();
@@ -751,14 +800,14 @@ public final class VideoController extends DatavyuDialog
      * @param viewer The viewer to shutdown.
      * @return True if the controller contained this viewer.
      */
-    public boolean shutdown(final DataViewer viewer) {
+    public boolean shutdown(final StreamViewer viewer) {
 
-        // Was the viewer removed.
-        boolean removed = dataViewers.remove(viewer);
+        // Did we remove the viewer?
+        boolean removed = streamViewers.remove(viewer);
 
         if (removed) {
 
-            viewer.clearSourceFile();
+            viewer.unsetSourceFile();
 
             // BugzID:2000
             viewer.removeViewerStateListener(
@@ -779,28 +828,37 @@ public final class VideoController extends DatavyuDialog
     }
 
     /**
+     * Get the stream viewer with the id.
+     *
+     * @param id The identifier for the stream viewer.
+     *
+     * @return A stream viewer if found otherwise null.
+     */
+    private StreamViewer getStreamViewer(final Identifier id) {
+        for (StreamViewer streamViewer : streamViewers) {
+            if (streamViewer.getIdentifier().equals(id)) {
+                return streamViewer;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Remove the specified viewer from the controller.
      *
      * @param id The identifier of the viewer to shutdown.
      */
     public void shutdown(final Identifier id) {
-        DataViewer viewer = null;
-
-        for (DataViewer v : dataViewers) {
-            if (v.getIdentifier().equals(id)) {
-                viewer = v;
-                break;
-            }
-        }
+        StreamViewer viewer = getStreamViewer(id);
 
         if ((viewer == null) || !shouldRemove()) {
             return;
         }
 
-        dataViewers.remove(viewer);
+        streamViewers.remove(viewer);
 
         viewer.stop();
-        viewer.clearSourceFile();
+        viewer.unsetSourceFile();
 
         JDialog viewDialog = viewer.getParentJDialog();
 
@@ -809,8 +867,8 @@ public final class VideoController extends DatavyuDialog
         }
 
         // DO SOMETHING CONCERNING STEP_SIZE
-        if (dataViewers.isEmpty()) {
-            playbackModel.setCurrentFPS(0f);
+        if (streamViewers.isEmpty()) {
+            playbackModel.setCurrentFramesPerSecond(0f);
             updateStepSizeTextField();
         }
 
@@ -834,16 +892,10 @@ public final class VideoController extends DatavyuDialog
      *
      * @param id The identifier of the viewer to bind to.
      */
-    public void bindWindowListenerToDataViewer(final Identifier id, final WindowListener wl) {
-        DataViewer viewer = null;
-        for (DataViewer v : dataViewers) {
-            if (v.getIdentifier().equals(id)) {
-                viewer = v;
-                break;
-            }
-        }
+    public void bindWindowListenerToStreamViewer(final Identifier id, final WindowListener windowListener) {
+        StreamViewer viewer = getStreamViewer(id);
         if (viewer != null && viewer.getParentJDialog() != null) {
-            viewer.getParentJDialog().addWindowListener(wl);
+            viewer.getParentJDialog().addWindowListener(windowListener);
         }
     }
 
@@ -852,18 +904,10 @@ public final class VideoController extends DatavyuDialog
      *
      * @param id The identifier of the viewer to bind to.
      */
-    public void setDataViewerVisibility(final Identifier id,
-                                        final boolean visible) {
-
-        DataViewer viewer = null;
-        for (DataViewer v : dataViewers) {
-            if (v.getIdentifier().equals(id)) {
-                viewer = v;
-                break;
-            }
-        }
+    public void setStreamViewerVisibility(final Identifier id, final boolean visible) {
+        StreamViewer viewer = getStreamViewer(id);
         if (viewer != null) {
-            viewer.setDataViewerVisible(visible);
+            viewer.setViewerVisible(visible);
         }
     }
 
@@ -940,18 +984,18 @@ public final class VideoController extends DatavyuDialog
      * Initialize the view for OS other than Macs.
      */
     private void initComponents() {
-        gridButtonPanel = new javax.swing.JPanel();
-        goBackTextField = new javax.swing.JTextField();
-        stepSizeTextField = new javax.swing.JTextField();
-        onsetTextField = new javax.swing.JTextField();
-        JButton addDataButton = new javax.swing.JButton();
-        timeStampLabel = new javax.swing.JLabel();
-        lblSpeed = new javax.swing.JLabel();
-        createNewCell = new javax.swing.JButton();
-        JLabel atLabel = new javax.swing.JLabel();
-        JLabel xLabel = new javax.swing.JLabel();
-        offsetTextField = new javax.swing.JTextField();
-        tracksPanel = new javax.swing.JPanel(new MigLayout("fill"));
+        gridButtonPanel = new JPanel();
+        goBackTextField = new JTextField();
+        stepSizeTextField = new JTextField();
+        onsetTextField = new JTextField();
+        JButton addDataButton = new JButton();
+        timeStampLabel = new JLabel();
+        labelSpeed = new JLabel();
+        createNewCell = new JButton();
+        JLabel atLabel = new JLabel();
+        JLabel xLabel = new JLabel();
+        offsetTextField = new JTextField();
+        tracksPanel = new JPanel(new MigLayout("fill"));
 
         final int fontSize = 11;
 
@@ -1021,12 +1065,12 @@ public final class VideoController extends DatavyuDialog
         atLabel.setText("@");
         timestampPanel.add(atLabel);
 
-        lblSpeed.setFont(new Font("Tahoma", Font.BOLD, timeStampFontSize));
-        lblSpeed.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1,
+        labelSpeed.setFont(new Font("Tahoma", Font.BOLD, timeStampFontSize));
+        labelSpeed.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1,
                 2));
-        lblSpeed.setName("lblSpeed");
-        lblSpeed.setText("0");
-        timestampPanel.add(lblSpeed);
+        labelSpeed.setName("labelSpeed");
+        labelSpeed.setText("0");
+        timestampPanel.add(labelSpeed);
 
         xLabel.setFont(new Font("Tahoma", Font.BOLD, fontSize));
         xLabel.setText("x");
@@ -1035,11 +1079,11 @@ public final class VideoController extends DatavyuDialog
         gridButtonPanel.add(timestampPanel, "north");
 
         // Placeholder at top, left: 'clear' or 'numlock' position
-        gridButtonPanel.add(makePlaceholderButton(), NUMPAD_KEY_SIZE);
+        gridButtonPanel.add(makePlaceholderButton(), NUM_PAD_KEY_SIZE);
 
         // Point cell: Mac equal sign, windows forward slash
         pointCellButton = buildButton("pointCell", osModifier);
-        gridButtonPanel.add(pointCellButton, NUMPAD_KEY_SIZE);
+        gridButtonPanel.add(pointCellButton, NUM_PAD_KEY_SIZE);
 
         // Show/hide: Mac forward flash, windows asterisk
         showTracksSmallButton = new JButton();
@@ -1054,12 +1098,12 @@ public final class VideoController extends DatavyuDialog
             }
         });
         showTracksSmallButton.setFocusPainted(false);
-        gridButtonPanel.add(showTracksSmallButton, NUMPAD_KEY_SIZE);
+        gridButtonPanel.add(showTracksSmallButton, NUM_PAD_KEY_SIZE);
 
         // MAC and WINDOWS DIFFER
         if (osModifier.equals("osx")) {
             //Placeholder at asterisk location
-            gridButtonPanel.add(makePlaceholderButton(), NUMPAD_KEY_SIZE);
+            gridButtonPanel.add(makePlaceholderButton(), NUM_PAD_KEY_SIZE);
             //Placeholder - perhaps eventually the sync video button
             gridButtonPanel.add(makePlaceholderButton(false), WIDE_TEXT_FIELD_SIZE);
         } else {
@@ -1067,16 +1111,16 @@ public final class VideoController extends DatavyuDialog
         }
         // Set cell onset button with 7
         setCellOnsetButton = buildButton("setCellOnset");
-        gridButtonPanel.add(setCellOnsetButton, NUMPAD_KEY_SIZE);
+        gridButtonPanel.add(setCellOnsetButton, NUM_PAD_KEY_SIZE);
 
         // Play video button with 8
         playButton = buildButton("play");
         playButton.setRequestFocusEnabled(false);
-        gridButtonPanel.add(playButton, NUMPAD_KEY_SIZE);
+        gridButtonPanel.add(playButton, NUM_PAD_KEY_SIZE);
 
         // Set cell offset button with 9
-        ninesetCellOffsetButton = buildButton("setCellOffset", "nine");
-        gridButtonPanel.add(ninesetCellOffsetButton, NUMPAD_KEY_SIZE);
+        nineSetCellOffsetButton = buildButton("setCellOffset", "nine");
+        gridButtonPanel.add(nineSetCellOffsetButton, NUM_PAD_KEY_SIZE);
 
         // MAC and WINDOWS DIFFER
         if (osModifier.equals("osx")) {
@@ -1084,49 +1128,49 @@ public final class VideoController extends DatavyuDialog
         } else {
             // Find button (big plus)
             findButton = buildButton("find", "win");
-            gridButtonPanel.add(findButton, TALL_NUMPAD_KEY_SIZE);
+            gridButtonPanel.add(findButton, TALL_NUM_PAD_KEY_SIZE);
             // Placeholder - perhaps eventually the sync video button
             gridButtonPanel.add(makePlaceholderButton(false), WIDE_TEXT_FIELD_SIZE);
         }
 
         // Shuttle back button with 4
         shuttleBackButton = buildButton("shuttleBack");
-        gridButtonPanel.add(shuttleBackButton, NUMPAD_KEY_SIZE);
+        gridButtonPanel.add(shuttleBackButton, NUM_PAD_KEY_SIZE);
 
         // Stop button with 5
         stopButton = buildButton("stop");
-        gridButtonPanel.add(stopButton, NUMPAD_KEY_SIZE);
+        gridButtonPanel.add(stopButton, NUM_PAD_KEY_SIZE);
 
         // Shuttle forward button with 6
         shuttleForwardButton = buildButton("shuttleForward");
-        gridButtonPanel.add(shuttleForwardButton, NUMPAD_KEY_SIZE);
+        gridButtonPanel.add(shuttleForwardButton, NUM_PAD_KEY_SIZE);
 
 
         // MAC and WINDOWS DIFFER
         if (osModifier.equals("osx")) {
             //Find button (small plus)
             findButton = buildButton("find", "osx");
-            gridButtonPanel.add(findButton, NUMPAD_KEY_SIZE);
+            gridButtonPanel.add(findButton, NUM_PAD_KEY_SIZE);
         }
         addStepSizePanel();
 
         // Jog back button with 1
         JButton jogBackButton = buildButton("jogBack");
-        gridButtonPanel.add(jogBackButton, NUMPAD_KEY_SIZE);
+        gridButtonPanel.add(jogBackButton, NUM_PAD_KEY_SIZE);
 
         // Pause button with 2
         pauseButton = buildButton("pause");
-        gridButtonPanel.add(pauseButton, NUMPAD_KEY_SIZE);
+        gridButtonPanel.add(pauseButton, NUM_PAD_KEY_SIZE);
 
         // Jog forward button with 3
         JButton jogForwardButton = buildButton("jogForward");
-        gridButtonPanel.add(jogForwardButton, NUMPAD_KEY_SIZE);
+        gridButtonPanel.add(jogForwardButton, NUM_PAD_KEY_SIZE);
 
         // Create new cell button with enter
         createNewCell = buildButton("createNewCell");
         createNewCell.setAlignmentY(0.0F);
         createNewCell.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        gridButtonPanel.add(createNewCell, TALL_NUMPAD_KEY_SIZE);
+        gridButtonPanel.add(createNewCell, TALL_NUM_PAD_KEY_SIZE);
 
         // Onset text field
         onsetTextField.setHorizontalAlignment(SwingConstants.CENTER);
@@ -1142,7 +1186,7 @@ public final class VideoController extends DatavyuDialog
 
         // Set cell offset button
         setCellOffsetButton = buildButton("setCellOffset", "period");
-        gridButtonPanel.add(setCellOffsetButton, NUMPAD_KEY_SIZE);
+        gridButtonPanel.add(setCellOffsetButton, NUM_PAD_KEY_SIZE);
 
         // Offset text field
         offsetTextField.setHorizontalAlignment(SwingConstants.CENTER);
@@ -1167,7 +1211,7 @@ public final class VideoController extends DatavyuDialog
     private void addGoBackPair() {
         //Go back button - minus key
         goBackButton = buildButton("goBack", null);
-        gridButtonPanel.add(goBackButton, NUMPAD_KEY_SIZE);
+        gridButtonPanel.add(goBackButton, NUM_PAD_KEY_SIZE);
         //Go back text field
         goBackTextField.setHorizontalAlignment(SwingConstants.CENTER);
         goBackTextField.setText("00:00:05:000");
@@ -1185,7 +1229,7 @@ public final class VideoController extends DatavyuDialog
         stepSizeTextField.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() >= 2 && !dataViewers.isEmpty()) {
+                if (e.getClickCount() >= 2 && !streamViewers.isEmpty()) {
                     stepSizeTextField.setEnabled(true);
                     pressStop();
                 }
@@ -1199,14 +1243,13 @@ public final class VideoController extends DatavyuDialog
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    float newfps = Float.parseFloat(stepSizeTextField.getText());
-                    playbackModel.setCurrentFPS(newfps);
-                    for (DataViewer dv : dataViewers) {
-                        dv.setFramesPerSecond(newfps);
+                    float newFramesPerSecond = Float.parseFloat(stepSizeTextField.getText());
+                    playbackModel.setCurrentFramesPerSecond(newFramesPerSecond);
+                    for (StreamViewer dv : streamViewers) {
+                        dv.setFramesPerSecond(newFramesPerSecond);
                     }
                     stepSizeTextField.setEnabled(false);
                     updateStepSizePanelColor();
-
                 }
             }
             public void keyTyped(KeyEvent e) {}
@@ -1220,19 +1263,19 @@ public final class VideoController extends DatavyuDialog
     private void updateStepSizeTextField() {
         if (playbackModel == null) {
             stepSizeTextField.setEnabled(false);
-        } else if (playbackModel.getCurrentFPS() == 0f) {
+        } else if (playbackModel.getCurrentFramesPerSecond() == 0f) {
             stepSizeTextField.setEnabled(false);
             stepSizeTextField.setText("");
         } else {
-            stepSizeTextField.setText(Float.toString(playbackModel.getCurrentFPS()));
+            stepSizeTextField.setText(Float.toString(playbackModel.getCurrentFramesPerSecond()));
         }
     }
 
     private void updateStepSizePanelColor() {
         boolean assumedFps = false;
-        if (dataViewers != null) {
-            for (DataViewer dataViewer : dataViewers) {
-                if (dataViewer.isAssumedFramesPerSecond()) {
+        if (streamViewers != null) {
+            for (StreamViewer streamViewer : streamViewers) {
+                if (streamViewer.isAssumedFramesPerSecond()) {
                     assumedFps = true;
                 }
             }
@@ -1245,7 +1288,7 @@ public final class VideoController extends DatavyuDialog
      *
      * @param evt The event that triggered this action.
      */
-    private void formWindowClosing(final java.awt.event.WindowEvent evt) {
+    private void formWindowClosing(final WindowEvent evt) {
         setVisible(false);
         visible = false;
     }
@@ -1255,7 +1298,7 @@ public final class VideoController extends DatavyuDialog
      *
      * @param evt The event that triggered this action.
      */
-    private void openVideoButtonActionPerformed(final java.awt.event.ActionEvent evt) {
+    private void openVideoButtonActionPerformed(final ActionEvent evt) {
         logger.info("Add data");
 
         PluginChooser chooser;
@@ -1324,28 +1367,28 @@ public final class VideoController extends DatavyuDialog
      *
      * @param icon   The icon associated with the data viewer.
      * @param viewer The new viewer that we are adding to the data controller.
-     * @param f      The parent file that the viewer represents.
+     * @param file      The parent file that the viewer represents.
      */
-    private void addDataViewer(final ImageIcon icon, final DataViewer viewer,
-                               final File f, final TrackPainter trackPainter) {
+    private void addStreamViewer(final ImageIcon icon, final StreamViewer viewer, final File file,
+                                 final TrackPainter trackPainter) {
         assert viewer.getIdentifier() != null;
 
         addViewer(viewer, 0);
 
         // Add the file to the tracks information panel
-        addTrack(viewer.getIdentifier(), icon, f.getAbsolutePath(), f.getName(),
-                viewer.getDuration(), viewer.getStartTime(), trackPainter);
+        addTrack(viewer.getIdentifier(), icon, file.getAbsolutePath(), file.getName(), viewer.getDuration(),
+                 viewer.getStartTime(), trackPainter);
 
         Datavyu.getProjectController().projectChanged();
     }
 
     /**
-     * Returns set of dataviewers.
+     * Returns set of StreamViewers.
      *
-     * @return set of dataviewers.
+     * @return a set of StreamViewers.
      */
-    public Set<DataViewer> getDataViewers() {
-        return dataViewers;
+    public Set<StreamViewer> getStreamViewers() {
+        return streamViewers;
     }
 
     /**
@@ -1355,26 +1398,24 @@ public final class VideoController extends DatavyuDialog
      * @param mediaPath    Absolute file path to the media file.
      * @param name         The name of the track to add.
      * @param duration     The duration of the data feed in milliseconds.
-     * @param offset       The time offset of the data feed in milliseconds.
+     * @param startTime    The time start time of the data feed in milliseconds.
      * @param trackPainter Track painter to use.
      */
-    public void addTrack(final Identifier id, final ImageIcon icon,
-                         final String mediaPath, final String name, final long duration,
-                         final long offset, final TrackPainter trackPainter) {
-        mixerController.addNewTrack(id, icon, mediaPath, name, duration, offset,
-                trackPainter);
+    public void addTrack(final Identifier id, final ImageIcon icon, final String mediaPath, final String name,
+                         final long duration, final long startTime, final TrackPainter trackPainter) {
+        mixerController.addNewTrack(id, icon, mediaPath, name, duration, startTime, trackPainter);
     }
 
     /**
-     * Add a viewer to the data controller with the given offset.
+     * Add a viewer to the data controller with the given startTime.
      *
      * @param viewer The data viewer to add.
-     * @param offset The offset value in milliseconds.
+     * @param startTime The startTime value in milliseconds.
      */
-    public void addViewer(final DataViewer viewer, final long offset) {
-        // Add the QTDataViewer to the list of dataViewers we are controlling.
-        dataViewers.add(viewer);
-        viewer.setStartTime(offset);
+    public void addViewer(final StreamViewer viewer, final long startTime) {
+        // Add the QTDataViewerDialog to the list of streamViewers we are controlling.
+        streamViewers.add(viewer);
+        viewer.setStartTime(startTime);
 
         // It is possible that the viewer will be handling its own window. In that case
         // don't worry about it.
@@ -1387,9 +1428,9 @@ public final class VideoController extends DatavyuDialog
         }
 
         // Adjust the overall frame rate
-        float fps = viewer.getFramesPerSecond();
-        if (fps > playbackModel.getCurrentFPS()) {
-            playbackModel.setCurrentFPS(fps);
+        float framesPerSecond = viewer.getFramesPerSecond();
+        if (framesPerSecond > playbackModel.getCurrentFramesPerSecond()) {
+            playbackModel.setCurrentFramesPerSecond(framesPerSecond);
         }
         updateStepSizeTextField();
         updateStepSizePanelColor();
@@ -1402,7 +1443,7 @@ public final class VideoController extends DatavyuDialog
         }
 
         // BugzID:2114 - If this is the first viewer we are adding, always reset max duration.
-        if (dataViewers.size() == 1) {
+        if (streamViewers.size() == 1) {
             maxDuration = viewer.getStartTime() + viewer.getDuration();
         }
 
@@ -1478,12 +1519,12 @@ public final class VideoController extends DatavyuDialog
     private void seekTime(final long time) {
         long newTime = time;
 
-        if (newTime < playbackModel.getWindowPlayStart()) {
-            newTime = playbackModel.getWindowPlayStart();
+        if (newTime < playbackModel.getStartTime()) {
+            newTime = playbackModel.getStartTime();
         }
 
-        if (newTime > playbackModel.getWindowPlayEnd()) {
-            newTime = playbackModel.getWindowPlayEnd();
+        if (newTime > playbackModel.getEndTime()) {
+            newTime = playbackModel.getEndTime();
         }
 
         clockStop(newTime);
@@ -1503,14 +1544,12 @@ public final class VideoController extends DatavyuDialog
 
             case OFFSET_CHANGE:
                 handleCarriageOffsetChangeEvent(e);
-
                 break;
 
             case CARRIAGE_LOCK:
             case BOOKMARK_CHANGED:
             case BOOKMARK_SAVE:
                 Datavyu.getProjectController().projectChanged();
-
                 break;
 
             default:
@@ -1523,16 +1562,10 @@ public final class VideoController extends DatavyuDialog
      */
     private void handleCarriageOffsetChangeEvent(final CarriageEvent e) {
 
-        // Look through our data dataViewers and update the offset
-        for (DataViewer viewer : dataViewers) {
-
-            /*
-             * Found our data viewer, update the DV offset and the settings in
-             * the project file.
-             */
-            if (viewer.getIdentifier().equals(e.getTrackId())) {
-                viewer.setStartTime(e.getOffset());
-            }
+        // Look through our data streamViewers and update the offset
+        StreamViewer viewer = getStreamViewer(e.getTrackId());
+        if (viewer != null) {
+            viewer.setStartTime(e.getOffset());
         }
 
         Datavyu.getProjectController().projectChanged();
@@ -1540,10 +1573,9 @@ public final class VideoController extends DatavyuDialog
         // Recalculate the maximum playback duration.
         long maxDuration = ViewportStateImpl.MINIMUM_MAX_END;
 
-        for (DataViewer viewer : dataViewers) {
-
-            if ((viewer.getDuration() + viewer.getStartTime()) > maxDuration) {
-                maxDuration = viewer.getDuration() + viewer.getStartTime();
+        for (StreamViewer streamViewer : streamViewers) {
+            if ((streamViewer.getDuration() + streamViewer.getStartTime()) > maxDuration) {
+                maxDuration = streamViewer.getDuration() + streamViewer.getStartTime();
             }
         }
 
@@ -1553,8 +1585,7 @@ public final class VideoController extends DatavyuDialog
     private void handleNeedleChanged(final PropertyChangeEvent e) {
 
         if (clock.isStopped()) {
-            final long newTime = mixerController.getMixerModel()
-                    .getNeedleModel().getCurrentTime();
+            final long newTime = mixerController.getMixerModel().getNeedleModel().getCurrentTime();
             clock.setTime(newTime);
             clockStep(newTime);
         }
@@ -1563,15 +1594,13 @@ public final class VideoController extends DatavyuDialog
     }
 
     private void handleRegionChanged(final PropertyChangeEvent e) {
-        final RegionState region = mixerController.getMixerModel()
-                .getRegionModel().getRegion();
-        playbackModel.setWindowPlayStart(region.getRegionStart());
-        playbackModel.setWindowPlayEnd(region.getRegionEnd());
+        final RegionState region = mixerController.getMixerModel().getRegionModel().getRegion();
+        playbackModel.setStartTime(region.getRegionStart());
+        playbackModel.setEndTime(region.getRegionEnd());
     }
 
     private void handleViewportChanged(final PropertyChangeEvent e) {
-        final ViewportState viewport = mixerController.getMixerModel()
-                .getViewportModel().getViewport();
+        final ViewportState viewport = mixerController.getMixerModel().getViewportModel().getViewport();
         playbackModel.setMaxDuration(viewport.getMaxEnd());
     }
 
@@ -1639,7 +1668,7 @@ public final class VideoController extends DatavyuDialog
      * Simulates set cell offset button clicked.
      */
     public void pressSetCellOffsetNine() {
-        ninesetCellOffsetButton.doClick();
+        nineSetCellOffsetButton.doClick();
     }
 
     /**
@@ -1680,8 +1709,8 @@ public final class VideoController extends DatavyuDialog
         // BugzID:464 - When stopped at the end of the region of interest.
         // pressing play jumps the stream back to the start of the video before
         // starting to play again.
-        if ((getCurrentTime() >= playbackModel.getWindowPlayEnd()) && clock.isStopped()) {
-            jumpTo(playbackModel.getWindowPlayStart());
+        if ((getCurrentTime() >= playbackModel.getEndTime()) && clock.isStopped()) {
+            jumpTo(playbackModel.getStartTime());
         }
 
         playAt(PLAY_RATE);
@@ -1720,7 +1749,7 @@ public final class VideoController extends DatavyuDialog
         } else {
             playbackModel.setPauseRate(clock.getRate());
             clock.stop();
-            lblSpeed.setText("[" + FloatingPointUtils.doubleToFractionStr(playbackModel.getPauseRate())  + "]");
+            labelSpeed.setText("[" + FloatingPointUtils.doubleToFractionStr(playbackModel.getPauseRate())  + "]");
         }
     }
 
@@ -1846,7 +1875,7 @@ public final class VideoController extends DatavyuDialog
      * Sets the playback region of interest to lie from the find time to offset time.
      */
     public void setRegionOfInterestAction() {
-        if (this.getDataViewers().size() > 0) {
+        if (this.getStreamViewers().size() > 0) {
             try {
                 final long findTextTime = CLOCK_FORMAT.parse(
                         onsetTextField.getText()).getTime();
@@ -1905,7 +1934,7 @@ public final class VideoController extends DatavyuDialog
                 mul = CTRL_JOG;
             }
 
-            long stepSize = ((-ONE_SECOND) / (long) playbackModel.getCurrentFPS());
+            long stepSize = ((-ONE_SECOND) / (long) playbackModel.getCurrentFramesPerSecond());
             long nextTime = mul * stepSize;
 
             long mod = clock.getTime() % stepSize;
@@ -1915,11 +1944,11 @@ public final class VideoController extends DatavyuDialog
             }
 
             /* BugzID:1361 - Disallow jog to skip past the region boundaries. */
-            if ((clock.getTime() + nextTime) > playbackModel.getWindowPlayStart()) {
+            if ((clock.getTime() + nextTime) > playbackModel.getStartTime()) {
                 stopAction();
                 jump(nextTime);
             } else {
-                jumpTo(playbackModel.getWindowPlayStart());
+                jumpTo(playbackModel.getStartTime());
             }
         }
     }
@@ -1945,7 +1974,7 @@ public final class VideoController extends DatavyuDialog
                 mul = CTRL_JOG;
             }
 
-            long stepSize = ((ONE_SECOND) / (long) playbackModel.getCurrentFPS());
+            long stepSize = ((ONE_SECOND) / (long) playbackModel.getCurrentFramesPerSecond());
             long nextTime = (long) (mul * stepSize);
 
             /* BugzID:1544 - Preserve precision - force jog to frame markers. */
@@ -1956,11 +1985,11 @@ public final class VideoController extends DatavyuDialog
             }
 
             /* BugzID:1361 - Disallow jog to skip past the region boundaries. */
-            if ((clock.getTime() + nextTime) < playbackModel.getWindowPlayEnd()) {
+            if ((clock.getTime() + nextTime) < playbackModel.getEndTime()) {
                 stopAction();
                 jump(nextTime);
             } else {
-                jumpTo(playbackModel.getWindowPlayEnd());
+                jumpTo(playbackModel.getEndTime());
             }
         }
     }
@@ -2002,12 +2031,12 @@ public final class VideoController extends DatavyuDialog
      * @param step Milliseconds to jump.
      */
     private void jump(final long step) {
-        if ((clock.getTime() + step) > playbackModel.getWindowPlayStart()) {
+        if ((clock.getTime() + step) > playbackModel.getStartTime()) {
 //            stopAction();
 //            clock.stop();
             clock.stepTime(step);
         } else {
-            jumpTo(playbackModel.getWindowPlayStart());
+            jumpTo(playbackModel.getStartTime());
         }
     }
 
@@ -2077,7 +2106,7 @@ public final class VideoController extends DatavyuDialog
     }
 
     public float getCurrentFPS() {
-        return playbackModel.getCurrentFPS();
+        return playbackModel.getCurrentFramesPerSecond();
     }
 
     public ClockTimer getClock() {

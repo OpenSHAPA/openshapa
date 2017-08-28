@@ -26,7 +26,7 @@ import org.datavyu.controllers.project.ProjectController;
 import org.datavyu.event.component.FileDropEvent;
 import org.datavyu.event.component.FileDropEventListener;
 import org.datavyu.models.db.*;
-import org.datavyu.plugins.DataViewer;
+import org.datavyu.plugins.StreamViewer;
 import org.datavyu.undoableedits.RemoveCellEdit;
 import org.datavyu.undoableedits.RemoveVariableEdit;
 import org.datavyu.undoableedits.RunScriptEdit;
@@ -101,7 +101,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
      */
     private SpreadSheetPanel panel;
     private JSplitPane splitPane;
-    private DVProgressBar progressBar;
+    private DataviewProgressBar progressBar;
     private OpenTask task;
     /**
      * the code editor's controller
@@ -607,11 +607,11 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
                 for (Component tab : tabbedPane.getComponents()) {
                     if (tab instanceof SpreadSheetPanel) {
-                        VideoController dv = ((SpreadSheetPanel) tab).getDataController();
+                        VideoController dv = ((SpreadSheetPanel) tab).getVideoController();
 
                         dv.stopAction();
-                        for (DataViewer d : dv.getDataViewers()) {
-                            d.setDataViewerVisible(false);
+                        for (StreamViewer d : dv.getStreamViewers()) {
+                            d.setViewerVisible(false);
                         }
                         dv.setVisible(false);
                     }
@@ -623,17 +623,17 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
                     if (Datavyu.getView() != null) {
                         Datavyu.setProjectController(spreadSheetPanel.getProjectController());
 
-                        Datavyu.getDataController().setVisible(false);
-                        Datavyu.setDataController(spreadSheetPanel.getDataController());
+                        Datavyu.getVideoController().setVisible(false);
+                        Datavyu.setVideoController(spreadSheetPanel.getVideoController());
                         Datavyu.getView().panel = spreadSheetPanel;
                         spreadSheetPanel.revalidate();
                         Datavyu.getView().tabbedPane.revalidate();
 
-                        if (spreadSheetPanel.getDataController().shouldBeVisible()) {
-                            spreadSheetPanel.getDataController().setVisible(true);
+                        if (spreadSheetPanel.getVideoController().shouldBeVisible()) {
+                            spreadSheetPanel.getVideoController().setVisible(true);
 
-                            for (DataViewer d : spreadSheetPanel.getDataController().getDataViewers()) {
-                                d.setDataViewerVisible(true);
+                            for (StreamViewer d : spreadSheetPanel.getVideoController().getStreamViewers()) {
+                                d.setViewerVisible(true);
                             }
                         }
                     }
@@ -654,7 +654,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
         panel = new SpreadSheetPanel(new ProjectController(), null);
         panel.getProjectController().setSpreadSheetPanel(panel);
-        panel.setDataController(new VideoController(Datavyu.getApplication().getMainFrame(), false));
+        panel.setVideoController(new VideoController(Datavyu.getApplication().getMainFrame(), false));
 
         Datavyu.setProjectController(panel.getProjectController());
         panel.registerListeners();
@@ -680,18 +680,18 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
             @Override
             public void windowIconified(WindowEvent e) {
                 Datavyu.getApplication().getMainFrame().setState(WindowEvent.WINDOW_ICONIFIED);
-                Datavyu.getDataController().setVisible(false);
-                for (DataViewer dv : Datavyu.getDataController().getDataViewers()) {
-                    dv.setDataViewerVisible(false);
+                Datavyu.getVideoController().setVisible(false);
+                for (StreamViewer dv : Datavyu.getVideoController().getStreamViewers()) {
+                    dv.setViewerVisible(false);
                 }
             }
 
             @Override
             public void windowDeiconified(WindowEvent e) {
                 Datavyu.getApplication().getMainFrame().setState(WindowEvent.WINDOW_DEICONIFIED);
-                Datavyu.getDataController().setVisible(true);
-                for (DataViewer dv : Datavyu.getDataController().getDataViewers()) {
-                    dv.setDataViewerVisible(true);
+                Datavyu.getVideoController().setVisible(true);
+                for (StreamViewer dv : Datavyu.getVideoController().getStreamViewers()) {
+                    dv.setViewerVisible(true);
                 }
             }
 
@@ -898,8 +898,8 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
     @Action
     public void toggleHighlightAndFocusMode() {
-        Datavyu.getDataController().getMixerController().enableHighlightAndFocusHandler(null);
-        if(Datavyu.getDataController().getCellHighlightAndFocus()) {
+        Datavyu.getVideoController().getMixerController().enableHighlightAndFocusHandler(null);
+        if(Datavyu.getVideoController().getCellHighlightAndFocus()) {
             highlightAndFocusMenuItem.setText("Disable Highlight and Focus Mode");
         } else {
             highlightAndFocusMenuItem.setText("Enable Highlight and Focus Mode");
@@ -912,7 +912,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     }
 
     public boolean isHighlightAndFocusMode() {
-        return Datavyu.getDataController() != null && Datavyu.getDataController().getCellHighlightAndFocus();
+        return Datavyu.getVideoController() != null && Datavyu.getVideoController().getCellHighlightAndFocus();
     }
 
     public JSplitPane getFileSplitPane() {
@@ -1271,7 +1271,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
      * @param fileChooser The file chooser to use.
      */
     private void open(final DatavyuFileChooser fileChooser) {
-        progressBar = new DVProgressBar(this.getFrame(), false);
+        progressBar = new DataviewProgressBar(this.getFrame(), false);
         task = new OpenTask(fileChooser);
         task.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -1527,14 +1527,14 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
         // Data controller needs to be registered before load for the cell positioning highlighting
         VideoController dcv = new VideoController(Datavyu.getApplication().getMainFrame(), false);
-        Datavyu.setDataController(dcv);
+        Datavyu.setVideoController(dcv);
 
 
         pc.setSpreadSheetPanel(new SpreadSheetPanel(pc, null));
         SpreadSheetPanel panel = pc.getSpreadSheetPanel();
         panel.registerListeners();
         panel.addFileDropEventListener(this);
-        panel.setDataController(dcv);
+        panel.setVideoController(dcv);
 
         tabbedPane.add(panel);
         tabbedPane.setTabComponentAt(tabbedPane.indexOfComponent(panel), new TabWithCloseButton(tabbedPane));

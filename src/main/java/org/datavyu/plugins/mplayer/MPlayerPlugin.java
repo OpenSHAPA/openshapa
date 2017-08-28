@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.datavyu.Datavyu;
-import org.datavyu.plugins.DataViewer;
+import org.datavyu.plugins.StreamViewer;
 import org.datavyu.plugins.Filter;
 import org.datavyu.plugins.FilterNames;
 import org.datavyu.plugins.Plugin;
@@ -58,9 +58,9 @@ public class MPlayerPlugin implements Plugin {
     }
 
     @Override
-    public DataViewer getNewDataViewer(final Frame parent,
-                                       final boolean modal) {
-        return new MPlayerDataViewer(parent, modal);
+    public StreamViewer getNewStreamViewer(final Frame parent,
+                                           final boolean modal) {
+        return new MPlayerDataViewerDialog(parent, modal);
     }
 
     @Override
@@ -77,8 +77,8 @@ public class MPlayerPlugin implements Plugin {
     }
 
     @Override
-    public Class<? extends DataViewer> getViewerClass() {
-        return MPlayerDataViewer.class;
+    public Class<? extends StreamViewer> getViewerClass() {
+        return MPlayerDataViewerDialog.class;
     }
 
     @Override

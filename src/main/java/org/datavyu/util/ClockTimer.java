@@ -25,13 +25,13 @@ import java.util.TimerTask;
  */
 public final class ClockTimer {
 
-    /** Clock clockTick period */
+    /** Clock tick period */
     private static final long CLOCK_TICK = 31L;
 
     /** Clock initial delay */
     private static final long CLOCK_DELAY = 0L;
 
-    /** Used to convert between nanoseconds and milliseconds */
+    /** Convert nanoseconds to milliseconds */
     private static final long NANO_IN_MILLI = 1000000L;
 
     /** Current time of the clock */
@@ -50,7 +50,7 @@ public final class ClockTimer {
     private float rate = 1F;
 
     /** The set of objects that listen to this clock */
-    private Set<ClockListener> clockListeners = new HashSet<ClockListener>();
+    private Set<ClockListener> clockListeners = new HashSet<>();
 
     /**
      * Default constructor.
@@ -77,7 +77,7 @@ public final class ClockTimer {
         }, CLOCK_DELAY, CLOCK_TICK);
     }
 
-    public synchronized void setTimeWoutNotify(final long newTime) {
+    public synchronized void setTimeWithoutNotify(final long newTime) {
         time = newTime;
         time = Math.max(time, 0);
     }
@@ -138,10 +138,10 @@ public final class ClockTimer {
     }
 
     /**
-     * @param ms Time step to apply to current time when clock stopped.
+     * @param milliseconds Time step to apply to current time when clock stopped.
      */
-    public synchronized void stepTime(final long ms) {
-        time += ms;
+    public synchronized void stepTime(final long milliseconds) {
+        time += milliseconds;
         time = Math.max(time, 0);
         notifyStep();
     }
@@ -186,8 +186,8 @@ public final class ClockTimer {
      * Notify clock listeners of tick event.
      */
     private void notifyTick() {
-        for (ClockListener l : clockListeners) {
-            l.clockTick((long) time);
+        for (ClockListener clockListener : clockListeners) {
+            clockListener.clockTick((long) time);
         }
     }
 
@@ -195,8 +195,8 @@ public final class ClockTimer {
      * Notify clock listeners of rate update event.
      */
     private void notifyRate() {
-        for (ClockListener l : clockListeners) {
-            l.clockRate(rate);
+        for (ClockListener clockListener : clockListeners) {
+            clockListener.clockRate(rate);
         }
     }
 
@@ -204,8 +204,8 @@ public final class ClockTimer {
      * Notify clock listeners of start event.
      */
     private void notifyStart() {
-        for (ClockListener l : clockListeners) {
-            l.clockStart((long) time);
+        for (ClockListener clockListener : clockListeners) {
+            clockListener.clockStart((long) time);
         }
     }
 
@@ -213,8 +213,8 @@ public final class ClockTimer {
      * Notify clock listeners of stop event.
      */
     private void notifyStop() {
-        for (ClockListener l : clockListeners) {
-            l.clockStop((long) time);
+        for (ClockListener clockListener : clockListeners) {
+            clockListener.clockStop((long) time);
         }
     }
 
@@ -222,8 +222,8 @@ public final class ClockTimer {
      * Notify clock listeners of time step event.
      */
     private void notifyStep() {
-        for (ClockListener l : clockListeners) {
-            l.clockStep((long) time);
+        for (ClockListener clockListener : clockListeners) {
+            clockListener.clockStep((long) time);
         }
     }
 

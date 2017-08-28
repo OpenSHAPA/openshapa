@@ -141,8 +141,8 @@ public final class PluginManager {
                 // If we are running from a test we need to look in more than one place for classes - add all these
                 // places to the work stack.
                 Enumeration<URL> resources = loader.getResources("");
-                Stack<File> workStack = new Stack<File>();
-                Stack<String> packages = new Stack<String>();
+                Stack<File> workStack = new Stack<>();
+                Stack<String> packages = new Stack<>();
 
                 while (resources.hasMoreElements()) {
                     workStack.clear();
@@ -268,22 +268,22 @@ public final class PluginManager {
                 if (pluginClass.isAssignableFrom(testClass) &&
                         (testClass.getModifiers() & (Modifier.ABSTRACT | Modifier.INTERFACE)) == 0)
                 {
-                    Plugin p = (Plugin) testClass.newInstance();
+                    Plugin plugin = (Plugin) testClass.newInstance();
 
-                    if (!p.getValidPlatforms().contains(Datavyu.getPlatform())) {
+                    if (!plugin.getValidPlatforms().contains(Datavyu.getPlatform())) {
                         // Not valid for this operating system
                         return;
                     }
 
                     if (Datavyu.getPlatform() == Datavyu.Platform.MAC) {
-                        if (!p.getValidVersions().isInRange(MacOS.getOSVersion())) {
+                        if (!plugin.getValidVersions().isInRange(MacOS.getOSVersion())) {
                             return;
                         }
                     }
 
-                    String pluginName = p.getPluginName();
+                    String pluginName = plugin.getPluginName();
 
-                    if (pluginNames.contains(p.getPluginName())) {
+                    if (pluginNames.contains(plugin.getPluginName())) {
 
                         // We already have this plugin; stop processing it
                         return;
@@ -291,22 +291,22 @@ public final class PluginManager {
 
                     pluginNames.add(pluginName);
 
-                    buildGroupFilter(p);
+                    buildGroupFilter(plugin);
 
-                    // Just make sure that we have at least one file filter.
-                    assert p.getFilters() != null;
-                    assert p.getFilters().length > 0;
-                    assert p.getFilters()[0] != null;
+                    // Ensure we have at least one file filter
+                    assert plugin.getFilters() != null;
+                    assert plugin.getFilters().length > 0;
+                    assert plugin.getFilters()[0] != null;
 
-                    plugins.add(p);
+                    plugins.add(plugin);
 
                     // BugzID:2110
-                    pluginClassifiers.put(p.getNamespace(), p);
+                    pluginClassifiers.put(plugin.getNamespace(), plugin);
 
-                    final Class<? extends DataViewer> cdv = p.getViewerClass();
+                    final Class<? extends StreamViewer> cdv = plugin.getViewerClass();
 
                     if (cdv != null) {
-                        viewerClassToPlugin.put(cdv.getName(), p);
+                        viewerClassToPlugin.put(cdv.getName(), plugin);
                     }
                 }
             }
@@ -321,17 +321,17 @@ public final class PluginManager {
 
     private void buildGroupFilter(final Plugin p) {
 
-        for (Filter f : p.getFilters()) {
-            GroupFileFilter g;
+        for (Filter filter : p.getFilters()) {
+            GroupFileFilter groupFileFilter;
 
-            if (filters.containsKey(f.getName())) {
-                g = filters.get(f.getName());
+            if (filters.containsKey(filter.getName())) {
+                groupFileFilter = filters.get(filter.getName());
             } else {
-                g = new GroupFileFilter(f.getName());
-                filters.put(f.getName(), g);
+                groupFileFilter = new GroupFileFilter(filter.getName());
+                filters.put(filter.getName(), groupFileFilter);
             }
 
-            g.addFileFilter(f);
+            groupFileFilter.addFileFilter(filter);
         }
     }
 
@@ -426,17 +426,15 @@ public final class PluginManager {
     }
 
     /**
-     * Searches for and returns a plugin compatible with the given classifier
-     * and data file.
+     * Searches for and returns a plugin compatible with the given classifier and data file
      *
-     * @param classifier Plugin classifier string.
-     * @param file       The data file to open.
-     * @return The first compatible plugin that is found, null otherwise.
+     * @param classifier Plugin classifier string
+     * @param file       The data file to open
+     * @return The first compatible plugin that is found, null otherwise
      */
-    public Plugin getCompatiblePlugin(final String classifier,
-                                      final File file) {
+    public Plugin getCompatiblePlugin(final String classifier, final File file) {
 
-        // Shortcircuit this for the preferred new plugins for Windows and OSX
+        // Short circuit this for the preferred new plugins for Windows and OSX
         // FR: What is this doing? (One selects the play back plugin in the open file dialog)
         if (classifier.equals("datavyu.video")) {
             if (Datavyu.getPlatform() == Datavyu.Platform.MAC) {

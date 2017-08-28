@@ -65,7 +65,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
     private static DatavyuView datavyuView;
 
     /** The view to use for the video controller */
-    private static VideoController dataController;
+    private static VideoController videoController;
 
     /** The project controller instance */
     private static ProjectController projectController;
@@ -133,17 +133,17 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      * @return The single data controller in use with this instance of
      * Datavyu.
      */
-    public static VideoController getDataController() {
-        return dataController;
+    public static VideoController getVideoController() {
+        return videoController;
     }
 
     /**
      * Sets the data controller.
      *
-     * @param dataController The data controller instance to set.
+     * @param videoController The data controller instance to set.
      */
-    public static void setDataController(VideoController dataController) {
-        Datavyu.dataController = dataController;
+    public static void setVideoController(VideoController videoController) {
+        Datavyu.videoController = videoController;
     }
 
     /**
@@ -354,18 +354,18 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         // BugzID:784 - Shift key is passed to Data Controller.
         if (evt.getKeyCode() == KeyEvent.VK_SHIFT) {
             if (evt.getID() == KeyEvent.KEY_PRESSED) {
-                dataController.setShiftMask(true);
+                videoController.setShiftMask(true);
             } else {
-                dataController.setShiftMask(false);
+                videoController.setShiftMask(false);
             }
         }
 
         // BugzID:736 - Control key is passed to Data Controller.
         if (evt.getKeyCode() == KeyEvent.VK_CONTROL) {
             if (evt.getID() == KeyEvent.KEY_PRESSED) {
-                dataController.setCtrlMask(true);
+                videoController.setCtrlMask(true);
             } else {
-                dataController.setCtrlMask(false);
+                videoController.setCtrlMask(false);
             }
         }
 
@@ -393,11 +393,11 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
             case KeyEvent.VK_DIVIDE:
                 //Mac - Show/hide
                 if (getPlatform().equals(Platform.MAC)) {
-                    dataController.pressShowTracksSmall();
+                    videoController.pressShowTracksSmall();
                 }
                 //Win - point cell
                 else {
-                    dataController.pressPointCell();
+                    videoController.pressPointCell();
                 }
 
                 break;
@@ -405,7 +405,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
             case KeyEvent.VK_EQUALS:
                 //Mac - point cell
                 if (getPlatform().equals(Platform.MAC)) {
-                    dataController.pressPointCell();
+                    videoController.pressPointCell();
                 }
                 //Win - nothing
                 break;
@@ -416,37 +416,37 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
             case KeyEvent.VK_MULTIPLY:
                 //Win - Show/hide
                 if (!getPlatform().equals(Platform.MAC)) {
-                    dataController.pressShowTracksSmall();
+                    videoController.pressShowTracksSmall();
                 }
                 break;
 
             case KeyEvent.VK_NUMPAD7:
-                dataController.pressSetCellOnset();
+                videoController.pressSetCellOnset();
 
                 break;
 
             case KeyEvent.VK_NUMPAD8:
-                dataController.pressPlay();
+                videoController.pressPlay();
 
                 break;
 
             case KeyEvent.VK_NUMPAD9:
-                dataController.pressSetCellOffsetNine();
+                videoController.pressSetCellOffsetNine();
 
                 break;
 
             case KeyEvent.VK_NUMPAD4:
-                dataController.pressShuttleBack();
+                videoController.pressShuttleBack();
 
                 break;
 
             case KeyEvent.VK_NUMPAD5:
-                dataController.pressStop();
+                videoController.pressStop();
 
                 break;
 
             case KeyEvent.VK_NUMPAD6:
-                dataController.pressShuttleForward();
+                videoController.pressShuttleForward();
 
                 break;
 
@@ -455,12 +455,12 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                 // We don't do the press Jog thing for jogging - as users often
                 // just hold the button down... Which causes weird problems when
                 // attempting to do multiple presses.
-                dataController.jogBackAction();
+                videoController.jogBackAction();
 
                 break;
 
             case KeyEvent.VK_NUMPAD2:
-                dataController.pressPause();
+                videoController.pressPause();
 
                 break;
 
@@ -469,26 +469,26 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                 // We don't do the press Jog thing for jogging - as users often
                 // just hold the button down... Which causes weird problems when
                 // attempting to do multiple presses.
-                dataController.jogForwardAction();
+                videoController.jogForwardAction();
 
                 break;
 
             case KeyEvent.VK_NUMPAD0:
-                dataController.pressCreateNewCellSettingOffset();
+                videoController.pressCreateNewCellSettingOffset();
 
                 break;
 
             case KeyEvent.VK_DECIMAL:
-                dataController.pressSetCellOffsetPeriod();
+                videoController.pressSetCellOffsetPeriod();
 
                 break;
 
             case KeyEvent.VK_SUBTRACT:
 
                 if (modifiers == InputEvent.CTRL_MASK) {
-                    dataController.clearRegionOfInterestAction();
+                    videoController.clearRegionOfInterestAction();
                 } else {
-                    dataController.pressGoBack();
+                    videoController.pressGoBack();
                 }
 
                 break;
@@ -496,19 +496,19 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
             case KeyEvent.VK_ADD:
 
                 if (modifiers == InputEvent.SHIFT_MASK) {
-                    dataController.pressFind();
-                    dataController.findOffsetAction();
+                    videoController.pressFind();
+                    videoController.findOffsetAction();
                 } else if (modifiers == InputEvent.CTRL_MASK) {
-                    dataController.pressFind();
-                    dataController.setRegionOfInterestAction();
+                    videoController.pressFind();
+                    videoController.setRegionOfInterestAction();
                 } else {
-                    dataController.pressFind();
+                    videoController.pressFind();
                 }
 
                 break;
 
             case KeyEvent.VK_ENTER:
-                dataController.pressCreateNewCell();
+                videoController.pressCreateNewCell();
 
                 break;
 
@@ -527,8 +527,8 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      * Action for showing the quicktime video controller.
      */
     public void showDataController() {
-        Datavyu.getApplication().show(dataController);
-        dataController.setShouldBeVisible(true);
+        Datavyu.getApplication().show(videoController);
+        videoController.setShouldBeVisible(true);
     }
 
     /**
@@ -819,7 +819,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
 
         // Create video controller.
         projectController = new ProjectController();
-        dataController = datavyuView.getSpreadsheetPanel().getDataController();
+        videoController = datavyuView.getSpreadsheetPanel().getVideoController();
 
         final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int x = getView().getFrame().getX();
@@ -827,9 +827,9 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         // don't let the data viewer fall below the bottom of the primary
         // screen, but also don't let it creep up above the screen either
         int y = getView().getFrame().getY() + getView().getFrame().getHeight();
-        y = (int) Math.max(Math.min(y, screenSize.getHeight() - dataController.getHeight()), 0);
-        dataController.setLocation(x, y);
-        show(dataController);
+        y = (int) Math.max(Math.min(y, screenSize.getHeight() - videoController.getHeight()), 0);
+        videoController.setLocation(x, y);
+        show(videoController);
         datavyuView.checkForAutosavedFile();
 
         // The DB we create by default doesn't really have any unsaved changes.

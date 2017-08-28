@@ -1,23 +1,20 @@
-package org.datavyu.plugins.javafx;
+package org.datavyu.plugins.mplayer;
 
 import javafx.application.Platform;
-import javafx.scene.canvas.Canvas;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.models.db.DataStore;
-import org.datavyu.plugins.*;
+import org.datavyu.plugins.StreamViewerDialog;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 
-public class JavaFXDataViewer extends BaseDataViewer {
+public class MPlayerDataViewerDialog extends StreamViewerDialog {
 
-    private static Logger logger = LogManager.getLogger(JavaFXDataViewer.class);
+    private static Logger logger = LogManager.getLogger(MPlayerDataViewerDialog.class);
 
     /**
      * Data viewer offset.
@@ -32,39 +29,33 @@ public class JavaFXDataViewer extends BaseDataViewer {
      */
     private boolean playing;
 
-    /**
-     * FPS of the video, calculated on launch
-     */
-    private float fps;
 
     /**
      * The last jog position, making sure we are only calling jog once
      * VLC has issues when trying to go to the same spot multiple times
      */
     private JDialog dialog = new JDialog();
-    private JavaFXApplication javafxapp;
+    private MPlayerApplication javafxapp;
     private boolean assumedFPS = false;
 
 
-    public JavaFXDataViewer(final Frame parent, final boolean modal) {
+    public MPlayerDataViewerDialog(final Frame parent, final boolean modal) {
         super(parent, modal);
-        javafxapp = new JavaFXApplication(null);
+        javafxapp = new MPlayerApplication(null);
     }
 
     public static void runAndWait(final Runnable action) {
         if (action == null)
             throw new NullPointerException("action");
 
-        VlcLibraryLoader.load();
-
         // run synchronously on JavaFX thread
-
         if (Platform.isFxApplicationThread()) {
             logger.info("Javax thread running action.");
             action.run();
             return;
         }
 
+        // queue on JavaFX thread and wait for completion
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
@@ -118,8 +109,7 @@ public class JavaFXDataViewer extends BaseDataViewer {
         return javafxapp.getFrameRate();
     }
 
-    public void setFramesPerSecond(float fpsIn) {
-        fps = fpsIn;
+    public void setFramesPerSecond(float framesPerSecond) {
         assumedFPS = false;
     }
 
@@ -139,7 +129,7 @@ public class JavaFXDataViewer extends BaseDataViewer {
     }
 
     @Override
-    public void setDataViewerVisible(final boolean isVisible) {
+    public void setViewerVisible(final boolean isVisible) {
         javafxapp.setVisible(isVisible);
         this.isVisible = isVisible;
     }
@@ -151,16 +141,18 @@ public class JavaFXDataViewer extends BaseDataViewer {
 
     @Override
     public void setSourceFile(final File sourceFile) {
+
         logger.info("Set source file: " + sourceFile.getAbsolutePath());
 
         final CountDownLatch latch = new CountDownLatch(1);
         data = sourceFile;
         Platform.setImplicitExit(false);
 
-        javafxapp = new JavaFXApplication(sourceFile);
+        javafxapp = new MPlayerApplication(sourceFile);
 
         logger.info("Is event dispatch thread? " + (SwingUtilities.isEventDispatchThread() ? "Yes" : "No") + ".");
         logger.info("Is FX application thread? " + (Platform.isFxApplicationThread() ? "Yes" : "No") + ".");
+
 
         runAndWait(new Runnable() {
             @Override
@@ -172,22 +164,21 @@ public class JavaFXDataViewer extends BaseDataViewer {
         try {
             latch.await();
         } catch (Exception e) {
-            logger.error("Latch await failed. Error: ", e);
+            logger.error("Await latch failed. Error: ", e);
         }
 
         while (!javafxapp.isInit()) {
             try {
                 Thread.sleep(1000);
             } catch (Exception e) {
-                logger.error("Thread awakened. Error: ", e);
+                logger.error("Waited for thread. Error: ", e);
             }
         }
 
         logger.info("Finished setting source: " + sourceFile);
         logger.info("Duration is: " + javafxapp.getDuration());
 
-        // Hide our fake dialog box
-        dialog.setVisible(false);
+        dialog.setVisible(false); // Hide our fake dialog box
 
         // TODO Add in function to guess frame rate
     }
@@ -201,11 +192,12 @@ public class JavaFXDataViewer extends BaseDataViewer {
     @Override
     protected void resizeVideo(final float scale) {
         javafxapp.setScale(scale);
+
         notifyChange();
     }
 
     @Override
-    protected void setPlayerSourceFile(File videoFile) {
+    protected void setPlayerSourceFile(File playerSourceFile) {
 
     }
 
@@ -258,11 +250,11 @@ public class JavaFXDataViewer extends BaseDataViewer {
 
     @Override
     protected void cleanUp() {
-        VlcLibraryLoader.purge();
+
     }
 
     @Override
-    public void clearSourceFile() {
+    public void unsetSourceFile() {
         stop();
         javafxapp.setVisible(false);
         javafxapp.closeAndDestroy();

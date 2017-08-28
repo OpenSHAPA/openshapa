@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.datavyu.Datavyu;
-import org.datavyu.plugins.DataViewer;
+import org.datavyu.plugins.StreamViewer;
 import org.datavyu.plugins.Filter;
 import org.datavyu.plugins.FilterNames;
 import org.datavyu.plugins.Plugin;
@@ -12,7 +12,6 @@ import org.datavyu.plugins.Plugin;
 import javax.swing.*;
 import java.awt.*;
 import java.io.FileFilter;
-import java.net.URL;
 import java.util.List;
 
 
@@ -59,8 +58,8 @@ public class VLCFXPlugin implements Plugin {
     }
 
     @Override
-    public DataViewer getNewDataViewer(final Frame parent, final boolean modal) {
-        return new VLCFXDataViewer(parent, modal);
+    public StreamViewer getNewStreamViewer(final Frame parent, final boolean modal) {
+        return new VLCFXDataViewerDialog(parent, modal);
     }
 
     @Override
@@ -74,8 +73,8 @@ public class VLCFXPlugin implements Plugin {
     }
 
     @Override
-    public Class<? extends DataViewer> getViewerClass() {
-        return VLCFXDataViewer.class;
+    public Class<? extends StreamViewer> getViewerClass() {
+        return VLCFXDataViewerDialog.class;
     }
 
     @Override

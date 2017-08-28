@@ -249,7 +249,7 @@ public class SpreadsheetCell extends JPanel
         stretcher = new Filler(d, d, d);
         cellPanel.add(stretcher, BorderLayout.SOUTH);
 
-        Datavyu.getDataController().getClock().registerListener(this);
+        Datavyu.getVideoController().getClock().registerListener(this);
 
         brandNew = true;
     }
@@ -396,8 +396,8 @@ public class SpreadsheetCell extends JPanel
             // this cell just now.
             Datavyu.getProjectController().setLastCreatedCell(model);
             Datavyu.getProjectController().setLastSelectedCell(model);
-            Datavyu.getDataController().setOnsetField(model.getOnset());
-            Datavyu.getDataController().setOffsetField(model.getOffset());
+            Datavyu.getVideoController().setOnsetField(model.getOnset());
+            Datavyu.getVideoController().setOffsetField(model.getOffset());
         }
     }
 
@@ -462,7 +462,7 @@ public class SpreadsheetCell extends JPanel
     }
 
     public void updateSelectionDisplay() {
-        if (model.isHighlighted() && !Datavyu.getDataController().getCellHighlightAndFocus()) {
+        if (model.isHighlighted() && !Datavyu.getVideoController().getCellHighlightAndFocus()) {
             if (cellOverlap) {
                 cellPanel.setBorder(HIGHLIGHT_OVERLAP_BORDER);
             } else {
@@ -484,16 +484,16 @@ public class SpreadsheetCell extends JPanel
             cellPanel.setBackground(ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor());
         }
 
-        if (Datavyu.getDataController().getCellHighlightAndFocus()) {
-            if (model.isPastTimeWindow(Datavyu.getDataController().getCurrentTime())) {
+        if (Datavyu.getVideoController().getCellHighlightAndFocus()) {
+            if (model.isPastTimeWindow(Datavyu.getVideoController().getCurrentTime())) {
                 cellPanel.setBackground(pastTimeHighlightColor);
             } else if (cellPanel.getBackground() == pastTimeHighlightColor) {
                 cellPanel.setBackground(ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor());
             }
         }
 
-        if (Datavyu.getDataController().getCellHighlighting() &&
-                model.isInTimeWindow(Datavyu.getDataController().getCurrentTime()) &&
+        if (Datavyu.getVideoController().getCellHighlighting() &&
+                model.isInTimeWindow(Datavyu.getVideoController().getCurrentTime()) &&
                 cellPanel.getBackground() != timeHighlightColor) {
             cellPanel.setBackground(timeHighlightColor);
         } else if (cellPanel.getBackground() == timeHighlightColor) {
@@ -510,8 +510,8 @@ public class SpreadsheetCell extends JPanel
         offset.setValue();
         if (model.isSelected()) {
             // Update the find windows to the newly selected cell's values
-            Datavyu.getDataController().setOnsetField(model.getOnset());
-            Datavyu.getDataController().setOffsetField(model.getOffset());
+            Datavyu.getVideoController().setOnsetField(model.getOnset());
+            Datavyu.getVideoController().setOffsetField(model.getOffset());
         }
     }
 
@@ -519,8 +519,8 @@ public class SpreadsheetCell extends JPanel
     public void onsetChanged(final long newOnset) {
         onset.setValue();
         if (model.isSelected()) {
-            Datavyu.getDataController().setOnsetField(model.getOnset());
-            Datavyu.getDataController().setOffsetField(model.getOffset());
+            Datavyu.getVideoController().setOnsetField(model.getOnset());
+            Datavyu.getVideoController().setOffsetField(model.getOffset());
         }
     }
 
@@ -529,8 +529,8 @@ public class SpreadsheetCell extends JPanel
         updateSelectionDisplay();
         if (model.isSelected()) {
             // Update the find windows to the newly selected cell's values
-            Datavyu.getDataController().setOnsetField(model.getOnset());
-            Datavyu.getDataController().setOffsetField(model.getOffset());
+            Datavyu.getVideoController().setOnsetField(model.getOnset());
+            Datavyu.getVideoController().setOffsetField(model.getOffset());
         }
     }
 
@@ -539,8 +539,8 @@ public class SpreadsheetCell extends JPanel
         updateSelectionDisplay();
         if (model.isSelected()) {
             // Update the find windows to the newly selected cell's values
-            Datavyu.getDataController().setOnsetField(model.getOnset());
-            Datavyu.getDataController().setOffsetField(model.getOffset());
+            Datavyu.getVideoController().setOnsetField(model.getOnset());
+            Datavyu.getVideoController().setOffsetField(model.getOffset());
         }
     }
 
@@ -613,8 +613,8 @@ public class SpreadsheetCell extends JPanel
         }
 
         // Update the find windows to the newly selected cell's values
-        Datavyu.getDataController().setOnsetField(model.getOnset());
-        Datavyu.getDataController().setOffsetField(model.getOffset());
+        Datavyu.getVideoController().setOnsetField(model.getOnset());
+        Datavyu.getVideoController().setOffsetField(model.getOffset());
     }
 
     @Override

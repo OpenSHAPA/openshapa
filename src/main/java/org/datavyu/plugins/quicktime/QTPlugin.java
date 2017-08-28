@@ -21,11 +21,10 @@ import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
-import org.datavyu.plugins.DataViewer;
+import org.datavyu.plugins.StreamViewer;
 import org.datavyu.plugins.Filter;
 import org.datavyu.plugins.FilterNames;
 import org.datavyu.plugins.Plugin;
-import org.datavyu.plugins.quicktime.QTDataViewer;
 import org.datavyu.util.NativeLibraryLoader;
 
 import javax.swing.*;
@@ -69,7 +68,7 @@ public final class QTPlugin implements Plugin {
 
     private static boolean librariersLoaded = false;
 
-    // TODO: Move this into the QTDataViewer class!!
+    // TODO: Move this into the QTDataViewerDialog class!!
     public static boolean hasQuicktimeLibs() {
         boolean found = false;
         try {
@@ -102,7 +101,7 @@ public final class QTPlugin implements Plugin {
                     System.setProperty("java.library.path", System.getProperty("java.library.path") + File.pathSeparator
                             + libraryFile.getAbsolutePath());
                     NativeLibraryLoader.extractAndLoad("QTJavaNative");
-                    //QTDataViewer.librariesFound = true;
+                    //QTDataViewerDialog.librariesFound = true;
                     librariersLoaded = true;
                 }
             } catch (Exception e) {
@@ -112,11 +111,11 @@ public final class QTPlugin implements Plugin {
     }
 
     @Override
-    public DataViewer getNewDataViewer(final java.awt.Frame parent,
-                                       final boolean modal) {
+    public StreamViewer getNewStreamViewer(final java.awt.Frame parent,
+                                           final boolean modal) {
 
         if (Platform.isMac() || Platform.isWindows()) {
-            return new QTDataViewer(parent, modal);
+            return new QTDataViewerDialog(parent, modal);
         } else {
             return null;
         }
@@ -149,10 +148,10 @@ public final class QTPlugin implements Plugin {
     }
 
     @Override
-    public Class<? extends DataViewer> getViewerClass() {
+    public Class<? extends StreamViewer> getViewerClass() {
 
         if (Platform.isWindows()) {
-            return QTDataViewer.class;
+            return QTDataViewerDialog.class;
         }
 
         return null;

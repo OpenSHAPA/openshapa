@@ -92,9 +92,9 @@ public final class ExportDatabaseFileC {
             // playback model's frameRate as step size. Fallback is 30.0
             double frameRate = 30.0;
             try{
-                float fromDVC = Datavyu.getDataController().getCurrentFPS();
+                float fromDVC = Datavyu.getVideoController().getCurrentFPS();
                 if (fromDVC > 1.0) {
-                    frameRate = Datavyu.getDataController().getCurrentFPS();
+                    frameRate = Datavyu.getVideoController().getCurrentFPS();
                 }
             } catch(Exception e) {
                 frameRate = 30.0;

@@ -16,7 +16,7 @@ package org.datavyu.plugins.qtkitplayer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.plugins.BaseDataViewer;
+import org.datavyu.plugins.StreamViewerDialog;
 
 import java.awt.*;
 import java.io.File;
@@ -26,10 +26,10 @@ import java.io.File;
  * The viewer for a quicktime video file.
  * <b>Do not move this class, this is for backward compatibility with 1.07.</b>
  */
-public final class QTKitViewer extends BaseDataViewer {
+public final class QTKitViewerDialog extends StreamViewerDialog {
 
     /** The logger for this class */
-    private static Logger logger = LogManager.getLogger(QTKitViewer.class);
+    private static Logger logger = LogManager.getLogger(QTKitViewerDialog.class);
 
     /** Last seek time */
     private long lastSeekTime = -1;
@@ -37,7 +37,7 @@ public final class QTKitViewer extends BaseDataViewer {
     /** The player this viewer is displaying */
     private QTKitPlayer player;
 
-    public QTKitViewer(final Frame parent, final boolean modal) {
+    public QTKitViewerDialog(final Frame parent, final boolean modal) {
         super(parent, modal);
 
         player = null;
@@ -59,10 +59,10 @@ public final class QTKitViewer extends BaseDataViewer {
     }
 
     @Override
-    protected void setPlayerSourceFile(final File sourceFile) {
+    protected void setPlayerSourceFile(final File playerSourceFile) {
         // Ensure that the native hierarchy is set up
         this.addNotify();
-        player = new QTKitPlayer(sourceFile);
+        player = new QTKitPlayer(playerSourceFile);
         this.add(player, BorderLayout.CENTER);
         EventQueue.invokeLater(() -> {
             try {

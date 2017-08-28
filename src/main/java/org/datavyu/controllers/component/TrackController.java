@@ -597,8 +597,8 @@ public final class TrackController implements ViewerStateListener,
 
                     trackModel.setDuration(val);
                     view.repaint();
-                    Datavyu.getDataController().updateMaxViewerDuration();
-                    Datavyu.getDataController().getMixerController()
+                    Datavyu.getVideoController().updateMaxViewerDuration();
+                    Datavyu.getVideoController().getMixerController()
                             .clearRegionAndZoomOut();
                 }
             }
@@ -718,7 +718,7 @@ public final class TrackController implements ViewerStateListener,
      * @param e The event to handle.
      */
     private void handleDeleteButtonEvent(final ActionEvent e) {
-        Datavyu.getDataController().shutdown(trackModel.getId());
+        Datavyu.getVideoController().shutdown(trackModel.getId());
     }
 
     /**
@@ -729,7 +729,7 @@ public final class TrackController implements ViewerStateListener,
     private void handleVisibleButtonEvent(final ActionEvent e) {
         isViewerVisible = !isViewerVisible;
 
-        Datavyu.getDataController().setDataViewerVisibility(trackModel
+        Datavyu.getVideoController().setStreamViewerVisibility(trackModel
                 .getId(), isViewerVisible);
 
         visibleButton.setIcon(getVisibleButtonIcon());
@@ -982,7 +982,7 @@ public final class TrackController implements ViewerStateListener,
     }
 
     public void attachAsWindowListener() {
-        Datavyu.getDataController().bindWindowListenerToDataViewer(
+        Datavyu.getVideoController().bindWindowListenerToStreamViewer(
                 trackModel.getId(), new WindowAdapter() {
 
             @Override

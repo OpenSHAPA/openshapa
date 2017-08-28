@@ -6,7 +6,7 @@ import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.models.Identifier;
-import org.datavyu.plugins.BaseDataViewer;
+import org.datavyu.plugins.StreamViewerDialog;
 import org.datavyu.plugins.VlcLibraryLoader;
 import org.datavyu.views.component.DefaultTrackPainter;
 import org.datavyu.views.component.TrackPainter;
@@ -20,7 +20,7 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
 
-public class VLCFXDataViewer extends BaseDataViewer {
+public class VLCFXDataViewerDialog extends StreamViewerDialog {
 
     /** Logger for this class */
     private static Logger logger = LogManager.getLogger(NativeLibraryManager.class);
@@ -28,8 +28,8 @@ public class VLCFXDataViewer extends BaseDataViewer {
     /** Data viewer Identifier */
     private Identifier id;
 
-    /** Data viewer offset */
-    private long offset;
+    /** Data viewer startTime */
+    private long startTime;
 
     /** Data to visualize */
     private File sourceFile;
@@ -41,7 +41,7 @@ public class VLCFXDataViewer extends BaseDataViewer {
     /** VLC application */
     private VLCApplication vlcFxApp;
 
-    public VLCFXDataViewer(final Frame parent, final boolean modal) {
+    public VLCFXDataViewerDialog(final Frame parent, final boolean modal) {
         super(parent, modal);
         dialog.setVisible(false);
     }
@@ -115,7 +115,7 @@ public class VLCFXDataViewer extends BaseDataViewer {
     }
 
     @Override
-    protected void setPlayerSourceFile(File videoFile) { }
+    protected void setPlayerSourceFile(File playerSourceFile) { }
 
     @Override
     protected Dimension getOriginalVideoSize() {
@@ -132,7 +132,7 @@ public class VLCFXDataViewer extends BaseDataViewer {
         return vlcFxApp.getFrameRate();
     }
 
-    public void setFramesPerSecond(float fpsIn) {
+    public void setFramesPerSecond(float framesPerSecond) {
         // TODO: Set the fps correctly
         //fps = fpsIn;
         //assumedFPS = false;
@@ -156,12 +156,12 @@ public class VLCFXDataViewer extends BaseDataViewer {
 
     @Override
     public long getStartTime() {
-        return offset;
+        return startTime;
     }
 
     @Override
     public void setStartTime(final long offset) {
-        this.offset = offset;
+        this.startTime = offset;
     }
 
     @Override
@@ -170,7 +170,7 @@ public class VLCFXDataViewer extends BaseDataViewer {
     }
 
     @Override
-    public void setDataViewerVisible(final boolean isVisible) {
+    public void setViewerVisible(final boolean isVisible) {
         vlcFxApp.setVisible(isVisible);
     }
 
@@ -249,11 +249,11 @@ public class VLCFXDataViewer extends BaseDataViewer {
     @Override
     protected void cleanUp() {
         VlcLibraryLoader.purge();
-        clearSourceFile();
+        unsetSourceFile();
     }
 
     @Override
-    public void clearSourceFile() {
+    public void unsetSourceFile() {
         stop();
         vlcFxApp.setVisible(false);
         vlcFxApp.closeAndDestroy();
@@ -267,7 +267,7 @@ public class VLCFXDataViewer extends BaseDataViewer {
     public void storeSettings(final OutputStream os) {
         try {
             Properties settings = new Properties();
-            settings.setProperty("offset", Long.toString(getStartTime()));
+            settings.setProperty("startTime", Long.toString(getStartTime()));
             settings.setProperty("volume", Float.toString(getVolume()));
             settings.setProperty("visible", Boolean.toString(vlcFxApp.isVisible()));
             settings.setProperty("height", Integer.toString(vlcFxApp.getHeight()));

@@ -308,7 +308,7 @@ public class VLCApplication extends Application {
         }
 
         public void resizePlayer() {
-            long timeStamp = Datavyu.getDataController().getCurrentTime();
+            long timeStamp = Datavyu.getVideoController().getCurrentTime();
             boolean isPlaying = directMediaPlayer.isPlaying();
             directMediaPlayer.stop();
             directMediaPlayer.play();

@@ -35,63 +35,61 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * This base viewer supports basic viewing operations common to videos.
- * These are sound volume control and display size. It provides controls
- * to the user about the video stream.
+ * This dialog supports basic viewing operations that all video viewers have in common. These are
+ *   - controlling the volume,
+ *   - resizing the display, and
+ *   - controls the video stream.
  */
-public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer {
+public abstract class StreamViewerDialog extends DatavyuDialog implements StreamViewer {
 
-    /** Tooltip text for volume icon */
+    /** Text for volume icon */
     private static final String VOLUME_TOOLTIP = "Change volume";
 
-    /** Tooltip text for resize icon */
+    /** Text for resize icon */
     private static final String RESIZE_TOOLTIP = "Resize video";
 
     /** Logger for this class */
-    private static Logger logger = LogManager.getLogger(BaseDataViewer.class);
+    private static Logger logger = LogManager.getLogger(StreamViewerDialog.class);
 
     /** Icon for volume slider */
-    private final ImageIcon volumeIcon = new ImageIcon(
-            getClass().getResource("/icons/volume.png"));
+    private final ImageIcon volumeIcon = new ImageIcon(getClass().getResource("/icons/volume.png"));
 
     /** Icon for when volume is muted */
-    private final ImageIcon mutedIcon = new ImageIcon(
-            getClass().getResource("/icons/volume-muted.png"));
+    private final ImageIcon mutedIcon = new ImageIcon(getClass().getResource("/icons/volume-muted.png"));
 
     /** Icon for resizing the video */
-    private final ImageIcon resizeIcon = new ImageIcon(
-            getClass().getResource("/icons/resize.png"));
+    private final ImageIcon resizeIcon = new ImageIcon(getClass().getResource("/icons/resize.png"));
 
     /** List of listeners interested in changes made to the project */
-    private final List<ViewerStateListener> viewerListeners = new LinkedList<ViewerStateListener>();
+    private final List<ViewerStateListener> viewerListeners = new LinkedList<>();
 
-    /** Stores the desired volume the plugin should play at. */
+    /** Volume for play back in dB? */
     protected float volume = 1f;
 
-    /** Visibility control */
+    /** Controls visibility */
     protected boolean isVisible = true;
 
-    /** assumed frames per second */
+    /** Did we assume the frames per second? */
     protected boolean isAssumedFramesPerSecond = false;
 
-    /** Original size of the movie */
+    /** Original size of the video */
     private Dimension originalVideoSize;
 
     /** The playback speed */
     // TODO: Initial value?
-    private float playBackSpeed;
+    private float playBackSpeed = 0;
 
     /** Frames per second */
     private float framesPerSecond = -1;
 
-    /** The playback offset of the movie in milliseconds */
-    // TODO: Why do we have this offset? Is it the current time in the stream?
-    private long offset = 0;
+    /** Start time of stream in milliseconds */
+    // TODO: Why do we have this startTime? Is it the current time in the stream?
+    private long startTime = 0;
 
     /** Is this movie currently playing? */
     private boolean playing = false;
 
-    /** The current video file that this viewer is representing */
+    /** The current video file */
     private File sourceFile;
 
     /** Volume slider */
@@ -130,14 +128,20 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
     /** Identifier of this data viewer */
     private Identifier id;
 
+    /** Enable fake playback for this stream viewer */
+    private boolean enableFakePlayback;
+
+    /** Is this stream viewer in fake play back*/
+    private boolean fakePlayback;
+
     /**
-     * Constructor - creates new video viewer.
+     * Constructs a base data video viewer.
      */
-    public BaseDataViewer(final java.awt.Frame parent, final boolean modal) {
+    public StreamViewerDialog(final java.awt.Frame parent, final boolean modal) {
 
         super(parent, modal);
 
-        offset = 0;
+        startTime = 0;
         playing = false;
 
         volumeButton = new JButton();
@@ -196,7 +200,28 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
         menuForResize.add(menuItemOneAndHalf);
         menuForResize.add(menuItemDouble);
         menuForResize.setName("menuForResize");
+
         initComponents();
+    }
+
+    @Override
+    public void setEnableFakePlayback(boolean enableFakePlayback) {
+        this.enableFakePlayback = enableFakePlayback;
+    }
+
+    @Override
+    public boolean isEnableFakePlayback() {
+        return enableFakePlayback;
+    }
+
+    @Override
+    public void setFakePlayback(boolean fakePlayback) {
+        this.fakePlayback = fakePlayback;
+    }
+
+    @Override
+    public boolean isFakePlayback() {
+        return fakePlayback;
     }
 
     private void handleVolumeSliderEvent(final ChangeEvent e) {
@@ -225,7 +250,7 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
 
     protected abstract void setPlayerVolume(float volume);
 
-    protected abstract void setPlayerSourceFile(final File videoFile);
+    protected abstract void setPlayerSourceFile(final File playerSourceFile);
 
     protected abstract Dimension getOriginalVideoSize();
 
@@ -248,8 +273,7 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
      * @return Aspect ratio as width/height.
      */
     private double getAspectRatio() {
-        return (originalVideoSize != null)
-                ? (originalVideoSize.getWidth() / originalVideoSize.getHeight()) : 1;
+        return (originalVideoSize != null) ? (originalVideoSize.getWidth() / originalVideoSize.getHeight()) : 1;
     }
 
     @Override
@@ -257,15 +281,14 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
 
         // BugzID:753 - Locks the window to the videos aspect ratio.
         int newHeight = getHeight();
-        int newWidth = (int) (getVideoHeight() * getAspectRatio())
-                + getInsets().left + getInsets().right;
+        int newWidth = (int) (getVideoHeight() * getAspectRatio()) + getInsets().left + getInsets().right;
         setSize(newWidth, newHeight);
 
         super.validate();
     }
 
     /**
-     * Resizes the video to the desired scale.
+     * Resize the video to the desired scale.
      *
      * @param scale The new ratio to scale to, where 1.0 = original size, 2.0 = 200% zoom, etc.
      */
@@ -277,8 +300,7 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
 
         // lock the aspect ratio
         if (getAspectRatio() > 0.0) {
-            int newWidth = (int) (scaleHeight * getAspectRatio())
-                    + getInsets().left + getInsets().right;
+            int newWidth = (int) (scaleHeight * getAspectRatio()) + getInsets().left + getInsets().right;
             int newHeight = scaleHeight + getInsets().bottom + getInsets().top;
 
             setSize(newWidth, newHeight);
@@ -309,8 +331,7 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
             return;
         }
 
-        int newWidth = (int) (height * getAspectRatio()) + getInsets().left
-                + getInsets().right;
+        int newWidth = (int) (height * getAspectRatio()) + getInsets().left + getInsets().right;
         int newHeight = height + getInsets().bottom + getInsets().top;
 
         setSize(newWidth, newHeight);
@@ -322,18 +343,18 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
     }
 
     /**
-     * @return The playback offset of the movie in milliseconds.
+     * @return The playback startTime of the movie in milliseconds.
      */
     public long getStartTime() {
-        return offset;
+        return startTime;
     }
 
     /**
-     * @param offset The playback offset of the movie in milliseconds.
+     * @param offset The playback startTime of the movie in milliseconds.
      */
     public void setStartTime(final long offset) {
-        this.offset = offset;
-        // TODO: Should set offset in stream?
+        this.startTime = offset;
+        // TODO: Should set startTime in stream?
     }
 
     /**
@@ -364,14 +385,13 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
 
         // BugzID:679 + 2407: Need to make the window visible before we know the
         // dimensions because of a QTJava bug
-        setDataViewerVisible(true);
+        setViewerVisible(true);
         setPlayerSourceFile(sourceFile);
 
         originalVideoSize = getOriginalVideoSize();
         logger.info("Setting video size to:" + originalVideoSize);
         setPreferredSize(originalVideoSize);
-        setBounds(getX(), getY(), (int) originalVideoSize.getWidth(),
-                (int) originalVideoSize.getHeight());
+        setBounds(getX(), getY(), (int) originalVideoSize.getWidth(), (int) originalVideoSize.getHeight());
         pack();
 
         if (framesPerSecond == -1) {
@@ -391,8 +411,8 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
         return framesPerSecond;
     }
     
-    public void setFramesPerSecond(float fps) {
-        framesPerSecond = fps;
+    public void setFramesPerSecond(float framesPerSecond) {
+        this.framesPerSecond = framesPerSecond;
         isAssumedFramesPerSecond = false;
     }
 
@@ -455,13 +475,12 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
 
     private void handleActionButtonEvent2(final ActionEvent event) {
         if (isVisible) {
-            menuForResize.show(resizeButton.getParent(), resizeButton.getX(),
-                    resizeButton.getY());
+            menuForResize.show(resizeButton.getParent(), resizeButton.getX(), resizeButton.getY());
         }
     }
 
     /**
-     * Notifies listeners that a change to the project has occurred.
+     * Notifies listeners about a change
      */
     protected void notifyChange() {
         for (ViewerStateListener listener : viewerListeners) {
@@ -474,7 +493,7 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
         try {
             settings.load(is);
 
-            String property = settings.getProperty("offset");
+            String property = settings.getProperty("startTime");
             if ((property != null) && !property.equals("")) {
                 setStartTime(Long.parseLong(property));
             }
@@ -506,7 +525,7 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
 
     public void storeSettings(final OutputStream os) {
         Properties settings = new Properties();
-        settings.setProperty("offset", Long.toString(getStartTime()));
+        settings.setProperty("startTime", Long.toString(getStartTime()));
         settings.setProperty("volume", Float.toString(volume));
         settings.setProperty("visible", Boolean.toString(isVisible));
         settings.setProperty("height", Integer.toString(getVideoHeight()));
@@ -529,11 +548,7 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
     }
 
     private ImageIcon getVolumeButtonIcon() {
-        if (isVisible && (volume > 0)) {
-            return volumeIcon;
-        } else {
-            return mutedIcon;
-        }
+        return isVisible && (volume > 0) ? volumeIcon : mutedIcon;
     }
 
     private void initComponents() {
@@ -547,7 +562,7 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
     }
 
     /**
-     * Action to invoke when the QTDataViewer window is being hidden.
+     * Action to invoke when the QTDataViewerDialog window is being hidden.
      *
      * @param evt The event that triggered this action.
      */
@@ -576,12 +591,12 @@ public abstract class BaseDataViewer extends DatavyuDialog implements DataViewer
     }
 
     @Override
-    public void clearSourceFile() {
+    public void unsetSourceFile() {
         cleanUp();
     }
 
     @Override
-    public void setDataViewerVisible(final boolean isVisible) {
+    public void setViewerVisible(final boolean isVisible) {
         setVisible(isVisible);
         this.isVisible = isVisible;
         setVolume();

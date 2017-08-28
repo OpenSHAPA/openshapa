@@ -16,7 +16,7 @@ package org.datavyu.plugins.quicktime;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.plugins.BaseDataViewer;
+import org.datavyu.plugins.StreamViewerDialog;
 import org.datavyu.util.Constants;
 import quicktime.QTException;
 import quicktime.QTSession;
@@ -41,7 +41,7 @@ import java.io.File;
  * The viewer for a quicktime video file.
  * <b>Do not move this class, this is for backward compatibility with 1.07.</b>
  */
-public final class QTDataViewer extends BaseDataViewer {
+public final class QTDataViewerDialog extends StreamViewerDialog {
 
     /** How many milliseconds in a second? */
     private static final int MILLI = 1000;
@@ -49,10 +49,8 @@ public final class QTDataViewer extends BaseDataViewer {
     /** How many frames to check when correcting the FPS */
     private static final int CORRECTION_FRAMES = 5;
 
-    //public static boolean librariesFound = false;
-
     /** The logger for this class */
-    private static Logger logger = LogManager.getLogger(QTDataViewer.class);
+    private static Logger logger = LogManager.getLogger(QTDataViewerDialog.class);
 
     private static float FALLBACK_FRAME_RATE = 29.97f;
 
@@ -65,30 +63,24 @@ public final class QTDataViewer extends BaseDataViewer {
     /** The visual media for the above visual track */
     private Media visualMedia;
 
-    public QTDataViewer(final java.awt.Frame parent, final boolean modal) {
+    public QTDataViewerDialog(final java.awt.Frame parent, final boolean modal) {
         super(parent, modal);
-
         movie = null;
-
         try {
-            // Initialize QTJava.
             QTSession.open();
         } catch (Throwable e) {
-            logger.error("Unable to create " + this.getClass().getName(), e);
+            logger.error("Unable to create " + this.getClass().getName() + "Error: ", e);
         }
     }
 
     @Override
     protected void setPlayerVolume(final float volume) {
-
-        if (movie == null) {
-            return;
-        }
-
-        try {
-            movie.setVolume(volume);
-        } catch (StdQTException ex) {
-            logger.error("Unable to set volume", ex);
+        if (movie != null) {
+            try {
+                movie.setVolume(volume);
+            } catch (StdQTException e) {
+                logger.error("Unable to set volume: " + volume + ". Error: ", e);
+            }
         }
     }
 
@@ -97,30 +89,24 @@ public final class QTDataViewer extends BaseDataViewer {
      */
     @Override
     public long getDuration() {
-
-        try {
-
-            if (movie != null) {
-                return (long) Constants.TICKS_PER_SECOND
-                        * (long) movie.getDuration() / movie.getTimeScale();
+        if (movie != null) {
+            try {
+                return (long) Constants.TICKS_PER_SECOND  * (long) movie.getDuration() / movie.getTimeScale();
+            } catch (StdQTException e) {
+                logger.error("Unable to determine QT movie duration. Error: ", e);
             }
-        } catch (StdQTException ex) {
-            logger.error("Unable to determine QT movie duration", ex);
         }
-
         return -1;
     }
 
     @Override
-    protected void setPlayerSourceFile(final File videoFile) {
-
+    protected void setPlayerSourceFile(final File playerSourceFile) {
         try {
-            OpenMovieFile omf = OpenMovieFile.asRead(new QTFile(videoFile));
+            OpenMovieFile omf = OpenMovieFile.asRead(new QTFile(playerSourceFile));
             movie = Movie.fromFile(omf);
             movie.setVolume(0.7F);
 
-            // Set the time scale for our movie to milliseconds (i.e. 1000 ticks
-            // per second.
+            // Set the time scale for our movie to milliseconds (i.e. 1000 ticks per second.
             movie.setTimeScale(Constants.TICKS_PER_SECOND);
 
             visualTrack = movie.getIndTrackType(1,
@@ -128,14 +114,12 @@ public final class QTDataViewer extends BaseDataViewer {
                     StdQTConstants.movieTrackCharacteristic);
             visualMedia = visualTrack != null ? visualTrack.getMedia() : null;
 
-            // WARNING there seems to be a bug in QTJava where the video will be
-            // rendered as blank if the QT component is added before the window
-            // is displayable/visible
+            // WARNING there seems to be a bug in QTJava where the video will be rendered as blank if the QT
+            // component is added before the window is displayable/visible
             add(QTFactory.makeQTComponent(movie).asComponent());
-//            visualMedia.loadIntoRam(0, (int)getDuration()+500, StdQTConstants.unkeepInRam);
             seek(0L);
         } catch (QTException e) {
-            logger.error("Unable to setVideoFile", e);
+            logger.error("Unable to " + playerSourceFile.getAbsolutePath() + ". Error: ", e);
         }
     }
 
@@ -147,36 +131,30 @@ public final class QTDataViewer extends BaseDataViewer {
                 return new Dimension(vtDim.getWidth(), vtDim.getHeight());
             }
         } catch (QTException e) {
-            logger.error("Unable to getQTNativeVideoSize", e);
+            logger.error("Unable to get original video size. Error: ", e);
         }
-
         return new Dimension(1, 1);
     }
 
     @Override
     protected float getPlayerFramesPerSecond() {
         float fps = 0;
-
         try {
             if (visualMedia != null) {
-
                 try {
-                    fps = (float) visualMedia.getSampleCount()
-                            / visualMedia.getDuration() * visualMedia.getTimeScale();
-                } catch (Exception d) {
-                    System.err.println("Could not find fps the normal way, trying the fake route.");
+                    fps = (float) visualMedia.getSampleCount() / visualMedia.getDuration() * visualMedia.getTimeScale();
+                } catch (Exception e) {
+                    logger.error("Could not find fps the normal way, trying the fake route. Error: ", e);
                 }
-                if ((visualMedia.getSampleCount() == 1.0)
-                        || (visualMedia.getSampleCount() == 1) || fps == 0) {
+                if ((visualMedia.getSampleCount() == 1.0) || (visualMedia.getSampleCount() == 1) || fps == 0) {
                     fps = correctFPS();
                 }
-
                 if (fps == 1 || fps < 1.0f) {
                     throw new QTException(0);
                 }
             }
         } catch (QTException e) {
-            logger.warn("Unable to calculate FPS, assuming " + FALLBACK_FRAME_RATE, e);
+            logger.warn("Unable to calculate FPS, assuming " + FALLBACK_FRAME_RATE + ". Error: ", e);
             isAssumedFramesPerSecond = true;
             fps = FALLBACK_FRAME_RATE;
         }
@@ -196,24 +174,17 @@ public final class QTDataViewer extends BaseDataViewer {
         float minFrameLength = MILLI; // Set this to one second, as the "worst"
         float curFrameLen = 0;
         int curTime = 0;
-
-        for (int i = 0; i < CORRECTION_FRAMES; i++) {
-
+        for (int iFrame = 0; iFrame < CORRECTION_FRAMES; iFrame++) {
             try {
-                TimeInfo timeObj = visualTrack.getNextInterestingTime(
-                        StdQTConstants.nextTimeStep, curTime, 1);
+                TimeInfo timeObj = visualTrack.getNextInterestingTime(StdQTConstants.nextTimeStep, curTime, 1);
                 float candidateFrameLen = timeObj.time - curFrameLen;
                 curFrameLen = timeObj.time;
                 curTime += curFrameLen;
-
-                if (candidateFrameLen < minFrameLength) {
-                    minFrameLength = candidateFrameLen;
-                }
+                minFrameLength = Math.min(candidateFrameLen, minFrameLength);
             } catch (QTException e) {
-                logger.error("Error getting time", e);
+                logger.error("Error getting time. Error: ", e);
             }
         }
-
         return MILLI / minFrameLength;
     }
 
@@ -230,14 +201,11 @@ public final class QTDataViewer extends BaseDataViewer {
                     if (movie != null) {
                         movie.setRate(getPlaybackSpeed());
                     }
-                } catch (
-                        QTException e
-                        ) {
-                    logger.error("Unable to play", e);
+                } catch (QTException e) {
+                    logger.error("Unable to play. Error: ", e);
                 }
             }
         });
-
     }
 
     /**
@@ -250,13 +218,11 @@ public final class QTDataViewer extends BaseDataViewer {
             @Override
             public void run() {
                 try {
-
                     if (movie != null) {
                         movie.stop();
-//                movie.setRate(0);
                     }
                 } catch (QTException e) {
-                    logger.error("Unable to stop", e);
+                    logger.error("Unable to stop. Error: ", e);
                 }
             }
         });
@@ -267,9 +233,7 @@ public final class QTDataViewer extends BaseDataViewer {
      */
     @Override
     public void seek(final long position) {
-
         try {
-
             stop();
             if (movie != null && position != getCurrentTime()) {
                 TimeRecord time = new TimeRecord(Constants.TICKS_PER_SECOND,
@@ -277,7 +241,7 @@ public final class QTDataViewer extends BaseDataViewer {
                 movie.setTime(time);
             }
         } catch (QTException e) {
-            logger.error("Unable to find", e);
+            logger.error("Unable to find position: " + position + ". Error: ", e);
         }
     }
 
@@ -286,13 +250,11 @@ public final class QTDataViewer extends BaseDataViewer {
      */
     @Override
     public long getCurrentTime() {
-
         try {
             return movie.getTime();
         } catch (QTException e) {
-            logger.error("Unable to get time", e);
+            logger.error("Unable to get current time. Error: ", e);
         }
-
         return 0;
     }
 

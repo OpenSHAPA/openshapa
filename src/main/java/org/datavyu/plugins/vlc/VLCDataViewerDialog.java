@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.models.Identifier;
 import org.datavyu.plugins.*;
-import org.datavyu.plugins.javafx.JavaFXDataViewer;
 import org.datavyu.views.component.DefaultTrackPainter;
 import org.datavyu.views.component.TrackPainter;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
@@ -21,9 +20,9 @@ import java.util.List;
 import java.util.Properties;
 
 
-public class VLCDataViewer extends BaseDataViewer {
+public class VLCDataViewerDialog extends StreamViewerDialog {
 
-    private static Logger logger = LogManager.getLogger(BaseDataViewer.class);
+    private static Logger logger = LogManager.getLogger(StreamViewerDialog.class);
 
     private static float fallbackFrameRate = 24.0f;
 
@@ -62,13 +61,13 @@ public class VLCDataViewer extends BaseDataViewer {
 
     private boolean assumedFPS = false;
 
-    public VLCDataViewer(final Frame parent, final boolean modal) {
+    public VLCDataViewerDialog(final Frame parent, final boolean modal) {
         super(parent, modal);
 
         playing = false;
         vlcDialog = new JDialog(parent, modal);
         vlcDialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
-        vlcDialog.setName("VLCDataViewer");
+        vlcDialog.setName("VLCDataViewerDialog");
         vlcDialog.setResizable(true);
 
         // Set an initial size
@@ -106,11 +105,11 @@ public class VLCDataViewer extends BaseDataViewer {
     }
 
     public static void setFallbackFrameRate(float fallbackFrameRate) {
-        VLCDataViewer.fallbackFrameRate = fallbackFrameRate;
+        VLCDataViewerDialog.fallbackFrameRate = fallbackFrameRate;
     }
 
     @Override
-    protected void setPlayerSourceFile(File videoFile) {
+    protected void setPlayerSourceFile(File playerSourceFile) {
         // TODO: implement
     }
 
@@ -164,8 +163,8 @@ public class VLCDataViewer extends BaseDataViewer {
         return fps;
     }
 
-    public void setFramesPerSecond(float fpsIn) {
-        fps = fpsIn;
+    public void setFramesPerSecond(float framesPerSecond) {
+        fps = framesPerSecond;
         assumedFPS = false;
     }
 
@@ -195,7 +194,7 @@ public class VLCDataViewer extends BaseDataViewer {
     }
 
     @Override
-    public void setDataViewerVisible(final boolean isVisible) {
+    public void setViewerVisible(final boolean isVisible) {
         vlcDialog.setVisible(isVisible);
     }
 
@@ -205,15 +204,15 @@ public class VLCDataViewer extends BaseDataViewer {
     }
 
     @Override
-    public void setSourceFile(final File dataFeed) {
+    public void setSourceFile(final File sourceFile) {
 
         // TODO: Standardize on where we load the libraries. For some plugins we load in the static section; others in the constructor and again others (like this one) in the setSource method
         VlcLibraryLoader.load();
 
-        sourceFile = dataFeed;
+        this.sourceFile = sourceFile;
         vlcDialog.setVisible(true);
-        vlcDialog.setName(vlcDialog.getName() + "-" + dataFeed.getName());
-        mediaPlayer.startMedia(dataFeed.getAbsolutePath());
+        vlcDialog.setName(vlcDialog.getName() + "-" + sourceFile.getName());
+        mediaPlayer.startMedia(sourceFile.getAbsolutePath());
 
         // Because of the way VLC works, we have to wait for the metadata to become available a short time after we
         // start playing
@@ -401,7 +400,7 @@ public class VLCDataViewer extends BaseDataViewer {
     }
 
     @Override
-    public void clearSourceFile() {
+    public void unsetSourceFile() {
         stop();
         videoSurface.setVisible(false);
         vlcDialog.setVisible(false);

@@ -17,40 +17,41 @@ package org.datavyu.models;
 import org.datavyu.models.component.ViewportStateImpl;
 
 /**
- * Model representing playback data.
+ * Model for playback
  */
+// TODO: Merge this class with StreamViewer and convert it into an interface
 public final class PlaybackModel {
 
     /** Stores the highest frame rate for all available viewers. */
-    private float currentFPS = 1F;
-
-    /** Index of current shuttle rate. */
-    private int shuttleRate;
+    private float currentFramesPerSecond = 1F;
 
     /** The rate to use when resumed from pause. */
     private float pauseRate;
 
     /** The time the last sync was performed. */
-    private long lastSync;
+    private long lastSyncTime;
 
     /** The maximum duration out of all data being played. */
     private long maxDuration = ViewportStateImpl.MINIMUM_MAX_END;
 
-    /** Are we currently faking playback of the viewers? */
+    /** Are we currently faking playback of the viewers?
+     * Fake playback is used by most players to control the play back at rates of >=2x or <=-2x through a sequence
+     * of subsequent seeks.
+     **/
     private boolean fakePlayback = false;
 
     /** The start time of the playback window. */
-    private long windowPlayStart;
+    private long startTime;
 
     /** The end time of the playback window. */
-    private long windowPlayEnd;
+    private long endTime;
 
-    public float getCurrentFPS() {
-        return currentFPS;
+    public float getCurrentFramesPerSecond() {
+        return currentFramesPerSecond;
     }
 
-    public void setCurrentFPS(final float currentFPS) {
-        this.currentFPS = currentFPS;
+    public void setCurrentFramesPerSecond(final float currentFramesPerSecond) {
+        this.currentFramesPerSecond = currentFramesPerSecond;
     }
 
     public float getPauseRate() {
@@ -61,13 +62,11 @@ public final class PlaybackModel {
         this.pauseRate = pauseRate;
     }
 
-    public long getLastSync() {
-        return lastSync;
+    public long getLastSyncTime() {
+        return lastSyncTime;
     }
 
-    public void setLastSync(final long lastSync) {
-        this.lastSync = lastSync;
-    }
+    public void setLastSyncTime(final long lastSyncTime) { this.lastSyncTime = lastSyncTime; }
 
     public long getMaxDuration() {
         return maxDuration;
@@ -85,20 +84,20 @@ public final class PlaybackModel {
         this.fakePlayback = fakePlayback;
     }
 
-    public long getWindowPlayStart() {
-        return windowPlayStart;
+    public long getStartTime() {
+        return startTime;
     }
 
-    public void setWindowPlayStart(final long windowPlayStart) {
-        this.windowPlayStart = windowPlayStart;
+    public void setStartTime(final long startTime) {
+        this.startTime = startTime;
     }
 
-    public long getWindowPlayEnd() {
-        return windowPlayEnd;
+    public long getEndTime() {
+        return endTime;
     }
 
-    public void setWindowPlayEnd(final long windowPlayEnd) {
-        this.windowPlayEnd = windowPlayEnd;
+    public void setEndTime(final long endTime) {
+        this.endTime = endTime;
     }
 
 }
