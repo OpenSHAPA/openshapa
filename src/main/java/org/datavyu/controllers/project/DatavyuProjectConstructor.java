@@ -69,8 +69,7 @@ public class DatavyuProjectConstructor extends Constructor {
             }
 
             if (projectVersion >= 4) {
-                project.setOriginalProjectDirectory((String) values.get(
-                        "origpath"));
+                project.setOriginalProjectDirectory((String) values.get("origpath"));
             }
 
             return project;

@@ -33,10 +33,10 @@ public class MovieStream implements VideoStream, AudioStream {
 	}
 
 	/** The minimum play back speed */
-	public final static float MIN_SPEED = -4f;
+	public final static float MIN_SPEED = -32f;
 	
 	/** The maximum play back speed */
-	public final static float MAX_SPEED = +4f;
+	public final static float MAX_SPEED = +32f;
 	
 	/** The size of the audio buffer */
 	public final static int AUDIO_BUFFER_SIZE = 64*1024; // 64 kB
