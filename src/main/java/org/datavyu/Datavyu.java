@@ -716,17 +716,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
     }
 
     /**
-     * Action to call when the application is exiting.
-     *
-     */
-    @Override
-    protected void end() {
-        Datavyu.getApplication().getMainFrame().setVisible(false);
-        shutdown();
-        super.end();
-    }
-
-    /**
      * If the user is trying to save over an existing file, prompt them whether
      * they they wish to continue.
      *
@@ -854,19 +843,10 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         if (getPlatform() == Platform.MAC && osxPressAndHoldEnabled) {
             MacOS.setOSXPressAndHoldValue(true);
         }
+        logger.info("Saving configuration properties.");
         ConfigurationProperties.save();
         super.shutdown();
     }
-
-    /**
-     * This method is to initialize the specified window by injecting resources.
-     * Windows shown in our application come fully initialized from the GUI
-     * builder, so this additional configuration is not needed.
-     *
-     * @param root The parent window.
-     */
-    @Override
-    protected void configureWindow(final Window root) {}
 
     @Override
     public void updateTitle() {

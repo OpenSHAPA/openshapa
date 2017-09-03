@@ -270,6 +270,7 @@ public final class ConfigurationProperties implements Serializable {
     public static void save() {
         try {
             LocalStorage ls = Datavyu.getApplication().getContext().getLocalStorage();
+            logger.info("Saving configuration properties " + configurationProperties + " to: " + ls.getDirectory());
             ls.save(configurationProperties, Constants.CONFIGURATION_FILE);
         } catch (IOException e) {
             logger.error("Unable to save configuration " + e.getMessage());

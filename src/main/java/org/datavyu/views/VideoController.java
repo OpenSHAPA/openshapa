@@ -494,7 +494,6 @@ public final class VideoController extends DatavyuDialog
                     if ((time - playbackModel.getLastSyncTime())
                             > (SYNC_PULSE * clock.getRate()) || playbackModel.getLastSyncTime() == 0) {
                         playbackModel.setLastSyncTime(time);
-                        logger.info("Sync time: " + time);
 
                         for (StreamViewer v : streamViewers) {
                         /*
