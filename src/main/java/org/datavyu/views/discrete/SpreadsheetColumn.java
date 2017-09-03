@@ -55,7 +55,7 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
     /**
      * Default column height.
      */
-    public static final int DEFAULT_HEADER_HEIGHT = 16;
+    public static final int DEFAULT_HEADER_HEIGHT = 25;
 
     /**
      * The logger for this class.
@@ -587,14 +587,8 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
     @Override
     public void mousePressed(final MouseEvent me) {
         if(moveable && !draggable) {
-            logger.info("Pressed X: " + me.getX());
-
-            if(System.getProperty("os.name").startsWith("Mac OS X")){
-                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            }
-            else{
-                setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-            }
+            System.out.println("Pressed X: " + me.getX());
+            setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
         }
     }
 
@@ -721,11 +715,12 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
     public void mouseMoved(final MouseEvent me) {
         final int xCoord = me.getX();
         final int componentWidth = this.getSize().width;
+        final int RESIZE_BOUNDARY_SIZE = Math.max(10, (int)(componentWidth * 0.10));
 //        final int rangeStart = Math.round(componentWidth / 4F);
 //        final int rangeEnd = Math.round(3F * componentWidth / 4F);
 
         // BugzID:660 - Implements columns dragging.
-        if ((componentWidth - xCoord) < 6) {
+        if ((componentWidth - xCoord) < RESIZE_BOUNDARY_SIZE) {
             setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
             draggable = true;
 

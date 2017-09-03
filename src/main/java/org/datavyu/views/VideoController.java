@@ -125,10 +125,6 @@ public final class VideoController extends DatavyuDialog
 
     private static int timeStampFontSize = 15;
 
-    // This only works if all videos are opened with the same plugin
-    private static boolean isFFmpegPlugin = false;
-
-
     // initialize standard date format for clock display.
     static {
         CLOCK_FORMAT = new SimpleDateFormat("HH:mm:ss:SSS");
@@ -514,42 +510,6 @@ public final class VideoController extends DatavyuDialog
                 }
             }
 
-            // We are playing back at a rate which is too fast and probably won't allow us to stream all the
-            // information at the file. We fake playback by doing a bunch of seek's.
-            /*
-            if (playbackModel.isFakePlayback()) {
-
-                for (StreamViewer streamViewer : streamViewers) {
-                    if ((time > streamViewer.getStartTime()) && isInPlayRange(time, streamViewer)) {
-                        streamViewer.seek(time - streamViewer.getStartTime());
-                    }
-                }
-
-                // StreamViewer is responsible for playing video.
-            } else {
-
-                // Synchronise streamViewers only if we have exceeded our pulse time.
-                if ((time - playbackModel.getLastSyncTime())
-                        > (SYNC_PULSE * clock.getRate()) || playbackModel.getLastSyncTime() == 0) {
-                    playbackModel.setLastSyncTime(time);
-                    logger.info("Sync time: " + time);
-
-                    for (StreamViewer v : streamViewers) {
-                        // Use offsets to determine if the video file should start playing.
-                        if (!v.isPlaying() && isInPlayRange(time, v)) {
-                            v.play();
-                        }
-
-                        // BugzID:1797 - Viewers who are "playing" outside their
-                        // timeframe should be asked to stop.
-                        if (v.isPlaying() && !isInPlayRange(time, v)) {
-                            v.stop();
-                        }
-                    }
-                }
-            }
-            */
-
             // BugzID:466 - Prevent rewind wrapping the clock past the start
             // point of the view window.
             final long windowPlayStart = playbackModel.getStartTime();
@@ -564,9 +524,10 @@ public final class VideoController extends DatavyuDialog
             final long windowPlayEnd = playbackModel.getEndTime();
 
             if ((time >= windowPlayEnd) && (clock.getRate() >= 0)) {
-                setCurrentTime(windowPlayEnd);
                 clock.stop();
+                setCurrentTime(windowPlayEnd);
                 clockStop(windowPlayEnd);
+                clock.setTime(windowPlayEnd);
             }
         } catch (Exception e) {
             logger.error("Unable to Sync streamViewers " + e);
@@ -673,33 +634,20 @@ public final class VideoController extends DatavyuDialog
         resetSync();
         labelSpeed.setText(FloatingPointUtils.doubleToFractionStr(rate));
 
-
-        // If rate is faster than two times - we need to fake playback to give
-        // the illusion of 'smooth'. We do this by stopping the dataviewer and
-        // doing many seek's to grab individual frames.
-
-        // TODO: No fake playback when using ffmpeg plugin
+        // If the rate is faster than 2x or slower than -1x, some viewers require a sequential seeks to play back
+        // smoothly
         if (Math.abs(rate) > 2.0 || rate < -1) {
-/*
-            playbackModel.setFakePlayback(true);
-            long time = getCurrentTime();
-
-            for (StreamViewer viewer : streamViewers) {
-                viewer.stop();
-                if (isInPlayRange(time, viewer)) {
-                    viewer.setPlaybackSpeed(rate);
-                }
-            }
-*/
             long time = getCurrentTime();
             for (StreamViewer streamViewer : streamViewers) {
                 if (streamViewer.isEnableFakePlayback()) {
+                    // If the viewer requires fake playback use it
                     streamViewer.setFakePlayback(true);
                     streamViewer.stop();
                     if (isInPlayRange(time, streamViewer)) {
                         streamViewer.setPlaybackSpeed(rate);
                     }
                 } else {
+                    // No fake playback, just set the new playback speed
                     streamViewer.setPlaybackSpeed(rate);
                     if (!clock.isStopped()) {
                         streamViewer.play();
@@ -707,15 +655,14 @@ public final class VideoController extends DatavyuDialog
                 }
             }
 
-            // Rate is less than two times - use the data viewer internal code
-            // to draw every frame.
+            // Use the
         } else {
-            //playbackModel.setFakePlayback(false);
-
             for (StreamViewer streamViewer : streamViewers) {
+                // Reset fake playback
                 streamViewer.setFakePlayback(false);
+                // Set the playback speed
                 streamViewer.setPlaybackSpeed(rate);
-
+                // If we are not stopped play
                 if (!clock.isStopped()) {
                     streamViewer.play();
                 }

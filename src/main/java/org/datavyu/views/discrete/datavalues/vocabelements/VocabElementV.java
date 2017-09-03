@@ -267,12 +267,9 @@ public class VocabElementV extends JPanel {
      * argument view in this vocab element has focus.
      */
     public final FormalArgEditor getArgWithFocus() {
-        EditorComponent ed = veRootView.getEdTracker()
-                .findEditor(veRootView.getCaretPosition());
-        if (ed.getClass().equals(FormalArgEditor.class)) {
+        EditorComponent ed = veRootView.getEdTracker().getCurrentEditor();
+        if(ed.getClass() == FormalArgEditor.class)
             return (FormalArgEditor) ed;
-        }
-
         return null;
     }
 

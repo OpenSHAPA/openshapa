@@ -47,7 +47,7 @@ public final class SaveC {
      *
      * @param databaseFile The location to save the database too.
      * @param dataStore    The dataStore to save to disk.
-     * @throws UswerWarningException If unable to save the database.
+     * @throws UserWarningException If unable to save the database.
      */
     public void saveDatabase(final String databaseFile,
                              final DataStore dataStore)

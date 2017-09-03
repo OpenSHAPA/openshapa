@@ -539,6 +539,7 @@ public final class ProjectController {
     public void markProjectAsUnchanged() {
         changed = false;
         newProject = false;
+        Datavyu.getApplication().updateTitle();
     }
 
     /**
