@@ -1,7 +1,24 @@
+#Datavyu 1.3.7 release
+## 07/18/2017
+
+### New Features
+* Larger column header and drag-and-drop boundary.
+
+### Bug Fixes
+* Fix code editor issues with editing and deleting codes.
+* Fix data playback outside of locked region.
+* UI updates properly after saving.
+
+### Known Issues
+* There is still an issue with saving, but it should be very rare.
+  As a workaround, use the sample script [SaveFile](https://github.com/databrary/Datavyu-Example-Scripts/blob/master/Misc/SaveFile.rb)
+  to save files when encountering this issue.
+
+
 # Datavyu 1.3.6 release notes
 ## 4/3/2017
 
-### New Features:
+### New Features
 * Highlight and focus mode
     - Cells with highlight green when the playback timer is within a cell,
 and red when the playback timer is past a cell.
@@ -15,14 +32,13 @@ with the first code filled in with the key that you pressed.
 * Default OSX media player is now based on AVFoundation instead of QTKit,
 improves performance and allows GPU acceleration
 
-### Bug fixes:
+### Bug Fixes
 * Fixed some issues with playback speed on OSX when backwards shuttling
 * On old versions of OSX, the QTKit player will be loaded instead of the
 AVFoundation player to ensure that playback still works (pre-10.6).
 * Other small tweaks.
 
-# Ruby API 1.3.6 release notes
-## 4/3/2017
+### Ruby API 1.3.6 release notes
 
 * Added standalone functions:
     - check_valid_codes2
@@ -53,7 +69,7 @@ on the [support forum](http://datavyu.org/support) or e-mail info@datavyu.org
 
 See the [reference page for more information](http://datavyu.com/user-guide/api/reference.html)
 
-### Bug fixes:
+### Bug Fixes
   * create_mutually_exclusive prints a single line of output to scripting
 console instead of three lines
   * load_macshapa_db sanitizes code names and substitutes '#' with 'number'
@@ -67,39 +83,39 @@ and '&' with 'and'
 
 ### Bug Fixes
 * Datavyu's Export File by Frame script now works on files with empty columns
-* Drag and drop onto the application is fixed since 1.3.1 
-* New improvements to the undo feature 
+* Drag and drop onto the application is fixed since 1.3.1
+* New improvements to the undo feature
 * Locking into a cell now stops the video at the offset
 
-### Known Issues:
+### Known Issues
 * Dragging and dropping a file onto the application on PC's creates a new Datavyu window
 
-# Datavyu 1.3 Pre-Release Notes 
+# Datavyu 1.3 Pre-Release Notes
 ## 3/16/2015
 
-### Additions 
+### Additions
 * Datavyu's packaging now includes Java so users no longer have to download it separately
 * Added a progress bar to the video conversion tool
-* Highlighting can now show you where your video is playing across the spreadsheet. Enable highlighting on the Controller. 
+* Highlighting can now show you where your video is playing across the spreadsheet. Enable highlighting on the Controller.
 * Check out Karen Adolph's [Best Practices for Coding Behavioral Data](http://datavyu.org/user-guide/best-practices.html) on our User Guide
 
 ### Bug Fixes
-* Datavyu now works on OS X 10.10 Yosemite! 
+* Datavyu now works on OS X 10.10 Yosemite!
 * Adding a coded spreadsheet to Datavyu will replace the Untitled Blank document to eliminate potential saving issues
-* Closing tabs no longer requires additional saving 
-* Adding cells to the right or left keeps the spreadsheet focus 
+* Closing tabs no longer requires additional saving
+* Adding cells to the right or left keeps the spreadsheet focus
 * Windows: initial video frame should be seen on the video
 
-### Known issues 
+### Known issues
 * Hitting undo after running a script causes the spreadsheet to delete data
-* Video lag might occur with high definition videos. Please try out the different video plugins to see which works best for your videos. 
+* Video lag might occur with high definition videos. Please try out the different video plugins to see which works best for your videos.
 
 # Announcements
 ## 1/20/2015
 
-* Yosemite no longer supports Java QuickTime and so Datavyu is not curently compatible. We apologize for the inconvenience     and advise our users to be aware of the situation before deciding to upgrade to Yosemite. 
+* Yosemite no longer supports Java QuickTime and so Datavyu is not curently compatible. We apologize for the inconvenience     and advise our users to be aware of the situation before deciding to upgrade to Yosemite.
 
-* If you try to download Datavyu and receive a pop up saying: "Datavyu is damaged and should be moved to the trash," please    check your security settings to allow the download of the software. Please go to System Preferences/Security/General tab     and then check "Allow apps to be downloaded from: anywhere." 
+* If you try to download Datavyu and receive a pop up saying: "Datavyu is damaged and should be moved to the trash," please    check your security settings to allow the download of the software. Please go to System Preferences/Security/General tab     and then check "Allow apps to be downloaded from: anywhere."
 
 * Can't seem to hold down jog while navigating your video? All you have to do is go to your Terminal (found in your Hard       Drive/Applications/Utilities folder) and enter the following: defaults write -g ApplePressAndHoldEnabled -bool false
 
@@ -117,12 +133,12 @@ and '&' with 'and'
 * You can have a file, save it as a different name and open both files in datavyu
 * Point cell no longer changes the previous cell’s offset
 * Undo history works when adding a cell
-* You can no longer open two of the same spreadsheets at once 
+* You can no longer open two of the same spreadsheets at once
 
 ### Known Issues
 * Locking into a cell sometime doesn’t work
-* Adding and closing multiple spreadsheets in datavyu sometimes makes you save an extra time 
-* Temporal alignment sometimes aligns cells that are a few milliseconds off 
+* Adding and closing multiple spreadsheets in datavyu sometimes makes you save an extra time
+* Temporal alignment sometimes aligns cells that are a few milliseconds off
 
 
 
@@ -132,11 +148,11 @@ and '&' with 'and'
 ### Additions
 * Choose your own favourites folder: will determine contents of bottom-left file panel, script dropdown menu
 * Frame-by-frame export is now available in the drop down menu
-* You can now open multiple spreadsheets in datavyu! Each spreadsheet has its own corresponding controller. Tabs at the top of the spreadsheet are used to navigate between open spreadsheets. 
-* We have added our user guide, release notes, and developer notes to the application folder. 
-* You can manually set the jog rate of a video on the Controller. Please double click on “Steps per second”, type in your new frame rate and then click “Enter”. 
-* When you “Add Data” with the controller, it defaults to finding “Video Files”. If you cannot find your desired file, you can simply change the format to “All Files”. 
-* New hidden column count on the spreadsheet 
+* You can now open multiple spreadsheets in datavyu! Each spreadsheet has its own corresponding controller. Tabs at the top of the spreadsheet are used to navigate between open spreadsheets.
+* We have added our user guide, release notes, and developer notes to the application folder.
+* You can manually set the jog rate of a video on the Controller. Please double click on “Steps per second”, type in your new frame rate and then click “Enter”.
+* When you “Add Data” with the controller, it defaults to finding “Video Files”. If you cannot find your desired file, you can simply change the format to “All Files”.
+* New hidden column count on the spreadsheet
 * Up and down arrow keys allow you to move up and down cells
 * Stable name restrictions in code editor and spreadsheet
 
@@ -149,10 +165,10 @@ and '&' with 'and'
 
 ### Known Issues
 * When renaming a file with "Save as" and trying to open the original file, loading sometimes fails with a wrongful "This file is already open" error.
-* VLC is not fully implemented. Please try playing your videos in QuickTime. 
+* VLC is not fully implemented. Please try playing your videos in QuickTime.
 * Undo for cell creation is not reliable
 * PC's with CPU's of less than 2.67 GHz have choppy video playback when playing at full speed
-* You can drag a code name within a cell but it does not influence the code itself and it does not save. Please save your file and reopen it. 
+* You can drag a code name within a cell but it does not influence the code itself and it does not save. Please save your file and reopen it.
 * Scripting output sometimes does not give you the proper output. You can cross check your scripts in OpenSHAPA.
 
 
@@ -167,19 +183,19 @@ and '&' with 'and'
 * The names of some software features were changed to adhere to a more intuitive naming scheme:
     * "Vocab Editor" --> "Code Editor"
     * "Observation" --> "Cell"
-    * "Argument" --> "Code" 
+    * "Argument" --> "Code"
     * "Temporal Ordering" --> "Temporal Alignment"
     * "Variable" --> "Column"
-    * "Data Viewer" --> "Media Player" 
-    * "Data Viewer Controller" --> "Controller" 
-* Quicktime 7.7.5 no longer includes java libraries, but you can easily include them in your download. For new installs and for Quicktime updates, please follow the steps provided on the [installation page](http://www.datavyu.org/user-guide/_images/install-quicktime-special.png). 
+    * "Data Viewer" --> "Media Player"
+    * "Data Viewer Controller" --> "Controller"
+* Quicktime 7.7.5 no longer includes java libraries, but you can easily include them in your download. For new installs and for Quicktime updates, please follow the steps provided on the [installation page](http://www.datavyu.org/user-guide/_images/install-quicktime-special.png).
 * The [Controller](http://www.datavyu.org/user-guide/_images/keypad-add-data-button.png) has a new format that is no standard between PC and Mac keyboards.
 * Users are now restricted to Matrix-style columns. Text and nominal columns can no longer be created but pre-existing instances from saved files are still supported. Since it is now the only type of column, matrices are now referred to simply as columns.
-* Restrictions on column names have been enforced to prevent problems in the scripting interface. 
-    * Column names must begin with a letter. 
-    * Only letters, numbers and underscores are allowed in column names. 
-    * Previously created columns that do not adhere to these restrictions will continue to work, but new column names (or name changes) will be restricted. 
-    * We have provided a script in favorites folder that will turn periods into underscores in existing columns to aid the transition. 
+* Restrictions on column names have been enforced to prevent problems in the scripting interface.
+    * Column names must begin with a letter.
+    * Only letters, numbers and underscores are allowed in column names.
+    * Previously created columns that do not adhere to these restrictions will continue to work, but new column names (or name changes) will be restricted.
+    * We have provided a script in favorites folder that will turn periods into underscores in existing columns to aid the transition.
 * Datavyu is no longer uses Mongo DB. Eliminating this outside dependency means:
     * Datavyu is less memory intensive.
     * The Datavyu application is smaller.
@@ -191,12 +207,12 @@ and '&' with 'and'
 * When running scripts, more informative status messages are printed to the console window.
 * You no longer have to scroll when you code a long spreadsheet.
 * Column location in the spreadsheet is saved.
-* Hide/Show columns list is saved. 
+* Hide/Show columns list is saved.
 
 ### Known Issues
-* The arrow keys do not always allow you to move from code to code in the code editor and spreadsheet but the tab and shift tab keys have the same function. 
+* The arrow keys do not always allow you to move from code to code in the code editor and spreadsheet but the tab and shift tab keys have the same function.
 * Undo history is not always accurate.
-* You can click, hold down, and drag a code name within a cell but it does not influence the code itself and it does not save. Please save your file and reopen it. 
+* You can click, hold down, and drag a code name within a cell but it does not influence the code itself and it does not save. Please save your file and reopen it.
 * Occasionally, running a script will produce no output when in fact, the script did work.
 * The changed file marker (*) doesn't always disappear on save.
 * VLC cannot accurately determine frame rates of our videos and thus is unsupported in Datavyu.
