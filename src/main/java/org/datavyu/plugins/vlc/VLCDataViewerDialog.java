@@ -38,9 +38,6 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
     /** Data to visualize */
     private File sourceFile;
 
-    /** Boolean to keep track of whether or not we are playing */
-    private boolean playing;
-
     /** Data viewer state listeners */
     private List<ViewerStateListener> stateListeners;
 

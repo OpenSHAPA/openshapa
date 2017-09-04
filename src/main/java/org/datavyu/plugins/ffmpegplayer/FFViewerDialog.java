@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.datavyu.models.Identifier;
 import org.datavyu.plugins.StreamViewerDialog;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 
@@ -30,6 +31,18 @@ public class FFViewerDialog extends StreamViewerDialog {
         player = new FFPlayer();
     }
 
+    private void launch(Runnable task) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            task.run();
+        } else {
+            try {
+                SwingUtilities.invokeLater(task);
+            } catch (Exception e) {
+                logger.error("Failed edit task later. Error: ", e);
+            }
+        }
+    }
+
     @Override
     protected void setPlayerVolume(float volume) {
         player.setVolume(volume);
@@ -52,27 +65,33 @@ public class FFViewerDialog extends StreamViewerDialog {
     @Override
     public void seek(long position) {
         logger.info("Seeking position: " + position);
-        try {
-            if (!isSeeking && player != null && (previousSeekTime != position)) {
-                previousSeekTime = position;
-                EventQueue.invokeLater(() -> {
-                    isSeeking = true;
-                    boolean wasPlaying = isPlaying();
-                    float playbackSpeed = getPlaybackSpeed();
-                    if (isPlaying()) {
-                        player.stop();
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (!isSeeking && player != null && (previousSeekTime != position)) {
+                        previousSeekTime = position;
+                        EventQueue.invokeLater(() -> {
+                            isSeeking = true;
+                            boolean wasPlaying = isPlaying();
+                            float playbackSpeed = getPlaybackSpeed();
+                            if (isPlaying()) {
+                                player.stop();
+                            }
+                            player.seek(position/1000.0);
+                            player.repaint();
+                            if (wasPlaying) {
+                                player.setPlaybackSpeed(playbackSpeed);
+                            }
+                            isSeeking = false;
+                        });
                     }
-                    player.seek(position/1000.0);
-                    player.repaint();
-                    if (wasPlaying) {
-                        player.setPlaybackSpeed(playbackSpeed);
-                    }
-                    isSeeking = false;
-                });
+                } catch (Exception e) {
+                    logger.error("Unable to find", e);
+                }
             }
-        } catch (Exception e) {
-            logger.error("Unable to find", e);
-        }
+        };
+        launch(task);
     }
 
     public void setId(Identifier id) {
@@ -85,30 +104,49 @@ public class FFViewerDialog extends StreamViewerDialog {
 
     @Override
     public void play() {
-        if (player != null) {
-            super.play();
-            player.play();
-        }
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                if (player != null) {
+                    player.play();
+                    // TODO: Design this differently. This is doing the same as super.play()
+                    playing = true;
+                }
+            }
+        };
+        launch(task);
     }
 
     @Override
     public void stop() {
-        if (player != null) {
-            super.stop();
-            player.stop();
-        }
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                if (player != null) {
+                    player.stop();
+                    playing = false;
+                }
+            }
+        };
+        launch(task);
     }
 
     @Override
     public void setPlaybackSpeed(float speed) {
-        super.setPlaybackSpeed(speed);
-        if (player != null) {
-            if (speed == 0) {
-                player.stop();
-            } else {
-                player.setPlaybackSpeed(speed);
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                playBackSpeed = speed;
+                if (player != null) {
+                    if (speed == 0) {
+                        player.stop();
+                    } else {
+                        player.setPlaybackSpeed(speed);
+                    }
+                }
             }
-        }
+        };
+        launch(task);
     }
 
     @Override

@@ -12,9 +12,9 @@ import java.io.File;
 import java.util.concurrent.CountDownLatch;
 
 
-public class JavaFXDataViewerDialog extends StreamViewerDialog {
+public class JavaFXStreamViewerDialog extends StreamViewerDialog {
 
-    private static Logger logger = LogManager.getLogger(JavaFXDataViewerDialog.class);
+    private static Logger logger = LogManager.getLogger(JavaFXStreamViewerDialog.class);
 
     /**
      * Data viewer offset.
@@ -43,7 +43,7 @@ public class JavaFXDataViewerDialog extends StreamViewerDialog {
     private boolean assumedFPS = false;
 
 
-    public JavaFXDataViewerDialog(final Frame parent, final boolean modal) {
+    public JavaFXStreamViewerDialog(final Frame parent, final boolean modal) {
         super(parent, modal);
         javafxapp = new JavaFXApplication(null);
     }

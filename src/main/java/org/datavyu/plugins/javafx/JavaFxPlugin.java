@@ -60,7 +60,7 @@ public class JavaFxPlugin implements Plugin {
     @Override
     public StreamViewer getNewStreamViewer(final Frame parent,
                                            final boolean modal) {
-        return new JavaFXDataViewerDialog(parent, modal);
+        return new JavaFXStreamViewerDialog(parent, modal);
     }
 
     @Override
@@ -75,7 +75,7 @@ public class JavaFxPlugin implements Plugin {
 
     @Override
     public Class<? extends StreamViewer> getViewerClass() {
-        return JavaFXDataViewerDialog.class;
+        return JavaFXStreamViewerDialog.class;
     }
 
     @Override

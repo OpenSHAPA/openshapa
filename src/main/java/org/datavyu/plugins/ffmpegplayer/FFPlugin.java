@@ -47,14 +47,12 @@ public class FFPlugin implements Plugin {
 
     @Override
     public Class<? extends StreamViewer> getViewerClass() {
-
         return Platform.isWindows() ? FFViewerDialog.class : null;
     }
 
     @Override
     public ImageIcon getTypeIcon() {
-        return new ImageIcon(getClass().getResource(
-                "/icons/gstreamerplugin-icon.png"));
+        return new ImageIcon(getClass().getResource("/icons/gstreamerplugin-icon.png"));
     }
 
     @Override

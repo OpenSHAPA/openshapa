@@ -76,8 +76,7 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     private Dimension originalVideoSize;
 
     /** The playback speed */
-    // TODO: Initial value?
-    private float playBackSpeed = 0;
+    protected float playBackSpeed = 0;
 
     /** Frames per second */
     private float framesPerSecond = -1;
@@ -87,7 +86,7 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     private long startTime = 0;
 
     /** Is this movie currently playing? */
-    private boolean playing = false;
+    protected boolean playing = false;
 
     /** The current video file */
     private File sourceFile;
