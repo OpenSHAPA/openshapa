@@ -52,7 +52,7 @@ public class FFPlugin implements Plugin {
 
     @Override
     public ImageIcon getTypeIcon() {
-        return new ImageIcon(getClass().getResource("/icons/gstreamerplugin-icon.png"));
+        return new ImageIcon(getClass().getResource("/icons/ffmpeg.png"));
     }
 
     @Override
