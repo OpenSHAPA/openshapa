@@ -456,7 +456,7 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
 
     @Action
     public void addNewCellToVar() {
-//        new NewVariableC();
+//        new NewVariableController();
     }
 
     /**
@@ -473,9 +473,9 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
             SpreadsheetCell c = tempCells.get(i);
             if(c.getCell().isInTimeWindow(time)) {
                 if(!c.isFocusOwner()) {
-                    if(c.getCell().getValue() instanceof MatrixValue) {
+                    if(c.getCell().getCellValue() instanceof MatrixCellValue) {
                         int firstEmpty = -1;
-                        List<Value> args = ((MatrixValue) c.getCell().getValue()).getArguments();
+                        List<CellValue> args = ((MatrixCellValue) c.getCell().getCellValue()).getArguments();
                         for(int j = 0; j < args.size(); j++) {
                             if(args.get(j).isEmpty()) {
                                 firstEmpty = j;
@@ -489,7 +489,7 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
                             c.requestFocus();
                         }
                     } else {
-                        if(c.getCell().getValue().isEmpty()) {
+                        if(c.getCell().getCellValue().isEmpty()) {
                             c.requestFocus();
                         }
                     }

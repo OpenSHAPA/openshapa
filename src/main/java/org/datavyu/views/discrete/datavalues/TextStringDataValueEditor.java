@@ -14,7 +14,7 @@
  */
 package org.datavyu.views.discrete.datavalues;
 
-import org.datavyu.models.db.TextValue;
+import org.datavyu.models.db.TextCellValue;
 
 import javax.swing.text.JTextComponent;
 import java.awt.event.KeyEvent;
@@ -35,7 +35,7 @@ public final class TextStringDataValueEditor extends DataValueEditor {
     /**
      * The model that this editor is manipulating
      */
-    TextValue model;
+    TextCellValue model;
 
     /**
      * Constructor.
@@ -44,7 +44,7 @@ public final class TextStringDataValueEditor extends DataValueEditor {
      * @param tv The value this editor manipulates
      */
     public TextStringDataValueEditor(final JTextComponent ta,
-                                     final TextValue tv) {
+                                     final TextCellValue tv) {
         super(ta, tv);
         setAcceptReturnKey(true);
         model = tv;

@@ -17,7 +17,7 @@ package org.datavyu.views;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
-import org.datavyu.controllers.NewProjectC;
+import org.datavyu.controllers.NewProjectController;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 
@@ -161,7 +161,7 @@ public final class NewProjectV extends DatavyuDialog {
         if (!isValidProjectName(getProjectName())) {
             Datavyu.getApplication().showWarningDialog(r.getString("Error.invalidName"));
             dispose();
-            new NewProjectC();
+            new NewProjectController();
         } else {
 
             s.createNewSpreadsheet(getProjectName());

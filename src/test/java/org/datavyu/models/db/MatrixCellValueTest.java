@@ -21,36 +21,36 @@ import org.testng.annotations.Test;
 import static junit.framework.Assert.*;
 
 /**
- * Tests for the TextValue Interface
+ * Tests for the TextCellValue Interface
  */
-public class MatrixValueTest {
+public class MatrixCellValueTest {
 
     /**
-     * The parent DataStore for the TextValue we are testing.
+     * The parent DataStore for the TextCellValue we are testing.
      */
     private DataStore ds;
 
     /**
-     * The parent variable for the TextValue we are testing.
+     * The parent variable for the TextCellValue we are testing.
      */
     private Variable var;
 
     /**
-     * The parent cell for the TextValue we are testing.
+     * The parent cell for the TextCellValue we are testing.
      */
     private Cell cell;
 
     /**
      * The value that we are testing.
      */
-    private Value model;
+    private CellValue model;
 
     @BeforeMethod
     public void setUp() throws UserWarningException {
         ds = DataStoreFactory.newDataStore();
         var = ds.createVariable("test", Argument.Type.MATRIX);
         cell = var.createCell();
-        model = cell.getValue();
+        model = cell.getCellValue();
     }
 
     @AfterMethod
@@ -65,14 +65,14 @@ public class MatrixValueTest {
     public void testAddArgument() {
         assertEquals(var.getRootNode().childArguments.size(), 1);
         assertEquals(var.getRootNode().childArguments.get(0).name, "code01");
-        assertEquals(((MatrixValue) cell.getValue()).getArguments().size(), 1);
+        assertEquals(((MatrixCellValue) cell.getCellValue()).getArguments().size(), 1);
 
         var.addArgument(Argument.Type.NOMINAL);
 
         assertEquals(var.getRootNode().childArguments.size(), 2);
         assertEquals(var.getRootNode().childArguments.get(0).name, "code01");
         assertEquals(var.getRootNode().childArguments.get(1).name, "code02");
-        assertEquals(((MatrixValue) cell.getValue()).getArguments().size(), 2);
+        assertEquals(((MatrixCellValue) cell.getCellValue()).getArguments().size(), 2);
     }
 
     @Test
@@ -91,7 +91,7 @@ public class MatrixValueTest {
         assertEquals(cell.getMatrixValue(0).toString(), "foo1");
         assertEquals(cell.getMatrixValue(1).toString(), "foo2");
         assertEquals(cell.getMatrixValue(2).toString(), "foo3");
-        assertEquals(((MatrixValue) cell.getValue()).getArguments().size(), 3);
+        assertEquals(((MatrixCellValue) cell.getCellValue()).getArguments().size(), 3);
 
         var.moveArgument("code01", 1);
 
@@ -102,7 +102,7 @@ public class MatrixValueTest {
         assertEquals(cell.getMatrixValue(0).toString(), "foo2");
         assertEquals(cell.getMatrixValue(1).toString(), "foo1");
         assertEquals(cell.getMatrixValue(2).toString(), "foo3");
-        assertEquals(((MatrixValue) cell.getValue()).getArguments().size(), 3);
+        assertEquals(((MatrixCellValue) cell.getCellValue()).getArguments().size(), 3);
 
         var.moveArgument("code03", 1);
 
@@ -113,7 +113,7 @@ public class MatrixValueTest {
         assertEquals(cell.getMatrixValue(0).toString(), "foo2");
         assertEquals(cell.getMatrixValue(1).toString(), "foo3");
         assertEquals(cell.getMatrixValue(2).toString(), "foo1");
-        assertEquals(((MatrixValue) cell.getValue()).getArguments().size(), 3);
+        assertEquals(((MatrixCellValue) cell.getCellValue()).getArguments().size(), 3);
     }
 
     @Test
@@ -127,19 +127,19 @@ public class MatrixValueTest {
     public void testRemoveArgument() {
         assertEquals(var.getRootNode().childArguments.size(), 1);
         assertEquals(var.getRootNode().childArguments.get(0).name, "code01");
-        assertEquals(((MatrixValue) cell.getValue()).getArguments().size(), 1);
+        assertEquals(((MatrixCellValue) cell.getCellValue()).getArguments().size(), 1);
 
         var.addArgument(Argument.Type.NOMINAL);
 
         assertEquals(var.getRootNode().childArguments.size(), 2);
         assertEquals(var.getRootNode().childArguments.get(0).name, "code01");
         assertEquals(var.getRootNode().childArguments.get(1).name, "code02");
-        assertEquals(((MatrixValue) cell.getValue()).getArguments().size(), 2);
+        assertEquals(((MatrixCellValue) cell.getCellValue()).getArguments().size(), 2);
 
         var.removeArgument("code01");
         assertEquals(var.getRootNode().childArguments.size(), 1);
         assertEquals(var.getRootNode().childArguments.get(0).name, "code02");
-        assertEquals(((MatrixValue) cell.getValue()).getArguments().size(), 1);
+        assertEquals(((MatrixCellValue) cell.getCellValue()).getArguments().size(), 1);
 
     }
 

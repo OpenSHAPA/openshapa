@@ -22,31 +22,28 @@ import javax.swing.*;
 /**
  * A controller for invoking the vocab editor.
  */
-public final class VocabEditorC {
+public final class VocabEditorController {
 
-    private static VocabEditorC c = null; //singleton
+    private static VocabEditorController controller = null; //singleton
     private VocabEditorV view;
     
     /**
      * Constructor.
      */
-    private VocabEditorC() {}     
+    private VocabEditorController() {}
         
-    public static VocabEditorC getController()
-    {
-        if (c == null) c = new VocabEditorC();
-        return c;
+    public static VocabEditorController getController() {
+        if (controller == null) controller = new VocabEditorController();
+        return controller;
     }
     
-    public void showView()
-    {
-        if(view == null) //If we don't already have a view...
-        {
-            // ...create the view with mainFrame as parent
+    public void showView() {
+        //If we don't already have a view create the view with mainFrame as parent
+        if (view == null) {
             JFrame mainFrame = Datavyu.getApplication().getMainFrame();
             view = new VocabEditorV(mainFrame, false);
         }
-        Datavyu.getApplication().show(view); //Display view
+        Datavyu.getApplication().show(view); // display view
     }
 
     public void updateView() {

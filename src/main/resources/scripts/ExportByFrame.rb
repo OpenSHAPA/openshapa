@@ -39,7 +39,7 @@ end_time = 0
 
 time_step = 1.0 / frame_rate
 
-for var in variable_list.values()
+for var in variable_list.cellValues()
   for cell in var.cells
     if start_time < cell.onset
       start_time = cell.onset

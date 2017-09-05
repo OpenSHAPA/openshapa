@@ -25,6 +25,6 @@ package org.datavyu.models.db;
 /**
  * The value held within a cell inside a text value.
  */
-public interface TextValue extends Value {
+public interface TextCellValue extends CellValue {
     
 }

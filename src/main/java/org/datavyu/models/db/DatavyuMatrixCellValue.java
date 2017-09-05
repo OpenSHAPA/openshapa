@@ -26,20 +26,20 @@ package org.datavyu.models.db;
 import java.util.*;
 
 
-public final class DatavyuMatrixValue extends DatavyuValue implements MatrixValue {
+public final class DatavyuMatrixCellValue extends DatavyuCellValue implements MatrixCellValue {
 
     private UUID parentId;
     private String value;
-    private List<Value> values;
+    private List<CellValue> cellValues;
 
 
-    public DatavyuMatrixValue() {
+    public DatavyuMatrixCellValue() {
     }
 
-    public DatavyuMatrixValue(UUID parent_id, Argument type, Cell parent) {
+    public DatavyuMatrixCellValue(UUID parent_id, Argument type, Cell parent) {
         this.parentId = parent_id;
         this.parent = parent;
-        values = new ArrayList<Value>();
+        cellValues = new ArrayList<CellValue>();
         for (Argument arg : type.childArguments) {
             createArgument(arg);
         }
@@ -47,15 +47,15 @@ public final class DatavyuMatrixValue extends DatavyuValue implements MatrixValu
         value = "MATRIX";
     }
 
-    // Method to order the values coming out of the DB.
-    private static void order(List<Value> values) {
+    // Method to order the cellValues coming out of the DB.
+    private static void order(List<CellValue> cellValues) {
 
-        Collections.sort(values, new Comparator() {
+        Collections.sort(cellValues, new Comparator() {
             @Override
             public int compare(Object o1, Object o2) {
 
-                int x1 = ((DatavyuValue) o1).getIndex();
-                int x2 = ((DatavyuValue) o2).getIndex();
+                int x1 = ((DatavyuCellValue) o1).getIndex();
+                int x2 = ((DatavyuCellValue) o2).getIndex();
 
                 if (x1 != x2) {
                     return x1 - x2;
@@ -69,17 +69,17 @@ public final class DatavyuMatrixValue extends DatavyuValue implements MatrixValu
     @Override
     public String toString() {
         String result = "";
-        List<Value> values = getArguments();
+        List<CellValue> cellValues = getArguments();
 
         result += "(";
-        for (int i = 0; i < values.size(); i++) {
-            Value v = values.get(i);
+        for (int i = 0; i < cellValues.size(); i++) {
+            CellValue v = cellValues.get(i);
             if (v.toString() == null) {
                 result += "<code" + String.valueOf(i) + ">";
             } else {
                 result += v.toString();
             }
-            if (i < values.size() - 1) {
+            if (i < cellValues.size() - 1) {
                 result += ",";
             }
         }
@@ -89,11 +89,11 @@ public final class DatavyuMatrixValue extends DatavyuValue implements MatrixValu
     }
 
     public String serialize() {
-        List<Value> values = getArguments();
+        List<CellValue> cellValues = getArguments();
 
         StringBuilder result = new StringBuilder("(");
-        for (Iterator<Value> i = values.iterator(); i.hasNext(); ) {
-            Value v = i.next();
+        for (Iterator<CellValue> i = cellValues.iterator(); i.hasNext(); ) {
+            CellValue v = i.next();
             result.append(v.serialize());
             if (i.hasNext())
                 result.append(',');
@@ -104,19 +104,19 @@ public final class DatavyuMatrixValue extends DatavyuValue implements MatrixValu
     }
 
     @Override
-    public List<Value> getArguments() {
-        order(values);
-        return values;
+    public List<CellValue> getArguments() {
+        order(cellValues);
+        return cellValues;
     }
 
     @Override
-    public Value createArgument(Argument arg) {
-        Value val = null;
+    public CellValue createArgument(Argument arg) {
+        CellValue val = null;
         String name = String.format("code%02d", getArguments().size() + 1);
         if (arg.type == Argument.Type.NOMINAL) {
-            val = new DatavyuNominalValue(this.id, name, getArguments().size(), arg, parent);
+            val = new DatavyuNominalCellValue(this.id, name, getArguments().size(), arg, parent);
         } else if (arg.type == Argument.Type.TEXT) {
-            val = new DatavyuTextValue(this.id, name, getArguments().size(), arg, parent);
+            val = new DatavyuTextCellValue(this.id, name, getArguments().size(), arg, parent);
         }
         this.getArguments().add(val);
         return val;
@@ -124,12 +124,12 @@ public final class DatavyuMatrixValue extends DatavyuValue implements MatrixValu
 
     @Override
     public void removeArgument(final int index) {
-        List<Value> args = getArguments();
+        List<CellValue> args = getArguments();
         args.remove(index);
-        Value v;
+        CellValue v;
         for (int i = 0; i < args.size(); i++) {
             v = args.get(i);
-            ((DatavyuNominalValue) v).setIndex(i);
+            ((DatavyuNominalCellValue) v).setIndex(i);
         }
     }
 
@@ -139,17 +139,17 @@ public final class DatavyuMatrixValue extends DatavyuValue implements MatrixValu
             value = value.substring(1, value.length() - 1);
         }
         String[] args = value.split(",", -1);
-        List<Value> values = getArguments();
+        List<CellValue> cellValues = getArguments();
 
         // Handle legacy variable types
-        if (values.size() == 1 && values.get(0).getArgument().type != Argument.Type.MATRIX) {
-            values.get(0).set(value);
+        if (cellValues.size() == 1 && cellValues.get(0).getArgument().type != Argument.Type.MATRIX) {
+            cellValues.get(0).set(value);
         } else {
-            if (args.length != values.size()) {
+            if (args.length != cellValues.size()) {
                 System.err.println("Error: Arg list and value list are different sizes, cannot undo.");
             }
             for (int i = 0; i < args.length; i++) {
-                values.get(i).set(args[i]);
+                cellValues.get(i).set(args[i]);
             }
         }
     }

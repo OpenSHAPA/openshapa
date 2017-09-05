@@ -28,23 +28,20 @@ package org.datavyu.models.db;
 public interface Cell {
 
     /**
-     * @return the offset timestamp in a HH:mm:ss:SSS format, where HH is 24 hour
-     * mm is minutes in an hour, ss is seconds in a minute and SSS is
-     * milliseconds in a second.
+     * @return the offset timestamp in a HH:mm:ss:SSS format, where HH is 24 hour mm is minutes in an hour, ss is
+     * seconds in a minute and SSS is milliseconds in a second.
      */
     String getOffsetString();
 
     /**
-     * @return The offset timestamp in milliseconds. Returns -1 if the offset
-     * cannot be resolved.
+     * @return The offset timestamp in milliseconds. Returns -1 if the offset cannot be resolved.
      */
     long getOffset();
 
     /**
      * Sets the offset for this cell.
      *
-     * @param newOffset The new offset timestamp in milliseconds to use for this
-     *                  cell.
+     * @param newOffset The new offset timestamp in milliseconds to use for this cell.
      */
     void setOffset(final long newOffset);
 
@@ -58,12 +55,14 @@ public interface Cell {
     void setOffset(final String newOffset);
 
     /**
-     * @return The onset timestamp in milliseconds. Returns -1 if the onset
-     * cannot be resolved.
+     * @return The onset timestamp in milliseconds. Returns -1 if the onset cannot be resolved
      */
-
     Cell getFreshCell();
 
+    /**
+     *
+     * @return
+     */
     long getOnset();
 
     /**
@@ -97,26 +96,31 @@ public interface Cell {
     String getValueAsString();
 
     /**
+     *
      * @return The value of the cell.
      */
-    Value getValue();
+    CellValue getCellValue();
 
+    /**
+     *
+     * @return
+     */
     Variable getVariable();
 
     /**
-     * @return The unique id of the cell.
+     * @return The unique id of the cell
      */
-    String getCellID();
+    String getCellId();
 
     /**
-     * @return True if the cell is selected, false otherwise.
+     * @return True if the cell is selected, false otherwise
      */
     boolean isSelected();
 
     /**
-     * Selects this cell.
+     * Select this cell
      *
-     * @param True if this cell is selected, false if unselected.
+     * @param selected True if this cell is selected, false if unselected
      */
     void setSelected(final boolean selected);
 
@@ -135,54 +139,69 @@ public interface Cell {
     /**
      * Adds a new argument to a matrix variable.
      *
-     * @param int index - the index of the argument in childArguments to change
-     * @param val - The value to set the argument to
+     * @param index index - the index of the argument in childArguments to change
+     * @param value - The value to set the argument to
      */
-    void setMatrixValue(final int index, final String val);
+    void setMatrixValue(final int index, final String value);
 
-    Value getMatrixValue(final int index);
+    /**
+     *
+     * @param index
+     * @return
+     */
+    CellValue getMatrixValue(final int index);
 
     /**
      * Removes an argument from a matrix variable.
      *
-     * @param int index - the index of argument to clear from the matrix
+     * @param index - the index of argument to clear from the matrix
      */
     void clearMatrixValue(final int index);
 
     /**
      * Adds a new argument to a matrix variable.
      *
-     * @param Argument type - the type of argument to add to the matrix
+     * @param type - the type of argument to add to the matrix
      */
     void addMatrixValue(final Argument type);
 
     /**
      * Moves an argument from one index to another in a matrix.
      *
-     * @param int old_index - the index in childArguments of argument to move
-     * @param int old_index - the index in childArguments of where to move to
+     * @param oldIndex - the index in childArguments of argument to move
+     * @param oldIndex - the index in childArguments of where to move to
      */
-    void moveMatrixValue(final int old_index, final int new_index);
+    void moveMatrixValue(final int oldIndex, final int newIndex);
 
     /**
      * Removes an argument from a matrix variable.
      *
-     * @param int index - the index in childArguments of argument to remove from the matrix
+     * @param index - the index in childArguments of argument to remove from the matrix
      */
     void removeMatrixValue(final int index);
 
     /**
-     * Adds a listener that needs to be notified when the cell changes.
+     * Adds a cellListener that needs to be notified when the cell changes.
      */
-    void addListener(final CellListener listener);
+    void addListener(final CellListener cellListener);
 
     /**
-     * Removes a listener from the list of things that need to be notified when
+     * Removes a cellListener from the list of things that need to be notified when
      * the cell changes.
      */
-    void removeListener(final CellListener listener);
+    void removeListener(final CellListener cellListener);
 
+    /**
+     *
+     * @param time
+     * @return
+     */
     boolean isInTimeWindow(long time);
 
+    /**
+     *
+     * @param time
+     * @return
+     */
     boolean isPastTimeWindow(long time);
 }

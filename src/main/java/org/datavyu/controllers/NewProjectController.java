@@ -22,9 +22,9 @@ import javax.swing.*;
 /**
  * Controller for creating a new project.
  */
-public class NewProjectC {
+public class NewProjectController {
 
-    public NewProjectC() {
+    public NewProjectController() {
         // Create the view, register this controller with it and display it.
         JFrame mainFrame = Datavyu.getApplication().getMainFrame();
         NewProjectV view = new NewProjectV(mainFrame, true);

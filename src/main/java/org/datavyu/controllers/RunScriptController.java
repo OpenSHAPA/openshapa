@@ -35,20 +35,17 @@ import java.util.*;
 /**
  * Controller for running scripts.
  */
-public final class RunScriptC extends SwingWorker<Object, String> {
+public final class RunScriptController extends SwingWorker<Object, String> {
 
-    /**
-     * The logger for this class.
-     */
-    private static Logger logger = LogManager.getLogger(RunScriptC.class);
-    /**
-     * The path to the script file we are executing.
-     */
+    /** The logger instance for this class */
+    private static Logger logger = LogManager.getLogger(RunScriptController.class);
+
+    /** The path to the script file we are executing */
     private final File scriptFile;
-    /**
-     * The View that the results of the scripting engine are displayed too.
-     */
+
+    /** The View that the results of the scripting engine are displayed too */
     private JTextArea console = null;
+
     /**
      * output stream for messages coming from the scripting engine.
      */
@@ -62,31 +59,30 @@ public final class RunScriptC extends SwingWorker<Object, String> {
     private OutputStreamWriter consoleWriterAfter;
 
     private OutputStream sIn;
-    private OutputStream sIn2;
 
     private StringBuilder outString = new StringBuilder("");
 
     /**
-     * Constructs and invokes the runscript controller.
+     * Constructs and invokes the run script controller.
      *
      * @throws IOException If Unable to create the run script controller.
      */
-    public RunScriptC() throws IOException {
-        DatavyuFileChooser jd = new DatavyuFileChooser();
-        jd.addChoosableFileFilter(RbFilter.INSTANCE);
-        jd.setFileFilter(RbFilter.INSTANCE);
+    public RunScriptController() throws IOException {
+        DatavyuFileChooser fileChooser = new DatavyuFileChooser();
+        fileChooser.addChoosableFileFilter(RbFilter.INSTANCE);
+        fileChooser.setFileFilter(RbFilter.INSTANCE);
 
-        int result = jd.showOpenDialog(Datavyu.getApplication().getMainFrame());
+        int result = fileChooser.showOpenDialog(Datavyu.getApplication().getMainFrame());
 
         if (result == JFileChooser.APPROVE_OPTION) {
-            scriptFile = jd.getSelectedFile();
+            scriptFile = fileChooser.getSelectedFile();
             init();
         } else {
             scriptFile = null;
         }
     }
 
-    public RunScriptC(File scriptFile) throws IOException {
+    public RunScriptController(File scriptFile) throws IOException {
         this.scriptFile = scriptFile;
         init();
     }
@@ -97,7 +93,7 @@ public final class RunScriptC extends SwingWorker<Object, String> {
      * @param file The absolute path to the script file you wish to invoke.
      * @throws IOException If unable to create the run script controller.
      */
-    public RunScriptC(final String file) throws IOException {
+    public RunScriptController(final String file) throws IOException {
         scriptFile = new File(file);
         init();
     }
@@ -107,10 +103,9 @@ public final class RunScriptC extends SwingWorker<Object, String> {
     }
 
     /**
-     * Initalises the controller for running scripts.
+     * Initialises the controller for running scripts
      *
-     * @throws IOException If unable to initalise the controller for running
-     *                     scripts.
+     * @throws IOException If unable to initialise the controller for running scripts
      */
     private void init() throws IOException {
         Datavyu.getApplication().show(ConsoleV.getInstance());
@@ -119,7 +114,7 @@ public final class RunScriptC extends SwingWorker<Object, String> {
         consoleOutputStream = new PipedInputStream();
         consoleOutputStreamAfter = new PipedInputStream();
         sIn = new PipedOutputStream(consoleOutputStream);
-        sIn2 = new PipedOutputStream(consoleOutputStreamAfter);
+        OutputStream sIn2 = new PipedOutputStream(consoleOutputStreamAfter);
         consoleWriter = new OutputStreamWriter(sIn);
         consoleWriterAfter = new OutputStreamWriter(sIn2);
     }
@@ -152,7 +147,7 @@ public final class RunScriptC extends SwingWorker<Object, String> {
     private static boolean rubyScriptIsRunning = false;
 
     private void runRubyScript(File scriptFile) {
-        /** The scripting engine factory that we use with Datavyu */
+        // The scripting engine factory that we use with Datavyu
 
         if (rubyScriptIsRunning) {
             JOptionPane.showMessageDialog(null, "A script is running. One script at a time!");
@@ -401,15 +396,15 @@ public final class RunScriptC extends SwingWorker<Object, String> {
 
                 String row = String.format("%d,%d,%d", i + 1, c.getOnset(), c.getOffset());
                 if (v.getRootNode().type == Argument.Type.MATRIX) {
-                    for (Value val : ((MatrixValue) c.getValue()).getArguments()) {
+                    for (CellValue val : ((MatrixCellValue) c.getCellValue()).getArguments()) {
                         row += ",";
                         if (!val.isEmpty())
                             row += val.toString();
                     }
                 } else {
                     row += ",";
-                    if (!c.getValue().isEmpty()) {
-                        row += c.getValue().toString();
+                    if (!c.getCellValue().isEmpty()) {
+                        row += c.getCellValue().toString();
                     }
                 }
                 str_var += row + "\n";

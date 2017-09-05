@@ -16,7 +16,7 @@ package org.datavyu.undoableedits;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.controllers.DeleteColumnC;
+import org.datavyu.controllers.DeleteColumnController;
 import org.datavyu.models.db.Cell;
 import org.datavyu.models.db.UserWarningException;
 import org.datavyu.models.db.Variable;
@@ -89,7 +89,7 @@ public class RunScriptEdit extends SpreadSheetEdit {
             for (Variable v : model.getAllVariables()) {
                 hiddenStates.put(v.getName(), v.isHidden());
             }
-            new DeleteColumnC(new ArrayList<>(model.getAllVariables()));
+            new DeleteColumnController(new ArrayList<>(model.getAllVariables()));
 
             for (VariableTO varTO : varsTO) {
                 Variable var = model.createVariable(varTO.getName(), varTO.getType().type);
@@ -99,7 +99,7 @@ public class RunScriptEdit extends SpreadSheetEdit {
                     Cell c = var.createCell();
                     c.setOnset(cellTO.getOnset());
                     c.setOffset(cellTO.getOffset());
-                    c.getValue().set(cellTO.getValue());
+                    c.getCellValue().set(cellTO.getValue());
                 }
             }
             for (Variable v : model.getAllVariables()) {

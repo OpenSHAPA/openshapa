@@ -104,7 +104,7 @@ begin
 #      onset = cc * 1000 + (cc + dd) * 2000
 #      offset = onset + (dd * 200)
 
-      # Set different data values
+      # Set different data cellValues
       if coltypes[cc] == MatrixVocabElement::MatrixType::FLOAT
         dv = FloatDataValue.new($dataStore)
         dv.set_its_value(coldata[cc] * dd)
@@ -182,7 +182,7 @@ begin
         mat = Matrix.new(Matrix.construct($dataStore, mve.get_id, dv))
       end
 
-      # set the cell value
+      # set the cell cellValue
       cell.set_val(mat)
 
       # Add the cell to the database.

@@ -33,11 +33,11 @@ public final class NewVariableV extends DatavyuDialog {
     /**
      * The logger for this class.
      */
-    private static final Logger LOGGER = LogManager.getLogger(NewVariableV.class);
+    private static final Logger logger = LogManager.getLogger(NewVariableV.class);
     /**
      * The database to add the new variable to.
      */
-    private DataStore model;
+    private DataStore dataStore;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel jLabel1;
@@ -52,11 +52,11 @@ public final class NewVariableV extends DatavyuDialog {
      */
     public NewVariableV(final java.awt.Frame parent, final boolean modal) {
         super(parent, modal);
-        LOGGER.info("newVar - show");
+        logger.info("newVar - show");
         initComponents();
         setName(this.getClass().getSimpleName());
 
-        model = Datavyu.getProjectController().getDataStore();
+        dataStore = Datavyu.getProjectController().getDataStore();
 
         getRootPane().setDefaultButton(okButton);
     }
@@ -146,8 +146,8 @@ public final class NewVariableV extends DatavyuDialog {
      */
     private void okButtonActionPerformed(final java.awt.event.ActionEvent evt) {// GEN-FIRST:event_okButtonActionPerformed
         try {
-            LOGGER.info("newVar - create column:" + getVariableType());
-            Variable var = model.createVariable(getVariableName(), getVariableType());
+            logger.info("newVar - create column:" + getVariableType());
+            Variable var = dataStore.createVariable(getVariableName(), getVariableType());
             Datavyu.getProjectController().setLastCreatedVariable(var);
 
             // record the effect
@@ -172,7 +172,7 @@ public final class NewVariableV extends DatavyuDialog {
      * @param evt The event that triggered this action.
      */
     private void cancelButtonActionPerformed(final java.awt.event.ActionEvent evt) {// GEN-FIRST:event_cancelButtonActionPerformed
-        LOGGER.info("newVar - cancel create.");
+        logger.info("newVar - cancel create.");
         dispose();
 
     }// GEN-LAST:event_cancelButtonActionPerformed

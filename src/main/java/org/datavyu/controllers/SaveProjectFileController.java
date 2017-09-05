@@ -19,10 +19,8 @@ import org.apache.logging.log4j.Logger;
 import org.datavyu.controllers.project.DatavyuProjectConstructor;
 import org.datavyu.controllers.project.DatavyuProjectRepresenter;
 import org.datavyu.models.project.Project;
-import org.yaml.snakeyaml.Dumper;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,22 +28,19 @@ import java.io.OutputStream;
 /**
  * Controller for saving the Datavyu project to disk.
  */
-public final class SaveProjectFileC {
+public final class SaveProjectFileController {
+
+    /** The logger instance for this class */
+    private static Logger logger = LogManager.getLogger(SaveProjectFileController.class);
 
     /**
-     * The logger for this class.
-     */
-    private static Logger logger = LogManager.getLogger(SaveProjectFileC.class);
-
-    /**
-     * Serialize the Datavyu project to a stream. The caller is responsible
-     * for closing the output stream.
+     * Serialize the Datavyu project to a stream. The caller is responsible for closing the output stream.
      *
-     * @param outStream The output stream to use for the project.
-     * @param project   The project you wish to serialize.
+     * @param outStream The output stream to use for the project
+     * @param project The project you wish to serialize
      */
     public void save(final OutputStream outStream, final Project project) {
-        logger.info("save to stream");
+        logger.info("Save protect " + project.getProjectName() + "to an output stream.");
         DumperOptions options = new DumperOptions();
         options.setAllowUnicode(false); // Allow for the encoding of foreign characters by using escape characters
         Yaml yaml = new Yaml(new DatavyuProjectConstructor(), new DatavyuProjectRepresenter(), options);
@@ -55,5 +50,4 @@ public final class SaveProjectFileC {
             logger.error("Unable to save project file", ex);
         }
     }
-
 }

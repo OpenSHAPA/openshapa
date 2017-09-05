@@ -22,36 +22,36 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
 /**
- * Tests for the TextValue Interface
+ * Tests for the TextCellValue Interface
  */
-public class TextValueTest {
+public class TextCellValueTest {
 
     /**
-     * The parent DataStore for the TextValue we are testing.
+     * The parent DataStore for the TextCellValue we are testing.
      */
     private DataStore ds;
 
     /**
-     * The parent variable for the TextValue we are testing.
+     * The parent variable for the TextCellValue we are testing.
      */
     private Variable var;
 
     /**
-     * The parent cell for the TextValue we are testing.
+     * The parent cell for the TextCellValue we are testing.
      */
     private Cell cell;
 
     /**
      * The value that we are testing.
      */
-    private Value model;
+    private CellValue model;
 
     @BeforeMethod
     public void setUp() throws UserWarningException {
         ds = DataStoreFactory.newDataStore();
         var = ds.createVariable("test", Argument.Type.TEXT);
         cell = var.createCell();
-        model = cell.getValue();
+        model = cell.getCellValue();
     }
 
     @AfterMethod

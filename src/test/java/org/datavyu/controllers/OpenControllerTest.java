@@ -33,7 +33,7 @@ import static junit.framework.Assert.assertEquals;
 /**
  * Tests for opening Datavyu project and CSV files.
  */
-public class OpenCTest {
+public class OpenControllerTest {
 
     // The location of the test files.
     private static final String TEST_FOLDER = System.getProperty("testPath");
@@ -50,10 +50,10 @@ public class OpenCTest {
     @Test
     public void testLoadCSV() {
         File demoFile = new File(TEST_FOLDER + "IO/simple1.csv");
-        OpenC openc = new OpenC();
-        openc.openDatabase(demoFile);
+        OpenController openc = new OpenController();
+        openc.openDataStore(demoFile);
 
-        DataStore ds = openc.getDatastore();
+        DataStore ds = openc.getDataStore();
         List<Variable> vars = ds.getAllVariables();
         assertEquals(vars.size(), 1);
         assertEquals(vars.get(0).getName(), "TestColumn");
@@ -70,10 +70,10 @@ public class OpenCTest {
     @Test
     public void testLoadOPF() {
         File demoFile = new File(TEST_FOLDER + "IO/simple2.opf");
-        OpenC openc = new OpenC();
+        OpenController openc = new OpenController();
         openc.openProject(demoFile);
 
-        DataStore ds = openc.getDatastore();
+        DataStore ds = openc.getDataStore();
         List<Variable> vars = ds.getAllVariables();
         assertEquals(vars.size(), 1);
         assertEquals(vars.get(0).getName(), "TestColumn");
@@ -90,10 +90,10 @@ public class OpenCTest {
     @Test
     public void testLoadOPF2() {
         File demoFile = new File(TEST_FOLDER + "IO/simple3.opf");
-        OpenC openc = new OpenC();
+        OpenController openc = new OpenController();
         openc.openProject(demoFile);
 
-        DataStore ds = openc.getDatastore();
+        DataStore ds = openc.getDataStore();
         List<Variable> vars = ds.getAllVariables();
         assertEquals(vars.size(), 4);
         
@@ -142,10 +142,10 @@ public class OpenCTest {
     @Test
     public void testLoadOPF3() {
         File demoFile = new File(TEST_FOLDER + "IO/simple4.opf");
-        OpenC openc = new OpenC();
+        OpenController openc = new OpenController();
         openc.openProject(demoFile);
 
-        DataStore ds = openc.getDatastore();
+        DataStore ds = openc.getDataStore();
         List<Variable> vars = ds.getAllVariables();
         assertEquals(vars.size(), 1);
         assertEquals(vars.get(0).getName(), "blah");

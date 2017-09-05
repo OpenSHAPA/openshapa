@@ -18,12 +18,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.Datavyu.Platform;
-import org.datavyu.controllers.NewVariableC;
+import org.datavyu.controllers.NewVariableController;
 import org.datavyu.controllers.project.ProjectController;
 import org.datavyu.event.component.FileDropEvent;
 import org.datavyu.event.component.FileDropEventListener;
 import org.datavyu.models.db.*;
-import org.datavyu.models.project.Project;
 import org.datavyu.util.ArrayDirection;
 import org.datavyu.util.Constants;
 import org.datavyu.views.DataviewProgressBar;
@@ -69,8 +68,6 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
 
     /** Use when navigating right */
     private static final int RIGHT_DIR = 1;
-
-    private static int numNewSheets = 1;
 
     /** List containing listeners interested in file drop events */
     private final transient CopyOnWriteArrayList<FileDropEventListener> fileDropListeners;
@@ -141,9 +138,9 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
         setLayoutType(SheetLayoutType.Ordinal);
 
         // set strut for headerView - necessary while there are no col headers
-        Dimension d = new Dimension(0, SpreadsheetColumn.DEFAULT_HEADER_HEIGHT);
+        Dimension dimension = new Dimension(0, SpreadsheetColumn.DEFAULT_HEADER_HEIGHT);
 
-        Filler headerStrut = new Filler(d, d, d);
+        Filler headerStrut = new Filler(dimension, dimension, dimension);
         headerView.add(headerStrut);
 
         // Set a border for the top right corner
@@ -189,8 +186,6 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
         projectController.setSpreadSheetPanel(this);
 
         setName(dataStore.getName());
-        numNewSheets++;
-
 
         // Enable drag and drop support.
         setDropTarget(new DropTarget(this, new SSDropTarget()));
@@ -248,7 +243,7 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
     public void redrawCells() {
         for (SpreadsheetColumn col : getColumns()) {
             for (SpreadsheetCell cell : col.getCells()) {
-                cell.valueChange(cell.getCell().getValue());
+                cell.valueChange(cell.getCell().getCellValue());
                 cell.updateSelectionDisplay();
             }
         }
@@ -256,20 +251,13 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
     }
 
     /**
-     * Gets the single instance project associated with the currently running
-     * with Datavyu.
+     * Gets the single instance project associated with the currently running with Datavyu.
      *
      * @return The single project in use with this instance of Datavyu
      */
     public ProjectController getProjectController() {
+        // TODO: Do we want the project controller here or in Datavyu?
         return projectController;
-    }
-
-    /**
-     * Creates a new project controller. No usages as of 8/13/2014
-     */
-    public void newProjectController() {
-        projectController = new ProjectController();
     }
 
     public VideoController getVideoController() {
@@ -279,17 +267,6 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
     public void setVideoController(VideoController videoController) {
         this.videoController = videoController;
     }
-
-    /**
-     * Creates a new project controller, using the given project as the
-     * underlying project.
-     *
-     * @param project
-     */
-    public void newProjectController(final Project project) {
-//        projectController = new ProjectController(project);
-    }
-
 
     /**
      * Registers this column data panel with everything that needs to notify
@@ -531,9 +508,9 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
                 }
                 if(col != null) {
                     Cell c = col.getVariable().createCell();
-                    Value v = c.getValue();
-                    if(v instanceof MatrixValue) {
-                        List<Value> vals = ((MatrixValue) v).getArguments();
+                    CellValue v = c.getCellValue();
+                    if(v instanceof MatrixCellValue) {
+                        List<CellValue> vals = ((MatrixCellValue) v).getArguments();
                         vals.get(0).set(String.valueOf(e.getKeyChar()));
                     } else {
                         v.set(String.valueOf(e.getKeyChar()));
@@ -665,7 +642,7 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
      */
     @Action
     public void openNewVarMenu() {
-        new NewVariableC();
+        new NewVariableController();
     }
 
     public void updateColumnIndex() {
@@ -965,7 +942,7 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
     public SpreadsheetCell getSpreadsheetCell(Cell c) {
         for (SpreadsheetColumn v : getColumns()) {
             for (SpreadsheetCell sc : v.getCells()) {
-                if (sc.getCell().getCellID().equals(c.getCellID())) {
+                if (sc.getCell().getCellId().equals(c.getCellId())) {
                     return sc;
                 }
             }

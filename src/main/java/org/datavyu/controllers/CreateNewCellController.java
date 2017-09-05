@@ -33,27 +33,21 @@ import java.util.List;
 /**
  * Controller for creating new cell.
  */
-public final class CreateNewCellC {
+public final class CreateNewCellController {
 
-    /**
-     * The logger for this class.
-     */
-    private static Logger LOGGER = LogManager.getLogger(CreateNewCellC.class);
+    /** The logger instance for this class */
+    private static Logger logger = LogManager.getLogger(CreateNewCellController.class);
 
-    /**
-     * The view (the spreadsheet) for this controller.
-     */
-    private SpreadSheetPanel view;
+    /** The view (the spreadsheet) for this controller */
+    private SpreadSheetPanel view; // TODO: Check if we can remove 'view' from here?
 
-    /**
-     * The model (the database) for this controller.
-     */
+    /** The model (the database) for this controller */
     private DataStore model;
 
     /**
      * Default constructor.
      */
-    public CreateNewCellC() {
+    public CreateNewCellController() {
         // The spreadsheet is the view for this controller.
         view = (SpreadSheetPanel) Datavyu.getView().getComponent();
         model = Datavyu.getProjectController().getDataStore();
@@ -68,14 +62,14 @@ public final class CreateNewCellC {
      *                    adjacent too.
      * @param direction   The direction in which we wish to create adjacent cells.
      */
-    public CreateNewCellC(final List<Cell> sourceCells,
-                          final ArrayDirection direction) {
+    public CreateNewCellController(final List<Cell> sourceCells,
+                                   final ArrayDirection direction) {
         view = (SpreadSheetPanel) Datavyu.getView().getComponent();
         model = Datavyu.getProjectController().getDataStore();
 
         Cell newCell = null;
 
-        LOGGER.info("create adjacent cells:" + direction);
+        logger.info("create adjacent cells:" + direction);
 
         // Get the column that is the parent of the source cell.
         for (Cell sourceCell : sourceCells) {
@@ -121,7 +115,7 @@ public final class CreateNewCellC {
      * @param milliseconds The milliseconds to use for the onset for the new cell.
      * @param setPrevOffset Determine whether or not to set previous offset to milliseconds-1
      */
-    public CreateNewCellC(final long milliseconds, boolean setPrevOffset) {
+    public CreateNewCellController(final long milliseconds, boolean setPrevOffset) {
         // The spreadsheet is the view for this controller.
         view = (SpreadSheetPanel) Datavyu.getView().getComponent();
         model = Datavyu.getProjectController().getDataStore();
@@ -202,7 +196,7 @@ public final class CreateNewCellC {
      * @return The cell that was just inserted.
      */
     public Cell createCell(final Variable v) {
-        LOGGER.info("create cell in selected column");
+        logger.info("create cell in selected column");
 
         // perform the operation
         List<Cell> cells = v.getCellsTemporally();
@@ -320,7 +314,7 @@ public final class CreateNewCellC {
         model = Datavyu.getProjectController().getDataStore();
 
         for (Variable var : model.getSelectedVariables()) {
-            LOGGER.info("create cell in selected column");
+            logger.info("create cell in selected column");
             newCell = var.createCell();
             newCell.setOnset(onset);
             Datavyu.getProjectController().setLastCreatedCell(newCell);
@@ -339,7 +333,7 @@ public final class CreateNewCellC {
 
         if (!newcelladded) {
             for (Cell cell : model.getSelectedCells()) {
-                LOGGER.info("create cell below selected cell");
+                logger.info("create cell below selected cell");
 
                 // reget the selected cell from the database using its id
                 // in case a previous insert has changed its ordinal.
@@ -367,7 +361,7 @@ public final class CreateNewCellC {
         // and has requested a new cell
         if (!newcelladded && multiadd) {
             if (Datavyu.getProjectController().getLastSelectedCell() != null) {
-                LOGGER.info("create cell while editing existing cell");
+                logger.info("create cell while editing existing cell");
                 Variable var = model.getVariable(Datavyu.getProjectController().getLastCreatedCell());
                 if (var != null) {
                     newCell = var.createCell();
@@ -387,7 +381,7 @@ public final class CreateNewCellC {
         // else go with Situation 4: Video controller requested - create in the
         // same column as the last created cell or the last focused cell.
         if (!newcelladded) {
-            LOGGER.info("create cell in same location as last created cell");
+            logger.info("create cell in same location as last created cell");
 
             // BugzID:779 - Check for presence of columns, else return
             if (model.getAllVariables().isEmpty()) {

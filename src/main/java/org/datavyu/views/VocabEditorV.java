@@ -17,7 +17,7 @@ package org.datavyu.views;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
-import org.datavyu.controllers.DeleteColumnC;
+import org.datavyu.controllers.DeleteColumnController;
 import org.datavyu.models.db.Argument;
 import org.datavyu.models.db.DataStore;
 import org.datavyu.models.db.UserWarningException;
@@ -242,7 +242,7 @@ public final class VocabEditorV extends DatavyuDialog {
             // perform the action
             Variable v = ds.createVariable(varName, Argument.Type.MATRIX);
             // Need to get the template from the variable.
-            //Matrix m = v.getValue();
+            //Matrix m = v.getCellValue();
             //m.createArgument(Argument.type.NOMINAL);
 
             VocabElementV matrixV = new VocabElementV(v.getRootNode(), v, this);
@@ -352,7 +352,7 @@ public final class VocabEditorV extends DatavyuDialog {
                 List<Variable> varsToDelete = new ArrayList<Variable>();
                 varsToDelete.add(selectedVocabElement.getVariable());
                 edit = new RemoveVariableEdit(varsToDelete);
-                new DeleteColumnC(varsToDelete);
+                new DeleteColumnController(varsToDelete);
 
                 deleteElementVFromView(selectedVocabElement.getVariable().getName());
                 applyChanges();

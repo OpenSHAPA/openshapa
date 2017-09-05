@@ -25,8 +25,6 @@ package org.datavyu.models.db;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.Datavyu;
-import org.datavyu.controllers.RunScriptC;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -105,7 +103,7 @@ public final class DatavyuVariable implements Variable {
     }
 
     public void addCell(Cell cell) {
-        if (cell.getValue().getArgument() == this.getRootNode()) {
+        if (cell.getCellValue().getArgument() == this.getRootNode()) {
             cells.add(cell);
             for (VariableListener vl : getListeners(getID())) {
                 vl.cellInserted(cell);

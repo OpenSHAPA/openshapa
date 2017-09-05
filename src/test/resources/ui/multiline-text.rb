@@ -48,7 +48,7 @@ begin
 #      onset = cc * 1000 + (cc + dd) * 2000
 #      offset = onset + (dd * 200)
 
-      # Set different data values
+      # Set different data cellValues
         dv = TextStringDataValue.new($dataStore)
 		if dd % 2 == 0 
 		 dv.set_its_value(coldata + dd.to_s())
@@ -61,7 +61,7 @@ begin
 # the ones that are only datavalues need to be put in a 1 arg matrix
       mat = Matrix.new(Matrix.construct($dataStore, mve.get_id, dv))
 
-      # set the cell value
+      # set the cell cellValue
       cell.set_val(mat)
      
       # Add the cell to the database.

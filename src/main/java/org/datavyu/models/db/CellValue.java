@@ -23,8 +23,45 @@
 package org.datavyu.models.db;
 
 /**
- * The value held within a cell inside a nominal value.
+ * The value held in a cell.
  */
-public interface NominalValue extends Value {
+public interface CellValue {
+
+    /**
+     * @param value The string to test if it is valid.
+     *
+     * @return True if the supplied value is a valid substitute 
+     */
+    boolean isValid(final String value); 
+
+    /**
+     * Clears the contents of the value and returns it to a 'null'/Empty state.
+     */
+    void clear();
+
+    /**
+     * @return True if the value is empty/'null' false otherwise.
+     */
+    boolean isEmpty();
+
+    /**
+     * Sets the value, this method leaves the value unchanged if the supplied
+     * input is invalid. Use isValid to test.
+     *
+     * @param newValue The new content to use for this value.
+     */
+    void set(final String newValue);
+
+    Argument getArgument();
+
+    /**
+     * @return must override toString in such a way that when isEmpty == true,
+     * toString returns a valid empty value i.e. "<argName>"
+     */
+    @Override
+    String toString();
     
+    String serialize();
+
+    String getPlaceholderString();
 }

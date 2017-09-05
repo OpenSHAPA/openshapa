@@ -29,10 +29,10 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 
-public class AutoSaveC implements ActionListener {
+public class AutoSaveController implements ActionListener {
 
     /** Logger for this class */
-    private static Logger logger = LogManager.getLogger(DeleteColumnC.class);
+    private static Logger logger = LogManager.getLogger(DeleteColumnController.class);
 
     /** Timer for this class */
     private static Timer timer;
@@ -40,7 +40,7 @@ public class AutoSaveC implements ActionListener {
     /** File to auto save */
     private static File file;
 
-    private AutoSaveC() {}
+    private AutoSaveController() {}
 
     public static void setInterval(int interval) {
         if (interval == 0) {
@@ -52,7 +52,7 @@ public class AutoSaveC implements ActionListener {
         }
         interval *= 60000;
         if (timer == null) {
-            timer = new Timer(interval, new AutoSaveC());
+            timer = new Timer(interval, new AutoSaveController());
             timer.start();
         } else {
             timer.setDelay(interval);
@@ -74,7 +74,7 @@ public class AutoSaveC implements ActionListener {
                 file.delete();
             }
             ProjectController projController = Datavyu.getProjectController();
-            SaveC saveController = new SaveC();
+            SaveController saveController = new SaveController();
             if (projController.isNewProject() || (projController.getProjectName() == null)) {
                 baseName = "~noname_";
                 ext = ".opf";
@@ -96,7 +96,7 @@ public class AutoSaveC implements ActionListener {
                     baseName = FilenameUtils.getBaseName(filename) + "_";
                     ext = "." + FilenameUtils.getExtension(filename);
                     file = File.createTempFile(baseName, ext);
-                    saveController.saveDatabase(file, projController.getDataStore(), false);
+                    saveController.saveDataStore(file, projController.getDataStore(), false);
                 }
             }
         } catch (UserWarningException lee) {

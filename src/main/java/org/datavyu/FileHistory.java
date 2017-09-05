@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Remembers, saves, and loads lists of recent files for all file types that maintain a history in Datavyu.
+ * Remembers, saves, and loads lists of recent files for project files and script files used by Datavyu.
  */
 public final class FileHistory {
 
@@ -36,7 +36,7 @@ public final class FileHistory {
     /** List of recently opened scripts */
     private static RecentFiles scripts;
 
-    /** Load the history file to this static context */
+    // Loads the histories to the static context
     static {
         try {
             projects = RecentFiles.load(Constants.PROJECT_FILE_HISTORY);

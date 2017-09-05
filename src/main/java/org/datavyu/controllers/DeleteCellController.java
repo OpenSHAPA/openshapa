@@ -25,38 +25,33 @@ import java.util.List;
 /**
  * Controller for deleting cells from the database.
  */
-public final class DeleteCellC {
+public final class DeleteCellController {
 
     /** The logger for this class. */
-    private static final Logger LOGGER = LogManager.getLogger(DeleteColumnC.class);
+    private static final Logger logger = LogManager.getLogger(DeleteCellController.class);
 
     /**
      * Constructor.
      *
-     * @param cellsToDelete The cells to delete from the spreadsheet.
+     * @param cellsToDelete Cells to delete from the spreadsheet.
      */
-    public DeleteCellC(final List<Cell> cellsToDelete) {
-        LOGGER.info("delete cells");
+    public DeleteCellController(final List<Cell> cellsToDelete) {
+        logger.info("Delete cells: " + cellsToDelete);
 
         // The spreadsheet is the view for this controller.
         SpreadSheetPanel view = (SpreadSheetPanel) Datavyu.getView().getComponent();
         view.deselectAll();
 
-        for (Cell c : cellsToDelete) {
-
-            // Check if the cell we are deleting is the last created cell.
-            // Default this back to 0 if it is.
-            if (c.equals(Datavyu.getProjectController().getLastCreatedCell())) {
+        for (Cell cell : cellsToDelete) {
+            // Check if the cell we are deleting is the last created cell. Default this back to 0 if it is.
+            if (cell.equals(Datavyu.getProjectController().getLastCreatedCell())) {
                 Datavyu.getProjectController().setLastCreatedCell(null);
             }
-
-            // Check if the cell we are deleting is the last selected cell.
-            // Default this back to 0 if it is.
-            if (c.equals(Datavyu.getProjectController().getLastSelectedCell())) {
+            // Check if the cell we are deleting is the last selected cell. Default this back to 0 if it is.
+            if (cell.equals(Datavyu.getProjectController().getLastSelectedCell())) {
                 Datavyu.getProjectController().setLastSelectedCell(null);
             }
-
-            Datavyu.getProjectController().getDataStore().removeCell(c);
+            Datavyu.getProjectController().getDataStore().removeCell(cell);
         }
     }
 }

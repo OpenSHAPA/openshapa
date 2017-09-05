@@ -20,10 +20,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.Datavyu.Platform;
-import org.datavyu.controllers.CreateNewCellC;
-import org.datavyu.controllers.SetNewCellStopTimeC;
-import org.datavyu.controllers.SetSelectedCellStartTimeC;
-import org.datavyu.controllers.SetSelectedCellStopTimeC;
+import org.datavyu.controllers.CreateNewCellController;
+import org.datavyu.controllers.SetNewCellStopTimeController;
+import org.datavyu.controllers.SetSelectedCellStartTimeController;
+import org.datavyu.controllers.SetSelectedCellStopTimeController;
 import org.datavyu.controllers.component.MixerController;
 import org.datavyu.event.component.CarriageEvent;
 import org.datavyu.event.component.TimescaleEvent;
@@ -1402,7 +1402,7 @@ public final class VideoController extends DatavyuDialog
     @Action
     public void setCellOnsetAction() {
         logger.info("Set cell onset");
-        new SetSelectedCellStartTimeC(getCurrentTime());
+        new SetSelectedCellStartTimeController(getCurrentTime());
         setOnsetField(getCurrentTime());
     }
 
@@ -1413,7 +1413,7 @@ public final class VideoController extends DatavyuDialog
     public void setCellOffsetAction() {
         logger.info("Set cell offset");
 //        adjustClock(getCurrentTime());
-        new SetSelectedCellStopTimeC(getCurrentTime());
+        new SetSelectedCellStopTimeController(getCurrentTime());
         setOffsetField(getCurrentTime());
     }
 
@@ -2003,7 +2003,7 @@ public final class VideoController extends DatavyuDialog
     public void createNewCellAction() {
         logger.info("New cell");
         if (!clock.isStopped()) adjustClock(getCurrentTime());
-        CreateNewCellC controller = new CreateNewCellC();
+        CreateNewCellController controller = new CreateNewCellController();
         controller.createDefaultCell(true);
     }
 
@@ -2014,7 +2014,7 @@ public final class VideoController extends DatavyuDialog
     public void createNewCellAndSetOffsetAction() {
         logger.info("New cell set offset");
         if (!clock.isStopped()) adjustClock(getCurrentTime());
-        new CreateNewCellC(getCurrentTime(), true);
+        new CreateNewCellController(getCurrentTime(), true);
     }
 
     /**
@@ -2026,8 +2026,8 @@ public final class VideoController extends DatavyuDialog
 
         adjustClock(getCurrentTime());
         long time = getCurrentTime();
-        new CreateNewCellC(time, false);
-        new SetNewCellStopTimeC(time);
+        new CreateNewCellController(time, false);
+        new SetNewCellStopTimeController(time);
         setOffsetField(time);
     }
 

@@ -58,7 +58,7 @@ public interface CellListener {
     /**
      * Called when the value for a cell changes.
      *
-     * @param newValue The new value being used for a cell.
+     * @param newCellValue The new value being used for a cell.
      */
-    void valueChange(final Value newValue);
+    void valueChange(final CellValue newCellValue);
 }

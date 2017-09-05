@@ -28,7 +28,7 @@ import static junit.framework.Assert.assertTrue;
 /**
  * Tests for saving Datavyu project and CSV files.
  */
-public class SaveCTest {
+public class SaveControllerTest {
     // The location of the test files.
     private static final String TEST_FOLDER = System.getProperty("testPath");
 
@@ -133,10 +133,10 @@ public class SaveCTest {
         Cell c = var.createCell();
         c.setOnset("00:01:00:000");
         c.setOffset("00:02:00:000");
-        c.getValue().set("This is a test cell.");
+        c.getCellValue().set("This is a test cell.");
 
-        SaveC savec = new SaveC();
-        savec.saveDatabase(outFile, ds);
+        SaveController savec = new SaveController();
+        savec.saveDataStore(outFile, ds);
 
         assertTrue(areFilesSameLineComp(outFile, demoFile));
     }
@@ -158,9 +158,9 @@ public class SaveCTest {
         Cell c = var.createCell();
         c.setOnset("00:01:00:000");
         c.setOffset("00:02:00:000");
-        c.getValue().set("This is a test cell.");
+        c.getCellValue().set("This is a test cell.");
 
-        SaveC savec = new SaveC();
+        SaveController savec = new SaveController();
         savec.saveProject(outFile, p, ds);
         assertTrue(areFilesSameByteComp(outFile, demoFile));
     }
@@ -180,20 +180,20 @@ public class SaveCTest {
         DataStore ds = DataStoreFactory.newDataStore();
         Variable var = ds.createVariable("testColumn", Argument.Type.TEXT);
         Cell c = var.createCell();
-        c.getValue().set("cellA");
+        c.getCellValue().set("cellA");
 
         var = ds.createVariable("testColumn2", Argument.Type.NOMINAL);
         c = var.createCell();
-        c.getValue().set("cellB");
+        c.getCellValue().set("cellB");
 
         var = ds.createVariable("testColumn3", Argument.Type.MATRIX);
         c = var.createCell();
-        c.getValue().set("(cellC)");
+        c.getCellValue().set("(cellC)");
 
         var = ds.createVariable("hiddenColumn", Argument.Type.TEXT);
         var.setHidden(true);
 
-        SaveC savec = new SaveC();
+        SaveController savec = new SaveController();
         savec.saveProject(outFile, p, ds);
         assertTrue(areFilesSameByteComp(outFile, demoFile));
     }

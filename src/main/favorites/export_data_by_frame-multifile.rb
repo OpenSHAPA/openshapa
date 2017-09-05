@@ -24,7 +24,7 @@ begin
     #$debug = true
 
     # Ok, we want to loop thru each frame of the video, and at each frame,
-    # print out what the values are.
+    # print out what the cellValues are.
     # ~ Represents your user folder, e.g. /Users/jesse on a Mac or C:\Users\Jesse on Windows.
     # ~/Desktop is your desktop folder no matter what system you're using.
     # =================================
@@ -97,7 +97,7 @@ begin
               end
             end
 
-            # Now go from min to max time in 33ms intervals, getting the cell value at each time
+            # Now go from min to max time in 33ms intervals, getting the cell cellValue at each time
             puts "Getting the data for each time point..."
             time = min
             i = 0

@@ -36,25 +36,25 @@ import java.util.List;
  * Controller for saving the database to disk.
  */
 // TODO: Use StringBuilder for various strings that are put together in methods here!
-public final class ExportDatabaseFileC {
+public final class ExportDatabaseFileController {
 
     /** Logger for this class */
-    private static Logger logger = LogManager.getLogger(ExportDatabaseFileC.class);
+    private static Logger logger = LogManager.getLogger(ExportDatabaseFileController.class);
 
     /**
      * Saves the database to the specified destination in a CSV format.
      *
      * @param outFile The path of the file to use when writing to disk.
-     * @param ds      The data store to save as a CSV file.
+     * @param dataStore The data store to save as a CSV file.
      * @throws UserWarningException When unable to save the database as a CSV to
      *                              disk (usually because of permissions errors).
      */
-    public void exportByFrame(final String outFile, final DataStore ds) throws UserWarningException {
+    public void exportByFrame(final String outFile, final DataStore dataStore) throws UserWarningException {
         try {
             FileOutputStream fos = new FileOutputStream(outFile);
             PrintStream ps = new PrintStream(fos);
 
-            List<Variable> variables = ds.getAllVariables();
+            List<Variable> variables = dataStore.getAllVariables();
 
             ArrayList<List<Cell>> cellCache = new ArrayList<>();
             int[] currentIndex = new int[variables.size()];
@@ -64,7 +64,7 @@ public final class ExportDatabaseFileC {
                 cellCache.add(v.getCellsTemporally());
             }
 
-            // Now obtain the first and last time point by sweeping over the cells
+            // Get first and last time point by sweeping over the cells
             long firstTime = Long.MAX_VALUE;
             long lastTime = 0;
 
@@ -110,8 +110,7 @@ public final class ExportDatabaseFileC {
                 header += "," + v.getName() + ".onset";
                 header += "," + v.getName() + ".offset";
 
-                // Test if the variable is a matrix. If it is, then
-                // we have to print out all of its arguments.
+                // Test if the variable is a matrix. If it is, then we have to print out all of its arguments.
                 if (v.getRootNode().type == Argument.Type.MATRIX) {
                     for (Argument a : v.getRootNode().childArguments) {
                         header += "," + v.getName() + "." + a.name;
@@ -157,7 +156,7 @@ public final class ExportDatabaseFileC {
                                         current_time >= cell.getOnset() &&
                                         cell.getOnset() < current_time + 1000.0 / frameRate - 1)) {
 
-                            Value value = cell.getValue();
+                            CellValue cellValue = cell.getCellValue();
 
                             // Print ordinal, onset, offset
                             row += Integer.toString(currentIndex[i] + 1) + "," +
@@ -165,32 +164,32 @@ public final class ExportDatabaseFileC {
                                     Long.toString(cell.getOffset());
 
 
-                            if (value instanceof MatrixValue) {
-                                // Then this is a matrix value, get the sub arguments
-                                MatrixValue mv = (MatrixValue) value;
-                                for (Value v : mv.getArguments()) {
-                                    // Loop over each value and print it with a comma separator
+                            if (cellValue instanceof MatrixCellValue) {
+                                // Then this is a matrix cellValue, get the sub arguments
+                                MatrixCellValue mv = (MatrixCellValue) cellValue;
+                                for (CellValue v : mv.getArguments()) {
+                                    // Loop over each cellValue and print it with a comma separator
                                     row += "," + StringUtils.escapeCSVQuotes(v.toString());
                                 }
                             } else {
                                 // Otherwise just print the single argument
-                                row += "," + StringUtils.escapeCSVQuotes(cell.getValue().toString());
+                                row += "," + StringUtils.escapeCSVQuotes(cell.getCellValue().toString());
                             }
                             row += ",";
 
                         } else {
                             // Figure out what to print if we don't have a cell here
-                            Value value = cell.getValue();
+                            CellValue cellValue = cell.getCellValue();
 
                             // Print ordinal, onset, offset
                             row += ",,";
 
 
-                            if (value instanceof MatrixValue) {
-                                // Then this is a matrix value, get the sub arguments
-                                MatrixValue mv = (MatrixValue) value;
-                                for (Value v : mv.getArguments()) {
-                                    // Loop over each value and print it with a comma separator
+                            if (cellValue instanceof MatrixCellValue) {
+                                // Then this is a matrix cellValue, get the sub arguments
+                                MatrixCellValue mv = (MatrixCellValue) cellValue;
+                                for (CellValue v : mv.getArguments()) {
+                                    // Loop over each cellValue and print it with a comma separator
                                     row += ",";
                                 }
                             } else {
@@ -292,7 +291,7 @@ public final class ExportDatabaseFileC {
                             }
                         }
                         else{
-                            row.append(StringUtils.escapeCSVQuotes(c.getValue().toString()));
+                            row.append(StringUtils.escapeCSVQuotes(c.getCellValue().toString()));
                             row.append(",");
                         }
                     } else {

@@ -43,10 +43,7 @@ import org.jdesktop.application.Action;
 import org.jdesktop.application.*;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.UndoableEditEvent;
-import javax.swing.event.UndoableEditListener;
+import javax.swing.event.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -78,9 +75,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     public static final int ZOOM_MAX_SIZE = 42;
     public static final int ZOOM_MIN_SIZE = 8;
 
-    /**
-     * The logger for this class.
-     */
+    /** The logger instance for this class */
     private static Logger logger = LogManager.getLogger(DatavyuView.class);
     private static boolean redraw = true;
     private final Icon rubyIcon = new ImageIcon(getClass().getResource("/icons/ruby.png"));
@@ -106,7 +101,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     /**
      * the code editor's controller
      */
-    private VocabEditorC vec = VocabEditorC.getController();
+    private VocabEditorController vec = VocabEditorController.getController();
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem ShowAllVariablesMenuItem;
     private javax.swing.JMenuItem aboutMenuItem;
@@ -712,8 +707,8 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     }
 
     @Override
-    public javax.swing.JComponent getComponent() {
-        return (javax.swing.JComponent) tabbedPane.getSelectedComponent();
+    public JComponent getComponent() {
+        return (JComponent) tabbedPane.getSelectedComponent();
     }
 
 
@@ -749,7 +744,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
             logger.error("Auto save failed. Error: ", e);
         }
         // Initialize auto save feature
-        AutoSaveC.setInterval(1);
+        AutoSaveController.setInterval(1);
     }
 
 
@@ -803,7 +798,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
      */
     @Action
     public void showNewProjectForm() {
-        new NewProjectC();
+        new NewProjectController();
     }
 
     /**
@@ -813,7 +808,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     public void save() {
 
         try {
-            SaveC saveC = new SaveC();
+            SaveController saveC = new SaveController();
 
             // If the user has not saved before - invoke the saveAs()
             // controller to force the user to nominate a destination file.
@@ -821,7 +816,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
             if (projectController.isNewProject() || (projectController.getProjectName() == null)) {
                 saveAs();
             } else {
-                SaveC saveController = new SaveC();
+                SaveController saveController = new SaveController();
 
                 // Force people to use new
                 if ((projectController.getLastSaveOption() instanceof ShapaFilter)
@@ -851,7 +846,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
                 } else {
                     File file = new File(projectController.getProjectDirectory(),
                             projectController.getDatabaseFileName());
-                    saveC.saveDatabase(file, projectController.getDataStore());
+                    saveC.saveDataStore(file, projectController.getDataStore());
                     projectController.markProjectAsUnchanged();
                     projectController.getDataStore().markAsUnchanged();
                 }
@@ -942,7 +937,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         projectController.updateProject();
 
         try {
-            ExportDatabaseFileC exportC = new ExportDatabaseFileC();
+            ExportDatabaseFileController exportC = new ExportDatabaseFileController();
 
             String dbFileName = fc.getSelectedFile().getPath();
             if (!dbFileName.endsWith(".csv")) {
@@ -984,7 +979,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         projController.updateProject();
 
         try {
-            ExportDatabaseFileC exportC = new ExportDatabaseFileC();
+            ExportDatabaseFileController exportC = new ExportDatabaseFileController();
 
             String dbFileName = fc.getSelectedFile().getPath();
             if (!dbFileName.endsWith(".csv")) {
@@ -1014,7 +1009,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         projController.updateProject();
 
         try {
-            SaveC saveC = new SaveC();
+            SaveController saveController = new SaveController();
 
             FileFilter filter = fileChooser.getFileFilter();
 
@@ -1032,7 +1027,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
                 }
 
                 File f = new File(fileChooser.getSelectedFile().getParent(), dbFileName);
-                saveC.saveDatabase(f, projController.getDataStore());
+                saveController.saveDataStore(f, projController.getDataStore());
 
                 projController.getDataStore().setName(dbFileName);
                 projController.setProjectName(dbFileName);
@@ -1054,7 +1049,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
                 }
 
                 File file = new File(fileChooser.getSelectedFile().getParent(), dbFileName);
-                saveC.saveDatabase(file, projController.getDataStore());
+                saveController.saveDataStore(file, projController.getDataStore());
 
                 if (dbFileName.lastIndexOf('.') != -1) {
                     dbFileName = dbFileName.substring(0, dbFileName.lastIndexOf('.'));
@@ -1088,7 +1083,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
                 projController.setOriginalProjectDirectory(fileChooser.getSelectedFile().getParent());
 
                 projController.updateProject();
-                saveC.saveProject(new File(fileChooser.getSelectedFile().getParent(), archiveName),
+                saveController.saveProject(new File(fileChooser.getSelectedFile().getParent(), archiveName),
                         projController.getProject(),
                         projController.getDataStore());
                 projController.setProjectDirectory(fileChooser.getSelectedFile().getParent());
@@ -1108,7 +1103,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         projectController.updateProject();
 
         try {
-            SaveC saveC = new SaveC();
+            SaveController saveController = new SaveController();
 
             FileFilter filter = fc.getFileFilter();
 
@@ -1126,7 +1121,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
                 }
 
                 File file = new File(fc.getSelectedFile().getParent(), dbFileName);
-                saveC.saveDatabase(file, projectController.getDataStore());
+                saveController.saveDataStore(file, projectController.getDataStore());
 
                 projectController.getDataStore().setName(dbFileName);
                 projectController.setProjectName(dbFileName);
@@ -1148,7 +1143,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
                 }
 
                 File f = new File(fc.getSelectedFile().getParent(), dbFileName);
-                saveC.saveDatabase(f, projectController.getDataStore());
+                saveController.saveDataStore(f, projectController.getDataStore());
 
                 if (dbFileName.lastIndexOf('.') != -1) {
                     dbFileName = dbFileName.substring(0, dbFileName.lastIndexOf('.'));
@@ -1184,7 +1179,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
                 projectController.updateProject();
 
-                saveC.saveProject(new File(fc.getSelectedFile().getParent(), archiveName),
+                saveController.saveProject(new File(fc.getSelectedFile().getParent(), archiveName),
                         projectController.getProject(),
                         projectController.getDataStore());
                 projectController.getDataStore().setName(fc.getSelectedFile().getName());
@@ -1342,26 +1337,26 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         panel.clearCellSelection();
     }
 
-    private OpenC openDatabase(final File databaseFile) {
+    private OpenController openDatabase(final File databaseFile) {
 
         // Set the database to the freshly loaded database.
-        OpenC openC = new OpenC();
-        openC.openDatabase(databaseFile);
+        OpenController openController = new OpenController();
+        openController.openDataStore(databaseFile);
 
         // Make a project for the new database.
-        if (openC.getDatastore() != null) {
-            return openC;
+        if (openController.getDataStore() != null) {
+            return openController;
         }
         return null;
     }
 
-    private OpenC openProject(final File projectFile) {
-        OpenC openC = new OpenC();
-        openC.openProject(projectFile);
+    private OpenController openProject(final File projectFile) {
+        OpenController openController = new OpenController();
+        openController.openProject(projectFile);
 
         // Check to make sure that this project file isn't already open
-        if ((openC.getProject() != null) && (openC.getDatastore() != null)) {
-            return openC;
+        if ((openController.getProject() != null) && (openController.getDataStore() != null)) {
+            return openController;
         }
         return null;
     }
@@ -1392,7 +1387,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
      */
     @Action
     public void showNewVariableForm() {
-        new NewVariableC();
+        new NewVariableController();
     }
 
     /**
@@ -1571,7 +1566,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     @Action
     public void runScript() {
         try {
-            RunScriptC scriptC = new RunScriptC();
+            RunScriptController scriptC = new RunScriptController();
             // record the effect
             UndoableEdit edit = new RunScriptEdit(scriptC.getScriptFilePath());
             // notify the listeners
@@ -1585,7 +1580,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     public void runScript(File scriptFile) {
         logger.info("Running script: " + scriptFile.getAbsolutePath());
         try {
-            RunScriptC scriptC = new RunScriptC(scriptFile);
+            RunScriptController scriptC = new RunScriptController(scriptFile);
             // record the effect
             UndoableEdit edit = new RunScriptEdit(scriptC.getScriptFilePath());
             // notify the listeners
@@ -1653,7 +1648,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         UndoableEdit edit = new RemoveVariableEdit(selectedVariables);
 
         // perform the operation
-        new DeleteColumnC(selectedVariables);
+        new DeleteColumnController(selectedVariables);
 
         // notify the listeners
         Datavyu.getView().getUndoSupport().postEdit(edit);
@@ -1721,7 +1716,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         // record the effect
         UndoableEdit edit = new RemoveCellEdit(selectedCells);
         // perform the operation
-        new DeleteCellC(selectedCells);
+        new DeleteCellController(selectedCells);
 
         // notify the listeners
         Datavyu.getView().getUndoSupport().postEdit(edit);
@@ -2299,6 +2294,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         changeColumnName();
     }
 
+
     private void tileWindowsMenuItemActionPerformed(final java.awt.event.ActionEvent evt) {
         /* Nothing to do here */
     }
@@ -2343,11 +2339,11 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         // Favourite script list starts after the 'favScripts' menu item - which
         // is just a stub for a starting point. Search for the favScripts as the
         // starting point for deleting existing scripts from the menu.
-        Component[] list = scriptMenu.getMenuComponents();
+        Component[] components = scriptMenu.getMenuComponents();
 
-        for (Component c : list) {
-            if (!scriptMenuPermanentsList.contains(c.getName()))
-                scriptMenu.remove(c);
+        for (Component component : components) {
+            if (!scriptMenuPermanentsList.contains(component.getName()))
+                scriptMenu.remove(component);
         }
 
         // Get list of favourite scripts from the favourites folder.
@@ -2358,12 +2354,10 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
             }
         };
         String[] children = favouritesDir.list(rubies);
-
         if (children != null) {
-
             for (String s : children) {
-                File f = new File(favoritesFolder + File.separatorChar + s);
-                scriptMenu.add(createScriptMenuItemFromFile(f));
+                File file = new File(favoritesFolder + File.separatorChar + s);
+                scriptMenu.add(createScriptMenuItemFromFile(file));
             }
         }
     }
@@ -2374,7 +2368,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
      *
      * @param evt The event that triggered this action.
      */
-    private void zoomInMenuItemActionPerformed(final java.awt.event.ActionEvent evt) {
+    private void zoomInMenuItemActionPerformed(final ActionEvent evt) {
         zoomIn();
     }
 
@@ -2387,7 +2381,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
      *
      * @param evt
      */
-    private void zoomOutMenuItemActionPerformed(final java.awt.event.ActionEvent evt) {
+    private void zoomOutMenuItemActionPerformed(final ActionEvent evt) {
         zoomOut();
     }
 
@@ -2400,7 +2394,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
      *
      * @param evt The event that triggered this action.
      */
-    private void resetZoomMenuItemActionPerformed(final java.awt.event.ActionEvent evt) {
+    private void resetZoomMenuItemActionPerformed(final ActionEvent evt) {
         ConfigurationProperties config = ConfigurationProperties.getInstance();
         Font font = config.getSpreadSheetDataFont();
         changeFontSize(ZOOM_DEFAULT_SIZE - font.getSize());
@@ -2411,7 +2405,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
      *
      * @param evt The event that triggered this action.
      */
-    private void spreadsheetMenuSelected(final javax.swing.event.MenuEvent evt) {
+    private void spreadsheetMenuSelected(final MenuEvent evt) {
         ResourceMap rMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(DatavyuView.class);
 
         int totalNumberOfColumns = Datavyu.getProjectController().getDataStore().getAllVariables().size();
@@ -2481,7 +2475,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
      * @param evt The event that fired this action.
      */
     private void newCellMenuItemActionPerformed(final java.awt.event.ActionEvent evt) {
-        CreateNewCellC controller = new CreateNewCellC();
+        CreateNewCellController controller = new CreateNewCellController();
         controller.createDefaultCell();
     }
 
@@ -2497,7 +2491,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
     public void newCellLeft() {
         List<Cell> selectedCells = Datavyu.getProjectController().getDataStore().getSelectedCells();
-        new CreateNewCellC(selectedCells, ArrayDirection.LEFT);
+        new CreateNewCellController(selectedCells, ArrayDirection.LEFT);
     }
 
     /**
@@ -2512,30 +2506,22 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
     public void newCellRight() {
         List<Cell> selectedCells = Datavyu.getProjectController().getDataStore().getSelectedCells();
-        new CreateNewCellC(selectedCells, ArrayDirection.RIGHT);
+        new CreateNewCellController(selectedCells, ArrayDirection.RIGHT);
     }
 
     /**
+     *
+     *
      * Changes the font size by adding sizeDif to the current size. Then it
      * creates and revalidates a new panel to show the font update. This will
      * not make the font smaller than smallestSize.
      *
-     * @param sizeDif The number to add to the current font size.
+     * @param diff Add diff to current size.
      */
-    public void changeFontSize(final int sizeDif) {
+    public void changeFontSize(final int diff) {
         ConfigurationProperties config = ConfigurationProperties.getInstance();
-        Font f = config.getSpreadSheetDataFont();
-        int size = f.getSize();
-        size = size + sizeDif;
-
-        if (size < ZOOM_MIN_SIZE) {
-            size = ZOOM_MIN_SIZE;
-        } else if (size > ZOOM_MAX_SIZE) {
-            size = ZOOM_MAX_SIZE;
-        }
-
-        config.setSpreadSheetDataFontSize(size);
-
+        Font font = config.getSpreadSheetDataFont();
+        config.setSpreadSheetDataFontSize(Math.max(Math.min(font.getSize() + diff, ZOOM_MAX_SIZE), ZOOM_MIN_SIZE));
         // Create and redraw fresh window pane so all of the fonts are new again.
         panel.revalidate();
         panel.repaint();
@@ -2544,19 +2530,18 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     /**
      * Creates a new menu item for running a named script.
      *
-     * @param f The file to run when menu item is selected.
+     * @param file The file to run when menu item is selected.
      * @return The jmenuitem that can be added to a menu.
      */
-    public JMenuItem createScriptMenuItemFromFile(final File f) {
+    public JMenuItem createScriptMenuItemFromFile(final File file) {
         JMenuItem menuItem = new JMenuItem();
-        menuItem.setText(f.toString());
-        menuItem.setName(f.toString());
+        menuItem.setText(file.toString());
+        menuItem.setName(file.toString());
         menuItem.addActionListener(new ActionListener() {
             public void actionPerformed(final java.awt.event.ActionEvent evt) {
                 runRecentScript(evt);
             }
         });
-
         return menuItem;
     }
 
@@ -2572,7 +2557,6 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         menuItem.setName(file.toString());
         menuItem.addActionListener(new ActionListener() {
             public void actionPerformed(final ActionEvent e) {
-
                 open(file);
             }
         });
@@ -2584,12 +2568,12 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
      *
      * @param evt The event that triggered this action.
      */
-    private void runRecentScript(final java.awt.event.ActionEvent evt) {
+    private void runRecentScript(final ActionEvent evt) {
 
         try {
             // record the effect
             UndoableEdit edit = new RunScriptEdit(evt.getActionCommand());
-            RunScriptC scriptC = new RunScriptC(evt.getActionCommand());
+            RunScriptController scriptC = new RunScriptController(evt.getActionCommand());
 
             // notify the listeners
             Datavyu.getView().getUndoSupport().postEdit(edit);
@@ -2630,24 +2614,24 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     }
 
     class OpenTask extends SwingWorker<ProjectController, Void> {
-        private DatavyuFileChooser jd;
+        private DatavyuFileChooser fileChooser;
 
-        public OpenTask(final DatavyuFileChooser jd) { this.jd = jd; }
+        public OpenTask(final DatavyuFileChooser fileChooser) { this.fileChooser = fileChooser; }
 
         @Override
         public ProjectController doInBackground() {
 
-            if (jd != null && !jd.getSelectedFile().exists()) {
+            if (fileChooser != null && !fileChooser.getSelectedFile().exists()) {
                 setProgress(2);
                 return null;
             }
 
-            if (jd != null &&
+            if (fileChooser != null &&
                     tabbedPane != null && Datavyu.getProjectController() != null &&
                     tabbedPane.getTabCount() == 1 &&
                     Datavyu.getProjectController().getProjectName() == null &&
                     !Datavyu.getProjectController().isChanged() &&
-                    jd.getSelectedFile().exists()) {
+                    fileChooser.getSelectedFile().exists()) {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -2658,29 +2642,29 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
 
             setProgress(0);
-            FileFilter filter = jd.getFileFilter();
+            FileFilter filter = fileChooser.getFileFilter();
             setProgress(10);
-            OpenC openC;
+            OpenController openController;
 
             if ((filter == ShapaFilter.INSTANCE) || (filter == OpfFilter.INSTANCE)) {
                 // Opening a project or project archive file
-                openC = openProject(jd.getSelectedFile());
+                openController = openProject(fileChooser.getSelectedFile());
             } else {
                 // Opening a database file
-                openC = openDatabase(jd.getSelectedFile());
+                openController = openDatabase(fileChooser.getSelectedFile());
             }
 
-            if (openC == null) {
+            if (openController == null) {
                 setProgress(1);
                 return null;
             }
 
-            ProjectController pController = new ProjectController(openC.getProject(), openC.getDatastore());
-            pController.setProjectName(jd.getSelectedFile().getName());
+            ProjectController pController = new ProjectController(openController.getProject(), openController.getDataStore());
+            pController.setProjectName(fileChooser.getSelectedFile().getName());
 
             pController.setLastSaveOption(filter);
-            pController.setProjectDirectory(jd.getSelectedFile().getParent());
-            pController.setDatabaseFileName(jd.getSelectedFile().getName());
+            pController.setProjectDirectory(fileChooser.getSelectedFile().getParent());
+            pController.setDatabaseFileName(fileChooser.getSelectedFile().getName());
 
             setProgress(40);
 
@@ -2696,7 +2680,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
             pController.getDataStore().markAsUnchanged();
 
             // Update the list of recently opened files.
-            FileHistory.rememberProject(jd.getSelectedFile());
+            FileHistory.rememberProject(fileChooser.getSelectedFile());
 
             setProgress(100);
 
@@ -2712,12 +2696,9 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     }
 
     /**
-     * An undo/redo adapter. The adapter is notified when
-     * an undo edit occur.
-     * The adaptor extract the edit from the event, add it
-     * to the UndoManager, and refresh the GUI
+     * An undo/redo adapter. The adapter is notified when an undo edit occur.
+     * The adaptor extract the edit from the event, add it to the UndoManager, and refresh the GUI
      */
-
     private class UndoAdapter implements UndoableEditListener {
         @Override
         public void undoableEditHappened(UndoableEditEvent evt) {

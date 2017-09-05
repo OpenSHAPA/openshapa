@@ -6,47 +6,47 @@
 	
     
 	<!-- building in Xcode -->
-	<condition property="product" value="${env.PRODUCT_NAME}">
+	<condition property="product" cellValue="${env.PRODUCT_NAME}">
 		<isset property="env.PRODUCT_NAME"/>
 	</condition>
     
-	<condition property="src" value="${env.SRCROOT}/src">
+	<condition property="src" cellValue="${env.SRCROOT}/src">
 		<isset property="env.SRCROOT"/>
 	</condition>
 	
-	<condition property="obj" value="${env.OBJECT_FILE_DIR}">
+	<condition property="obj" cellValue="${env.OBJECT_FILE_DIR}">
 		<isset property="env.OBJECT_FILE_DIR"/>
 	</condition>
     
-    <condition property="dst" value="build/${env.CONFIGURATION}">
+    <condition property="dst" cellValue="build/${env.CONFIGURATION}">
         <isset property="env.CONFIGURATION"/>
     </condition>
     
-<!--	<condition property="dst" value="${env.BUILT_PRODUCTS_DIR}">-->
+<!--	<condition property="dcellValuealue="${env.BUILT_PRODUCTS_DIR}">-->
 <!--		<isset property="env.BUILT_PRODUCTS_DIR"/>-->
 <!--	</condition>-->
 
     
 	<!-- building from the command line -->
-	<condition property="src" value="src">
+	<condition property="src" cellValue="src">
 		<not>
 			<isset property="src"/>
 		</not>
 	</condition>
     
-	<condition property="obj" value="build/obj">
+	<condition property="obj" cellValue="build/obj">
 		<not>
 			<isset property="obj"/>
 		</not>
 	</condition>
 	
-	<condition property="dst" value="build">
+	<condition property="dst" cellValue="build">
 		<not>
 			<isset property="dst"/>
 		</not>
 	</condition>
 	
-	<condition property="product" value="JAWTExample">
+	<condition property="product" cellValue="JAWTExample">
 		<not>
 			<isset property="product"/>
 		</not>

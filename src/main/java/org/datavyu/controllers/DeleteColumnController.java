@@ -26,20 +26,18 @@ import java.util.List;
 /**
  * Controller for deleting cells from the database.
  */
-public final class DeleteColumnC {
+public final class DeleteColumnController {
 
-    /**
-     * The logger for this class.
-     */
-    private static Logger LOGGER = LogManager.getLogger(DeleteColumnC.class);
+    /** The logger instance for this class */
+    private static Logger logger = LogManager.getLogger(DeleteColumnController.class);
 
     /**
      * Constructor.
      *
      * @param colsToDelete The columns to remove from the database/spreadsheet.
      */
-    public DeleteColumnC(final List<Variable> colsToDelete) {
-        LOGGER.info("delete columns");
+    public DeleteColumnController(final List<Variable> colsToDelete) {
+        logger.info("delete columns");
 
         // The spreadsheet is the view for this controller.
         SpreadSheetPanel view = (SpreadSheetPanel) Datavyu.getView().getComponent();

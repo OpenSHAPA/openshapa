@@ -14,6 +14,8 @@
  */
 package org.datavyu.controllers;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.views.NewVariableV;
 
@@ -22,14 +24,19 @@ import javax.swing.*;
 /**
  * Controller for creating new variables.
  */
-public class NewVariableC {
+public class NewVariableController {
+
+    /** The logger instance for this class */
+    private static Logger logger = LogManager.getLogger(NewVariableController.class);
+
     /**
      * Constructor, creates the new variable controller.
      */
-    public NewVariableC() {
+    public NewVariableController() {
         // Create the view, and display it.
         JFrame mainFrame = Datavyu.getApplication().getMainFrame();
         NewVariableV view = new NewVariableV(mainFrame, false);
         Datavyu.getApplication().show(view);
+        logger.info("Created a controller for variable: " + view.getVariableName());
     }
 }

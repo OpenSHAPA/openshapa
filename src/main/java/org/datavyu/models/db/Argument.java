@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The arguments held within the matrix.
+ * The arguments held within a matrix.
  */
 public final class Argument implements Serializable {
 
@@ -37,15 +37,13 @@ public final class Argument implements Serializable {
         NOMINAL
     }
 
-    ;
-
-    // The name of argument.
+    // The name of argument
     public String name;
 
-    // Type type of argument.
+    // The type of argument
     public Type type;
 
-    // The child arguments - this is empty if no child arguments.
+    // The child arguments
     public List<Argument> childArguments;
 
     // The Identifier of this variable
@@ -56,17 +54,15 @@ public final class Argument implements Serializable {
     /**
      * Constructor.
      *
-     * @param newName  The new name to use for the argument.
-     * @param newType  The new type to use for the argument.
-     * @param newValue The new value to use for the argument.
+     * @param newName  The new name to use for the argument
+     * @param newType  The new type to use for the argument
      */
-    public Argument(final String newName,
-                    final Type newType) {
+    public Argument(final String newName, final Type newType) {
 
         id = this.hashCode();
         name = newName;
         type = newType;
-        childArguments = new ArrayList<Argument>();
+        childArguments = new ArrayList<>();
 
         // Matrix arguments default with a single child nominal.
         if (type == Type.MATRIX) {
@@ -74,14 +70,12 @@ public final class Argument implements Serializable {
         }
     }
 
-    public Argument(final String newName,
-                    final Type newType,
-                    final long id) {
+    public Argument(final String newName, final Type newType, final long id) {
         this(newName, newType);
         this.id = id;
     }
 
-    public Argument addChildArgument(final Type newType) {
+    protected Argument addChildArgument(final Type newType) {
         Argument child = new Argument(String.format("code%02d", lastCodeNumber + 1), newType);
         lastCodeNumber++;
         childArguments.add(child);
@@ -93,10 +87,6 @@ public final class Argument implements Serializable {
     }
 
     public boolean equals(Argument other) {
-        if (other.id == this.id) {
-            return true;
-        } else {
-            return false;
-        }
+        return  other.id == this.id;
     }
 }

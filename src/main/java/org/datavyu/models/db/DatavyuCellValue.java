@@ -29,7 +29,7 @@ import java.io.Serializable;
 import java.util.UUID;
 
 
-public abstract class DatavyuValue implements Value, Serializable, Comparable<DatavyuValue> {
+public abstract class DatavyuCellValue implements CellValue, Serializable, Comparable<DatavyuCellValue> {
 
     String value;
     int index;
@@ -67,7 +67,7 @@ public abstract class DatavyuValue implements Value, Serializable, Comparable<Da
     }
 
     @Override
-    public int compareTo(DatavyuValue v) {
+    public int compareTo(DatavyuCellValue v) {
         if (this.getIndex() < v.getIndex()) {
             return -1;
         } else if (this.getIndex() > v.getIndex()) {

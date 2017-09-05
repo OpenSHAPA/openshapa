@@ -22,46 +22,29 @@
  */
 package org.datavyu.models.db;
 
+import java.util.List;
+
 /**
- * The value held in a cell.
+ * The value held within a cell inside a matrix column.
  */
-public interface Value {
+public interface MatrixCellValue extends CellValue {
 
     /**
-     * @param value The string to test if it is valid.
+     * @return All the argument values that make up this matrix.
+     */
+    List<CellValue> getArguments();
+
+    /**
+     * Creates and adds a new argument to the matrix. The name of the new
+     * argument will be 'arg1' if this is the first argument added to the matrix
+     * 'arg2' if the second, and so on.
      *
-     * @return True if the supplied value is a valid substitute 
+     * @param arg The type of argument to add to the matrix.
+     * @return The newly created argument that was added to this matrix.
      */
-    boolean isValid(final String value); 
+    CellValue createArgument(Argument arg);
 
-    /**
-     * Clears the contents of the value and returns it to a 'null'/Empty state.
-     */
-    void clear();
+    void removeArgument(final int index);
 
-    /**
-     * @return True if the value is empty/'null' false otherwise.
-     */
-    boolean isEmpty();
 
-    /**
-     * Sets the value, this method leaves the value unchanged if the supplied
-     * input is invalid. Use isValid to test.
-     *
-     * @param newValue The new content to use for this value.
-     */
-    void set(final String newValue);
-
-    Argument getArgument();
-
-    /**
-     * @return must override toString in such a way that when isEmpty == true,
-     * toString returns a valid empty value i.e. "<argName>"
-     */
-    @Override
-    String toString();
-    
-    String serialize();
-
-    String getPlaceholderString();
 }

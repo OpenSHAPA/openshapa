@@ -26,27 +26,25 @@ import javax.swing.undo.UndoableEdit;
 /**
  * Controller for setting the stop time (offset) of a new cell.
  */
-public final class SetNewCellStopTimeC {
+public final class SetNewCellStopTimeController {
+    // TODO: This should be refactored probably SetNewCellCurrentTimeController (we refactored offset to current time)
 
-    /**
-     * The logger for this class.
-     */
-    private static Logger LOGGER = LogManager.getLogger(SetNewCellStopTimeC.class);
+    /** The logger instance for this class */
+    private static Logger logger = LogManager.getLogger(SetNewCellStopTimeController.class);
 
     /**
      * Sets the stop time of the last cell that was created.
      *
-     * @param milliseconds The number of milliseconds since the origin of the
-     *                     spreadsheet to set the stop time for.
+     * @param milliseconds The number of milliseconds since the origin of the spread sheet to set the stop time for.
      */
-    public SetNewCellStopTimeC(final long milliseconds) {
-        LOGGER.info("set new cell offset");
+    public SetNewCellStopTimeController(final long milliseconds) {
+        logger.info("Set new cell offset");
 
-        Cell c = Datavyu.getProjectController().getLastCreatedCell();
+        Cell cell = Datavyu.getProjectController().getLastCreatedCell();
         // record the effect
-        UndoableEdit edit = new ChangeOffsetCellEdit(c, c.getOffset(), milliseconds, ChangeCellEdit.Granularity.FINEGRAINED);
+        UndoableEdit edit = new ChangeOffsetCellEdit(cell, cell.getOffset(), milliseconds,
+                ChangeCellEdit.Granularity.FINEGRAINED);
         Datavyu.getView().getUndoSupport().postEdit(edit);
-
-        c.setOffset(milliseconds);
+        cell.setOffset(milliseconds);
     }
 }

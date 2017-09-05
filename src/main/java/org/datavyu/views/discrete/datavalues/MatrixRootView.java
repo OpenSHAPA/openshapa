@@ -18,11 +18,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.models.db.Cell;
-import org.datavyu.models.db.Value;
+import org.datavyu.models.db.CellValue;
 import org.datavyu.models.db.Variable;
 import org.datavyu.undoableedits.ChangeCellEdit;
 import org.datavyu.undoableedits.ChangeValCellEdit;
-import org.datavyu.views.DatavyuView;
 import org.datavyu.views.discrete.EditorComponent;
 import org.datavyu.views.discrete.EditorTracker;
 
@@ -64,9 +63,9 @@ public final class MatrixRootView extends JTextArea implements FocusListener {
      * Creates a new instance of MatrixV.
      *
      * @param cell  The parent cell for this spread sheet cell.
-     * @param value The Matrix holding data values that this view label will represent.
+     * @param cellValue The Matrix holding data values that this view label will represent.
      */
-    public MatrixRootView(final Cell cell, final Value value) {
+    public MatrixRootView(final Cell cell, final CellValue cellValue) {
         super();
 
         setLineWrap(true);
@@ -76,7 +75,7 @@ public final class MatrixRootView extends JTextArea implements FocusListener {
         allEditors = new ArrayList<>();
         edTracker = new EditorTracker(this, allEditors);
 
-        setMatrix(value);
+        setMatrix(cellValue);
 
         addFocusListener(this);
         addFocusListener(edTracker);
@@ -126,9 +125,9 @@ public final class MatrixRootView extends JTextArea implements FocusListener {
     /**
      * Sets the value that this MatrixRootView will represent.
      *
-     * @param v The Value to display.
+     * @param v The CellValue to display.
      */
-    public void setMatrix(final Value v) {
+    public void setMatrix(final CellValue v) {
         // Determine selected editor, and internal caret position.
         int pos = getCaretPosition();
         EditorComponent comp = edTracker.findEditor(pos);

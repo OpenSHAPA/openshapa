@@ -121,10 +121,9 @@ public class MacOS {
          * @param proxy  The object we are proxying.
          * @param method The method that is being invoked.
          * @param args   The arguments being supplied to the method.
-         * @return Value for the method being invoked.
+         * @return CellValue for the method being invoked.
          */
-        public Object invoke(final Object proxy, final Method method,
-                             final Object[] args) {
+        public Object invoke(final Object proxy, final Method method, final Object[] args) {
             try {
                 Class ae = Class.forName("com.apple.eawt.ApplicationEvent");
                 Method setHandled;
@@ -162,7 +161,7 @@ public class MacOS {
                     case "handleOpenFile":
                         Method getFilename = ae.getMethod("getFilename", null);
                         String fileName = (String) getFilename.invoke(args[0],null);
-                        if (Datavyu.getApplication().ready) {
+                        if (Datavyu.getApplication().readyToOpenFile) {
                             Datavyu.getApplication().getView().openExternalFile(new File(fileName));
                         } else {
                             Datavyu.getApplication().setCommandLineFile(fileName);

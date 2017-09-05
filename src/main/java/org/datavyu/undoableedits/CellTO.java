@@ -53,14 +53,14 @@ public final class CellTO {
         onset = newCell.getOnset();
         offset = newCell.getOffset();
         value = newCell.getValueAsString();
-        if(newCell.getValue().getArgument().type == Argument.Type.MATRIX) {
+        if(newCell.getCellValue().getArgument().type == Argument.Type.MATRIX) {
             value = value.substring(1, value.length() - 1);
         }
 
         cell = newCell;
         variable = parentVariable;
         //Remove ()
-//        if (newCell.getValue().isEmpty()) {
+//        if (newCell.getCellValue().isEmpty()) {
 //            value = "<" + variableName + ">";
 //        }
     }

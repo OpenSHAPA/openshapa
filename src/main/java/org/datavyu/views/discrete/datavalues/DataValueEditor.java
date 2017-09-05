@@ -16,10 +16,9 @@ package org.datavyu.views.discrete.datavalues;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.models.db.MatrixValue;
-import org.datavyu.models.db.NominalValue;
-import org.datavyu.models.db.TextValue;
-import org.datavyu.models.db.Value;
+import org.datavyu.models.db.*;
+import org.datavyu.models.db.TextCellValue;
+import org.datavyu.models.db.CellValue;
 import org.datavyu.views.discrete.EditorComponent;
 
 import javax.swing.text.JTextComponent;
@@ -40,7 +39,7 @@ public abstract class DataValueEditor extends EditorComponent {
     /**
      * The value that this view represents.
      */
-    private Value model = null;
+    private CellValue model = null;
     /**
      * The specific type of model this view represents.
      */
@@ -54,22 +53,22 @@ public abstract class DataValueEditor extends EditorComponent {
      * Constructor.
      *
      * @param tc    JTextComponent this editor works with.
-     * @param Value The value this data value editor manipulates
+     * @param Value The cellValue this data cellValue editor manipulates
      */
     public DataValueEditor(final JTextComponent tc,
-                           final Value value) {
+                           final CellValue cellValue) {
         super(tc);
 
         // So far all DataValueEditors are editable
         setEditable(true);
-        model = value;
+        model = cellValue;
 
-        if (value instanceof TextValue) {
-            modelType = TextValue.class;
-        } else if (value instanceof NominalValue) {
-            modelType = NominalValue.class;
+        if (cellValue instanceof TextCellValue) {
+            modelType = TextCellValue.class;
+        } else if (cellValue instanceof NominalCellValue) {
+            modelType = NominalCellValue.class;
         } else {
-            modelType = MatrixValue.class;
+            modelType = MatrixCellValue.class;
         }
 
         if(!model.isEmpty()) {
@@ -80,7 +79,7 @@ public abstract class DataValueEditor extends EditorComponent {
     }
 
     private void updateModelText() {
-        if (!modelType.equals(MatrixValue.class)) {
+        if (!modelType.equals(MatrixCellValue.class)) {
             if (getText() == null || getText().equals("")) {
                 model.clear();
             } else {

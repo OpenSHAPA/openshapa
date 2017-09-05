@@ -28,54 +28,26 @@ import java.io.*;
 /**
  * Controller for saving the database to disk.
  */
-public final class SaveDatabaseFileC {
+public final class SaveDataStoreFileController {
+
+    /** The logger instance for this class */
+    private static Logger logger = LogManager.getLogger(SaveDataStoreFileController.class);
 
     /**
-     * The logger for this class.
-     */
-    private static Logger LOGGER = LogManager.getLogger(SaveDatabaseFileC.class);
-
-    /**
-     * Saves the database to the specified destination, if the file ends with
-     * .csv, the database is saved in a CSV format.
+     * Saves the database to the specified destination, if the file ends with .csv, the data store is saved as CSV.
      *
      * @param destinationFile The destination to save the database too.
-     * @param ds              The datastore to save to disk.
-     * @throws UserWarningException If unable to save the database to the
-     *                              desired location.
+     * @param dataStore The data store to save to disk.
+     * @throws UserWarningException If unable to save the database to the desired location.
      */
-    public void saveDatabase(final File destinationFile,
-                             final DataStore ds)
-            throws UserWarningException {
+    protected void saveDataStore(final File destinationFile, final DataStore dataStore) throws UserWarningException {
 
         // We bypass any overwrite checks here.
         String outputFile = destinationFile.getName().toLowerCase();
         String extension = outputFile.substring(outputFile.lastIndexOf('.'), outputFile.length());
 
         if (extension.equals(".csv")) {
-            saveAsCSV(destinationFile.toString(), ds);
-        }
-    }
-
-    /**
-     * Saves the database to the specified destination in a CSV format.
-     *
-     * @param outFile The path of the file to use when writing to disk.
-     * @param ds      The datastore to save as a CSV file.
-     * @throws UserWarningException When unable to save the database as a CSV to
-     *                              disk (usually because of permissions errors).
-     */
-    public void saveAsCSV(final String outFile, final DataStore ds)
-            throws UserWarningException {
-
-        try {
-            FileOutputStream fos = new FileOutputStream(outFile);
-            saveAsCSV(fos, ds);
-            fos.close();
-        } catch (IOException ie) {
-            ResourceMap rMap = Application.getInstance(Datavyu.class)
-                    .getContext().getResourceMap(Datavyu.class);
-            throw new UserWarningException(rMap.getString("UnableToSave.message", outFile), ie);
+            saveAsCsv(destinationFile.toString(), dataStore);
         }
     }
 
@@ -83,19 +55,17 @@ public final class SaveDatabaseFileC {
      * Serialize the database to the specified stream in a CSV format.
      *
      * @param outStream The stream to use when serializing.
-     * @param ds        The datastore to save as a CSV file.
+     * @param dataStore The data store to save as a CSV file.
      * @throws UserWarningException When unable to save the database as a CSV to
      *                              disk (usually because of permissions errors).
      */
-    public void saveAsCSV(final OutputStream outStream, final DataStore ds)
-            throws UserWarningException {
-        LOGGER.info("save database as CSV to stream");
+    public void saveAsCsv(final OutputStream outStream, final DataStore dataStore) throws UserWarningException {
+        logger.info("Save data store as CSV to stream");
 
-        // Dump out an identifier for the version of file.
         PrintStream ps = new PrintStream(outStream);
-        ps.println("#4");
+        ps.println("#4");  // Write an identifier for the version of file
 
-        for (Variable variable : ds.getAllVariables()) {
+        for (Variable variable : dataStore.getAllVariables()) {
             ps.printf("%s (%s,%s,%s)",
                     StringUtils.escapeCSV(variable.getName()),
                     variable.getRootNode().type,
@@ -124,9 +94,30 @@ public final class SaveDatabaseFileC {
                 ps.printf("%s,%s,%s",
                         cell.getOnsetString(),
                         cell.getOffsetString(),
-                        cell.getValue().serialize());
+                        cell.getCellValue().serialize());
                 ps.println();
             }
+        }
+    }
+
+    /**
+     * Saves the database to the specified destination in a CSV format.
+     *
+     * @param outFile The path of the file to use when writing to disk.
+     * @param dataStore      The datastore to save as a CSV file.
+     * @throws UserWarningException When unable to save the database as a CSV to
+     *                              disk (usually because of permissions errors).
+     */
+    public void saveAsCsv(final String outFile, final DataStore dataStore) throws UserWarningException {
+
+        try {
+            FileOutputStream fos = new FileOutputStream(outFile);
+            saveAsCsv(fos, dataStore);
+            fos.close();
+        } catch (IOException ie) {
+            ResourceMap rMap = Application.getInstance(Datavyu.class)
+                    .getContext().getResourceMap(Datavyu.class);
+            throw new UserWarningException(rMap.getString("UnableToSave.message", outFile), ie);
         }
     }
 }

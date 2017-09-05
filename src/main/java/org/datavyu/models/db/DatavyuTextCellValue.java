@@ -25,24 +25,24 @@ package org.datavyu.models.db;
 
 import java.util.UUID;
 
-public final class DatavyuTextValue extends DatavyuValue implements TextValue {
+public final class DatavyuTextCellValue extends DatavyuCellValue implements TextCellValue {
 
-    public DatavyuTextValue() {
+    public DatavyuTextCellValue() {
     }
 
-    public DatavyuTextValue(UUID parent_id, Cell parent) {
+    public DatavyuTextCellValue(UUID parent_id, Cell parent) {
         this.parent_id = parent_id;
         this.index = -1;
         this.parent = parent;
     }
 
-    public DatavyuTextValue(UUID parent_id, Argument arg, Cell parent) {
+    public DatavyuTextCellValue(UUID parent_id, Argument arg, Cell parent) {
         this(parent_id, parent);
         this.arg = arg;
         this.parent = parent;
     }
 
-    public DatavyuTextValue(UUID parent_id, String name, int index, Argument arg, Cell parent) {
+    public DatavyuTextCellValue(UUID parent_id, String name, int index, Argument arg, Cell parent) {
         this(parent_id, parent);
         this.name = name;
         this.index = index;

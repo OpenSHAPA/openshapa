@@ -19,40 +19,35 @@ import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.models.db.Cell;
 import org.datavyu.models.db.DataStore;
-import org.datavyu.undoableedits.ChangeCellEdit;
-import org.datavyu.undoableedits.ChangeOffsetCellEdit;
+import org.datavyu.undoableedits.ChangeCellEdit.Granularity;
+import org.datavyu.undoableedits.ChangeOnsetCellEdit;
 
 import javax.swing.undo.UndoableEdit;
 
 /**
- * Controller for setting all selected cells to have the specified stop time /
- * offset.
+ * Controller for setting all selected cells to have the specified start time / onset.
  */
-public class SetSelectedCellStopTimeC {
+public class SetSelectedCellStartTimeController {
+
+    /** The logger instance for this class */
+    private static Logger logger = LogManager.getLogger(SetSelectedCellStartTimeController.class);
 
     /**
-     * The logger for this class.
-     */
-    private static Logger LOGGER = LogManager.getLogger(SetSelectedCellStopTimeC.class);
-
-    /**
-     * Sets all selected cells to have the specified stop time / offset.
+     * Sets all selected cells to have the specified start time / onset.
      *
-     * @param milliseconds The time in milliseconds to use for all selected
-     *                     cells offset / stop time.
+     * @param milliseconds The time in milliseconds to use for all selected cells onset / start time.
      */
-    public SetSelectedCellStopTimeC(final long milliseconds) {
-        LOGGER.info("set selected cell offset");
+    public SetSelectedCellStartTimeController(final long milliseconds) {
+        logger.info("Set selected cell onset to: " + milliseconds);
 
         // Get the dataStore that we are manipulating.
         DataStore dataStore = Datavyu.getProjectController().getDataStore();
 
-        for (Cell c : dataStore.getSelectedCells()) {
+        for (Cell cell : dataStore.getSelectedCells()) {
             // record the effect
-            UndoableEdit edit = new ChangeOffsetCellEdit(c, c.getOffset(), milliseconds, ChangeCellEdit.Granularity.FINEGRAINED);
+            UndoableEdit edit = new ChangeOnsetCellEdit(cell, cell.getOnset(), milliseconds, Granularity.FINEGRAINED);
             Datavyu.getView().getUndoSupport().postEdit(edit);
-
-            c.setOffset(milliseconds);
+            cell.setOnset(milliseconds);
         }
     }
 }

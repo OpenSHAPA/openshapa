@@ -34,12 +34,12 @@ import java.io.File;
 import java.util.EventObject;
 
 /**
- * The main class of the application.
+ * The main class for Datavyu
  */
 public final class Datavyu extends SingleFrameApplication implements KeyEventDispatcher, TitleNotifier {
 
     /**
-     * All the supported platforms that Datavyu runs on.
+     * Supported platforms for Datavyu
      */
     public enum Platform {
         MAC, // Generic Mac platform. I.e. Tiger, Leopard, Snow Leopard
@@ -47,7 +47,8 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         LINUX, // Generic Linux platform.
         UNKNOWN
     }
-    /** The logger for this class */
+
+    /** Logger for this class */
     private static Logger logger = LogManager.getLogger(Datavyu.class);
 
     /** The desired minimum initial width */
@@ -56,11 +57,12 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
     /** The desired minimum initial height */
     private static final int INIT_MIN_Y = 700;
 
+    // TODO: Move this to some OS specifics
     private static boolean osxPressAndHoldEnabled;
 
     /**
      * Constant variable for the Datavyu main panel to send keyboard shortcuts while the QTController is in focus.
-     * Initialized in startup().
+     * This is initialized in the 'startup' method.
      */
     private static DatavyuView datavyuView;
 
@@ -70,7 +72,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
     /** The project controller instance */
     private static ProjectController projectController;
 
-    /** Load native libraries */
+    // Load native libraries
     static {
         logger.info("Working directory is: " + System.getProperty("user.dir"));
         logger.info("Class path is: " + System.getProperty("java.class.path"));
@@ -101,6 +103,16 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         }
     }
 
+    /** Tracks if a NumPad key has been pressed */
+    private boolean numKeyDown = false;
+
+    /** This application is ready to open a file */
+    public boolean readyToOpenFile = false;
+
+    /** File path from the command line */
+    private String commandLineFile;
+
+
     /**
      * @return The platform that Datavyu is running on.
      */
@@ -118,45 +130,35 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
         return Platform.UNKNOWN;
     }
 
-    public boolean ready = false;
-
-    /** Tracks if a NumPad key has been pressed */
-    private boolean numKeyDown = false;
-
-    /** File path from the command line */
-    private String commandLineFile;
-
     /**
-     * Gets the single instance of the data controller that is currently used
-     * with Datavyu.
+     * Get the single instance of the video controller used in Datavyu
      *
-     * @return The single data controller in use with this instance of
-     * Datavyu.
+     * @return Video controller
      */
     public static VideoController getVideoController() {
         return videoController;
     }
 
     /**
-     * Sets the data controller.
+     * Sets the video controller
      *
-     * @param videoController The data controller instance to set.
+     * @param videoController The video controller
      */
     public static void setVideoController(VideoController videoController) {
         Datavyu.videoController = videoController;
     }
 
     /**
-     * A convenient static getter for the application instance.
+     * Gets application instance
      *
-     * @return The instance of the Datavyu application.
+     * @return Instance of the Datavyu application
      */
     public static Datavyu getApplication() {
         return Application.getInstance(Datavyu.class);
     }
 
     /**
-     * Main method launching the application.
+     * Main method launching the application
      *
      * @param args The command line arguments passed to Datavyu.
      */
@@ -828,7 +830,7 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
 
     @Override
     protected void ready() {
-        ready = true;
+        readyToOpenFile = true;
         if (commandLineFile != null) {
             getView().openExternalFile(new File(commandLineFile));
             commandLineFile = null;

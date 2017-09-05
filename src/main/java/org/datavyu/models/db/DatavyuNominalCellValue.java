@@ -25,23 +25,23 @@ package org.datavyu.models.db;
 
 import java.util.UUID;
 
-public final class DatavyuNominalValue extends DatavyuValue implements NominalValue {
+public final class DatavyuNominalCellValue extends DatavyuCellValue implements NominalCellValue {
 
-    public DatavyuNominalValue() {
+    public DatavyuNominalCellValue() {
     }
 
-    public DatavyuNominalValue(UUID parent_id, Cell parent) {
+    public DatavyuNominalCellValue(UUID parent_id, Cell parent) {
         this.parent_id = parent_id;
         this.index = -1;
         this.parent = parent;
     }
 
-    public DatavyuNominalValue(UUID parent_id, Argument arg, Cell parent) {
+    public DatavyuNominalCellValue(UUID parent_id, Argument arg, Cell parent) {
         this(parent_id, parent);
         this.arg = arg;
     }
 
-    public DatavyuNominalValue(UUID parent_id, String name, int index, Argument type, Cell parent) {
+    public DatavyuNominalCellValue(UUID parent_id, String name, int index, Argument type, Cell parent) {
         this(parent_id, parent);
         this.index = index;
         this.name = name;

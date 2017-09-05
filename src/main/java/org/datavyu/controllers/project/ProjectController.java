@@ -19,7 +19,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
-import org.datavyu.controllers.VocabEditorC;
+import org.datavyu.controllers.VocabEditorController;
 import org.datavyu.controllers.component.MixerController;
 import org.datavyu.models.Identifier;
 import org.datavyu.models.component.TrackModel;
@@ -86,25 +86,19 @@ public final class ProjectController {
      * Default constructor.
      */
     public ProjectController() {
-        project = new Project();
-        dataStore = DataStoreFactory.newDataStore();
-        dataStore.setTitleNotifier(Datavyu.getApplication());
-        changed = false;
+        this(new Project(), DataStoreFactory.newDataStore());
         newProject = true;
-        lastCreatedCell = null;
-        lastSelectedCell = null;
-        lastCreatedVariable = null;
     }
 
     public ProjectController(final Project project, final DataStore dataStore) {
         this.project = project;
         this.dataStore = dataStore;
-        dataStore.setTitleNotifier(Datavyu.getApplication());
         changed = false;
         newProject = false;
         lastCreatedCell = null;
         lastSelectedCell = null;
         lastCreatedVariable = null;
+        dataStore.setTitleNotifier(Datavyu.getApplication());
     }
 
     /**
@@ -143,17 +137,17 @@ public final class ProjectController {
     }
 
     /**
-     * Sets the datastore to use with this project. This is used when loading a
+     * Sets the data store to use with this project. This is used when loading a
      * database from file.
      *
-     * @param newDataStore The new datastore we are using.
+     * @param newDataStore The new data store we are using.
      */
     public void setDataStore(final DataStore newDataStore) {
         dataStore = newDataStore;
         dataStore.setTitleNotifier(Datavyu.getApplication());
         
         //don't let code editor instance corresponding to an old DataStore hang around!
-        VocabEditorC.getController().killView();
+        VocabEditorController.getController().killView();
     }
 
     /**

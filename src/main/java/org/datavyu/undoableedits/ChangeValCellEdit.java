@@ -45,7 +45,7 @@ public class ChangeValCellEdit extends ChangeCellEdit {
     protected void updateCell(Cell cell) {
         String currentCellValue = cell.getValueAsString();
 
-        cell.getValue().set(cellValue);
+        cell.getCellValue().set(cellValue);
         this.cellValue = currentCellValue;
         Datavyu.getProjectController().getSpreadSheetPanel().redrawCells();
     }

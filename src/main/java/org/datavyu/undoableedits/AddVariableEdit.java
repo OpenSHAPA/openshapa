@@ -16,7 +16,7 @@ package org.datavyu.undoableedits;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.controllers.DeleteColumnC;
+import org.datavyu.controllers.DeleteColumnController;
 import org.datavyu.models.db.Argument;
 import org.datavyu.models.db.UserWarningException;
 import org.datavyu.models.db.Variable;
@@ -65,7 +65,7 @@ public class AddVariableEdit extends VocabEditorEdit {
         super.undo();
         List<Variable> cols = new ArrayList<Variable>();
         cols.add(model.getVariable(varName));
-        new DeleteColumnC(cols);
+        new DeleteColumnController(cols);
     }
 
 }

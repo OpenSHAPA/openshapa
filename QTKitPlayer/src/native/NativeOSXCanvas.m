@@ -176,7 +176,7 @@ JNIEXPORT jlong JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_getCu
     CMTime newQTTime = GetQtMovie(movieId).currentTime;
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
 
-    long long time = (newQTTime.value * 1000.0f) / newQTTime.timescale;
+    long long time = (newQTTime.cellValue * 1000.0f) / newQTTime.timescale;
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
 
     
@@ -196,7 +196,7 @@ JNIEXPORT jlong JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_getDu
     CMTime newQTTime = GetQtMovie(movieId).currentItem.duration;
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
 
-    long long time = (newQTTime.value * 1000.0f) / newQTTime.timescale;
+    long long time = (newQTTime.cellValue * 1000.0f) / newQTTime.timescale;
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
 
     
@@ -447,12 +447,12 @@ JNIEXPORT void JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_setTim
     
     CMTime newQTTime = [GetQtMovie(movieId) currentTime];
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
-    newQTTime.value = ((long long)time / 1000.0f) * newQTTime.timescale;
+    newQTTime.cellValue = ((long long)time / 1000.0f) * newQTTime.timescale;
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
     [GetQtMovie(movieId) seekToTime:newQTTime toleranceBefore:kCMTimeZero toleranceAfter:kCMTimeZero];
     
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
-    long long t = (newQTTime.value * 1000.0f) / newQTTime.timescale;
+    long long t = (newQTTime.cellValue * 1000.0f) / newQTTime.timescale;
     
     
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
@@ -483,12 +483,12 @@ JNIEXPORT void JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_setTim
     CMTime tol = CMTimeMake(500, 1000);
     CMTime newQTTime = [GetQtMovie(movieId) currentTime];
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
-    newQTTime.value = ((long long)time / 1000.0f) * newQTTime.timescale;
+    newQTTime.cellValue = ((long long)time / 1000.0f) * newQTTime.timescale;
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
     [GetQtMovie(movieId) seekToTime:newQTTime toleranceBefore:tol toleranceAfter:tol];
     
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
-    long long t = (newQTTime.value * 1000.0f) / newQTTime.timescale;
+    long long t = (newQTTime.cellValue * 1000.0f) / newQTTime.timescale;
     
     
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
@@ -519,12 +519,12 @@ JNIEXPORT void JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_setTim
     
     CMTime newQTTime = [GetQtMovie(movieId) currentTime];
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
-    newQTTime.value = ((long long)time / 1000.0f) * newQTTime.timescale;
+    newQTTime.cellValue = ((long long)time / 1000.0f) * newQTTime.timescale;
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
     [GetQtMovie(movieId) seekToTime:newQTTime];
 
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
-    long long t = (newQTTime.value * 1000.0f) / newQTTime.timescale;
+    long long t = (newQTTime.cellValue * 1000.0f) / newQTTime.timescale;
 
     
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
@@ -741,7 +741,7 @@ JNIEXPORT void JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_releas
     if ([object isKindOfClass:[AVPlayerItem class]])
     {
         AVPlayerItem *item = (AVPlayerItem *)object;
-        //playerItem status value changed?
+        //playerItem status cellValue changed?
         if ([keyPath isEqualToString:@"status"])
         {   //yes->check it...
             switch(item.status)

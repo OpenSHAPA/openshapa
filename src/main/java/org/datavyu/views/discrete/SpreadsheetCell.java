@@ -20,7 +20,7 @@ import org.datavyu.Datavyu;
 import org.datavyu.models.db.Cell;
 import org.datavyu.models.db.CellListener;
 import org.datavyu.models.db.DataStore;
-import org.datavyu.models.db.Value;
+import org.datavyu.models.db.CellValue;
 import org.datavyu.util.ClockTimer;
 import org.datavyu.util.ConfigurationProperties;
 import org.datavyu.views.discrete.datavalues.MatrixRootView;
@@ -206,7 +206,7 @@ public class SpreadsheetCell extends JPanel
         offset.addMouseListener(this);
         offset.setName("offsetTextField");
 
-        dataPanel = new MatrixRootView(model, cell.getValue());
+        dataPanel = new MatrixRootView(model, cell.getCellValue());
         dataPanel.setFont(ConfigurationProperties.getInstance().getSpreadSheetDataFont());
         dataPanel.setForeground(ConfigurationProperties.getInstance().getSpreadSheetForegroundColor());
 
@@ -545,8 +545,8 @@ public class SpreadsheetCell extends JPanel
     }
 
     @Override
-    public void valueChange(final Value newValue) {
-        dataPanel.setMatrix(newValue);
+    public void valueChange(final CellValue newCellValue) {
+        dataPanel.setMatrix(newCellValue);
         revalidate();
     }
 

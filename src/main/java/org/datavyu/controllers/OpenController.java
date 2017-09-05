@@ -28,19 +28,15 @@ import java.util.zip.ZipFile;
 /**
  * Controller for opening Datavyu databases and project files.
  */
-public final class OpenC {
+public final class OpenController {
 
-    /**
-     * The logger for this class.
-     */
-    private static Logger logger = LogManager.getLogger(OpenC.class);
-    /**
-     * A reference to the database that this controller opened.
-     */
+    /** The logger instance for this class */
+    private static Logger logger = LogManager.getLogger(OpenController.class);
+
+    /** Reference to the data base that this controller opened */
     private DataStore database = null;
-    /**
-     * A reference to the projec that this controller opened.
-     */
+
+    /** Reference to the project that this controller opened */
     private Project project = null;
 
     /**
@@ -48,20 +44,10 @@ public final class OpenC {
      *
      * @param databaseFile The file to use when opening a file as a database.
      */
-    public void openDatabase(final File databaseFile) {
-        OpenDatabaseFileC odc = new OpenDatabaseFileC();
+    public void openDataStore(final File databaseFile) {
+        OpenDataStoreFileController odc = new OpenDataStoreFileController();
         database = odc.open(databaseFile);
-
         database.deselectAll();
-    }
-
-    /**
-     * Opens a file as a Datavyu database.
-     *
-     * @param databaseFile The file to use when opening a file as a database.
-     */
-    public void openDatabase(final String databaseFile) {
-        this.openDatabase(new File(databaseFile));
     }
 
     /**
@@ -80,11 +66,11 @@ public final class OpenC {
         } else {
             logger.info("open legacy shapa");
 
-            OpenProjectFileC opc = new OpenProjectFileC();
+            OpenProjectFileController opc = new OpenProjectFileController();
             project = opc.open(projectFile);
 
             if (project != null) {
-                OpenDatabaseFileC odc = new OpenDatabaseFileC();
+                OpenDataStoreFileController odc = new OpenDataStoreFileController();
                 database = odc.open(new File(projectFile.getParent(),
                         project.getDatabaseFileName()));
             }
@@ -117,7 +103,7 @@ public final class OpenC {
                 zProj = zf.getEntry(arch + File.separator + "project");
             }
 
-            OpenProjectFileC opc = new OpenProjectFileC();
+            OpenProjectFileController opc = new OpenProjectFileController();
             project = opc.open(zf.getInputStream(zProj));
 
             ZipEntry zDb = zf.getEntry("db");
@@ -128,8 +114,8 @@ public final class OpenC {
                 zDb = zf.getEntry(arch + File.separator + "db");
             }
 
-            OpenDatabaseFileC odc = new OpenDatabaseFileC();
-            database = odc.openAsCSV(zf.getInputStream(zDb));
+            OpenDataStoreFileController odc = new OpenDataStoreFileController();
+            database = odc.openAsCsv(zf.getInputStream(zDb));
 
             // BugzID:1806
             for (ViewerSetting vs : project.getViewerSettings()) {
@@ -149,19 +135,9 @@ public final class OpenC {
     }
 
     /**
-     * Opens a file as a Datavyu project.
-     *
-     * @param projectFile the file to use when opening a file as a project.
+     * @return The instance of the data store that was opened by this controller, returns null if no database opened.
      */
-    public void openProject(final String projectFile) {
-        this.openProject(new File(projectFile));
-    }
-
-    /**
-     * @return The instance of the datastore that was opened by this controller,
-     * returns null if no database opened.
-     */
-    public DataStore getDatastore() {
+    public DataStore getDataStore() {
         return database;
     }
 

@@ -41,7 +41,7 @@ begin
       end
     end
 
-    # Now go from min to max time in 33ms intervals, getting the cell value at each time
+    # Now go from min to max time in 33ms intervals, getting the cell cellValue at each time
     puts "Getting the data for each time point..."
     time = min
     i = 0

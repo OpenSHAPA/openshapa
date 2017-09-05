@@ -17,7 +17,7 @@ package org.datavyu.views.discrete;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
-import org.datavyu.controllers.CreateNewCellC;
+import org.datavyu.controllers.CreateNewCellController;
 import org.datavyu.models.db.Variable;
 import org.datavyu.util.ConfigurationProperties;
 import org.jdesktop.application.Application;
@@ -289,7 +289,7 @@ public class SpreadsheetEmptyCell extends JPanel implements MouseListener {
     @Override
     public void mouseClicked(final MouseEvent me) {
         LOGGER.info("Pressed empty cell");
-        CreateNewCellC controller = new CreateNewCellC();
+        CreateNewCellController controller = new CreateNewCellController();
         controller.createDefaultCell(model);
     }
 
