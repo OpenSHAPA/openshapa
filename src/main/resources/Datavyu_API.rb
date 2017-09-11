@@ -1658,7 +1658,7 @@ def save_db(filename)
   print_debug "Saving Database: " + filename
 
   filename = File.expand_path(filename)
-  
+
   # Create the controller that holds all the logic for opening projects and
   # databases.
   save_c = SaveC.new
@@ -1671,21 +1671,12 @@ def save_db(filename)
   if filename.include?('.csv')
     save_c.save_database(filename, $dataStore)
   else
-<<<<<<< HEAD
-    #if $pj == nil or $pj.getDatabaseFileName == nil
-    $pj = Project.new()
-    $pj.setDatabaseFileName("dataStore")
-    dbname = filename[filename.rindex("/")+1..filename.length]
-    $pj.setProjectName(dbname)
-    #end
-=======
     if $pj == nil or $pj.getDatabaseFileName == nil
       $pj = Project.new()
       $pj.setDatabaseFileName("db")
       dbname = filename[filename.rindex("/")+1..filename.length]
       $pj.setProjectName(dbname)
     end
->>>>>>> master
     save_file = java.io.File.new(filename)
     save_c.save_project(save_file, $pj, $dataStore)
   end
@@ -2529,11 +2520,7 @@ end
 # @param [Array<String>] names of columns to hide
 def hide_columns(*names)
   valid_names = names & get_column_list
-<<<<<<< HEAD
-  valid_names.each{ |x| $dataStore.getVariable(name).setHidden(true)}
-=======
   valid_names.each{ |x| $db.getVariable(x).setHidden(true)}
->>>>>>> master
 end
 
 # Show the given columns in the spreadsheet
