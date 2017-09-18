@@ -26,28 +26,19 @@ import org.datavyu.models.Identifier;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 
 /**
- * This model provides data feed information used to render a carriage on the
- * tracks interface.
+ * This model provides data feed information used to render a carriage on the tracks interface.
  */
 public final class TrackModel {
 
-    /** Enumeration for defining track state. */
-    public static enum TrackState {
-
-        /** Track is in the normal state. */
-        NORMAL,
-
-        /** Track is in the selected state. */
-        SELECTED,
-
-        /** Track is in the snapped state. */
-        SNAPPED
+    /** Enumeration of track states. */
+    public enum TrackState {
+        NORMAL, // Track is in the normal state
+        SELECTED, // Track is in the selected state
+        SNAPPED // Track is in the snapped state
     }
 
     /** Track identifier. */
@@ -57,16 +48,24 @@ public final class TrackModel {
     private long duration;
 
     /** The offset of the track in milliseconds */
-    private long offset;
+    private long offset; // TODO: Is this the current time or the initial offset of this track to all others?
 
-    /** Track bookmark location in milliseconds */
-    private List<Long> bookmarks = new ArrayList<Long> ();
+    /** Track markers location in milliseconds that are sorted at all times */
+    //private List<Long> markers = new ArrayList<>();
+    private Set<Long> markers = new TreeSet<>(new Comparator<Long>() {
+        @Override
+        public int compare(Long o1, Long o2) {
+            long l1 = o1;
+            long l2 = o2;
+            return l1 == l2 ? 0 : l1 < l2 ? -1 : +1;
+        }
+    });
 
     /** Is there an error with track information */
     private boolean erroneous;
 
-    /** Absolute media path for this track. */
-    private String mediaPath;
+    /** Source file for this track */
+    private String sourceFile;
 
     /** Name of this track */
     private String trackName;
@@ -88,52 +87,48 @@ public final class TrackModel {
     }
 
     /**
-     * Copy constructor.
+     * Copy constructor
      *
-     * @param other Model to copy from.
+     * @param trackModel Model to copy from.
      */
-    protected TrackModel(final TrackModel other) {
+    protected TrackModel(final TrackModel trackModel) {
         change = new PropertyChangeSupport(this);
-        duration = other.duration;
-        offset = other.offset;
-        bookmarks = new ArrayList<Long> (other.bookmarks);
-        erroneous = other.erroneous;
-        mediaPath = other.mediaPath;
-        trackName = other.trackName;
-        state = other.state;
-        locked = other.locked;
-        id = other.id;
+        duration = trackModel.duration;
+        offset = trackModel.offset;
+        markers = new TreeSet<>(trackModel.markers);
+        erroneous = trackModel.erroneous;
+        sourceFile = trackModel.sourceFile;
+        trackName = trackModel.trackName;
+        state = trackModel.state;
+        locked = trackModel.locked;
+        id = trackModel.id;
     }
 
     /**
      * @see PropertyChangeSupport#addPropertyChangeListener(PropertyChangeListener)
      */
-    public void addPropertyChangeListener(
-        final PropertyChangeListener listener) {
+    public void addPropertyChangeListener(final PropertyChangeListener listener) {
         change.addPropertyChangeListener(listener);
     }
 
     /**
      * @see PropertyChangeSupport#addPropertyChangeListener(String, PropertyChangeListener)
      */
-    public void addPropertyChangeListener(final String property,
-        final PropertyChangeListener listener) {
+    public void addPropertyChangeListener(final String property, final PropertyChangeListener listener) {
         change.addPropertyChangeListener(property, listener);
     }
 
     /**
      * @see PropertyChangeSupport#removePropertyChangeListener(PropertyChangeListener)
      */
-    public void removePropertyChangeListener(
-        final PropertyChangeListener listener) {
+    public void removePropertyChangeListener(final PropertyChangeListener listener) {
         change.removePropertyChangeListener(listener);
     }
 
     /**
      * @see PropertyChangeSupport#removePropertyChangeListener(String, PropertyChangeListener)
      */
-    public void removePropertyChangeListener(final String property,
-        final PropertyChangeListener listener) {
+    public void removePropertyChangeListener(final String property, final PropertyChangeListener listener) {
         change.removePropertyChangeListener(property, listener);
     }
 
@@ -148,9 +143,9 @@ public final class TrackModel {
      * @param locked lock state to set.
      */
     public void setLocked(final boolean locked) {
-        boolean old = this.locked;
+        boolean oldLocked = this.locked;
         this.locked = locked;
-        change.firePropertyChange("locked", old, locked);
+        change.firePropertyChange("locked", oldLocked, locked);
     }
 
     /**
@@ -166,9 +161,9 @@ public final class TrackModel {
      * @param duration the new duration.
      */
     public void setDuration(final long duration) {
-        long old = this.duration;
+        long oldDuration = this.duration;
         this.duration = duration;
-        change.firePropertyChange("duration", old, duration);
+        change.firePropertyChange("duration", oldDuration, duration);
     }
 
     /**
@@ -184,16 +179,16 @@ public final class TrackModel {
      * @param offset the new offset.
      */
     public void setOffset(final long offset) {
-        long old = this.offset;
+        long oldOffset = this.offset;
         this.offset = offset;
-        change.firePropertyChange("offset", old, offset);
+        change.firePropertyChange("offset", oldOffset, offset);
     }
 
     /**
      * @return absolute media path.
      */
-    public String getMediaPath() {
-        return mediaPath;
+    public String getSourceFile() {
+        return sourceFile;
     }
 
     /**
@@ -201,10 +196,10 @@ public final class TrackModel {
      *
      * @param path absolute media path.
      */
-    public void setMediaPath(final String path) {
-        String old = this.mediaPath;
-        mediaPath = path;
-        change.firePropertyChange("mediaPath", old, path);
+    public void setSourceFile(final String path) {
+        String oldPath = this.sourceFile;
+        sourceFile = path;
+        change.firePropertyChange("sourceFile", oldPath, path);
     }
 
     /**
@@ -220,64 +215,58 @@ public final class TrackModel {
      * @param erroneous true if erroneous, false otherwise.
      */
     public void setErroneous(final boolean erroneous) {
-        boolean old = this.erroneous;
+        boolean oldErroneous = this.erroneous;
         this.erroneous = erroneous;
-        change.firePropertyChange("erroneous", old, erroneous);
+        change.firePropertyChange("erroneous", oldErroneous, erroneous);
     }
 
     /**
      * @return list of bookmark positions in milliseconds.
      */
-    public List<Long> getBookmarks() {
-        final List<Long> copy = new ArrayList<Long> (bookmarks);
-        Collections.sort(copy);
-        return copy;
+    public List<Long> getMarkers() {
+        return new ArrayList<>(markers); // markers are sorted
     }
 
     /**
-     * Adds a snap bookmark position.
+     * Adds a snap marker position.
      *
-     * @param bookmark new bookmark position in milliseconds
+     * @param marker new marker position in milliseconds
      */
-    public void addBookmark(final long bookmark) {
-    	if (bookmark >= 0 && !bookmarks.contains(bookmark)) {
-    		bookmarks.add((Long) bookmark);
-    		Collections.sort(bookmarks);
-            change.firePropertyChange("bookmarks", null, bookmarks);
-    	}
+    public void addMarker(final long marker) {
+        if (markers.add(marker)) {
+            // If we added the marker fire a change event -- otherwise it was already there
+            change.firePropertyChange("markers", null, markers);
+        }
     }
 
     /**
-     * Adds multiple snap bookmark positions.
+     * Adds multiple snap bookmark positions with one property change event.
      * 
-     * @param bookmarks new bookmark positions in milliseconds
+     * @param markers new bookmark positions in milliseconds
      */
-    public void addBookmarks(final List<Long> bookmarks) {
-    	for (Long bookmark : bookmarks) {
-        	if (bookmark >= 0 && !this.bookmarks.contains(bookmark)) {
-        		this.bookmarks.add((Long) bookmark);
-        	}
-    	}
-		Collections.sort(bookmarks);
-        change.firePropertyChange("bookmarks", null, this.bookmarks);
+    public void addMarkers(final List<Long> markers) {
+        if (this.markers.addAll(markers)) {
+            // If any of the markers was added fire a change event
+            change.firePropertyChange("markers", null, this.markers);
+        }
     }
     
     /**
-     * Removes a snap bookmark position.
+     * Removes a snap marker position.
      *
-     * @param bookmark bookmark position in milliseconds
+     * @param marker marker position in milliseconds
      */
-    public void removeBookmark(final long bookmark) {
-    	if (bookmarks.contains(bookmark)) {
-	    	bookmarks.remove((Long) bookmark);
-	        change.firePropertyChange("bookmarks", null, bookmarks);
-    	}
+    public void removeMarker(final long marker) {
+        if (markers.remove(marker)) {
+            // This marker was in the set fire a change event
+            change.firePropertyChange("markers", null, markers);
+        }
     }
     
-    public void clearBookmarks() {
-    	if (!bookmarks.isEmpty()) {
-    		bookmarks.clear();
-	        change.firePropertyChange("bookmarks", null, bookmarks);
+    public void removeMarkers() {
+    	if (!markers.isEmpty()) {
+    		markers.clear();
+	        change.firePropertyChange("markers", null, markers);
     	}
     }
     
@@ -294,9 +283,9 @@ public final class TrackModel {
      * @param trackName the new track name
      */
     public void setTrackName(final String trackName) {
-        String old = this.trackName;
+        String oldTrackName = this.trackName;
         this.trackName = trackName;
-        change.firePropertyChange("trackName", old, trackName);
+        change.firePropertyChange("trackName", oldTrackName, trackName);
     }
 
     /**
@@ -312,15 +301,9 @@ public final class TrackModel {
      * @param selected true if selected, false otherwise.
      */
     public void setSelected(final boolean selected) {
-        boolean old = isSelected();
-
-        if (selected) {
-            state = TrackState.SELECTED;
-        } else {
-            state = TrackState.NORMAL;
-        }
-
-        change.firePropertyChange("selected", old, selected);
+        boolean oldSelected = isSelected();
+        state = selected ? TrackState.SELECTED : TrackState.NORMAL;
+        change.firePropertyChange("selected", oldSelected, selected);
     }
 
     /**
@@ -329,9 +312,9 @@ public final class TrackModel {
      * @param state new state to use.
      */
     public void setState(final TrackState state) {
-        TrackState old = this.state;
+        TrackState oldState = this.state;
         this.state = state;
-        change.firePropertyChange("state", old, state);
+        change.firePropertyChange("state", oldState, state);
     }
 
     /**
@@ -369,17 +352,14 @@ public final class TrackModel {
     @Override public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + bookmarks.hashCode();
+        result = (prime * result) + markers.hashCode();
         result = (prime * result) + (int) (duration ^ (duration >>> 32));
         result = (prime * result) + (erroneous ? 1231 : 1237);
         result = (prime * result) + (locked ? 1231 : 1237);
         result = (prime * result) + (int) (offset ^ (offset >>> 32));
         result = (prime * result) + ((state == null) ? 0 : state.hashCode());
-        result = (prime * result)
-            + ((mediaPath == null) ? 0 : mediaPath.hashCode());
-        result = (prime * result)
-            + ((trackName == null) ? 0 : trackName.hashCode());
-
+        result = (prime * result) + ((sourceFile == null) ? 0 : sourceFile.hashCode());
+        result = (prime * result) + ((trackName == null) ? 0 : trackName.hashCode());
         return result;
     }
 
@@ -403,7 +383,7 @@ public final class TrackModel {
 
         TrackModel other = (TrackModel) obj;
 
-        if (!bookmarks.equals(other.bookmarks)) {
+        if (!markers.equals(other.markers)) {
             return false;
         }
 
@@ -424,7 +404,6 @@ public final class TrackModel {
         }
 
         if (state == null) {
-
             if (other.state != null) {
                 return false;
             }
@@ -432,17 +411,15 @@ public final class TrackModel {
             return false;
         }
 
-        if (mediaPath == null) {
-
-            if (other.mediaPath != null) {
+        if (sourceFile == null) {
+            if (other.sourceFile != null) {
                 return false;
             }
-        } else if (!mediaPath.equals(other.mediaPath)) {
+        } else if (!sourceFile.equals(other.sourceFile)) {
             return false;
         }
 
         if (trackName == null) {
-
             if (other.trackName != null) {
                 return false;
             }
@@ -455,10 +432,10 @@ public final class TrackModel {
 
     @Override public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("TrackModel [bookmark={");
-        for (Long bookmark : bookmarks) {
+        builder.append("TrackModel [marker={");
+        for (Long bookmark : markers) {
         	builder.append(bookmark);
-        	if (bookmarks.size() > 1) {
+        	if (markers.size() > 1) {
         		builder.append(", ");
         	}
         }
@@ -473,11 +450,10 @@ public final class TrackModel {
         builder.append(", state=");
         builder.append(state);
         builder.append(", trackId=");
-        builder.append(mediaPath);
+        builder.append(sourceFile);
         builder.append(", trackName=");
         builder.append(trackName);
         builder.append("]");
-
         return builder.toString();
     }
 }

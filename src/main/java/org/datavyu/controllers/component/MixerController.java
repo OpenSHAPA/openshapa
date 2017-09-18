@@ -855,15 +855,15 @@ public final class MixerController implements PropertyChangeListener,
      */
     public void offsetChanged(final CarriageEvent e) {
         final boolean wasOffsetChanged = tracksEditorController.setTrackOffset(
-                e.getTrackId(), e.getOffset(), e.getTemporalPosition());
+                e.getTrackId(), e.getOffset(), e.getTime());
         final CarriageEvent newEvent;
 
         if (wasOffsetChanged) {
             final long newOffset = tracksEditorController.getTrackModel(
                     e.getTrackId()).getOffset();
             newEvent = new CarriageEvent(e.getSource(), e.getTrackId(),
-                    newOffset, e.getBookmarks(), e.getDuration(),
-                    e.getTemporalPosition(), e.getEventType(),
+                    newOffset, e.getMarkers(), e.getDuration(),
+                    e.getTime(), e.getEventType(),
                     e.hasModifiers());
         } else {
             newEvent = e;
@@ -877,17 +877,16 @@ public final class MixerController implements PropertyChangeListener,
     /**
      * Track is requesting current temporal position to create a bookmark.
      *
-     * @param e the event to handle
+     * @param carriageEvent the event to handle
      */
-    public void requestBookmark(final CarriageEvent e) {
-        TrackController trackController = (TrackController) e.getSource();
-        trackController.addTemporalBookmark(needleController.getNeedleModel()
-                .getCurrentTime());
+    public void requestMarker(final CarriageEvent carriageEvent) {
+        TrackController trackController = (TrackController) carriageEvent.getSource();
+        trackController.addReferencedMarker(needleController.getNeedleModel().getCurrentTime());
 
-        CarriageEvent newEvent = new CarriageEvent(e.getSource(),
-                e.getTrackId(), e.getOffset(), trackController.getBookmarks(),
-                e.getDuration(), e.getTemporalPosition(),
-                EventType.BOOKMARK_CHANGED, e.hasModifiers());
+        CarriageEvent newEvent = new CarriageEvent(carriageEvent.getSource(),
+                carriageEvent.getTrackId(), carriageEvent.getOffset(), trackController.getMarkers(),
+                carriageEvent.getDuration(), carriageEvent.getTime(),
+                EventType.MARKER_CHANGED, carriageEvent.hasModifiers());
 
         fireTracksControllerEvent(TracksEvent.CARRIAGE_EVENT, newEvent);
     }
@@ -895,10 +894,10 @@ public final class MixerController implements PropertyChangeListener,
     /**
      * Track is requesting for bookmark to be saved.
      *
-     * @param e the event to handle
+     * @param carriageEvent the event to handle
      */
-    public void saveBookmark(final CarriageEvent e) {
-        fireTracksControllerEvent(TracksEvent.CARRIAGE_EVENT, e);
+    public void saveMarker(final CarriageEvent carriageEvent) {
+        fireTracksControllerEvent(TracksEvent.CARRIAGE_EVENT, carriageEvent);
     }
 
     /**
@@ -929,9 +928,7 @@ public final class MixerController implements PropertyChangeListener,
      *
      * @param listener the listener to register
      */
-    public void addTracksControllerListener(
-            final TracksControllerListener listener) {
-
+    public void addTracksControllerListener(final TracksControllerListener listener) {
         synchronized (this) {
             eventListenerList.add(TracksControllerListener.class, listener);
         }
@@ -942,9 +939,7 @@ public final class MixerController implements PropertyChangeListener,
      *
      * @param listener the listener to remove
      */
-    public void removeTracksControllerListener(
-            final TracksControllerListener listener) {
-
+    public void removeTracksControllerListener(final TracksControllerListener listener) {
         synchronized (this) {
             eventListenerList.remove(TracksControllerListener.class, listener);
         }
@@ -968,22 +963,14 @@ public final class MixerController implements PropertyChangeListener,
      * @param tracksEvent The event to handle
      * @param eventObject The event object to repackage
      */
-    private void fireTracksControllerEvent(final TracksEvent tracksEvent,
-                                           final EventObject eventObject) {
-        TracksControllerEvent e = new TracksControllerEvent(this, tracksEvent,
-                eventObject);
+    private void fireTracksControllerEvent(final TracksEvent tracksEvent, final EventObject eventObject) {
+        TracksControllerEvent e = new TracksControllerEvent(this, tracksEvent, eventObject);
         Object[] listeners = eventListenerList.getListenerList();
-
         synchronized (this) {
-
-            /*
-             * The listener list contains the listening class and then the
-             * listener instance.
-             */
-            for (int i = 0; i < listeners.length; i += 2) {
-
-                if (listeners[i] == TracksControllerListener.class) {
-                    ((TracksControllerListener) listeners[i + 1])
+            // The listener list contains the listening class and then the listener instance
+            for (int iListener = 0; iListener < listeners.length; iListener += 2) {
+                if (listeners[iListener] == TracksControllerListener.class) {
+                    ((TracksControllerListener) listeners[iListener + 1])
                             .tracksControllerChanged(e);
                 }
             }
@@ -1056,29 +1043,23 @@ public final class MixerController implements PropertyChangeListener,
          */
         private double osxMagnificationGestureInitialZoomSetting;
 
-        public void register(final JComponent component) {
-            GestureUtilities.addGestureListenerTo(tracksPanel,
-                    osxGestureListener);
+        void register(final JComponent component) {
+            GestureUtilities.addGestureListenerTo(tracksPanel, osxGestureListener);
         }
 
         /**
          * Invoked when a magnification gesture ("pinch and squeeze") is performed by the user on Mac OS X.
          *
-         * @param e contains the scale of the magnification
+         * @param event contains the scale of the magnification
          */
         @Override
-        public void magnify(final MagnificationEvent e) {
-            osxMagnificationGestureSum += e.getMagnification();
-
-            /** Amount of the pinch-and-squeeze gesture required to perform a full zoom in the mixer. */
+        public void magnify(final MagnificationEvent event) {
+            osxMagnificationGestureSum += event.getMagnification();
+            // Amount of the pinch-and-squeeze gesture required to perform a full zoom in the mixer
             final double fullZoomMotion = 2.0;
-            final double newZoomSetting = Math.min(Math.max(
-                    osxMagnificationGestureInitialZoomSetting
-                            + (osxMagnificationGestureSum / fullZoomMotion), 0.0),
-                    1.0);
-
-            viewportModel.setViewportZoom(newZoomSetting,
-                    needleController.getNeedleModel().getCurrentTime());
+            final double newZoomSetting = Math.min(Math.max(osxMagnificationGestureInitialZoomSetting
+                            + (osxMagnificationGestureSum / fullZoomMotion), 0.0), 1.0);
+            viewportModel.setViewportZoom(newZoomSetting, needleController.getNeedleModel().getCurrentTime());
         }
 
         /**
@@ -1087,8 +1068,7 @@ public final class MixerController implements PropertyChangeListener,
         @Override
         public void gestureBegan(final GesturePhaseEvent e) {
             osxMagnificationGestureSum = 0;
-            osxMagnificationGestureInitialZoomSetting =
-                    viewportModel.getViewport().getZoomLevel();
+            osxMagnificationGestureInitialZoomSetting = viewportModel.getViewport().getZoomLevel();
         }
 
         /**
@@ -1114,16 +1094,13 @@ public final class MixerController implements PropertyChangeListener,
 
         private void swipeHorizontal(final boolean swipeLeft) {
 
-            /** The number of horizontal swipe actions needed to move the scroll bar along by the visible amount (i.e. a page left/right action) */
+            // The number of horizontal swipe actions needed to move the scroll bar along by the visible amount (i.e. a page left/right action)
             final int swipesPerVisibleAmount = 5;
             final int newValue = tracksScrollBar.getValue()
                     + ((swipeLeft ? -1 : 1) * tracksScrollBar.getVisibleAmount()
                     / swipesPerVisibleAmount);
-            tracksScrollBar.setValue(Math.max(
-                    Math.min(newValue,
-                            tracksScrollBar.getMaximum()
-                                    - tracksScrollBar.getVisibleAmount()),
-                    tracksScrollBar.getMinimum()));
+            tracksScrollBar.setValue(Math.max(Math.min(newValue,
+                    tracksScrollBar.getMaximum() - tracksScrollBar.getVisibleAmount()), tracksScrollBar.getMinimum()));
         }
 
         @Override

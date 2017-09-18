@@ -47,86 +47,65 @@ import java.util.Map;
 
 
 /**
- * TrackPainterController is responsible for managing a TrackPainter.
+ * TrackPainterController is responsible for managing a TrackPainter
  */
-public final class TrackController implements ViewerStateListener,
-        PropertyChangeListener {
+public final class TrackController implements ViewerStateListener, PropertyChangeListener {
 
-    /**
-     * Tooltip text for visible icon
-     */
-    public static final String VISIBLE_TOOLTIP = "Toggle video visibility";
-    /**
-     * Tooltip text for lock/unlock icon
-     */
-    public static final String LOCKUNLOCK_TOOLTIP = "Toggle lock/unlock";
-    /**
-     * Tooltip text for rubbish icon
-     */
-    public static final String RUBBISH_TOOLTIP = "Close video";
-    /**
-     * The LogManager logger for this class.
-     */
-    private static final Logger LOGGER = LogManager.getLogger(
-            TrackController.class);
-    /**
-     * Main panel holding the track UI.
-     */
+    /** Tooltip text for visible icon */
+    private static final String VISIBLE_TOOLTIP = "Toggle video visibility";
+
+    /** Tooltip text for lock/unlock icon */
+    private static final String LOCK_UNLOCK_TOOLTIP = "Toggle lock/unlock";
+
+    /** Tooltip text for rubbish icon */
+    private static final String UNLOAD_TOOLTIP = "Close video";
+
+    /** The LogManager logger for this class */
+    private static final Logger logger = LogManager.getLogger(TrackController.class);
+
+    /** Main panel holding the track UI */
     private final JPanel view;
-    /**
-     * Header block.
-     */
+
+    /** Header block */
     private final JPanel header;
-    /**
-     * Track label.
-     */
+
+    /** Track label */
     private final JLabel trackLabel;
-    /**
-     * Label holding the icon.
-     */
+
+    /** Label holding the icon for ???*/
     private final JLabel iconLabel;
-    /**
-     * Component that paints the track.
-     */
+
+    /** Component that paints the track */
     private final TrackPainter trackPainter;
-    /**
-     * Right click menu.
-     */
+
+    /** Right click menu */
     private final JPopupMenu menu;
-    private final JMenuItem setBookmarkMenuItem;
-    private final JMenuItem clearBookmarkMenuItem;
-    /**
-     * Button for (un)locking the track.
-     */
+    private final JMenuItem setMarkerMenuItem;
+    private final JMenuItem clearMarkerMenuItem;
+
+    /** Button for (un)locking the track */
     private final JButton lockUnlockButton;
-    /**
-     * Button for unloading the track (and its associated plugin).
-     */
-    private final JButton rubbishButton;
-    /**
-     * Button for hiding or showing the data viewer.
-     */
+
+    /** Button for unloading the track (and its associated plugin) */
+    private final JButton unloadingButton;
+
+    /** Button for hiding or showing the data viewer */
     private final JButton visibleButton;
-    /**
-     * Viewable model.
-     */
+
+    /** Mixer model */
     private final MixerModel mixerModel;
-    /**
-     * Track model.
-     */
+
+    /** Track model */
     private final TrackModel trackModel;
 
     //TODO: These may be better suited for a resource bundle and properties file, OR TrackConstants.java
-    /**
-     * Listeners interested in custom playback region events and mouse events on
-     * the track.
-     */
+    /** Listeners interested in custom playback region events and mouse events on the track */
     private final EventListenerList listenerList;
-    /**
-     * States.
-     */
-    // can the carriage be moved using the mouse when snap is switched on
+
+    /** can the carriage be moved using the mouse when snap is switched on */
     private boolean isMoveable;
+
+    /** visible? */
     private boolean isViewerVisible = true;
     
     /**
@@ -134,21 +113,18 @@ public final class TrackController implements ViewerStateListener,
      *
      * @param trackPainter the track painter for this controller to manage.
      */
-    public TrackController(final MixerModel mixerModel,
-                           final TrackPainter trackPainter) {
+    public TrackController(final MixerModel mixerModel, final TrackPainter trackPainter) {
         isMoveable = true;
-
         view = new JPanel();
         view.setLayout(new MigLayout("fillx, ins 0", "[]0[]"));
-        view.setBorder(BorderFactory.createLineBorder(
-                TrackConstants.BORDER_COLOR, 1));
+        view.setBorder(BorderFactory.createLineBorder(TrackConstants.BORDER_COLOR, 1));
 
         this.trackPainter = trackPainter;
 
         this.mixerModel = mixerModel;
         trackModel = new TrackModel();
         trackModel.setState(TrackState.NORMAL);
-        trackModel.clearBookmarks();
+        trackModel.removeMarkers();
         trackModel.setLocked(false);
 
         trackPainter.setMixerView(mixerModel);
@@ -165,21 +141,21 @@ public final class TrackController implements ViewerStateListener,
         menu = new JPopupMenu();
         menu.setName("trackPopUpMenu");
 
-        setBookmarkMenuItem = new JMenuItem("Set bookmark");
-        setBookmarkMenuItem.addActionListener(new ActionListener() {
+        setMarkerMenuItem = new JMenuItem("Set marker");
+        setMarkerMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(final ActionEvent e) {
-                TrackController.this.setBookmarkAction();
+                TrackController.this.setMarkerAction();
             }
         });
 
-        clearBookmarkMenuItem = new JMenuItem("Clear bookmarks");
-        clearBookmarkMenuItem.addActionListener(new ActionListener() {
+        clearMarkerMenuItem = new JMenuItem("Clear marker");
+        clearMarkerMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(final ActionEvent e) {
-                TrackController.this.clearBookmarkAction();
+                TrackController.this.clearMarkerAction();
             }
         });
-        menu.add(setBookmarkMenuItem);
-        menu.add(clearBookmarkMenuItem);
+        menu.add(setMarkerMenuItem);
+        menu.add(clearMarkerMenuItem);
 
         trackPainter.add(menu);
 
@@ -213,7 +189,7 @@ public final class TrackController implements ViewerStateListener,
             lockUnlockButton.setName("lockUnlockButton");
             lockUnlockButton.setContentAreaFilled(false);
             lockUnlockButton.setBorderPainted(false);
-            lockUnlockButton.setToolTipText(LOCKUNLOCK_TOOLTIP);
+            lockUnlockButton.setToolTipText(LOCK_UNLOCK_TOOLTIP);
             lockUnlockButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(final ActionEvent e) {
@@ -222,10 +198,8 @@ public final class TrackController implements ViewerStateListener,
             });
 
             Map<String, String> constraints = Maps.newHashMap();
-            constraints.put("width",
-                    Integer.toString(TrackConstants.ACTION_BUTTON_WIDTH));
-            constraints.put("height",
-                    Integer.toString(TrackConstants.ACTION_BUTTON_HEIGHT));
+            constraints.put("width", Integer.toString(TrackConstants.ACTION_BUTTON_WIDTH));
+            constraints.put("height", Integer.toString(TrackConstants.ACTION_BUTTON_HEIGHT));
 
             String template = "cell 0 2, w ${width}!, h ${height}!";
             StrSubstitutor sub = new StrSubstitutor(constraints);
@@ -248,10 +222,8 @@ public final class TrackController implements ViewerStateListener,
             });
 
             Map<String, String> constraints = Maps.newHashMap();
-            constraints.put("width",
-                    Integer.toString(TrackConstants.ACTION_BUTTON_WIDTH));
-            constraints.put("height",
-                    Integer.toString(TrackConstants.ACTION_BUTTON_HEIGHT));
+            constraints.put("width", Integer.toString(TrackConstants.ACTION_BUTTON_WIDTH));
+            constraints.put("height", Integer.toString(TrackConstants.ACTION_BUTTON_HEIGHT));
 
             String template = "cell 1 2, w ${width}!, h ${height}!";
             StrSubstitutor sub = new StrSubstitutor(constraints);
@@ -261,12 +233,12 @@ public final class TrackController implements ViewerStateListener,
 
         // Set up the button used for removing a track and its plugin
         {
-            rubbishButton = new JButton(TrackConstants.DELETE_ICON);
-            rubbishButton.setName("rubbishButton");
-            rubbishButton.setContentAreaFilled(false);
-            rubbishButton.setBorderPainted(false);
-            rubbishButton.setToolTipText(RUBBISH_TOOLTIP);
-            rubbishButton.addActionListener(new ActionListener() {
+            unloadingButton = new JButton(TrackConstants.DELETE_ICON);
+            unloadingButton.setName("unloadingButton");
+            unloadingButton.setContentAreaFilled(false);
+            unloadingButton.setBorderPainted(false);
+            unloadingButton.setToolTipText(UNLOAD_TOOLTIP);
+            unloadingButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(final ActionEvent e) {
                     handleDeleteButtonEvent(e);
@@ -274,24 +246,20 @@ public final class TrackController implements ViewerStateListener,
             });
 
             Map<String, String> constraints = Maps.newHashMap();
-            constraints.put("width",
-                    Integer.toString(TrackConstants.ACTION_BUTTON_WIDTH));
-            constraints.put("height",
-                    Integer.toString(TrackConstants.ACTION_BUTTON_HEIGHT));
+            constraints.put("width", Integer.toString(TrackConstants.ACTION_BUTTON_WIDTH));
+            constraints.put("height", Integer.toString(TrackConstants.ACTION_BUTTON_HEIGHT));
 
             String template = "cell 5 2, w ${width}!, h ${height}!";
             StrSubstitutor sub = new StrSubstitutor(constraints);
 
-            header.add(rubbishButton, sub.replace(template));
+            header.add(unloadingButton, sub.replace(template));
         }
 
         // Add the header to our layout.
         {
             Map<String, String> constraints = Maps.newHashMap();
-            constraints.put("width",
-                    Integer.toString(TrackConstants.HEADER_WIDTH));
-            constraints.put("height",
-                    Integer.toString(TrackConstants.CARRIAGE_HEIGHT));
+            constraints.put("width", Integer.toString(TrackConstants.HEADER_WIDTH));
+            constraints.put("height", Integer.toString(TrackConstants.CARRIAGE_HEIGHT));
 
             String template = "w ${width}!, h ${height}!";
             StrSubstitutor sub = new StrSubstitutor(constraints);
@@ -302,8 +270,7 @@ public final class TrackController implements ViewerStateListener,
         // Add the track carriage to our layout.
         {
             Map<String, String> constraints = Maps.newHashMap();
-            constraints.put("height",
-                    Integer.toString(TrackConstants.CARRIAGE_HEIGHT));
+            constraints.put("height", Integer.toString(TrackConstants.CARRIAGE_HEIGHT));
 
             String template = "pushx, growx, h ${height}!";
             StrSubstitutor sub = new StrSubstitutor(constraints);
@@ -320,34 +287,31 @@ public final class TrackController implements ViewerStateListener,
      * @param viewport current viewport
      * @return snapping threshold in time units (milliseconds);
      */
-    public static long calculateSnappingThreshold(
-            final ViewportState viewport) {
+    static long calculateSnappingThreshold(final ViewportState viewport) {
         final long MINIMUM_THRESHOLD_MILLISECONDS = 10;
-
-        return Math.max((long) Math.ceil(0.01F * viewport.getViewDuration()),
-                MINIMUM_THRESHOLD_MILLISECONDS);
+        return Math.max((long) Math.ceil(0.01F * viewport.getViewDuration()), MINIMUM_THRESHOLD_MILLISECONDS);
     }
 
     private void updatePopupMenu() {
 
         // 1. Remove every other popup menu item apart from the defaults.
         menu.removeAll();
-        menu.add(setBookmarkMenuItem);
-        menu.add(clearBookmarkMenuItem);
+        menu.add(setMarkerMenuItem);
+        menu.add(clearMarkerMenuItem);
 
         // 2. Add a divider if there are bookmarks.
-        if (!trackModel.getBookmarks().isEmpty()) {
+        if (!trackModel.getMarkers().isEmpty()) {
             menu.addSeparator();
         }
 
         // 3. Add menu item for deleting individual bookmarks
-        for (final Long bookmark : trackModel.getBookmarks()) {
-            String text = VideoController.formatTime(bookmark);
-            JMenuItem delete = new JMenuItem("Delete bookmark " + text);
+        for (final Long marker : trackModel.getMarkers()) {
+            String text = VideoController.formatTime(marker);
+            JMenuItem delete = new JMenuItem("Delete marker " + text);
             delete.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(final ActionEvent e) {
-                    removeBookmark(bookmark);
+                    removeMarker(marker);
                 }
             });
 
@@ -358,24 +322,22 @@ public final class TrackController implements ViewerStateListener,
     /**
      * Sets the track information to use.
      *
-     * @param id        Identifier to use.
-     * @param icon      Icon to use with this track. {@code null} if no icon.
+     * @param id Identifier to use
+     * @param icon Icon to use with this track. {@code null} if no icon.
      * @param trackName Name of this track
      * @param trackPath Absolute path to the track's data feed
-     * @param duration  Duration of the data feed in milliseconds
-     * @param offset    Offset of the data feed in milliseconds
+     * @param duration Duration of the data feed in milliseconds
+     * @param offset Offset of the data feed in milliseconds
      */
-    public void setTrackInformation(final Identifier id, final ImageIcon icon,
-                                    final String trackName, final String trackPath, final long duration,
-                                    final long offset) {
+    void setTrackInformation(final Identifier id, final ImageIcon icon, final String trackName, final String trackPath,
+                             final long duration, final long offset) {
 
         if (icon != null) {
             iconLabel.setIcon(icon);
         }
-
         trackModel.setId(id);
         trackModel.setTrackName(trackName);
-        trackModel.setMediaPath(trackPath);
+        trackModel.setSourceFile(trackPath);
         trackModel.setDuration(duration);
         trackModel.setOffset(offset);
         trackModel.setErroneous(false);
@@ -389,7 +351,7 @@ public final class TrackController implements ViewerStateListener,
      *
      * @param offset Offset of the data feed in milliseconds
      */
-    public void setTrackOffset(final long offset) {
+    void setTrackOffset(final long offset) {
         trackModel.setOffset(offset);
         trackPainter.setTrackModel(trackModel);
     }
@@ -408,47 +370,50 @@ public final class TrackController implements ViewerStateListener,
      *
      * @param erroneous true if the data is erroneous, false otherwise.
      */
-    public void setErroneous(final boolean erroneous) {
+    void setErroneous(final boolean erroneous) {
         trackModel.setErroneous(erroneous);
         trackPainter.setTrackModel(trackModel);
     }
 
     /**
-     * Add a bookmark location to the track. Does not take track offsets into
+     * Add a marker location to the track. Does not take track offsets into
      * account.
      *
-     * @param bookmark bookmark position in milliseconds
+     * @param marker marker position in milliseconds
      */
-    public void addBookmark(final long bookmark) {
-
-        if ((0 <= bookmark) && (bookmark <= trackModel.getDuration())) {
-            trackModel.addBookmark(bookmark);
+    void addMarker(final long marker) {
+        if ((0 <= marker) && (marker <= trackModel.getDuration())) {
+            trackModel.addMarker(marker);
             trackPainter.setTrackModel(trackModel);
         }
-
         updatePopupMenu();
     }
 
-    public void addBookmarks(final List<Long> bookmarks) {
-        trackModel.addBookmarks(bookmarks);
+    void addMarkers(final List<Long> markers) {
+        // Ensure that all added markers are within the range like this is the case for the addMarker
+        for (Long marker : markers) {
+            if (0 <= marker && (marker <= trackModel.getDuration())) {
+                trackModel.addMarker(marker);
+            }
+        }
         trackPainter.setTrackModel(trackModel);
         updatePopupMenu();
     }
 
-    public void removeBookmark(final long bookmark) {
-        trackModel.removeBookmark(bookmark);
+    void removeMarker(final long bookmark) {
+        trackModel.removeMarker(bookmark);
         trackPainter.setTrackModel(trackModel);
         updatePopupMenu();
     }
 
     /**
      * Add a bookmark location to the track. Track offsets are taken into
-     * account. This call is the same as addBookmark(position - offset).
+     * account. This call is the same as addMarker(position - offset).
      *
      * @param position temporal position in milliseconds to bookmark.
      */
-    public void addTemporalBookmark(final long position) {
-        addBookmark(position - trackModel.getOffset());
+    void addReferencedMarker(final long position) {
+        addMarker(position - trackModel.getOffset());
     }
 
     /**
@@ -480,9 +445,8 @@ public final class TrackController implements ViewerStateListener,
      *
      * @param lock true if the carriage is locked, false otherwise.
      */
-    public void setLocked(final boolean lock) {
+    protected void setLocked(final boolean lock) {
         trackModel.setLocked(lock);
-
         if (lock) {
             lockUnlockButton.setIcon(TrackConstants.LOCK_ICON);
         } else {
@@ -509,8 +473,8 @@ public final class TrackController implements ViewerStateListener,
      * @return Bookmarked positions in milliseconds. Does not take into account
      * any offsets.
      */
-    public List<Long> getBookmarks() {
-        return trackModel.getBookmarks();
+    List<Long> getMarkers() {
+        return trackModel.getMarkers();
     }
 
     /**
@@ -530,7 +494,7 @@ public final class TrackController implements ViewerStateListener,
     /**
      * @return a clone of the track model used by the controller
      */
-    public TrackModel getTrackModel() {
+    TrackModel getTrackModel() {
         return trackModel.copy();
     }
 
@@ -540,18 +504,18 @@ public final class TrackController implements ViewerStateListener,
      *
      * @param canMove true if the carriage can be moved, false otherwise.
      */
-    public void setMoveable(final boolean canMove) {
+    void setMoveable(final boolean canMove) {
         isMoveable = canMove;
     }
 
     /**
      * Used to request bookmark saving.
      */
-    public void saveBookmark() {
-        fireCarriageBookmarkSaveEvent();
+    void saveMarker() {
+        fireCarriageMarkerSaveEvent();
     }
 
-    public void deselect() {
+    void deselect() {
         trackModel.setSelected(false);
         trackPainter.setTrackModel(trackModel);
     }
@@ -561,9 +525,7 @@ public final class TrackController implements ViewerStateListener,
      * tell Datavyu to update the projectChanged state.
      */
     @Override
-    public void notifyStateChanged(final String propertyChanged,
-                                   final String newValue) {
-
+    public void notifyStateChanged(final String propertyChanged, final String newValue) {
         if (propertyChanged != null) {
 
             // Determine if we can handle the requested change
@@ -589,17 +551,15 @@ public final class TrackController implements ViewerStateListener,
                 try {
                     val = Long.parseLong(newValue);
                 } catch (NumberFormatException ex) {
-                    LOGGER.error("Error in format of long value: " + newValue);
+                    logger.error("Error in format of long value: " + newValue);
                     handled = false;
                 }
 
                 if (val != null) {
-
                     trackModel.setDuration(val);
                     view.repaint();
                     Datavyu.getVideoController().updateMaxViewerDuration();
-                    Datavyu.getVideoController().getMixerController()
-                            .clearRegionAndZoomOut();
+                    Datavyu.getVideoController().getMixerController().clearRegionAndZoomOut();
                 }
             }
 
@@ -608,7 +568,7 @@ public final class TrackController implements ViewerStateListener,
             if (!handled) {
 
                 // We couldn't find a way to handle the change- report this.
-                LOGGER.error("Unhandled property change: notified update of "
+                logger.error("Unhandled property change: notified update of "
                         + propertyChanged + " to " + newValue);
             }
         }
@@ -617,7 +577,7 @@ public final class TrackController implements ViewerStateListener,
         Datavyu.getProjectController().projectChanged();
     }
 
-    public void bindTrackActions(final CustomActions actions) {
+    void bindTrackActions(final CustomActions actions) {
         Runnable edtTask = new Runnable() {
             @Override
             public void run() {
@@ -661,15 +621,15 @@ public final class TrackController implements ViewerStateListener,
     /**
      * Request a bookmark.
      */
-    private void setBookmarkAction() {
-        fireCarriageBookmarkRequestEvent();
+    private void setMarkerAction() {
+        fireCarriageMarkerRequestEvent();
     }
 
     /**
      * Remove the track's bookmark.
      */
-    private void clearBookmarkAction() {
-        trackModel.clearBookmarks();
+    private void clearMarkerAction() {
+        trackModel.removeMarkers();
         trackPainter.setTrackModel(trackModel);
     }
 
@@ -689,7 +649,6 @@ public final class TrackController implements ViewerStateListener,
      * Selects the track if it isn't already selected.
      */
     private void selectTrack() {
-
         if (!trackModel.isSelected()) {
             trackModel.setSelected(true);
             trackPainter.setTrackModel(trackModel);
@@ -700,9 +659,9 @@ public final class TrackController implements ViewerStateListener,
     /**
      * Handles the event for locking and unlocking the track's movement.
      *
-     * @param e event to handle.
+     * @param actionEvent event to handle.
      */
-    private void handleLockUnlockButtonEvent(final ActionEvent e) {
+    private void handleLockUnlockButtonEvent(final ActionEvent actionEvent) {
         boolean isLocked = trackModel.isLocked();
         isLocked ^= true;
         trackModel.setLocked(isLocked);
@@ -715,18 +674,18 @@ public final class TrackController implements ViewerStateListener,
     /**
      * Handles the event for removing a track with the rubbish bin button.
      *
-     * @param e The event to handle.
+     * @param actionEvent The event to handle.
      */
-    private void handleDeleteButtonEvent(final ActionEvent e) {
+    private void handleDeleteButtonEvent(final ActionEvent actionEvent) {
         Datavyu.getVideoController().shutdown(trackModel.getId());
     }
 
     /**
      * Handles the event for hiding/showing a data viewer with the eye button.
      *
-     * @param e The event to handle.
+     * @param actionEvent The event to handle.
      */
-    private void handleVisibleButtonEvent(final ActionEvent e) {
+    private void handleVisibleButtonEvent(final ActionEvent actionEvent) {
         isViewerVisible = !isViewerVisible;
 
         Datavyu.getVideoController().setStreamViewerVisibility(trackModel
@@ -741,7 +700,6 @@ public final class TrackController implements ViewerStateListener,
      * @param listener listener to register.
      */
     public void addMouseListener(final MouseListener listener) {
-
         synchronized (this) {
             view.addMouseListener(listener);
         }
@@ -753,7 +711,6 @@ public final class TrackController implements ViewerStateListener,
      * @param listener listener to remove.
      */
     public void removeMouseListener(final MouseListener listener) {
-
         synchronized (this) {
             view.removeMouseListener(listener);
         }
@@ -764,8 +721,7 @@ public final class TrackController implements ViewerStateListener,
      *
      * @param listener listener to register.
      */
-    public void addCarriageEventListener(final CarriageEventListener listener) {
-
+    void addCarriageEventListener(final CarriageEventListener listener) {
         synchronized (this) {
             listenerList.add(CarriageEventListener.class, listener);
         }
@@ -776,9 +732,7 @@ public final class TrackController implements ViewerStateListener,
      *
      * @param listener listener to remove.
      */
-    public void removeCarriageEventListener(
-            final CarriageEventListener listener) {
-
+    void removeCarriageEventListener(final CarriageEventListener listener) {
         synchronized (this) {
             listenerList.remove(CarriageEventListener.class, listener);
         }
@@ -789,9 +743,7 @@ public final class TrackController implements ViewerStateListener,
      *
      * @param listener listener to register.
      */
-    public void addTrackMouseEventListener(
-            final TrackMouseEventListener listener) {
-
+    void addTrackMouseEventListener(final TrackMouseEventListener listener) {
         synchronized (this) {
             listenerList.add(TrackMouseEventListener.class, listener);
         }
@@ -803,91 +755,67 @@ public final class TrackController implements ViewerStateListener,
      *
      * @param listener listener to remove.
      */
-    public void removeTrackMouseEventListener(
-            final TrackMouseEventListener listener) {
-
+    void removeTrackMouseEventListener(final TrackMouseEventListener listener) {
         synchronized (this) {
             listenerList.remove(TrackMouseEventListener.class, listener);
         }
     }
 
     /**
-     * Used to inform listeners about a new carriage event.
+     * Used to inform listeners about a new carriage event
      *
-     * @param newOffset        the new offset to inform listeners about.
-     * @param temporalPosition the temporal position of the mouse when the new offset is
-     *                         triggered
-     * @param hasModifiers     true if modifiers were held down, false otherwise.
+     * @param newOffset the new offset to inform listeners about
+     * @param time the time of the mouse when the new offset is triggered
+     * @param hasModifiers true if modifiers were held down, false otherwise
      */
-    private void fireCarriageOffsetChangeEvent(final long newOffset,
-                                               final long temporalPosition, final boolean hasModifiers) {
-
+    private void fireCarriageOffsetChangeEvent(final long newOffset, final long time,
+                                               final boolean hasModifiers) {
         synchronized (this) {
-            final CarriageEvent e = new CarriageEvent(this, trackModel.getId(),
-                    newOffset, trackModel.getBookmarks(),
-                    trackModel.getDuration(), temporalPosition,
-                    EventType.OFFSET_CHANGE, hasModifiers);
+            final CarriageEvent e = new CarriageEvent(this, trackModel.getId(), newOffset,
+                    trackModel.getMarkers(), trackModel.getDuration(), time, EventType.OFFSET_CHANGE,
+                    hasModifiers);
             final Object[] listeners = listenerList.getListenerList();
-
-            /*
-             * The listener list contains the listening class and then the
-             * listener instance.
-             */
-            for (int i = 0; i < listeners.length; i += 2) {
-
-                if (listeners[i] == CarriageEventListener.class) {
-                    ((CarriageEventListener) listeners[i + 1]).offsetChanged(e);
+            // The listener list contains the listening class and then the listener instance
+            for (int iListener = 0; iListener < listeners.length; iListener += 2) {
+                if (listeners[iListener] == CarriageEventListener.class) {
+                    ((CarriageEventListener) listeners[iListener + 1]).offsetChanged(e);
                 }
             }
         }
     }
 
     /**
-     * Used to inform listeners about a bookmark request event.
+     * Used to inform listeners about a marker request event.
      */
-    private void fireCarriageBookmarkRequestEvent() {
-
+    private void fireCarriageMarkerRequestEvent() {
         synchronized (this) {
-            final CarriageEvent e = new CarriageEvent(this, trackModel.getId(),
-                    trackModel.getOffset(), trackModel.getBookmarks(),
-                    trackModel.getDuration(), 0, EventType.BOOKMARK_REQUEST,
+            final CarriageEvent e = new CarriageEvent(this, trackModel.getId(), trackModel.getOffset(),
+                    trackModel.getMarkers(), trackModel.getDuration(), 0, EventType.MARKER_REQUEST,
                     false);
             final Object[] listeners = listenerList.getListenerList();
-
-            /*
-             * The listener list contains the listening class and then the
-             * listener instance.
-             */
-            for (int i = 0; i < listeners.length; i += 2) {
-
-                if (listeners[i] == CarriageEventListener.class) {
-                    ((CarriageEventListener) listeners[i + 1]).requestBookmark(
-                            e);
+            // The listener list contains the listening class and then the listener instance
+            for (int iListener = 0; iListener < listeners.length; iListener += 2) {
+                if (listeners[iListener] == CarriageEventListener.class) {
+                    ((CarriageEventListener) listeners[iListener + 1]).requestMarker(e);
                 }
             }
         }
     }
 
     /**
-     * Used to inform listeners about a bookmark request event.
+     * Used to inform listeners about a marker request event.
      */
-    private void fireCarriageBookmarkSaveEvent() {
-
+    private void fireCarriageMarkerSaveEvent() {
         synchronized (this) {
             final CarriageEvent e = new CarriageEvent(this, trackModel.getId(),
-                    trackModel.getOffset(), trackModel.getBookmarks(),
-                    trackModel.getDuration(), 0, EventType.BOOKMARK_SAVE,
+                    trackModel.getOffset(), trackModel.getMarkers(),
+                    trackModel.getDuration(), 0, EventType.MARKER_SAVE,
                     false);
             final Object[] listeners = listenerList.getListenerList();
-
-            /*
-             * The listener list contains the listening class and then the
-             * listener instance.
-             */
-            for (int i = 0; i < listeners.length; i += 2) {
-
-                if (listeners[i] == CarriageEventListener.class) {
-                    ((CarriageEventListener) listeners[i + 1]).saveBookmark(e);
+            // The listener list contains the listening class and then the listener instance
+            for (int iListener = 0; iListener < listeners.length; iListener += 2) {
+                if (listeners[iListener] == CarriageEventListener.class) {
+                    ((CarriageEventListener) listeners[iListener + 1]).saveMarker(e);
                 }
             }
         }
@@ -899,23 +827,16 @@ public final class TrackController implements ViewerStateListener,
      * @param hasModifiers true if modifiers were held down, false otherwise.
      */
     private void fireCarriageSelectionChangeEvent(final boolean hasModifiers) {
-
         synchronized (this) {
             final CarriageEvent e = new CarriageEvent(this, trackModel.getId(),
-                    trackModel.getOffset(), trackModel.getBookmarks(),
+                    trackModel.getOffset(), trackModel.getMarkers(),
                     trackModel.getDuration(), 0, EventType.CARRIAGE_SELECTION,
                     hasModifiers);
             final Object[] listeners = listenerList.getListenerList();
-
-            /*
-             * The listener list contains the listening class and then the
-             * listener instance.
-             */
-            for (int i = 0; i < listeners.length; i += 2) {
-
-                if (listeners[i] == CarriageEventListener.class) {
-                    ((CarriageEventListener) listeners[i + 1]).selectionChanged(
-                            e);
+            // The listener list contains the listening class and then the listener instance
+            for (int iListener = 0; iListener < listeners.length; iListener += 2) {
+                if (listeners[iListener] == CarriageEventListener.class) {
+                    ((CarriageEventListener) listeners[iListener + 1]).selectionChanged(e);
                 }
             }
         }
@@ -925,24 +846,15 @@ public final class TrackController implements ViewerStateListener,
      * Used to inform listeners about lock state change event.
      */
     private void fireLockStateChangedEvent() {
-
         synchronized (this) {
-            final CarriageEvent e = new CarriageEvent(this, trackModel.getId(),
-                    trackModel.getOffset(), trackModel.getBookmarks(),
-                    trackModel.getDuration(), 0, EventType.CARRIAGE_LOCK,
-                    false);
-
+            final CarriageEvent carriageEvent = new CarriageEvent(this, trackModel.getId(),
+                    trackModel.getOffset(), trackModel.getMarkers(), trackModel.getDuration(), 0,
+                    EventType.CARRIAGE_LOCK, false);
             final Object[] listeners = listenerList.getListenerList();
-
-            /*
-             * The listener list contains the listening class and then the
-             * listener instance.
-             */
-            for (int i = 0; i < listeners.length; i += 2) {
-
-                if (listeners[i] == CarriageEventListener.class) {
-                    ((CarriageEventListener) listeners[i + 1]).lockStateChanged(
-                            e);
+            // The listener list contains the listening class and then the listener instance
+            for (int iListener = 0; iListener < listeners.length; iListener += 2) {
+                if (listeners[iListener] == CarriageEventListener.class) {
+                    ((CarriageEventListener) listeners[iListener + 1]).lockStateChanged(carriageEvent);
                 }
             }
         }
@@ -952,31 +864,23 @@ public final class TrackController implements ViewerStateListener,
      * Used to inform listeners about the mouse release event on the track's
      * carriage.
      *
-     * @param e the event to handle.
+     * @param mouseEvent the event to handle.
      */
-    private void fireMouseReleasedEvent(final MouseEvent e) {
-
+    private void fireMouseReleasedEvent(final MouseEvent mouseEvent) {
         synchronized (this) {
             final Object[] listeners = listenerList.getListenerList();
-
-            /*
-             * The listener list contains the listening class and then the
-             * listener instance.
-             */
-            for (int i = 0; i < listeners.length; i += 2) {
-
-                if (listeners[i] == TrackMouseEventListener.class) {
-                    ((TrackMouseEventListener) listeners[i + 1]).mouseReleased(
-                            e);
+            // The listener list contains the listening class and then the listener instance
+            for (int iListener = 0; iListener < listeners.length; iListener += 2) {
+                if (listeners[iListener] == TrackMouseEventListener.class) {
+                    ((TrackMouseEventListener) listeners[iListener + 1]).mouseReleased(mouseEvent);
                 }
             }
         }
     }
 
     @Override
-    public void propertyChange(final PropertyChangeEvent evt) {
-
-        if (evt.getSource() == mixerModel.getViewportModel()) {
+    public void propertyChange(final PropertyChangeEvent event) {
+        if (event.getSource() == mixerModel.getViewportModel()) {
             view.repaint();
         }
     }
@@ -1003,8 +907,7 @@ public final class TrackController implements ViewerStateListener,
         /**
          * Mouse cursor when hovering over a track that can be moved.
          */
-        private final Cursor moveableTrackHoverCursor = Cursor
-                .getPredefinedCursor(Cursor.HAND_CURSOR);
+        private final Cursor moveableTrackHoverCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
         /**
          * Default mouse cursor.
          */

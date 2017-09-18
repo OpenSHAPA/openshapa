@@ -298,15 +298,15 @@ JNIEXPORT jfloat JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_getF
 #ifdef JAWT_MACOSX_USE_CALAYER // Java for Mac OS X 10.6 Update 4 or later required
     
     JNF_COCOA_ENTER(env);
-    float fps = 0.00;
+    float framesPerSecond = 0.00;
     for (AVPlayerItemTrack *track in GetQtMovie(movieId).currentItem.tracks) {
         if ([track.assetTrack.mediaType isEqualToString:AVMediaTypeVideo]) {
-            //            fps = track.currentVideoFrameRate;
-            fps = track.assetTrack.nominalFrameRate;
+            //            framesPerSecond = track.currentVideoFrameRate;
+            framesPerSecond = track.assetTrack.nominalFrameRate;
         }
     }
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
-    return fps;
+    return framesPerSecond;
 //    return [[fpses objectAtIndex:movieId] floatValue];
     
 //    for (QTTrack *track in [GetQtMovie(movieId) tracks]) {
@@ -650,11 +650,11 @@ JNIEXPORT void JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_releas
 //        sleep(1);
 //    }
     
-    float fps = 0.00;
+    float framesPerSecond = 0.00;
     for (AVPlayerItemTrack *track in playerItem.tracks) {
         if ([track.assetTrack.mediaType isEqualToString:AVMediaTypeVideo]) {
-//            fps = track.currentVideoFrameRate;
-            fps = track.assetTrack.nominalFrameRate;
+//            framesPerSecond = track.currentVideoFrameRate;
+            framesPerSecond = track.assetTrack.nominalFrameRate;
         }
     }
     
@@ -665,7 +665,7 @@ JNIEXPORT void JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_releas
     if(movie == nil || error)
         NSLog(@"Error: %@ %@", error, [error userInfo]);
 //    NSLog(@"Movie loaded: %lld, %ld", [movie duration].timeValue, [movie duration].timeScale);
-    NSLog(@"Playback Height: %f, Width: %f, FPS %f", sourceSize.height, sourceSize.width, fps);
+    NSLog(@"Playback Height: %f, Width: %f, FPS %f", sourceSize.height, sourceSize.width, framesPerSecond);
 
 //    NSLog@(@"Movie width: %ld, height: %ld", [movie ])
     
@@ -676,7 +676,7 @@ JNIEXPORT void JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_releas
     [movies addObject:movie];
     NSLog(@"Added movie");
     [movieLayers addObject:self];
-    [fpses addObject:[NSNumber numberWithFloat:fps]];
+    [fpses addObject:[NSNumber numberWithFloat:framesPerSecond]];
     
     NSLog(@"Returning, movie loaded");
 	return self;

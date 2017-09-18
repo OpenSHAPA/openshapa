@@ -1493,8 +1493,8 @@ public final class VideoController extends DatavyuDialog
                 break;
 
             case CARRIAGE_LOCK:
-            case BOOKMARK_CHANGED:
-            case BOOKMARK_SAVE:
+            case MARKER_CHANGED:
+            case MARKER_SAVE:
                 Datavyu.getProjectController().projectChanged();
                 break;
 

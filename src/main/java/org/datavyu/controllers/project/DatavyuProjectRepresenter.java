@@ -92,7 +92,7 @@ public class DatavyuProjectRepresenter extends Representer {
             map.put("locked", interfaceSettings.isLocked());
 
             final List<Long> bookmarks =
-                    interfaceSettings.getBookmarkPositions();
+                    interfaceSettings.getMarkers();
 
             if (bookmarks.isEmpty()) {
 

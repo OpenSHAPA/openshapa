@@ -386,7 +386,7 @@ public final class ProjectController {
             if (setting.getTrackSettings() != null) {
                 final TrackSettings ts = setting.getTrackSettings();
                 mixerController.setTrackInterfaceSettings(viewer
-                        .getIdentifier(), ts.getBookmarkPositions(), ts.isLocked());
+                        .getIdentifier(), ts.getMarkers(), ts.isLocked());
             }
 
             mixerController.bindTrackActions(viewer.getIdentifier(),
@@ -436,7 +436,7 @@ public final class ProjectController {
             }
 
             mixerController.setTrackInterfaceSettings(setting.getFilePath(),
-                    setting.getBookmarkPositions(), setting.isLocked());
+                    setting.getMarkers(), setting.isLocked());
         }
 
         if (!missingFilesList.isEmpty() || !missingPluginList.isEmpty()) {
@@ -513,10 +513,9 @@ public final class ProjectController {
             viewer.storeSettings(vs.getSettingsOutputStream());
 
             // BugzID:2107
-            TrackModel tm = dataController.getMixerController().getTrackModel(
-                    viewer.getIdentifier());
+            TrackModel tm = dataController.getMixerController().getTrackModel(viewer.getIdentifier());
             TrackSettings ts = new TrackSettings();
-            ts.setBookmarkPositions(tm.getBookmarks());
+            ts.setMarkers(tm.getMarkers());
             ts.setLocked(tm.isLocked());
 
             vs.setTrackSettings(ts);

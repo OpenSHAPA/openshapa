@@ -119,7 +119,7 @@ public final class TracksEditorController implements TrackMouseEventListener {
                 trackPainter);
         trackController.setTrackInformation(trackId, icon, trackName, mediaPath,
                 duration, offset);
-        trackController.addBookmark(-1);
+        trackController.addMarker(-1);
 
         if (duration < 0) {
             trackController.setErroneous(true);
@@ -309,7 +309,7 @@ public final class TracksEditorController implements TrackMouseEventListener {
             }
 
             // add all of the bookmarks as snap points
-            for (Long bookmark : tc.getBookmarks()) {
+            for (Long bookmark : tc.getMarkers()) {
                 final long time = startTime + bookmark;
                 if (time > 0) {
                     snapList.add(time);
@@ -421,8 +421,8 @@ public final class TracksEditorController implements TrackMouseEventListener {
     public void addTemporalBookmarkToSelected(final long position) {
         for (TrackController trackController : tracks.values()) {
             if (trackController.isSelected()) {
-                trackController.addTemporalBookmark(position);
-                trackController.saveBookmark();
+                trackController.addReferencedMarker(position);
+                trackController.saveMarker();
             }
         }
     }
@@ -475,7 +475,7 @@ public final class TracksEditorController implements TrackMouseEventListener {
     public void setBookmarkPositions(final Identifier trackId, final List<Long> positions) {
         TrackController trackController = tracks.get(trackId);
         if (trackController != null) {
-            trackController.addBookmarks(positions);
+            trackController.addMarkers(positions);
         }
     }
 
@@ -489,8 +489,8 @@ public final class TracksEditorController implements TrackMouseEventListener {
     @Deprecated
     public void setBookmarkPositions(final String mediaPath, final List<Long> positions) {
         for (TrackController trackController : tracks.values()) {
-            if (trackController.getTrackModel().getMediaPath().equals(mediaPath)) {
-                trackController.addBookmarks(positions);
+            if (trackController.getTrackModel().getSourceFile().equals(mediaPath)) {
+                trackController.addMarkers(positions);
                 return;
             }
         }
@@ -520,7 +520,7 @@ public final class TracksEditorController implements TrackMouseEventListener {
     @Deprecated
     public void setMovementLock(final String mediaPath, final boolean lock) {
         for (TrackController trackController : tracks.values()) {
-            if (trackController.getTrackModel().getMediaPath().equals(mediaPath)) {
+            if (trackController.getTrackModel().getSourceFile().equals(mediaPath)) {
                 trackController.setLocked(lock);
                 return;
             }

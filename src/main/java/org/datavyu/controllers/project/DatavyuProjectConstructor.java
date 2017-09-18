@@ -145,7 +145,7 @@ public class DatavyuProjectConstructor extends Constructor {
             if (values.containsKey("bookmark")) {
 
                 // DEPRECATED - only included for backwards compatibility
-                ts.addBookmarkPosition(Long.parseLong(
+                ts.addMarkerPosition(Long.parseLong(
                         (String) values.get("bookmark")));
             }
 
@@ -157,9 +157,9 @@ public class DatavyuProjectConstructor extends Constructor {
                     // Ugly; the deserializer chooses the smallest data
                     // type which can represent the value.
                     if (time instanceof Integer) {
-                        ts.addBookmarkPosition((Integer) time);
+                        ts.addMarkerPosition((Integer) time);
                     } else if (time instanceof Long) {
-                        ts.addBookmarkPosition((Long) time);
+                        ts.addMarkerPosition((Long) time);
                     }
                 }
             }
