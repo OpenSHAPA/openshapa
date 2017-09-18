@@ -22,6 +22,7 @@ import org.yaml.snakeyaml.Dumper;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Loader;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.*;
@@ -73,7 +74,14 @@ public final class OpenProjectFileC {
         DumperOptions options = new DumperOptions();
         options.setAllowUnicode(false); // Allow for the encoding of foreign characters by using escape characters
         Yaml yaml = new Yaml(new DatavyuProjectConstructor(), new Representer(), options);
-        Object o = yaml.load(inStream);
+
+        Object o;
+        try {
+            o = yaml.load(inStream);
+        } catch(YAMLException e){
+            o = new Project(); // default: empty project
+            LOGGER.error("Failed to open project file. Using default: empty project.");
+        }
 
         // Make sure the de-serialised object is a project file
         if (!(o instanceof Project)) {
