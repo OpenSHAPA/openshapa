@@ -56,8 +56,8 @@ def print_debug(*s)
   end
 end
 
-# Set $dataStore, this is so that JRuby doesn't decide to overwrite it halfway thru the script.
-$dataStore = Datavyu.get_project_controller.get_db
+# Set $db, this is so that JRuby doesn't decide to overwrite it halfway thru the script.
+$db = Datavyu.get_project_controller.get_db
 $pj = Datavyu.get_project_controller.get_project
 
 # Ruby representation of a spreadsheet cell.
@@ -719,7 +719,7 @@ alias :computeKappa :compute_kappa
 #       trial = get_column("trial")
 def get_column(name)
 
-  var = $dataStore.getVariable(name)
+  var = $db.getVariable(name)
   if (var == nil)
     printNoColumnFoundWarning(name.to_s)
     return nil
@@ -787,7 +787,7 @@ def set_column(*args)
       deleteVariable(name)
     end
     # Create a new variable
-    v = $dataStore.createVariable(name, Argument::Type::MATRIX)
+    v = $db.createVariable(name, Argument::Type::MATRIX)
     var.db_var = v
 
     if var.arglist.length > 0
@@ -926,7 +926,7 @@ def set_column!(*args)
   end
 
   # Create a new variable
-  v = $dataStore.createVariable(name, Argument::Type::MATRIX)
+  v = $db.createVariable(name, Argument::Type::MATRIX)
   var.db_var = v
 
   if var.arglist.length > 0
@@ -1599,9 +1599,9 @@ end
 # @note DOES NOT ALTER THE GUI.
 # @note Use #File.expand_path and related methods to convert from relative to absolute path.
 # @param filename The FULL PATH to the saved Datavyu file.
-# @return [Array] An array containing two items: dataStore, the spreadsheet data, and pj the project data. Set dataStore and pj to $dataStore and $pj, respectively (see example)
+# @return [Array] An array containing two items: dataStore, the spreadsheet data, and pj the project data. Set dataStore and pj to $db and $pj, respectively (see example)
 # @example
-#   $dataStore,$pj = load_db("/Users/username/Desktop/test.opf")
+#   $db,$pj = load_db("/Users/username/Desktop/test.opf")
 def load_db(filename)
   # Raise file not found error unless file exists
   unless File.exist?(filename)
@@ -1646,7 +1646,7 @@ def load_db(filename)
 end
 alias :loadDB :load_db
 
-# Saves the current $dataStore and $pj variables to filename.  If
+# Saves the current $db and $pj variables to filename.  If
 # filename ends with .csv, it saves a .csv file.  Otherwise it saves
 # it as a .opf.
 # @note Use #File.expand_path and related methods to convert from relative to absolute path.
@@ -1669,25 +1669,16 @@ def save_db(filename)
   # These methods do *NOT* alter the Datavyu UI.
   #
   if filename.include?('.csv')
-    save_c.save_database(filename, $dataStore)
+    save_c.save_database(filename, $db)
   else
-<<<<<<< HEAD
-    #if $pj == nil or $pj.getDatabaseFileName == nil
-    $pj = Project.new()
-    $pj.setDatabaseFileName("dataStore")
-    dbname = filename[filename.rindex("/")+1..filename.length]
-    $pj.setProjectName(dbname)
-    #end
-=======
     if $pj == nil or $pj.getDatabaseFileName == nil
-      $pj = Project.new()
-      $pj.setDatabaseFileName("db")
-      dbname = filename[filename.rindex("/")+1..filename.length]
-      $pj.setProjectName(dbname)
+        $pj = Project.new()
+        $pj.setDatabaseFileName("dataStore")
+        dbname = filename[filename.rindex("/")+1..filename.length]
+        $pj.setProjectName(dbname)
     end
->>>>>>> master
     save_file = java.io.File.new(filename)
-    save_c.save_project(save_file, $pj, $dataStore)
+    save_c.save_project(save_file, $pj, $db)
   end
 
   print_debug "Save successful."
@@ -1702,11 +1693,11 @@ def delete_column(colname)
   if colname.class != "".class
     colname = colname.name
   end
-  col = $dataStore.getVariable(colname)
+  col = $db.getVariable(colname)
   if (col == nil)
     printNoColumnFoundWarning(colname.to_s)
   end
-  $dataStore.removeVariable(col)
+  $db.removeVariable(col)
 end
 alias :deleteColumn :delete_column
 alias :delete_variable :delete_column
@@ -1721,11 +1712,11 @@ alias :printNoColumnFoundWarning :print_no_column_found_warning
 # Opens an old, closed database format MacSHAPA file and loads it into the current open database.
 # NOTE This will only read in matrix and string variables.  Predicates are not yet supported. Queries will not be read in.  Times are translated to milliseconds for compatibility with Datavyu.
 # @param filename [String] The FULL PATH to the saved MacSHAPA file.
-# @param write_to_gui [true, false] Whether the MacSHAPA file should be read into the database currently open in the GUI or whether it should just be read into the Ruby interface.  After this script is run $dataStore and $pj are now the MacSHAPA file.
-# @return [Array] An array containing two items: the spreadsheet data and the project information. Set to $dataStore and $pj, respectively (see example).
+# @param write_to_gui [true, false] Whether the MacSHAPA file should be read into the database currently open in the GUI or whether it should just be read into the Ruby interface.  After this script is run $db and $pj are now the MacSHAPA file.
+# @return [Array] An array containing two items: the spreadsheet data and the project information. Set to $db and $pj, respectively (see example).
 # @todo fix linter warnings
 # @example
-#   $dataStore,$pj = load_db("/Users/username/Desktop/test.opf")
+#   $db,$pj = load_db("/Users/username/Desktop/test.opf")
 def load_macshapa_db(filename, write_to_gui, *ignore_vars)
 
   # Create a new DB for us to use so we don't touch the GUI... some of these
@@ -1733,8 +1724,8 @@ def load_macshapa_db(filename, write_to_gui, *ignore_vars)
   # Since I don't know how to make a whole new project, lets just load a blank file.
   # TODO why is this section commented out??
   if not write_to_gui
-    #$dataStore,$pj = load_db("/Users/j4lingeman/Desktop/blank.opf")
-    # $dataStore = Datastore.new
+    #$db,$pj = load_db("/Users/j4lingeman/Desktop/blank.opf")
+    # $db = Datastore.new
     # $pj = Project.new()
   end
 
@@ -1906,13 +1897,13 @@ def load_macshapa_db(filename, write_to_gui, *ignore_vars)
 
   f.close()
 
-  return $dataStore, $pj
+  return $db, $pj
 end
 alias :loadMacshapaDB :load_macshapa_db
 
 
 # Transfers columns between databases.
-# If db1 or db2 are set to the empty string "", then that database is the current database in $dataStore (usually the GUI's database).
+# If db1 or db2 are set to the empty string "", then that database is the current database in $db (usually the GUI's database).
 # So if you want to transfer a column into the GUI, set db2 to "".
 # If you want to tranfer a column from the GUI into a file, set db1 to "".
 # Setting remove to true will DELETE THE COLUMNS YOU ARE TRANSFERRING FROM DB1.  Be careful!
@@ -1925,8 +1916,8 @@ alias :loadMacshapaDB :load_macshapa_db
 #  # Transfer column "idchange" from test.opf to the currently open spreadsheet in Datavyu. Do not delete "idchange" from test.opf.
 #  transfer_columns("/Users/username/Desktop/test.opf", "", true, "idchange")
 def transfer_columns(db1, db2, remove, *varnames)
-  # Save the current $dataStore and $pj global variables
-  saved_db, saved_proj = $dataStore, $pj
+  # Save the current $db and $pj global variables
+  saved_db, saved_proj = $db, $pj
 
   # If varnames was specified as a hash, flatten it to an array
   varnames.flatten!
@@ -1955,7 +1946,7 @@ def transfer_columns(db1, db2, remove, *varnames)
       print_debug("Loading source database from file : #{db1path}")
       from_db, from_proj = loadDB(db1path)
     else
-      from_db, from_proj = $dataStore, $pj
+      from_db, from_proj = $db, $pj
     end
   rescue StandardError => e
     puts e.message
@@ -1974,9 +1965,9 @@ def transfer_columns(db1, db2, remove, *varnames)
       end
       print_debug("Loading destination database from file : #{db2path}")
       to_db, to_proj = loadDB(db2path)
-      #$dataStore,$pj = loadDB(db2path)
+      #$db,$pj = loadDB(db2path)
     else
-      to_db, to_proj = $dataStore, $pj
+      to_db, to_proj = $db, $pj
     end
   rescue StandardError => e
     puts e.message
@@ -1985,7 +1976,7 @@ def transfer_columns(db1, db2, remove, *varnames)
   end
 
   # Set working database to source database to prepare for reading
-  $dataStore, $pj = from_db, from_proj
+  $db, $pj = from_db, from_proj
 
   # Construct a hash to store columns and cells we are transferring
   print_debug("Fetching columns...")
@@ -2005,7 +1996,7 @@ def transfer_columns(db1, db2, remove, *varnames)
   end
 
   # Set working database to destination database to prepare for writing
-  $dataStore, $pj = to_db, to_proj
+  $db, $pj = to_db, to_proj
 
   # Go through the hashmaps and reconstruct the columns
   begin
@@ -2041,7 +2032,7 @@ def transfer_columns(db1, db2, remove, *varnames)
 
   # Final step: take care of deleting columns from source database if option is set.
   if remove
-    $dataStore, $pj = from_db, from_proj
+    $db, $pj = from_db, from_proj
 
     # Use our hashmap since it takes care of improper column names (returned nil from getColumn())
     col_map.keys.each { |x|
@@ -2052,7 +2043,7 @@ def transfer_columns(db1, db2, remove, *varnames)
   end
 
   # Restore the saved database and project globals
-  $dataStore, $pj = saved_db, saved_proj
+  $db, $pj = saved_db, saved_proj
 
   puts "Transfer completed successfully!"
 end
@@ -2364,7 +2355,7 @@ end
 # @return [Array]
 def get_column_list()
   name_list = Array.new
-  vars = $dataStore.getAllVariables()
+  vars = $db.getAllVariables()
   for v in vars
     name_list << v.name
   end
@@ -2529,16 +2520,12 @@ end
 # @param [Array<String>] names of columns to hide
 def hide_columns(*names)
   valid_names = names & get_column_list
-<<<<<<< HEAD
-  valid_names.each{ |x| $dataStore.getVariable(name).setHidden(true)}
-=======
-  valid_names.each{ |x| $db.getVariable(x).setHidden(true)}
->>>>>>> master
+  valid_names.each{ |x| $db.getVariable(name).setHidden(true)}
 end
 
 # Show the given columns in the spreadsheet
 # @param [Array<String>] names of columns to show
 def show_columns(*names)
   valid_names = names & get_column_list
-  valid_names.each{ |x| $dataStore.getVariable(name).setHidden(false) }
+  valid_names.each{ |x| $db.getVariable(name).setHidden(false) }
 end
