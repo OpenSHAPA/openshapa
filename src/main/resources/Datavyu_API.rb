@@ -1658,7 +1658,7 @@ def save_db(filename)
   print_debug "Saving Database: " + filename
 
   filename = File.expand_path(filename)
-  
+
   # Create the controller that holds all the logic for opening projects and
   # databases.
   save_c = SaveC.new
@@ -2520,7 +2520,7 @@ end
 # @param [Array<String>] names of columns to hide
 def hide_columns(*names)
   valid_names = names & get_column_list
-  valid_names.each{ |x| $db.getVariable(name).setHidden(true)}
+  valid_names.each{ |x| $db.getVariable(x).setHidden(true)}
 end
 
 # Show the given columns in the spreadsheet
