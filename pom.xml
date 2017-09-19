@@ -9,7 +9,6 @@
     <name>Datavyu</name>
     <url>http://datavyu.org</url>
 
-
     <!-- Our organisation. -->
     <organization>
         <name>Datavyu Foundation</name>
@@ -805,14 +804,17 @@
             </plugin>
 
             <!-- BugzID:305 - Windows Application Bundle -->
+            <!-- Replace org.bluestemsoftware.open.maven.plugin by com.akathist which has a newer launch4j -->
+            <!-- Documentation here: http://launch4j.sourceforge.net/docs.html -->
+            <!-- Debug by running with datavyu-1.3.7.exe - -l4j-debug-all -->
             <plugin>
-                <groupId>org.bluestemsoftware.open.maven.plugin</groupId>
-                <artifactId>launch4j-plugin</artifactId>
-                <version>1.0.0.3</version>
+                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                <artifactId>launch4j-maven-plugin</artifactId>
+                <version>1.7.21</version>
                 <executions>
                     <execution>
-                        <id>launch4j</id>
-                        <phase>verify</phase>
+                        <id>l4j-gui</id>
+                        <phase>package</phase>
                         <goals>
                             <goal>launch4j</goal>
                         </goals>
@@ -822,7 +824,7 @@
                     <headerType>gui</headerType>
                     <outfile>${basedir}/target/${project.build.finalName}.exe</outfile>
                     <jar>${basedir}/target/${project.build.finalName}.jar</jar>
-                    <errTitle>32bit JVM not found. Please get it. 64bit will not do.</errTitle>
+                    <stayAlive>true</stayAlive>
                     <icon>${basedir}/src/main/resources/icons/Datavyu.ico</icon>
                     <splash>
                         <file>${basedir}/src/main/resources/icons/splash.bmp</file>
@@ -832,9 +834,12 @@
                     </splash>
                     <jre>
                         <minVersion>1.6.0</minVersion>
+                        <jdkPreference>preferJre</jdkPreference>
                     </jre>
                     <classPath>
                         <mainClass>org.datavyu.Datavyu</mainClass>
+                        <!-- Add project jar: https://sourceforge.net/p/launch4j/discussion/332684/thread/049f9c89/ -->
+                        <postCp>${project.build.finalName}.jar</postCp>
                         <preCp>jna-3.5.2.jar</preCp>
                         <preCp>appframework-1.0.3.jar</preCp>
                         <preCp>snakeyaml-1.18.jar</preCp>
@@ -847,10 +852,17 @@
                         <preCp>trove-2.1.0.jar</preCp>
                         <preCp>vlcj-3.0.0.jar</preCp>
                         <preCp>libvlc-win32-2.0.1.jar</preCp>
-                        <preCp>xuggle-xuggler-5.4.jar</preCp>
                         <preCp>slf4j-api-1.7.7.jar</preCp>
                         <preCp>slf4j-simple-1.7.7.jar</preCp>
                     </classPath>
+                    <messages>
+                        <startupErr>Startup error. Most likely error in classpath.</startupErr>
+                        <bundledJreErr>Bundled JRE is incompatible with source code requirements.</bundledJreErr>
+                        <jreVersionErr>Version of JRE is incompatible.</jreVersionErr>
+                        <launcherErr>Error when launching application.</launcherErr>
+                        <!-- Used by console header only. -->
+                        <instanceAlreadyExistsMsg>Application is already running.</instanceAlreadyExistsMsg>
+                    </messages>
                 </configuration>
             </plugin>
         </plugins>

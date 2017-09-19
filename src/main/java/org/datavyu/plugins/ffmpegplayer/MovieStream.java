@@ -26,6 +26,7 @@ public class MovieStream implements VideoStream, AudioStream {
 			NativeLibraryLoader.extract("avcodec-57");
 			NativeLibraryLoader.extract("avformat-57");
 			// Ensure that the above dependent libraries are extracted first before loading MovieStream.
+			//NativeLibraryLoader.extract("MovieStream");
 			NativeLibraryLoader.extractAndLoad("MovieStream");
 		} catch (Exception e) {
 			logger.error("Failed loading libraries. Error: ", e);
@@ -330,8 +331,7 @@ public class MovieStream implements VideoStream, AudioStream {
 	 * 					  to transcode the input audio format into.
 	 * @return The error code when opening this stream, 0 for no error.
 	 */
-	private native int open0(String fileName, String version, 
-			AudioFormat audioFormat);
+	private native int open0(String fileName, String version, AudioFormat audioFormat);
 	
 	@Override
 	public AudioFormat getAudioFormat() {
@@ -351,7 +351,7 @@ public class MovieStream implements VideoStream, AudioStream {
 	 */
 	public void open(String fileName, String version, ColorSpace reqColorSpace, 
 			AudioFormat reqAudioFormat) throws IOException {
-		int error = 0;		
+		int error;
 		if (reqColorSpace != ColorSpace.getInstance(ColorSpace.CS_sRGB)) {
 			throw new IOException("Color space " + reqColorSpace + " not supported!");
 		} else if (!(reqAudioFormat.getChannels()==1 

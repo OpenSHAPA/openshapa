@@ -129,31 +129,35 @@ public final class PluginManager {
 
                 while (entries.hasMoreElements()) {
                     String name = entries.nextElement().getName();
-
                     if (name.endsWith(".class")) {
                         addPlugin(name);
                     }
                 }
-                // The classloader references a bunch of .class files on disk, recusively inspect contents of each
+                // The classloader references a bunch of .class files on disk, recursively inspect contents of each
                 // of the resources. If it is a directory add it to our workStack, otherwise check to see if it is a
                 // concrete plugin.
             } else {
+                logger.info("Loading plugins from resource bundle.");
                 // If we are running from a test we need to look in more than one place for classes - add all these
                 // places to the work stack.
                 Enumeration<URL> resources = loader.getResources("");
+
                 Stack<File> workStack = new Stack<>();
-                Stack<String> packages = new Stack<>();
+                Stack<String> pathNames = new Stack<>();
 
                 while (resources.hasMoreElements()) {
                     workStack.clear();
                     File res = new File(resources.nextElement().getFile());
+
+                    logger.info("Looking for plugins in: " + res.getAbsolutePath());
+
                     // Dirty hack for Quaqua.
                     if (res.equals(new File("/System/Library/Java"))) {
                         continue;
                     }
                     workStack.push(res);
-                    packages.clear();
-                    packages.push("");
+                    pathNames.clear();
+                    pathNames.push("");
 
                     while (!workStack.empty()) {
                         // We must handle spaces in the directory name
@@ -161,43 +165,56 @@ public final class PluginManager {
                         String s = f.getCanonicalPath();
                         s = s.replaceAll("%20", " ");
                         File dir = new File(s);
-                        String pkgName = packages.pop();
+                        String pathName = pathNames.pop();
                         // For each of the children of the directory - look for
                         // Plugins or more directories to recurse inside.
                         String[] files = dir.list();
                         for (int i = 0; i < files.length; i++) {
                             File file = new File(dir.getAbsolutePath() + "/" + files[i]);
+                            logger.info("Loading file: " + file.getAbsolutePath());
                             // If the file is a directory, add to work list.
                             if (file.isDirectory()) {
                                 workStack.push(file);
-                                packages.push(pkgName + file.getName() + ".");
-
-                                // If we are dealling with a class file - attempt to add it to our list of plugins.
+                                pathNames.push(pathName + file.getName() + ".");
+                                // If we are dealing with a class file - attempt to add it to our list of plugins
                             } else if (files[i].endsWith(".class")) {
-                                addPlugin(pkgName.concat(files[i]));
+                                addPlugin(pathName.concat(files[i]));
+                                // If it's the datavyu jar get the contents
+                            } else if (files[i].startsWith("datavyu")) {
+                                //injectPlugin(file);
+                                JarFile jar = new JarFile(file);
+                                // For each file in the jar file check to see if it could be a plugin.
+                                Enumeration<JarEntry> entries = jar.entries();
+                                while (entries.hasMoreElements()) {
+                                    String name = entries.nextElement().getName();
+                                    // Found a class file - attempt to add it as a plugin.
+                                    if (name.endsWith(".class")) {
+                                        addPlugin(name);
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
             // We scanned the Datavyu classpath - but we should also look in the "plugins" directory for jar files that
-            // correctly conform to the Datavyu plugin interface.
-            LocalStorage ls = Datavyu.getApplication().getContext().getLocalStorage();
-            File pluginDir = new File(ls.getDirectory().toString() + "/plugins");
+            // correctly conform to the Datavyu plugin interface
+            LocalStorage localStorage = Datavyu.getApplication().getContext().getLocalStorage();
+            File pluginDir = new File(localStorage.getDirectory().toString() + "/plugins");
 
             // Unable to find plugin directory or any entries within the plugin directory. Don't bother attempting to
-            // add more plugins to Datavyu.
+            // add more plugins to Datavyu
             if (pluginDir.list() == null) {
+                logger.info("Unable to find the 'plugins' directory.");
                 return;
             }
 
-            // For each of the files in the plugin directory - check to see if
-            // they conform to the plugin interface.
+            // For each of the files in the plugin directory - check to see if they conform to the plugin interface.
             for (String file : pluginDir.list()) {
                 File f = new File(pluginDir.getAbsolutePath() + "/" + file);
                 if (file == null) {
                     throw new ClassNotFoundException("Null file");
-                    // File is a jar file - crack it open and look for plugins!
+                    // If the file is a jar file open it and look for plugins
                 } else if (file.endsWith(".jar")) {
                     injectPlugin(f);
                     JarFile jar = new JarFile(f);
@@ -224,20 +241,20 @@ public final class PluginManager {
     /**
      * Injects A plugin into the classpath.
      *
-     * @param f The jar file to inject into the classpath.
+     * @param file The jar file to inject into the classpath.
      *
      * @throws IOException If unable to inject the plugin into the class path.
      */
-    private void injectPlugin(final File f) throws IOException {
-        URLClassLoader sysLoader = (URLClassLoader) ClassLoader
-                .getSystemClassLoader();
+    private void injectPlugin(final File file) throws IOException {
+        URLClassLoader sysLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
         Class<?> sysclass = URLClassLoader.class;
+        logger.info("Injecting plugin from file: " + file.getAbsolutePath());
 
         try {
             Class<?>[] parameters = new Class[]{URL.class};
             Method method = sysclass.getDeclaredMethod("addURL", parameters);
             method.setAccessible(true);
-            method.invoke(sysLoader, new Object[]{f.toURL()});
+            method.invoke(sysLoader, new Object[]{file.toURL()});
         } catch (Throwable t) {
             logger.error("Unable to inject class into class path.", t);
         }

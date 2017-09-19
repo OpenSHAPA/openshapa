@@ -69,7 +69,7 @@ public final class QTDataViewerDialog extends StreamViewerDialog {
         try {
             QTSession.open();
         } catch (Throwable e) {
-            logger.error("Unable to create " + this.getClass().getName() + "Error: ", e);
+            logger.error("Unable to create " + this.getClass().getName() + ".\nError: ", e);
         }
     }
 
