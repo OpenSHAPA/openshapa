@@ -375,11 +375,11 @@ class RColumn
         c.parent = @name
         vals = Array.new
         if cell.getVariable.getRootNode.type == Argument::Type::MATRIX
-          for val in cell.getValue().getArguments
+          for val in cell.getCellValue().getArguments
             vals << val.toString
           end
         else
-          vals << cell.getValue().toString
+          vals << cell.getCellValue().toString
         end
         c.set_args(vals, @arglist)
         c.ordinal = ord
@@ -868,7 +868,7 @@ def set_column(*args)
       cell.db_cell = var.db_var.createCell()
     end
 
-    value = cell.db_cell.getValue()
+    value = cell.db_cell.getCellValue()
 
     if cell.onset != cell.db_cell.getOnset
       cell.db_cell.setOnset(cell.onset)
@@ -880,7 +880,7 @@ def set_column(*args)
 
     # Matrix cell
     if cell.db_cell.getVariable.getRootNode.type == Argument::Type::MATRIX
-      values = cell.db_cell.getValue().getArguments()
+      values = cell.db_cell.getCellValue().getArguments()
       for arg in var.old_args
         # Find the arg in the dataStore's arglist that we are looking for
         for i in 0...values.size
@@ -895,7 +895,7 @@ def set_column(*args)
 
       # Non-matrix cell
     else
-      value = cell.db_cell.getValue()
+      value = cell.db_cell.getCellValue()
       value.set(cell.get_arg("var"))
     end
 
@@ -953,7 +953,7 @@ def set_column!(*args)
     # Copy the information from the ruby variable to the new cell
     cell.db_cell = var.db_var.createCell()
 
-    value = cell.db_cell.getValue()
+    value = cell.db_cell.getCellValue()
 
     if cell.onset != cell.db_cell.getOnset
       cell.db_cell.setOnset(cell.onset)
@@ -965,7 +965,7 @@ def set_column!(*args)
 
     # Matrix cell
     if cell.db_cell.getVariable.getRootNode.type == Argument::Type::MATRIX
-      values = cell.db_cell.getValue().getArguments()
+      values = cell.db_cell.getCellValue().getArguments()
       for arg in var.old_args
         # Find the arg in the dataStore's arglist that we are looking for
         for i in 0...values.size
@@ -979,7 +979,7 @@ def set_column!(*args)
       end
       # Non-matrix cell
     else
-      value = cell.db_cell.getValue()
+      value = cell.db_cell.getCellValue()
       value.set(cell.get_arg("var"))
     end
   end
