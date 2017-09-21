@@ -33,11 +33,11 @@ require 'rbconfig'
 require 'matrix'
 
 import 'org.datavyu.Datavyu'
-import 'org.datavyu.models.db.Datastore'
-import 'org.datavyu.models.db.MatrixValue'
-import 'org.datavyu.models.db.NominalValue'
-import 'org.datavyu.models.db.TextValue'
-import 'org.datavyu.models.db.Value'
+import 'org.datavyu.models.db.DataStore'
+import 'org.datavyu.models.db.MatrixCellValue'
+import 'org.datavyu.models.db.NominalCellValue'
+import 'org.datavyu.models.db.TextCellValue'
+import 'org.datavyu.models.db.CellValue'
 import 'org.datavyu.models.db.Variable'
 import 'org.datavyu.models.db.Cell'
 import 'org.datavyu.models.db.Argument'
@@ -57,7 +57,7 @@ def print_debug(*s)
 end
 
 # Set $db, this is so that JRuby doesn't decide to overwrite it halfway thru the script.
-$db = Datavyu.get_project_controller.get_db
+$db = Datavyu.get_project_controller.get_data_store
 $pj = Datavyu.get_project_controller.get_project
 
 # Ruby representation of a spreadsheet cell.
@@ -1610,11 +1610,13 @@ def load_db(filename)
     raise "File does not exist. Please make sure to put the full path to the file."
   end
 
-  print_debug "Opening Project: "
+  infile = java.io.File.new(filename)
+
+  print_debug "Opening Project: #{infile}"
 
   # Create the controller that holds all the logic for opening projects and
   # databases.
-  open_c = OpenC.new
+  open_c = OpenController.new
 
   # Opens a project and associated database (i.e. either compressed or
   # uncompressed .shapa files). If you want to just open a standalone database
@@ -1623,9 +1625,9 @@ def load_db(filename)
   db = nil
   proj = nil
   if filename.include?(".csv")
-    open_c.open_database(filename)
+    dataStore = open_c.open_database(infile)
   else
-    open_c.open_project(filename)
+    dataStore = open_c.open_project(infile)
     # Get the project that was opened (if you want).
     proj = open_c.get_project
   end
@@ -1633,16 +1635,15 @@ def load_db(filename)
   # Get the database that was opened.
   db = open_c.get_datastore
 
-
   # If the open went well - query the database, do calculations or whatever
   unless db.nil?
     # This just prints the number of columns in the database.
-    print_debug "SUCCESSFULLY Opened a project with '" + db.get_all_variables.length.to_s + "' columns!"
+    print_debug "SUCCESSFULLY Opened a project with #{dataStore.get_all_variables.length.to_s} columns!"
   else
-    print_debug "Unable to open the project '" + filename + "'"
+    raise "Unable to open file '#{filename}'"
   end
 
-  print_debug filename + " has been loaded."
+  print_debug "#{filename} has been loaded."
 
   return db, proj
 end
