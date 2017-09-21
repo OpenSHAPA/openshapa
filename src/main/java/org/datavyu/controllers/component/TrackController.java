@@ -16,7 +16,7 @@ package org.datavyu.controllers.component;
 
 import com.google.common.collect.Maps;
 import net.miginfocom.swing.MigLayout;
-import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;

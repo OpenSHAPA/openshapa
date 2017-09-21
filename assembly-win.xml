@@ -23,13 +23,15 @@
     </fileSet>
   </fileSets>
 
+  <!-- Adds the exe -->
   <files>
     <file>
       <source>${project.basedir}/target/${project.build.finalName}.exe</source>
       <outputDirectory>/</outputDirectory>
    </file>
   </files>
-  
+
+  <!-- Adds jar dependencies -->
   <dependencySets>
     <dependencySet>
         <includes/>

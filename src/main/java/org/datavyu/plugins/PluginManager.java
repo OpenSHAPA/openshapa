@@ -171,7 +171,7 @@ public final class PluginManager {
                         String[] files = dir.list();
                         for (int i = 0; i < files.length; i++) {
                             File file = new File(dir.getAbsolutePath() + "/" + files[i]);
-                            logger.info("Loading file: " + file.getAbsolutePath());
+                            logger.info("Inspecting file/directory: " + file.getAbsolutePath());
                             // If the file is a directory, add to work list.
                             if (file.isDirectory()) {
                                 workStack.push(file);
@@ -180,8 +180,7 @@ public final class PluginManager {
                             } else if (files[i].endsWith(".class")) {
                                 addPlugin(pathName.concat(files[i]));
                                 // If it's the datavyu jar get the contents
-                            } else if (files[i].startsWith("datavyu")) {
-                                //injectPlugin(file);
+                            } else if (files[i].startsWith("datavyu") && files[i].endsWith(".jar")) {
                                 JarFile jar = new JarFile(file);
                                 // For each file in the jar file check to see if it could be a plugin.
                                 Enumeration<JarEntry> entries = jar.entries();

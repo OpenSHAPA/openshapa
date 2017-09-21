@@ -19,7 +19,6 @@ import org.apache.logging.log4j.Logger;
 import org.datavyu.controllers.project.DatavyuProjectConstructor;
 import org.datavyu.models.project.Project;
 import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Loader;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
 

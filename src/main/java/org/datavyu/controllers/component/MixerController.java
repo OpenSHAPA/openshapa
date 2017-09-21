@@ -18,7 +18,7 @@ import com.apple.eawt.event.*;
 import com.google.common.collect.Maps;
 import com.sun.jna.Platform;
 import net.miginfocom.swing.MigLayout;
-import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.datavyu.Datavyu;
 import org.datavyu.event.component.*;
 import org.datavyu.event.component.CarriageEvent.EventType;

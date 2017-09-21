@@ -14,7 +14,6 @@
  */
 package org.datavyu.controllers.project;
 
-import com.google.common.collect.Lists;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -302,8 +301,8 @@ public final class ProjectController {
         // Load the plugins required for each media file
         boolean showController = false;
 
-        List<String> missingFilesList = Lists.newLinkedList();
-        List<String> missingPluginList = Lists.newLinkedList();
+        List<String> missingFilesList = new LinkedList<>();
+        List<String> missingPluginList = new LinkedList<>();
 
         final MixerController mixerController = dataController.getMixerController();
 

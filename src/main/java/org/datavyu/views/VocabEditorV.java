@@ -39,7 +39,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
+import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 /**
  * A view for editing the database vocab.
@@ -784,7 +784,7 @@ public final class VocabEditorV extends DatavyuDialog {
                 String curString = i.getCurrentNameDisplay();
                 if (!s.isEmpty()) s += ", ";
                 if (curString.isEmpty()) s += "<i>(empty string)</i>";
-                s += "<i>" + escapeHtml(i.getCurrentNameDisplay()) + "</i>  ";
+                s += "<i>" + escapeHtml4(i.getCurrentNameDisplay()) + "</i>  ";
                 //s += "remains '"+i.getLastValid()+"'. "; //this would include a reminder of what the last valid name was
             }
 

@@ -20,7 +20,7 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
 
 
-public class OFileUtilsTest {
+public class FileUtilsTest {
 
     @Test
     public void unixLongestCommonDir() {

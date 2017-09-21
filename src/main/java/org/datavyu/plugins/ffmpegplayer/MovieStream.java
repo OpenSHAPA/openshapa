@@ -26,7 +26,6 @@ public class MovieStream implements VideoStream, AudioStream {
 			NativeLibraryLoader.extract("avcodec-57");
 			NativeLibraryLoader.extract("avformat-57");
 			// Ensure that the above dependent libraries are extracted first before loading MovieStream.
-			//NativeLibraryLoader.extract("MovieStream");
 			NativeLibraryLoader.extractAndLoad("MovieStream");
 		} catch (Exception e) {
 			logger.error("Failed loading libraries. Error: ", e);

@@ -14,6 +14,7 @@
  */
 package org.datavyu.controllers;
 
+import com.github.rcaller.rstuff.RCallerOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
@@ -23,8 +24,8 @@ import org.datavyu.util.FileFilters.RbFilter;
 import org.datavyu.views.ConsoleV;
 import org.datavyu.views.DatavyuFileChooser;
 import org.jruby.embed.AttributeName;
-import rcaller.RCaller;
-import rcaller.RCode;
+import com.github.rcaller.rstuff.RCaller;
+import com.github.rcaller.rstuff.RCode;
 
 import javax.script.*;
 import javax.swing.*;
@@ -281,39 +282,17 @@ public final class RunScriptController extends SwingWorker<Object, String> {
     }
 
     private void runRScript(File scriptFile) {
-        // Initialize RCaller and tell it where the rscript application is
-        RCaller caller = new RCaller();
-        try {
-            if (System.getProperty("os.name").startsWith("Windows")) {
-                // We have to find it because Windows doesn't keep
-                // anything in reasonable places.
+        // Initialize RCaller, auto detects installed R in standard locations
+        // On windows these are C:/Program Files/R or C:/Program Files (x86)/R
+        RCaller caller = RCaller.create();
+        logger.info("Using installed R: " + caller.getRCallerOptions().getrScriptExecutable());
 
-                // We will check in two places: Program Files and then
-                // Program Files (x86)
-
-
-                String program_files = System.getenv("ProgramFiles");
-                String program_files_x86 = System.getenv("ProgramFiles(x86)");
-
-                if (new File(program_files + "/R/").exists()) {
-                    // Loop over directories in here
-                } else if (program_files_x86 != null && new File(program_files_x86 + "/R/").exists()) {
-                    // Loop over directories in here
-                }
-
-                caller.setRscriptExecutable(null);
-            } else {
-                caller.setRscriptExecutable("/usr/bin/rscript");
-            }
-        } catch (Exception e) {
-            logger.error("Failed to run R script. Error: ", e);
-        }
         caller.redirectROutputToStream(sIn);
 
         // Initialize our code buffer and database string representation
-        RCode code = new RCode();
+        RCode code = RCode.create();
         HashMap db = convertDbToColStrings();
-        HashMap<String, File> temp_files = new HashMap<String, File>();
+        HashMap<String, File> tempFiles = new HashMap<>();
 
         // Write the database out to temporary files
         Iterator it = db.entrySet().iterator();
@@ -326,9 +305,8 @@ public final class RunScriptController extends SwingWorker<Object, String> {
                 BufferedWriter output = new BufferedWriter(new FileWriter(outfile));
                 output.write((String) pairs.getValue());
                 output.close();
-
-                temp_files.put((String) pairs.getKey(), outfile);
-            } catch (Exception e) {
+                tempFiles.put((String) pairs.getKey(), outfile);
+            } catch (IOException e) {
                 logger.error("Writing output to temporary files failed. Error: ", e);
             }
             it.remove(); // avoids a ConcurrentModificationException
@@ -339,11 +317,12 @@ public final class RunScriptController extends SwingWorker<Object, String> {
         code.addRCode("db <- list()");
         try {
             // Load each of the temporary files created above into R
-            it = temp_files.entrySet().iterator();
+            it = tempFiles.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry pairs = (Map.Entry) it.next();
 
-                String load = "db[[\"" + ((String) pairs.getKey()).toLowerCase() + "\"]] <- read.csv(\"" + ((File) pairs.getValue()).getPath() + "\",header=TRUE, sep=',')";
+                String load = "db[[\"" + ((String) pairs.getKey()).toLowerCase() + "\"]] <- read.csv(\""
+                        + ((File) pairs.getValue()).getPath() + "\",header=TRUE, sep=',')";
                 code.addRCode(load);
 
                 it.remove(); // avoids a ConcurrentModificationException
