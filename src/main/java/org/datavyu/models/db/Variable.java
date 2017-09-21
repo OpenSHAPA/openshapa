@@ -46,7 +46,7 @@ public interface Variable {
     /**
      * Removes a cell from the variable.
      *
-     * @param The cell to remove from the variable.
+     * @param cell to remove from the variable.
      */
     void removeCell(final Cell cell);
 
@@ -124,7 +124,7 @@ public interface Variable {
     /**
      * Sets the name of the variable.
      *
-     * @param the new name to set with this database.
+     * @param newName to set with this database.
      */
     void setName(final String newName) throws UserWarningException;
 
@@ -139,7 +139,7 @@ public interface Variable {
     /**
      * Adds a new argument to a matrix variable.
      *
-     * @param Argument.Type type - the type of argument to add to the matrix
+     * @param type of argument to add to the matrix
      */
     Argument addArgument(final Argument.Type type);
 
@@ -177,5 +177,5 @@ public interface Variable {
 
     void setOrderIndex(int newIndex);
 
-    Datastore getOwningDatastore();
+    DataStore getOwningDatastore();
 }

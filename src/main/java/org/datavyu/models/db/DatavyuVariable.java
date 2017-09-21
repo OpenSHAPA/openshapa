@@ -23,35 +23,34 @@
 
 package org.datavyu.models.db;
 
-import org.datavyu.Datavyu;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Maps a variable object to a datastore.
+ * Maps a Datavyu variable to a data store.
  */
 public final class DatavyuVariable implements Variable {
-    // All the listeners for variables in teh datastore.
-    static Map<UUID, List<VariableListener>> allListeners =
-            new HashMap<UUID, List<VariableListener>>();
+
+    // All the listeners for variables in the data store
+    private static Logger logger = LogManager.getLogger(DatavyuVariable.class);
+    private static Map<UUID, List<VariableListener>> allListeners = new HashMap<UUID, List<VariableListener>>();
     private static CellComparator CellComparator = new CellComparator();
     final private UUID variableId = UUID.randomUUID();
-    //    private List<Cell> cells = new ArrayList<Cell>();
     private List<Cell> cells = new CopyOnWriteArrayList<>();
     private Argument rootNodeArgument = null;
     private Boolean selected;
-    private Boolean highlighted;
     private Boolean hidden;
     private String name;
     private int orderIndex = -1;
-    private DatavyuDatastore owningDatastore;
+    private DatavyuDataStore owningDatastore;
 
     /**
      * Default constructor.
      */
-    public DatavyuVariable() {
-    }
+    public DatavyuVariable() {}
 
     /**
      * Constructor.
@@ -74,28 +73,25 @@ public final class DatavyuVariable implements Variable {
     public DatavyuVariable(String name,
                            Argument type,
                            boolean grandfathered,
-                           DatavyuDatastore dds) throws UserWarningException {
+                           DatavyuDataStore dds) throws UserWarningException {
         owningDatastore = dds;
         this.setName(name, grandfathered);
         this.setRootNode(type);
         this.setHidden(false);
         this.setSelected(true);
-
-
-        owningDatastore.markDBAsChanged();
+        owningDatastore.markAsChanged();
     }
 
     /**
-     * @param variableId The ID of the variable we want the listeners for.
+     * @param variableId The Identifier of the variable we want the listeners for.
      * @return The list of listeners for the specified variableId.
      */
     private static List<VariableListener> getListeners(UUID variableId) {
         List<VariableListener> result = allListeners.get(variableId);
         if (result == null) {
-            result = new ArrayList<VariableListener>();
+            result = new ArrayList<>();
             allListeners.put(variableId, result);
         }
-
         return result;
     }
 
@@ -107,22 +103,22 @@ public final class DatavyuVariable implements Variable {
     }
 
     public void addCell(Cell cell) {
-        if (cell.getValue().getArgument() == this.getRootNode()) {
+        if (cell.getCellValue().getArgument() == this.getRootNode()) {
             cells.add(cell);
             for (VariableListener vl : getListeners(getID())) {
                 vl.cellInserted(cell);
             }
-            owningDatastore.markDBAsChanged();
+            owningDatastore.markAsChanged();
         }
     }
 
-    public Datastore getOwningDatastore() {
+    public DataStore getOwningDatastore() {
         return owningDatastore;
     }
 
 
     /**
-     * @return The internal ID for this variable.
+     * @return The internal Identifier for this variable.
      */
     public UUID getID() {
         return variableId;
@@ -138,7 +134,7 @@ public final class DatavyuVariable implements Variable {
             vl.cellInserted(c);
         }
 
-        owningDatastore.markDBAsChanged();
+        owningDatastore.markAsChanged();
         return c;
     }
 
@@ -146,7 +142,7 @@ public final class DatavyuVariable implements Variable {
     public void removeCell(final Cell cell) {
         cells.remove(cell);
 
-        owningDatastore.markDBAsChanged();
+        owningDatastore.markAsChanged();
 
         for (VariableListener vl : getListeners(getID())) {
             vl.cellRemoved(cell);
@@ -172,7 +168,7 @@ public final class DatavyuVariable implements Variable {
 
     @Override
     public void setRootNode(final Argument a) {
-        owningDatastore.markDBAsChanged();
+        owningDatastore.markAsChanged();
         rootNodeArgument = a;
     }
 
@@ -217,7 +213,7 @@ public final class DatavyuVariable implements Variable {
     @Override
     public void setHidden(final boolean hiddenParm) {
         if (hidden == null || hiddenParm != hidden) {
-            owningDatastore.markDBAsChanged();
+            owningDatastore.markAsChanged();
             hidden = hiddenParm;
 
             for (VariableListener vl : getListeners(getID())) {
@@ -276,7 +272,7 @@ public final class DatavyuVariable implements Variable {
         }
 
         this.setRootNode(arg);
-        owningDatastore.markDBAsChanged();
+        owningDatastore.markAsChanged();
         return arg.childArguments.get(arg.childArguments.size() - 1);
     }
 
@@ -297,7 +293,7 @@ public final class DatavyuVariable implements Variable {
         for (Cell cell : getCells()) {
             cell.moveMatrixValue(old_index, new_index);
         }
-        owningDatastore.markDBAsChanged();
+        owningDatastore.markAsChanged();
         this.setRootNode(arg);
     }
 
@@ -305,7 +301,7 @@ public final class DatavyuVariable implements Variable {
     public void moveArgument(final String name, final int new_index) {
         int old_index = getArgumentIndex(name);
         moveArgument(old_index, new_index);
-        owningDatastore.markDBAsChanged();
+        owningDatastore.markAsChanged();
     }
 
     @Override
@@ -319,7 +315,7 @@ public final class DatavyuVariable implements Variable {
             cell.removeMatrixValue(arg_index);
         }
 
-        owningDatastore.markDBAsChanged();
+        owningDatastore.markAsChanged();
         this.setRootNode(arg);
     }
 
@@ -352,19 +348,16 @@ public final class DatavyuVariable implements Variable {
     @Override
     public void setOrderIndex(final int newIndex) {
         orderIndex = newIndex;
-        owningDatastore.markDBAsChanged();
+        owningDatastore.markAsChanged();
     }
 
-    //would like to change the above calls to DatavyuDatastore.markDBAsChanged to this,
+    //would like to change the above calls to DatavyuDataStore.markAsChanged to this,
     //but am holding off for now to avoid merge complications
     private void markDB() {
         if (owningDatastore != null) {
-            owningDatastore.markDBAsChanged();
-        } else if (Datavyu.getProjectController() != null) {
-            //uncomment the below when markDBAsChanged is non-static
-            //owningDatastore.markDBAsChanged();
+            owningDatastore.markAsChanged();
         } else {
-            System.out.println("FAILED TO MARK DATASTORE");
+            logger.error("Failed to mark data store because no owning data store was set.");
         }
     }
 }

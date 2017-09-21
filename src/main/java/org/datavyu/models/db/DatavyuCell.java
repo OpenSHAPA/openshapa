@@ -27,8 +27,8 @@ public class DatavyuCell implements Cell {
     private boolean selected;
     private boolean highlighted;
     private Variable parent;
-    private Map<String, Value> arguments = new HashMap<String, Value>();
-    private Value value;
+    private Map<String, CellValue> arguments = new HashMap<String, CellValue>();
+    private CellValue cellValue;
 
     public DatavyuCell() {
     }
@@ -45,16 +45,16 @@ public class DatavyuCell implements Cell {
         // Build argument list from the argument given
 
         if (type.type == Argument.Type.NOMINAL) {
-            this.value = new DatavyuNominalValue(getID(), type, this);
+            this.cellValue = new DatavyuNominalCellValue(getID(), type, this);
         } else if (type.type == Argument.Type.TEXT) {
-            this.value = new DatavyuTextValue(getID(), type, this);
+            this.cellValue = new DatavyuTextCellValue(getID(), type, this);
         } else {
-            this.value = new DatavyuMatrixValue(getID(), type, this);
+            this.cellValue = new DatavyuMatrixCellValue(getID(), type, this);
         }
     }
 
     /**
-     * @param cellId The ID of the variable we want the listeners for.
+     * @param cellId The Identifier of the variable we want the listeners for.
      * @return The list of listeners for the specified cellId.
      */
     private static List<CellListener> getListeners(UUID cellId) {
@@ -108,7 +108,7 @@ public class DatavyuCell implements Cell {
 
     @Override
     public void setOffset(final long newOffset) {
-        if (newOffset != offset) parent.getOwningDatastore().markDBAsChanged();
+        if (newOffset != offset) parent.getOwningDatastore().markAsChanged();
         offset = newOffset;
         for (CellListener cl : getListeners(getID())) {
             cl.offsetChanged(offset);
@@ -137,7 +137,7 @@ public class DatavyuCell implements Cell {
 
     @Override
     public void setOnset(final long newOnset) {
-        if (newOnset != onset) parent.getOwningDatastore().markDBAsChanged();
+        if (newOnset != onset) parent.getOwningDatastore().markAsChanged();
         onset = newOnset;
         for (CellListener cl : getListeners(getID())) {
             cl.onsetChanged(onset);
@@ -152,12 +152,12 @@ public class DatavyuCell implements Cell {
 
     @Override
     public String getValueAsString() {
-        return getValue().toString();
+        return getCellValue().toString();
     }
 
     @Override
-    public Value getValue() {
-        return this.value;
+    public CellValue getCellValue() {
+        return this.cellValue;
     }
 
     @Override
@@ -200,56 +200,56 @@ public class DatavyuCell implements Cell {
 
     @Override
     public void addMatrixValue(Argument type) {
-        DatavyuMatrixValue val = (DatavyuMatrixValue) getValue();
+        DatavyuMatrixCellValue val = (DatavyuMatrixCellValue) getCellValue();
         val.createArgument(type);
     }
 
     @Override
-    public void moveMatrixValue(final int old_index, int new_index) {
-        DatavyuMatrixValue val = (DatavyuMatrixValue) getValue();
-        List<Value> values = val.getArguments();
-        Value v = values.get(old_index);
+    public void moveMatrixValue(final int oldIndex, int newIndex) {
+        DatavyuMatrixCellValue val = (DatavyuMatrixCellValue) getCellValue();
+        List<CellValue> cellValues = val.getArguments();
+        CellValue v = cellValues.get(oldIndex);
 
-        values.remove(old_index);
-        values.add(new_index, v);
+        cellValues.remove(oldIndex);
+        cellValues.add(newIndex, v);
 
-        for (int i = 0; i < values.size(); i++) {
-            ((DatavyuValue) values.get(i)).setIndex(i);
+        for (int i = 0; i < cellValues.size(); i++) {
+            ((DatavyuCellValue) cellValues.get(i)).setIndex(i);
         }
     }
 
     @Override
     public void removeMatrixValue(final int index) {
-        ((DatavyuMatrixValue) getValue()).removeArgument(index);
+        ((DatavyuMatrixCellValue) getCellValue()).removeArgument(index);
     }
 
     @Override
-    public void setMatrixValue(final int index, final String v) {
-        DatavyuMatrixValue val = (DatavyuMatrixValue) getValue();
-        List<Value> values = val.getArguments();
-        values.get(index).set(v);
+    public void setMatrixValue(final int index, final String value) {
+        DatavyuMatrixCellValue val = (DatavyuMatrixCellValue) getCellValue();
+        List<CellValue> cellValues = val.getArguments();
+        cellValues.get(index).set(value);
     }
 
     @Override
-    public Value getMatrixValue(final int index) {
-        return ((DatavyuMatrixValue) getValue()).getArguments().get(index);
+    public CellValue getMatrixValue(final int index) {
+        return ((DatavyuMatrixCellValue) getCellValue()).getArguments().get(index);
     }
 
     @Override
     public void clearMatrixValue(final int index) {
-        DatavyuMatrixValue val = (DatavyuMatrixValue) getValue();
-        List<Value> values = val.getArguments();
-        values.get(index).clear();
+        DatavyuMatrixCellValue val = (DatavyuMatrixCellValue) getCellValue();
+        List<CellValue> cellValues = val.getArguments();
+        cellValues.get(index).clear();
     }
 
     @Override
-    public void addListener(final CellListener listener) {
-        getListeners(getID()).add(listener);
+    public void addListener(final CellListener cellListener) {
+        getListeners(getID()).add(cellListener);
     }
 
     @Override
-    public void removeListener(final CellListener listener) {
-        getListeners(getID()).remove(listener);
+    public void removeListener(final CellListener cellListener) {
+        getListeners(getID()).remove(cellListener);
     }
 
     public UUID getID() {
@@ -257,7 +257,7 @@ public class DatavyuCell implements Cell {
     }
 
     @Override
-    public String getCellID() {
+    public String getCellId() {
         return this.getID().toString();
     }
 

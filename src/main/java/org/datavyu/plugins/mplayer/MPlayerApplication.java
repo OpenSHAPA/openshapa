@@ -12,21 +12,23 @@ import javafx.scene.media.MediaView;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.datavyu.plugins.javafx.JavaFXStreamViewerDialog;
 
 import java.io.File;
 
-/**
- * Created by jesse on 10/21/14.
- */
 public class MPlayerApplication extends Application {
 
-    File dataFile;
-    boolean init = false;
-    MediaPlayer mp;
-    MediaView mv;
-    Stage stage;
-    long duration = -1;
-    long lastSeekTime = -1;
+    private static Logger logger = LogManager.getLogger(JavaFXStreamViewerDialog.class);
+
+    private File dataFile;
+    private boolean init = false;
+    private MediaPlayer mp;
+    private MediaView mv;
+    private Stage stage;
+    private long duration = -1;
+    private long lastSeekTime = -1;
 
     public MPlayerApplication(File file) {
         dataFile = file;
@@ -37,32 +39,26 @@ public class MPlayerApplication extends Application {
     }
 
     public void seek(long time) {
-        if (lastSeekTime == time) {
-
-        } else {
-            System.out.println("SEEKING TO: " + time);
+        if (lastSeekTime != time) {
+            logger.info("Seeking to: " + time);
 
             double rate = 0;
             if (mp.getCurrentRate() != 0) {
                 mp.pause();
                 rate = mp.getCurrentRate();
             }
-//            System.out.println("BEFORE: " + mp.getCurrentTime());
 
             // NOTE: JavaFX only seems to be able to seek accurately in 2.2 when the rate != 0,
             // so lets fake that here.
             mp.setRate(1);
             mp.seek(Duration.millis(time));
             mp.setRate(rate);
-//            System.out.println("AFTER: " + mp.getCurrentTime());
-
-//            mp.setRate(rate);
             lastSeekTime = time;
         }
     }
 
     public void pause() {
-        System.out.println(mp.getCurrentTime());
+        logger.info("Pausing at time: "+  mp.getCurrentTime());
         mp.pause();
     }
 
@@ -106,9 +102,6 @@ public class MPlayerApplication extends Application {
     }
 
     public void setScale(double scale) {
-//        mv.setScaleX(scale);
-//        mv.setScaleY(scale);
-
         stage.setHeight(mp.getMedia().getHeight() * scale);
         stage.setWidth(mp.getMedia().getWidth() * scale);
     }
@@ -143,7 +136,6 @@ public class MPlayerApplication extends Application {
             @Override
             public void run() {
                 stage.close();
-//                mp.dispose();
             }
         });
 
@@ -157,7 +149,7 @@ public class MPlayerApplication extends Application {
         mp.setOnReady(new Runnable() {
             @Override
             public void run() {
-                System.out.println("Creating new media view");
+                logger.info("Creating a new media view.");
                 mv = new MediaView(mp);
 
 
@@ -180,12 +172,7 @@ public class MPlayerApplication extends Application {
                 primaryStage.setTitle(dataFile.getName());
                 primaryStage.show();
 
-
-                System.out.println("Setting init to true");
-                System.out.println(mp.getTotalDuration().toMillis());
-
                 init = true;
-                System.out.println(init);
             }
         });
 

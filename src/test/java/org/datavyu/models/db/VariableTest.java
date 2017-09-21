@@ -34,7 +34,7 @@ public class VariableTest {
     /**
      * The parent datastore for the variable.
      */
-    private Datastore ds;
+    private DataStore ds;
 
     /**
      * The model we are testing.
@@ -48,7 +48,7 @@ public class VariableTest {
 
     @BeforeMethod
     public void setUp() throws UserWarningException {
-        ds = DatastoreFactory.newDatastore();
+        ds = DataStoreFactory.newDataStore();
         Datavyu.setProjectController(new ProjectController(new Project(), ds));        
         model = (DatavyuVariable) ds.createVariable("test", Argument.Type.TEXT);
         modelListener = mock(VariableListener.class);

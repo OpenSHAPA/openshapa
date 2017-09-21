@@ -26,6 +26,7 @@ import org.datavyu.Datavyu;
 import org.datavyu.util.VersionRange;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.List;
 
 
@@ -37,12 +38,12 @@ public interface Plugin {
     /**
      * @return A new instance of the plugins data viewer.
      */
-    DataViewer getNewDataViewer(java.awt.Frame parent, boolean modal);
+    StreamViewer getNewStreamViewer(Frame parent, boolean modal);
 
     /**
      * @return The data viewer class.
      */
-    Class<? extends DataViewer> getViewerClass();
+    Class<? extends StreamViewer> getViewerClass();
 
     /**
      * @return The icon for representing this plugin. This can return null if
@@ -69,7 +70,7 @@ public interface Plugin {
      *<p>The classifier string cannot be null or the empty string.</p>
      * @return Classifier string.
      */
-    String getClassifier();
+    String getNamespace();
 
     /**
      * @return The various _groups_ of files that this plugin supports. As an

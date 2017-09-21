@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Use the converter from Controller > Convert Videos
  */
 package org.datavyu.views;
 
@@ -8,6 +7,9 @@ import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.stage.Stage;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.datavyu.util.ConfigurationProperties;
 import org.datavyu.util.VideoConverter;
 
 import javax.swing.*;
@@ -19,33 +21,28 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-/**
- * @author jesse
- */
-public class VideoConverterV extends javax.swing.JFrame {
+public class VideoConverterV extends JFrame {
 
-    /**
-     * Creates new form VideoConverterV
-     */
+    /** The logger for this class */
+    private static Logger logger = LogManager.getLogger(VideoConverterV.class);
 
     private File sourceVideo;
     private File targetVideo;
     private VideoConverter vc;
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton cancelButton;
-    private javax.swing.JButton closeButton;
-    private javax.swing.JButton convertButton;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JProgressBar progressBar;
-    private javax.swing.JButton sourceFileButton;
-    private javax.swing.JTextPane sourceText;
-    private javax.swing.JLabel statusLabel;
-    private javax.swing.JButton targetFileButton;
-    private javax.swing.JTextPane targetText;
-    private javax.swing.JButton handbrakeMessage;
+    private JButton cancelButton;
+    private JButton closeButton;
+    private JButton convertButton;
+    private JLabel jLabel1;
+    private JLabel jLabel2;
+    private JScrollPane jScrollPane1;
+    private JScrollPane jScrollPane2;
+    private JProgressBar progressBar;
+    private JButton sourceFileButton;
+    private JTextPane sourceText;
+    private JLabel statusLabel;
+    private JButton targetFileButton;
+    private JTextPane targetText;
+    private JButton handbrakeMessage;
 
     public VideoConverterV() {
         initComponents();
@@ -107,7 +104,7 @@ public class VideoConverterV extends javax.swing.JFrame {
     }
 
     public void startConversion() {
-
+        // TODO: ???
     }
 
     /**
@@ -138,16 +135,17 @@ public class VideoConverterV extends javax.swing.JFrame {
         class OpenUrlAction implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
+                String conversion = ConfigurationProperties.getInstance().getConversionUrl();
                 try {
                     URI uri = null;
                     try {
-                        uri = new URI("https://handbrake.fr/");
+                        uri = new URI(conversion);
                     } catch (URISyntaxException ue) {
-                        ue.printStackTrace();
+                        logger.error("Could not open '" + conversion + "'. Error: ", ue);
                     }
                     Desktop.getDesktop().browse(uri);
                 } catch (IOException ioe) {
-                    ioe.printStackTrace();
+                    logger.info("Could not open website '" + conversion + "'. Error: ", ioe);
                 }
             }
         }

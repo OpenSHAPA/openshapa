@@ -14,182 +14,130 @@
  */
 package org.datavyu;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdesktop.application.LocalStorage;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-
 
 /**
- * Remembers, saves, and loads lists of recent files for Datavyu's history
- * functionality in the menus.
+ * A class that maintains N most recently remembered files.
  */
-public enum RecentFiles {
+public final class RecentFiles implements Serializable{
 
-    INSTANCE;
+    /** Logger for this class */
+    private static Logger logger = LogManager.getLogger(RecentFiles.class);
+
+    /** Limit for the file listing */
+    private int limit;
+
+    /** A listing of the N most recent files */
+    private List<String> recentFiles;
+
+    /** Maximum number of files per list */
+    private static final int NUM_MAX_HISTORY = 5;
 
     /**
-     * Max files per list to remember.
+     * Create recent files.
+     *
+     * @param limit The limit for the recent files.
      */
-    private static final int HISTORY_LIMIT = 5;
+    public RecentFiles(int limit) {
+        this.limit = limit;
+        this.recentFiles = new LinkedList<>();
+    }
+
+    public RecentFiles() {
+        this(NUM_MAX_HISTORY);
+    }
 
     /**
-     * Name of the history file to load from.
+     * Remember the file as most recent one among the others.
+     *
+     * @param file The file.
      */
-    private static final String fileName = "recent_files.yml";
-
-    /**
-     * Class logger.
-     */
-    private static Logger LOGGER = LogManager.getLogger(RecentFiles.class);
-    /**
-     * The history file to read and write to.
-     */
-    private final File historyFile;
-    /**
-     * List of recently opened projects.
-     */
-    private List<File> projects;
-    /**
-     * List of recently opened scripts.
-     */
-    private List<File> scripts;
-
-    private RecentFiles() {
-        LocalStorage storage = Datavyu.getApplication().getContext()
-                .getLocalStorage();
-
-        projects = new LinkedList<File>();
-        scripts = new LinkedList<File>();
-
-        historyFile = new File(storage.getDirectory(), fileName);
-
-        if (historyFile.exists()) {
-            load();
+    public void remember(String file) {
+        logger.info("Remember file: " + file);
+        // possibly remove the file if it exists (must be most recent)
+        recentFiles.remove(file);
+        // add the file at the first place
+        recentFiles.add(0, file);
+        // If we exceed the limit remove the last entry
+        if (recentFiles.size() == limit) {
+            recentFiles.remove(limit-1);
         }
     }
 
     /**
-     * Remember the given file in the list of projects.
+     * Get the list of most recent files.
+     *
+     * @return A list of most recent files.
      */
-    public static void rememberProject(final File file) {
-        remember(INSTANCE.projects, file);
-        INSTANCE.save();
+    public List<String> getRecentFiles() {
+        return recentFiles;
     }
 
     /**
-     * Remember the given file in the list of scripts.
+     * Set a list of most recently remembered files.
+     *
+     * @param recentFiles
      */
-    public static void rememberScript(final File file) {
-        remember(INSTANCE.scripts, file);
-        INSTANCE.save();
-    }
-
-    private static void remember(final List<File> history, final File file) {
-
-        if (history.contains(file)) {
-            history.remove(file);
-        }
-
-        if (history.size() == HISTORY_LIMIT) {
-            history.remove(HISTORY_LIMIT - 1);
-        }
-
-        history.add(0, file);
-
+    @SuppressWarnings("unused")  // Used by the reflection to restore this class
+    public void setRecentFiles(List<String> recentFiles) {
+        this.recentFiles = recentFiles;
     }
 
     /**
-     * Recently opened projects, most recent first.
+     * Get the limit that is used for maintaining the n most recently remembered files.
+     * @return
      */
-    public static Iterable<File> getRecentProjects() {
-        return INSTANCE.projects;
+    public int getLimit() {
+        return limit;
     }
 
     /**
-     * Recently opened scripts, most recent first.
+     * Set the limit for the n most recently remembered files.
+     *
+     * @param limit The limit.
      */
-    public static Iterable<File> getRecentScripts() {
-        return INSTANCE.scripts;
+    @SuppressWarnings("unused")  // Used by the reflection to restore this class
+    public void setLimit(int limit) {
+        this.limit = limit;
     }
 
     /**
-     * Save history to disk in YAML format.
+     * Load recently remembered files.
+     *
+     * @param fileName The file name where to load from.
+     *
+     * @return Loaded instance of recent files.
+     *
+     * @throws IOException Exception while loading from file.
      */
-    private void save() {
-        Map<String, List<String>> historyMap = Maps.newHashMap();
-        historyMap.put("projects", filesToPaths(projects));
-        historyMap.put("scripts", filesToPaths(scripts));
-
-        DumperOptions options = new DumperOptions();
-        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-
-        Yaml yaml = new Yaml(options);
-        Writer fw = null;
-
-        try {
-            fw = new FileWriter(historyFile);
-            yaml.dump(historyMap, fw);
-        } catch (IOException e) {
-            LOGGER.error("Couldn't save history", e);
-        } finally {
-            IOUtils.closeQuietly(fw);
-        }
+    public static RecentFiles load(String fileName) throws IOException {
+        LocalStorage localStorage = Datavyu.getApplication().getContext().getLocalStorage();
+        logger.info("Loading recent files from: "
+                + localStorage.getDirectory().getAbsolutePath() + File.separator + fileName);
+        return (RecentFiles) localStorage.load(fileName);
     }
-
 
     /**
-     * Load history from disk.
+     * Save the most recently remembered files.
+     *
+     * @param recentFiles A most recently remembered files instance.
+     *
+     * @param fileName The file name where to save them.
+     *
+     * @throws IOException Exception while saving to file.
      */
-    private void load() {
-        Yaml yaml = new Yaml();
-        Reader fr = null;
-
-        try {
-            fr = new FileReader(historyFile);
-
-            Map data = (Map) yaml.load(fr);
-
-            List<String> projectPaths = (List) data.get("projects");
-            projects = pathsToFiles(projectPaths);
-
-            List<String> scriptPaths = (List) data.get("scripts");
-            scripts = pathsToFiles(scriptPaths);
-
-        } catch (FileNotFoundException e) {
-            ; // Function is only called if the file exists.
-        } finally {
-            IOUtils.closeQuietly(fr);
-        }
+    public static void save(RecentFiles recentFiles, String fileName) throws IOException {
+        LocalStorage localStorage = Datavyu.getApplication().getContext().getLocalStorage();
+        logger.info("Saving recent files to: "
+                + localStorage.getDirectory().getAbsolutePath() + File.separator + fileName);
+        localStorage.save(recentFiles, fileName);
     }
-
-    private List<String> filesToPaths(final List<File> files) {
-        List<String> paths = Lists.newLinkedList();
-
-        for (File f : files) {
-            paths.add(f.getAbsolutePath());
-        }
-
-        return paths;
-    }
-
-    private List<File> pathsToFiles(final List<String> paths) {
-        List<File> files = Lists.newLinkedList();
-
-        for (String path : paths) {
-            files.add(new File(path));
-        }
-
-        return files;
-    }
-
 }

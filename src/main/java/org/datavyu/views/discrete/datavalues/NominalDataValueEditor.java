@@ -15,7 +15,7 @@
 package org.datavyu.views.discrete.datavalues;
 
 import org.datavyu.Datavyu;
-import org.datavyu.models.db.NominalValue;
+import org.datavyu.models.db.NominalCellValue;
 
 import javax.swing.text.JTextComponent;
 import java.awt.event.FocusEvent;
@@ -37,7 +37,7 @@ public final class NominalDataValueEditor extends DataValueEditor {
     /**
      * The model that this editor is manipulating
      */
-    NominalValue model;
+    NominalCellValue model;
 
     /**
      * Constructor.
@@ -46,7 +46,7 @@ public final class NominalDataValueEditor extends DataValueEditor {
      * @param NominalValue The value this editor manipulates.
      */
     public NominalDataValueEditor(final JTextComponent ta,
-                                  final NominalValue nv) {
+                                  final NominalCellValue nv) {
         super(ta, nv);
         setAcceptReturnKey(true);
         model = nv;

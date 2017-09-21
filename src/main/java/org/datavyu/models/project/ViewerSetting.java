@@ -15,6 +15,8 @@
 package org.datavyu.models.project;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 
@@ -22,62 +24,55 @@ import java.io.*;
 /**
  * Stores user settings for a data viewer
  */
+// TODO: Can we remove / replace this class by using the Swing Application Framework?
 public final class ViewerSetting {
 
-    /**
-     * ViewerSetting specification version.
-     */
+    /** Logger for this class */
+    private static Logger logger = LogManager.getLogger(ViewerSetting.class);
+
+    /** Version number */
+    // TODO: Tie this back to the overall version numbers!! This is a design mistake.
     public static final int VERSION = 3;
 
-    /**
-     * Track settings associated with this data viewer.
-     */
+    /** Track settings associated with this data viewer */
     private TrackSettings trackSettings;
 
-    /**
-     * Fully qualified name of the plugin
-     */
+    /** Fully qualified name of the plugin */
     private String pluginName;
 
-    /**
-     * Plugin classifier.
-     */
+    /** Plugin classifier */
+    // TODO: Consider refactoring this name. I remember this has to do with the file name matching to plugin but unused.
     private String pluginClassifier;
 
-    /**
-     * Absolute file path to the data source
-     */
+    /** Absolute file path to the data source */
     private String filePath;
 
-    /**
-     * Playback offset in milliseconds
-     */
+    /** Playback offset in milliseconds */
     private long offset;
 
-    /**
-     * ID of settings file.
-     */
+    /** Identifier of settings file */
     private String settingsId;
 
+    /** The settings data */
     private byte[] settingsData;
 
+    /** Output stream */
     private ByteArrayOutputStream settingsOutput;
 
-    public ViewerSetting() {
-    }
+    public ViewerSetting() { }
 
     /**
-     * Private copy constructor.
+     * Copy constructor
      *
-     * @param other
+     * @param viewerSetting
      */
-    private ViewerSetting(final ViewerSetting other) {
-        trackSettings = other.trackSettings.copy();
-        pluginName = other.pluginName;
-        pluginClassifier = other.pluginClassifier;
-        filePath = other.filePath;
-        offset = other.offset;
-        settingsId = other.settingsId;
+    private ViewerSetting(final ViewerSetting viewerSetting) {
+        trackSettings = viewerSetting.trackSettings.copy();
+        pluginName = viewerSetting.pluginName;
+        pluginClassifier = viewerSetting.pluginClassifier;
+        filePath = viewerSetting.filePath;
+        offset = viewerSetting.offset;
+        settingsId = viewerSetting.settingsId;
     }
 
     /**
@@ -173,18 +168,13 @@ public final class ViewerSetting {
      * @param is InputStream to copy from.
      */
     public void copySettings(final InputStream is) {
-
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-
         try {
             IOUtils.copy(is, os);
-
             settingsData = os.toByteArray();
-
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Failed to save the copy settings. Error: ", e);
         }
-
         IOUtils.closeQuietly(os);
     }
 
@@ -196,7 +186,9 @@ public final class ViewerSetting {
      *                     stream.
      */
     public void writeSettings(final OutputStream os) throws IOException {
-        settingsOutput.writeTo(os);
+        assert os != null;
+
+        if(settingsOutput != null) settingsOutput.writeTo(os);
     }
 
     /**
@@ -210,15 +202,13 @@ public final class ViewerSetting {
      * @return OutputStream to use for writing settings.
      */
     public OutputStream getSettingsOutputStream() {
-
         // Can't re-use the stream, need empty buffer.
+        // TODO: Re-design this part. Don't give out the stream. Need to close the byte array output stream.
         settingsOutput = new ByteArrayOutputStream();
-
         return settingsOutput;
     }
 
     public ViewerSetting copy() {
         return new ViewerSetting(this);
     }
-
 }

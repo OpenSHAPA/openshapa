@@ -6,24 +6,24 @@
     </Component>
   </NonVisualComponents>
   <Properties>
-    <Property name="defaultCloseOperation" type="int" value="2"/>
+    <Property name="defaultCloseOperation" type="int" cellValue="2"/>
     <Property name="title" type="java.lang.String" resourceKey="Form.title"/>
-    <Property name="name" type="java.lang.String" value="Form" noResource="true"/>
-    <Property name="resizable" type="boolean" value="false"/>
+    <Property name="name" type="java.lang.String" cellValue="Form" noResource="true"/>
+    <Property name="resizable" type="boolean" cellValue="false"/>
   </Properties>
   <SyntheticProperties>
-    <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+    <SyntheticProperty name="formSizePolicy" type="int" cellValue="1"/>
   </SyntheticProperties>
   <AuxValues>
-    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="2"/>
-    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
-    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
-    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" cellValue="2"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" cellValue="true"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" cellValue="true"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" cellValue="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" cellValue="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" cellValue="2"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" cellValue="0"/>
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" cellValue="false"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" cellValue="2"/>
   </AuxValues>
 
   <Layout>
@@ -58,7 +58,7 @@
       <Properties>
         <Property name="font" type="java.awt.Font" resourceKey="radioCanSend.font"/>
         <Property name="text" type="java.lang.String" resourceKey="radioCanSend.text"/>
-        <Property name="name" type="java.lang.String" value="radioCanSend" noResource="true"/>
+        <Property name="name" type="java.lang.String" cellValue="radioCanSend" noResource="true"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="radioCanSendActionPerformed"/>
@@ -67,7 +67,7 @@
     <Component class="javax.swing.JRadioButton" name="radioDoNotSend">
       <Properties>
         <Property name="text" type="java.lang.String" resourceKey="radioDoNotSend.text"/>
-        <Property name="name" type="java.lang.String" value="radioDoNotSend" noResource="true"/>
+        <Property name="name" type="java.lang.String" cellValue="radioDoNotSend" noResource="true"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="radioDoNotSendActionPerformed"/>
@@ -75,10 +75,10 @@
     </Component>
     <Container class="javax.swing.JScrollPane" name="jScrollPane1">
       <Properties>
-        <Property name="name" type="java.lang.String" value="jScrollPane1" noResource="true"/>
+        <Property name="name" type="java.lang.String" cellValue="jScrollPane1" noResource="true"/>
       </Properties>
       <AuxValues>
-        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+        <AuxValue name="autoScrollPane" type="java.lang.Boolean" cellValue="true"/>
       </AuxValues>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
@@ -91,12 +91,12 @@
                 <EmptyBorder bottom="10" left="10" right="10" top="10"/>
               </Border>
             </Property>
-            <Property name="editable" type="boolean" value="false"/>
+            <Property name="editable" type="boolean" cellValue="false"/>
             <Property name="text" type="java.lang.String" resourceKey="Blurb.text"/>
             <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-              <Insets value="[10, 10, 10, 10]"/>
+              <Insets cellValue="[10, 10, 10, 10]"/>
             </Property>
-            <Property name="name" type="java.lang.String" value="Blurb" noResource="true"/>
+            <Property name="name" type="java.lang.String" cellValue="Blurb" noResource="true"/>
           </Properties>
         </Component>
       </SubComponents>

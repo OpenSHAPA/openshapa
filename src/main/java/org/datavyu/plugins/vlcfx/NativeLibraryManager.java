@@ -19,7 +19,8 @@ package org.datavyu.plugins.vlcfx;
  * Copyright 2009, 2010, 2011, 2012, 2013 Caprica Software Limited.
  */
 
-import uk.co.caprica.vlcj.logger.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -152,6 +153,9 @@ import java.util.jar.JarFile;
  */
 public class NativeLibraryManager {
 
+    /** Logger for this class */
+    private static Logger logger = LogManager.getLogger(NativeLibraryManager.class);
+
     /**
      * Top level directory name within the package archive containing the resources to unpack.
      * <p>
@@ -232,52 +236,47 @@ public class NativeLibraryManager {
      * @throws RuntimeException if an error occurs, such as no native resource package found
      */
     public void unpackNativePackage() {
-        Logger.debug("unpackNativePackage()");
         File installDirectory = new File(installTo);
-        Logger.debug("installDirectory={}", installDirectory);
-        // Get the jar file containing the native resources, the resources are
-        // platform-dependent
-        String osName;
-        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-            osName = "windows";
-        } else {
-            osName = "macosx";
-        }
+        logger.info("The installation directory is: " + installDirectory);
 
-        Logger.debug("osName={}", osName);
+        // Get the jar file containing the native resources, the resources are platform-dependent
+        String osName = System.getProperty("os.name").toLowerCase().contains("windows") ? "windows" : "macosx";
+        logger.info("Found OS: ", osName);
         String osArch = System.getProperty("os.arch");
-        Logger.debug("osArch={}", osArch);
+        logger.info("Found OS architecture: " + osArch);
 
-        String platformResources = String.format("../%svlc-%s-%s/vlc-%s-%s.jar", PACKAGE_RESOURCE_DIRECTORY, osName, osArch, osName, osArch);
-//        String platformResources = String.format("../lib/vlcLibs-macosx-2.2.1.jar", PACKAGE_RESOURCE_DIRECTORY, osName, osArch, osName, osArch);
-
-        System.out.println(platformResources);
-        Logger.debug("platformResources={}", platformResources);
+        // Get the platform specific resource and jar file
+        String platformResources = String.format("../%svlc-%s-%s/vlc-%s-%s.jar",
+                PACKAGE_RESOURCE_DIRECTORY, osName, osArch, osName, osArch);
+        logger.info("Loading resources: " + platformResources);
         JarFile jarFile = getNativePackageJarFile(platformResources);
-        Logger.debug("jarFile={}", jarFile);
+        logger.info("Jar file: " + jarFile);
+
         // Get the total number of files to install (for reporting progress)
         int installCount = getInstallCount(jarFile);
-        Logger.debug("installCount={}", installCount);
+        logger.info("The installation count for that jar file is: " + installCount);
+
         // Notify listeners
         fireStartEvent(installCount);
+
         // Create a re-usable buffer for file input/output
         byte[] ioBuffer = new byte[ioBufferSize];
+
         // Process each entry in the jar file
         Enumeration<JarEntry> jarEntries = jarFile.entries();
-        jarEntries = jarFile.entries();
-        int n = 0;
+        int nEvent = 0;
         while (jarEntries.hasMoreElements()) {
             JarEntry jarEntry = jarEntries.nextElement();
             // Only install files contained in the run-time operating-system name/
             // architecture directory inside the PACKAGE_RESOURCE_DIRECTORY folder
             // inside the jar - this will also ensure that directories like META-INF
             // and files like MANIFEST.MF are excluded...
-//            System.out.println(jarEntry.getName());
+            logger.info("Working on entry: " + jarEntry.getName());
             if (!jarEntry.isDirectory() && jarEntry.getName().startsWith("vlc/")) {
                 // Trim off the un-needed part of the file path
                 String entryName = jarEntry.getName();
                 // Notify listeners
-                fireInstallEvent(++n, entryName);
+                fireInstallEvent(++nEvent, entryName);
                 // Process this file
                 processNativeResource(installDirectory, entryName, jarFile, jarEntry, ioBuffer);
             }
@@ -301,8 +300,8 @@ public class NativeLibraryManager {
      * @return <code>true</code> if all files and directories were deleted, otherwise <code>false</code>
      */
     public boolean purge() {
-        Logger.debug("purge()");
         firePurgeEvent();
+        logger.info("Purging files from directory: " + installTo);
         boolean result = purge(new File(installTo), true);
         firePurgedEvent(result);
         return result;
@@ -316,15 +315,14 @@ public class NativeLibraryManager {
      * @throws RuntimeException if an error occurs, such as no native resource package found
      */
     private JarFile getNativePackageJarFile(String resourcePath) {
-        Logger.debug("getNativePackageJarFile()");
         // Try and locate the package for this operating system
-        System.out.println(resourcePath);
+        logger.info("Get jar file: " + resourcePath);
         URL vlcPluginsUrl = getClass().getClassLoader().getResource(resourcePath);
         if (vlcPluginsUrl == null) {
             vlcPluginsUrl = getClass().getClassLoader().getResource(resourcePath.replace("../", ""));
         }
 
-        Logger.debug("vlcPluginsUrl={}", vlcPluginsUrl);
+        logger.info("VLC plugin url: " + vlcPluginsUrl);
         if (vlcPluginsUrl == null) {
             throw new RuntimeException("Failed to find a native library resource on the class-path");
         }
@@ -344,15 +342,13 @@ public class NativeLibraryManager {
      * @return number of files to be installed
      */
     private int getInstallCount(JarFile jarFile) {
-        Logger.debug("getInstallCount()");
         int count = 0;
         try {
             for (String key : jarFile.getManifest().getEntries().keySet()) {
-                System.out.println(jarFile.getManifest().getEntries().get(key));
+                logger.info("Jar file; " + jarFile.getManifest().getEntries().get(key));
             }
-            System.out.println();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error: ", e);
         }
         Enumeration<JarEntry> entries = jarFile.entries();
         while (entries.hasMoreElements()) {
@@ -375,13 +371,14 @@ public class NativeLibraryManager {
      * @return <code>true</code> if a file was installed, otherwise <code>false</code> (e.g. it was a directory)
      * @throws RuntimeException if an error occurs
      */
-    private void processNativeResource(File installDirectory, String entryName, JarFile jarFile, JarEntry jarEntry, byte[] ioBuffer) {
-        Logger.trace("processNativeResource(entryName={})", entryName);
+    private void processNativeResource(File installDirectory, String entryName, JarFile jarFile, JarEntry jarEntry,
+                                       byte[] ioBuffer) {
+        logger.info("Process native resource: " + entryName);
         // Ensure that the proper directory structure is created first
         File installFile = new File(installDirectory, entryName);
         File parentDirectory = installFile.getParentFile();
         if (parentDirectory != null && !parentDirectory.exists() && !parentDirectory.mkdirs()) {
-            Logger.error("Failed to create installation directory '{}'", installFile.getAbsolutePath());
+            logger.error("Failed to create installation directory: ", installFile.getAbsolutePath());
             throw new RuntimeException("Failed to create installation directory '" + installFile.getAbsolutePath() + "'");
         }
         storeResource(installFile, jarFile, jarEntry, ioBuffer);
@@ -397,7 +394,7 @@ public class NativeLibraryManager {
      * @throws RuntimeException if an error occurs
      */
     private void storeResource(File installFile, JarFile jarFile, JarEntry jarEntry, byte[] ioBuffer) {
-        Logger.trace("storeResource(installFile={},jarEntry={}", installFile, jarEntry);
+        logger.info("Storing resource file: " + installFile + " and jar entry: " + jarEntry);
         InputStream in = null;
         OutputStream out = null;
         try {
@@ -413,7 +410,7 @@ public class NativeLibraryManager {
                 }
             }
         } catch (IOException e) {
-            Logger.error("Failed to install file '{}' because: {}", installFile, e.getMessage());
+            logger.error("Failed to install file '" + installFile + "'. Error: ", e);
             throw new RuntimeException("Failed to install file '" + installFile + "'", e);
         } finally {
             if (out != null) {
@@ -439,10 +436,13 @@ public class NativeLibraryManager {
      * @return <code>true</code> if all files and directories successfully deleted, <code>false</code> otherwise
      */
     private boolean purge(File file, boolean result) {
-        Logger.trace("purge(file={})", file);
+        logger.info("Purging file: " + file);
         if (file.isDirectory()) {
-            for (File child : file.listFiles()) {
-                result = purge(child, result);
+            File[] files = file.listFiles();
+            if (files != null) {
+                for (File child : files) {
+                    result = purge(child, result);
+                }
             }
         }
         return file.delete() && result;

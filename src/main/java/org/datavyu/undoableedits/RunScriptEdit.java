@@ -16,7 +16,7 @@ package org.datavyu.undoableedits;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.controllers.DeleteColumnC;
+import org.datavyu.controllers.DeleteColumnController;
 import org.datavyu.models.db.Cell;
 import org.datavyu.models.db.UserWarningException;
 import org.datavyu.models.db.Variable;
@@ -30,46 +30,49 @@ import java.util.List;
 /**
  * Undoable script edit.
  */
-public class RunScriptEdit extends SpreadsheetEdit {
-    /**
-     * The logger for this class.
-     */
-    private static final Logger LOGGER = LogManager.getLogger(RunScriptEdit.class);
+public class RunScriptEdit extends SpreadSheetEdit {
 
+    /** Logger for this class */
+    private static final Logger logger = LogManager.getLogger(RunScriptEdit.class);
+
+    /** Script path */
     private String scriptPath;
-    private List<VariableTO> colsTO; // DataColumn relevant values
+
+    /** Relevant columns */
+    private List<VariableTO> colsTO;
 
     public RunScriptEdit(String scriptPath) {
         super();
         this.scriptPath = scriptPath;
-        colsTO = getSpreadsheetState();
+        colsTO = getSpreadSheetState();
     }
 
     @Override
     public String getPresentationName() {
-        return "Run Script \"" + this.scriptPath + "\"";
+
+        return "Run Script \"" + scriptPath + "\"";
     }
 
     @Override
     public void undo() throws CannotRedoException {
         super.undo();
-        toogleSpreadsheetState();
+        toggleSpreadSheetState();
     }
 
     @Override
     public void redo() throws CannotUndoException {
         super.redo();
-        toogleSpreadsheetState();
+        toggleSpreadSheetState();
     }
 
-    private void toogleSpreadsheetState() {
-        List<VariableTO> tempColsTO = this.getSpreadsheetState();
-        setSpreadsheetState(colsTO);
+    private void toggleSpreadSheetState() {
+        List<VariableTO> tempColsTO = this.getSpreadSheetState();
+        setSpreadSheetState(colsTO);
         colsTO = tempColsTO;
     }
 
-    private List<VariableTO> getSpreadsheetState() {
-        List<VariableTO> varsTO = new ArrayList<VariableTO>();
+    private List<VariableTO> getSpreadSheetState() {
+        List<VariableTO> varsTO = new ArrayList<>();
 
         int pos = 0;
         for (Variable var : model.getAllVariables()) {
@@ -80,13 +83,13 @@ public class RunScriptEdit extends SpreadsheetEdit {
         return varsTO;
     }
 
-    private void setSpreadsheetState(List<VariableTO> varsTO) {
+    private void setSpreadSheetState(List<VariableTO> varsTO) {
         try {
-            HashMap<String, Boolean> hiddenStates = new HashMap<String, Boolean>();
+            HashMap<String, Boolean> hiddenStates = new HashMap<>();
             for (Variable v : model.getAllVariables()) {
                 hiddenStates.put(v.getName(), v.isHidden());
             }
-            new DeleteColumnC(new ArrayList<Variable>(model.getAllVariables()));
+            new DeleteColumnController(new ArrayList<>(model.getAllVariables()));
 
             for (VariableTO varTO : varsTO) {
                 Variable var = model.createVariable(varTO.getName(), varTO.getType().type);
@@ -96,17 +99,15 @@ public class RunScriptEdit extends SpreadsheetEdit {
                     Cell c = var.createCell();
                     c.setOnset(cellTO.getOnset());
                     c.setOffset(cellTO.getOffset());
-                    c.getValue().set(cellTO.getValue());
+                    c.getCellValue().set(cellTO.getValue());
                 }
             }
             for (Variable v : model.getAllVariables()) {
                 v.setHidden(hiddenStates.get(v.getName()));
             }
-        } catch (UserWarningException uwe) {
-            LOGGER.error("Unable to set spreadsheet state", uwe);
-            uwe.printStackTrace();
+        } catch (UserWarningException e) {
+            logger.error("Unable to set spread sheet state. Error: ", e);
         }
-
         unselectAll();
     }
 }

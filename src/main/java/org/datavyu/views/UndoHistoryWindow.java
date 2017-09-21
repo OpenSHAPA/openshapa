@@ -15,7 +15,7 @@
 package org.datavyu.views;
 
 import org.datavyu.Datavyu;
-import org.datavyu.undoableedits.SpreadsheetEdit;
+import org.datavyu.undoableedits.SpreadSheetEdit;
 import org.datavyu.undoableedits.SpreadsheetUndoManager;
 
 import java.awt.*;
@@ -107,7 +107,7 @@ public class UndoHistoryWindow extends DatavyuDialog {
     private void go() {
         parent.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         this.undoHistoryList.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        undomanager.goTo((SpreadsheetEdit) undoHistoryList.getSelectedValue());
+        undomanager.goTo((SpreadSheetEdit) undoHistoryList.getSelectedValue());
         Datavyu.getView().refreshUndoRedo();
         this.rootPane.revalidate();
         this.rootPane.repaint();

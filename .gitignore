@@ -8,6 +8,8 @@ test.txtDB
 *._*.pdf
 *._*.properties
 nbproject
+logger.txt
+TODO.txt
 nbactions.xml
 nb-configuration.xml
 src/main/java/au

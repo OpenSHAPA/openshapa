@@ -14,30 +14,27 @@
  */
 package org.datavyu.controllers.project;
 
-import com.google.common.collect.Lists;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
-import org.datavyu.controllers.VocabEditorC;
+import org.datavyu.controllers.VocabEditorController;
 import org.datavyu.controllers.component.MixerController;
-import org.datavyu.controllers.id.IDController;
+import org.datavyu.models.Identifier;
 import org.datavyu.models.component.TrackModel;
 import org.datavyu.models.db.Cell;
-import org.datavyu.models.db.Datastore;
-import org.datavyu.models.db.DatastoreFactory;
+import org.datavyu.models.db.DataStore;
+import org.datavyu.models.db.DataStoreFactory;
 import org.datavyu.models.db.Variable;
 import org.datavyu.models.project.Project;
 import org.datavyu.models.project.TrackSettings;
 import org.datavyu.models.project.ViewerSetting;
-import org.datavyu.plugins.DataViewer;
+import org.datavyu.plugins.StreamViewer;
 import org.datavyu.plugins.Plugin;
 import org.datavyu.plugins.PluginManager;
-import org.datavyu.util.OFileUtils;
-import org.datavyu.views.DataControllerV;
-import org.datavyu.views.discrete.SpreadsheetPanel;
+import org.datavyu.util.FileSystemUtils;
+import org.datavyu.views.VideoController;
+import org.datavyu.views.discrete.SpreadSheetPanel;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 
@@ -45,7 +42,6 @@ import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -55,81 +51,53 @@ import java.util.List;
  */
 public final class ProjectController {
 
-    /**
-     * The spreadsheet panel that this controller is associated with
-     */
-    private SpreadsheetPanel spreadsheetPanel;
+    /** Logger for this class */
+    private static Logger logger = LogManager.getLogger(ProjectController.class);
 
-    /**
-     * The current project we are working on.
-     */
+    /** The spread sheet panel that this controller is associated with */
+    private SpreadSheetPanel spreadSheetPanel;
+
+    /** The current project we are working on */
     private Project project;
 
-    /**
-     * The current database we are working on.
-     */
-    private Datastore db = null;
+    /** The current database we are working on */
+    private DataStore dataStore = null;
 
-    /**
-     * The last cell that was created.
-     */
+    /** The last cell that was created */
     private Cell lastCreatedCell;
 
-    /**
-     * The last cell that was selected.
-     */
+    /** The last cell that was selected */
     private Cell lastSelectedCell;
 
-    /**
-     * The last variable that was created.
-     */
+    /** The last variable that was created */
     private Variable lastCreatedVariable;
 
-    /**
-     * Controller state
-     */
-    /**
-     * has the project been changed since it was created.
-     */
+    /** Project has been changed */
     private boolean changed;
 
-    /**
-     * Is the project new?
-     */
+    /** New project? */
     private boolean newProject;
 
-    /**
-     * Last option used for saving.
-     */
+    /** Last option used for saving */
     private FileFilter lastSaveOption;
 
     /**
      * Default constructor.
      */
-
-
     public ProjectController() {
-//        this.spreadsheetPanel = spreadsheetPanel;
-        project = new Project();
-        db = DatastoreFactory.newDatastore();
-        db.setTitleNotifier(Datavyu.getApplication());
-        changed = false;
+        this(new Project(), DataStoreFactory.newDataStore());
         newProject = true;
-        lastCreatedCell = null;
-        lastSelectedCell = null;
-        lastCreatedVariable = null;
     }
 
-    public ProjectController(final Project project, final Datastore db) {
-//        this.spreadsheetPanel = spreadsheetPanel;
+    public ProjectController(final Project project, final DataStore dataStore) {
         this.project = project;
-        this.db = db;
-        db.setTitleNotifier(Datavyu.getApplication());
+        this.dataStore = dataStore;
         changed = false;
         newProject = false;
         lastCreatedCell = null;
         lastSelectedCell = null;
         lastCreatedVariable = null;
+        dataStore.setTitleNotifier(Datavyu.getApplication());
     }
 
     /**
@@ -142,17 +110,11 @@ public final class ProjectController {
     }
 
     /**
+     *
      * @return The last "saved" option used when saving.
      */
     public FileFilter getLastSaveOption() {
         return lastSaveOption;
-    }
-
-    public void createNewProject(final String name) {
-        project = new Project();
-        setProjectName(name);
-        changed = false;
-        newProject = true;
     }
 
     /**
@@ -165,31 +127,32 @@ public final class ProjectController {
     }
 
     /**
-     * Gets the MacshapaDatabase associated with this project. Should eventually
-     * be replaced with a Datastore.
+     * Gets the DataStore associated with this project.
      *
-     * @return The single database to use with this project.
+     * @return The single DataStore used for this project.
      */
-    public Datastore getDB() {
-        return db;
+    public DataStore getDataStore() {
+        return dataStore;
     }
 
     /**
-     * Sets the datastore to use with this project. This is used when loading a
+     * Sets the data store to use with this project. This is used when loading a
      * database from file.
      *
-     * @param newDS The new datastore we are using.
+     * @param newDataStore The new data store we are using.
      */
-    public void setDatastore(final Datastore newDS) {
-        db = newDS;
-        db.setTitleNotifier(Datavyu.getApplication());
+    public void setDataStore(final DataStore newDataStore) {
+        dataStore = newDataStore;
+        dataStore.setTitleNotifier(Datavyu.getApplication());
         
-        //don't let code editor instance corresponding to an old Datastore hang around!
-        VocabEditorC.getController().killView();
+        //don't let code editor instance corresponding to an old DataStore hang around!
+        VocabEditorController.getController().killView();
     }
 
     /**
-     * @return The last cell created for the datastore.
+     * Returns the last created cell.
+     *
+     * @return The last cell created for the DataStore.
      */
     public Cell getLastCreatedCell() {
         return lastCreatedCell;
@@ -240,7 +203,7 @@ public final class ProjectController {
      * @return the changed
      */
     public boolean isChanged() {
-        return (changed || ((db != null) && db.isChanged()));
+        return (changed || ((dataStore != null) && dataStore.isChanged()));
     }
 
     /**
@@ -261,12 +224,9 @@ public final class ProjectController {
      * @return the project name for purposes for display. returns "(untitled)" instead of null
      */
     public String getProjectNamePretty() {
-        if (project.getProjectName() != null)
-        {
+        if (project.getProjectName() != null) {
             return project.getProjectName();
-        }
-        else
-        {
+        } else {
             return "(untitled)";
         }
     }
@@ -288,41 +248,45 @@ public final class ProjectController {
     }
 
     /**
+     * Get the full path
+     *
      * @return the database file name, directory not included.
      */
     public String getFullPath() {
         try {
-            return new File(project.getProjectDirectory() + File.separator + project.getDatabaseFileName()).getCanonicalPath();
+            return new File(project.getProjectDirectory() + File.separator
+                    + project.getDatabaseFileName()).getCanonicalPath();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Unable to get full path. Error: ", e);
         }
         return null;
     }
 
     /**
-     * Set the directory the project file (and all project specific resources)
-     * resides in.
+     * Set the directory the project file (and all project specific resources) resides in.
      *
-     * @param directory
+     * @param directory The project directory.
      */
     public void setProjectDirectory(final String directory) {
         project.setProjectDirectory(directory);
     }
 
     /**
-     * @return the directory the project file (and all project specific
-     * resources) resides in.
+     * Get the project directory.
+     *
+     * @return the directory the project file and all project specific resources reside in.
      */
     public String getProjectDirectory() {
         return project.getProjectDirectory();
     }
 
+    /**
+     * Set the original project directory.
+     *
+     * @param directory the original directory.
+     */
     public void setOriginalProjectDirectory(final String directory) {
         project.setOriginalProjectDirectory(directory);
-    }
-
-    public String getOriginalProjectDirectory() {
-        return project.getOriginalProjectDirectory();
     }
 
     /**
@@ -332,16 +296,15 @@ public final class ProjectController {
 
         // Use the plugin manager to load up the data viewers
         PluginManager pm = PluginManager.getInstance();
-        DataControllerV dataController = spreadsheetPanel.getDataController();
+        VideoController dataController = spreadSheetPanel.getVideoController();
 
         // Load the plugins required for each media file
         boolean showController = false;
 
-        List<String> missingFilesList = Lists.newLinkedList();
-        List<String> missingPluginList = Lists.newLinkedList();
+        List<String> missingFilesList = new LinkedList<>();
+        List<String> missingPluginList = new LinkedList<>();
 
-        final MixerController mixerController =
-                dataController.getMixerController();
+        final MixerController mixerController = dataController.getMixerController();
 
         // Load the viewer settings.
         for (ViewerSetting setting : project.getViewerSettings()) {
@@ -353,9 +316,8 @@ public final class ProjectController {
             String dataFileName = FilenameUtils.getName(setting.getFilePath());
 
             if (!file.exists()) {
-
                 // Look for a file by generating OS-independent paths.
-                File searchedFile = genRelative(
+                File searchedFile = FileSystemUtils.generateRelative(
                         project.getOriginalProjectDirectory(),
                         setting.getFilePath(), project.getProjectDirectory());
 
@@ -364,17 +326,20 @@ public final class ProjectController {
                 }
             }
 
+            // TODO: Enable search of file again
+            /*
             if (!file.exists()) {
 
                 // Look for a file that _might_ be the file we are looking for.
-                // This is a brute force search. Ideally we would never want to
-                // do this.
-                File searchedFile = huntForFile(currentDir, dataFileName);
+                // Searches in this directory, all child directories, and from
+                // the parent directory in all child directories.
+                File searchedFile = FileSystemUtils.searchForFile(currentDir, dataFileName);
 
                 if (searchedFile != null) {
                     file = searchedFile;
                 }
             }
+            */
 
             // The file is actually missing.
             if (!file.exists()) {
@@ -387,8 +352,7 @@ public final class ProjectController {
 
             // BugzID:2110
             if ((plugin == null) && (setting.getPluginClassifier() != null)) {
-                plugin = pm.getCompatiblePlugin(setting.getPluginClassifier(),
-                        file);
+                plugin = pm.getCompatiblePlugin(setting.getPluginClassifier(), file);
             }
 
             if (plugin == null) {
@@ -399,36 +363,29 @@ public final class ProjectController {
                 continue;
             }
 
-            final DataViewer viewer = plugin.getNewDataViewer(Datavyu
-                    .getApplication().getMainFrame(), false);
-            viewer.setIdentifier(IDController.generateIdentifier());
-
-            viewer.setDataFeed(file);
-            viewer.setDatastore(db);
+            final StreamViewer viewer = plugin.getNewStreamViewer(Datavyu.getApplication().getMainFrame(), false);
+            viewer.setIdentifier(Identifier.generateIdentifier());
+            viewer.setSourceFile(file);
 
             if (setting.getSettingsId() != null) {
-
                 // new project file
                 viewer.loadSettings(setting.getSettingsInputStream());
             } else {
-
                 // old project file
-                viewer.setOffset(setting.getOffset());
+                viewer.setStartTime(setting.getOffset());
             }
 
-
-
-            dataController.addViewer(viewer, viewer.getOffset());
+            dataController.addViewer(viewer, viewer.getStartTime());
 
             dataController.addTrack(viewer.getIdentifier(),
                     plugin.getTypeIcon(), file.getAbsolutePath(), file.getName(),
-                    viewer.getDuration(), viewer.getOffset(),
+                    viewer.getDuration(), viewer.getStartTime(),
                     viewer.getTrackPainter());
 
             if (setting.getTrackSettings() != null) {
                 final TrackSettings ts = setting.getTrackSettings();
                 mixerController.setTrackInterfaceSettings(viewer
-                        .getIdentifier(), ts.getBookmarkPositions(), ts.isLocked());
+                        .getIdentifier(), ts.getMarkers(), ts.isLocked());
             }
 
             mixerController.bindTrackActions(viewer.getIdentifier(),
@@ -446,7 +403,7 @@ public final class ProjectController {
 
                 // Look for a file by generating OS-independent paths.
                 // This is not guaranteed for older project file formats.
-                File searchedFile = genRelative(
+                File searchedFile = FileSystemUtils.generateRelative(
                         project.getOriginalProjectDirectory(),
                         setting.getFilePath(), project.getProjectDirectory());
 
@@ -462,7 +419,7 @@ public final class ProjectController {
                 // project file type).
                 if (project.getOriginalProjectDirectory() != null) {
 
-                    File searchedFile = huntForFile(new File(
+                    File searchedFile = FileSystemUtils.searchForFile(new File(
                             project.getProjectDirectory()), file.getName());
 
                     if (searchedFile != null) {
@@ -478,7 +435,7 @@ public final class ProjectController {
             }
 
             mixerController.setTrackInterfaceSettings(setting.getFilePath(),
-                    setting.getBookmarkPositions(), setting.isLocked());
+                    setting.getMarkers(), setting.isLocked());
         }
 
         if (!missingFilesList.isEmpty() || !missingPluginList.isEmpty()) {
@@ -530,35 +487,34 @@ public final class ProjectController {
      */
     public void updateProject() {
 
-        DataControllerV dataController = spreadsheetPanel.getDataController();
+        VideoController dataController = spreadSheetPanel.getVideoController();
 
         // Gather the data viewer settings
         List<ViewerSetting> viewerSettings = new LinkedList<ViewerSetting>();
 
         int settingsId = 1;
 
-        for (DataViewer viewer : dataController.getDataViewers()) {
+        for (StreamViewer viewer : dataController.getStreamViewers()) {
             ViewerSetting vs = new ViewerSetting();
-            vs.setFilePath(viewer.getDataFeed().getAbsolutePath());
+            vs.setFilePath(viewer.getSourceFile().getAbsolutePath());
             vs.setPluginName(viewer.getClass().getName());
 
             // BugzID:2108
             Plugin p = PluginManager.getInstance().getAssociatedPlugin(
                     vs.getPluginName());
-            assert p.getClassifier() != null;
-            assert !"".equals(p.getClassifier());
+            assert p.getNamespace() != null;
+            assert !"".equals(p.getNamespace());
 
-            vs.setPluginClassifier(p.getClassifier());
+            vs.setPluginClassifier(p.getNamespace());
 
             // BugzID:1806
             vs.setSettingsId(Integer.toString(settingsId++));
             viewer.storeSettings(vs.getSettingsOutputStream());
 
             // BugzID:2107
-            TrackModel tm = dataController.getMixerController().getTrackModel(
-                    viewer.getIdentifier());
+            TrackModel tm = dataController.getMixerController().getTrackModel(viewer.getIdentifier());
             TrackSettings ts = new TrackSettings();
-            ts.setBookmarkPositions(tm.getBookmarks());
+            ts.setMarkers(tm.getMarkers());
             ts.setLocked(tm.isLocked());
 
             vs.setTrackSettings(ts);
@@ -575,6 +531,7 @@ public final class ProjectController {
     public void markProjectAsUnchanged() {
         changed = false;
         newProject = false;
+        Datavyu.getApplication().updateTitle();
     }
 
     /**
@@ -594,106 +551,20 @@ public final class ProjectController {
         return project;
     }
 
-    public SpreadsheetPanel getSpreadsheetPanel() {
-        return spreadsheetPanel;
+    /**
+     *
+     * @return the spreadsheet panel.
+     */
+    public SpreadSheetPanel getSpreadSheetPanel() {
+        return spreadSheetPanel;
     }
 
-    public void setSpreadsheetPanel(SpreadsheetPanel spreadsheetPanel) {
-        this.spreadsheetPanel = spreadsheetPanel;
+    /**
+     * Sets the spreadsheet panel.
+     *
+     * @param spreadSheetPanel
+     */
+    public void setSpreadSheetPanel(SpreadSheetPanel spreadSheetPanel) {
+        this.spreadSheetPanel = spreadSheetPanel;
     }
-
-    private File genRelative(final String originalDir,
-                             final String originalFilePath, final String currentDir) {
-
-        // 1. Find the longest common directory for the original dir and
-        // original file path.
-        String baseLCD = OFileUtils.longestCommonDir(originalDir,
-                originalFilePath);
-
-        if (baseLCD == null) {
-            return null;
-        }
-
-        // 2. Use the longest common directory to find the difference in
-        // directory levels with the original directory. The LCD is the original
-        // base dir.
-        int diff = OFileUtils.levelDifference(baseLCD, originalDir);
-
-        if (diff == -1) {
-            return null;
-        }
-
-        // 3. Use the difference in levels to generate a new base directory
-        // using the current directory.
-        File newBase = new File(currentDir);
-
-        while (diff > 0) {
-            newBase = newBase.getParentFile();
-
-            if (newBase == null) {
-                return null;
-            }
-
-            diff--;
-        }
-
-        // 4. Find the path relative to the original base directory for the
-        // original file path.
-        String rel = OFileUtils.relativeToBase(baseLCD, originalFilePath);
-
-        if (rel == null) {
-            return null;
-        }
-
-        // 5. Combine the relative path with the current base dir and return
-        // that as the file to try.
-        return new File(newBase, rel);
-    }
-
-    private File huntForFile(final File workingDir, final String fileName) {
-        // If we can't find the file, we will start looking for the file
-        // using the easiest solution first and bump up the complexity as
-        // we go along.
-
-        // Solution 1: It is in the same directory as the project file.
-        File file = new File(workingDir, fileName);
-
-        if (file.exists()) {
-            return file;
-        }
-
-        IOFileFilter fileNameFilter = FileFilterUtils.nameFileFilter(fileName);
-
-        // Solution 2: It is in a sub-directory of the project file.
-        {
-            Iterator<File> subFiles = FileUtils.iterateFiles(workingDir,
-                    fileNameFilter, TrueFileFilter.TRUE);
-
-            if (subFiles.hasNext()) {
-                file = subFiles.next();
-            }
-
-            if (file.exists()) {
-                return file;
-            }
-        }
-
-
-        // Solution 3: It is in the parent of the current directory.
-        {
-            Iterator<File> subFiles = FileUtils.iterateFiles(
-                    workingDir.getParentFile(), fileNameFilter, null);
-
-            if (subFiles.hasNext()) {
-                file = subFiles.next();
-            }
-
-            if (file.exists()) {
-                return file;
-            }
-        }
-
-        return null;
-    }
-
 }

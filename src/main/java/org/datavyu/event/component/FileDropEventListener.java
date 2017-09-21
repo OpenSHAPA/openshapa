@@ -15,8 +15,7 @@
 package org.datavyu.event.component;
 
 /**
- * Interface for defining event handlers for events related to file drag and
- * drop.
+ * Interface for event handlers for file drag and drop.
  */
 public interface FileDropEventListener {
 

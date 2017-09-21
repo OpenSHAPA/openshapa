@@ -46,11 +46,11 @@ public class DataValueEditorFactory {
 
         List<EditorComponent> eds = new ArrayList<EditorComponent>();
 
-        Value val = c.getValue();
+        CellValue val = c.getCellValue();
 
         if (val != null) {
-            if (val instanceof MatrixValue) {
-                MatrixValue mv = (MatrixValue) val;
+            if (val instanceof MatrixCellValue) {
+                MatrixCellValue mv = (MatrixCellValue) val;
                 eds.add(new FixedText(ta, "("));
 
                 for (int i = 0; i < mv.getArguments().size(); i++) {
@@ -64,11 +64,11 @@ public class DataValueEditorFactory {
 
                 eds.add(new FixedText(ta, ")"));
 
-            } else if (val instanceof TextValue) {
-                eds.add(buildTextString(ta, (TextValue) val));
+            } else if (val instanceof TextCellValue) {
+                eds.add(buildTextString(ta, (TextCellValue) val));
 
             } else {
-                eds.add(buildNominal(ta, (NominalValue) val));
+                eds.add(buildNominal(ta, (NominalCellValue) val));
             }
         }
 
@@ -84,12 +84,12 @@ public class DataValueEditorFactory {
      * @return The editor component that represents the supplied value
      */
     public static EditorComponent buildMatrixArg(final JTextComponent ta,
-                                                 final Value v) {
+                                                 final CellValue v) {
 
-        if (v instanceof TextValue) {
-            return buildTextString(ta, (TextValue) v);
+        if (v instanceof TextCellValue) {
+            return buildTextString(ta, (TextCellValue) v);
         } else {
-            return buildNominal(ta, (NominalValue) v);
+            return buildNominal(ta, (NominalCellValue) v);
         }
     }
 
@@ -101,7 +101,7 @@ public class DataValueEditorFactory {
      * @return An editor component to represent the specified data value.
      */
     public static EditorComponent buildTextString(final JTextComponent ta,
-                                                  final TextValue v) {
+                                                  final TextCellValue v) {
         return new TextStringDataValueEditor(ta, v);
     }
 
@@ -113,7 +113,7 @@ public class DataValueEditorFactory {
      * @return An editor component to represent the specified data value.
      */
     public static EditorComponent buildNominal(final JTextComponent ta,
-                                               final NominalValue v) {
+                                               final NominalCellValue v) {
         return new NominalDataValueEditor(ta, v);
     }
 }

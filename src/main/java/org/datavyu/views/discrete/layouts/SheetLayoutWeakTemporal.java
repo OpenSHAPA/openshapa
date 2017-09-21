@@ -219,8 +219,6 @@ public class SheetLayoutWeakTemporal extends SheetLayout {
         for (SpreadsheetColumn col : mainView.getColumns()) {
             Integer colHeight = col.getWorkingHeight();
 
-//            System.out.println(colHeight);
-
             // Put the new cell button at the end of the column.
             Dimension d = col.getDataPanel().getNewCellButton().getPreferredSize();
             col.getDataPanel().getNewCellButton().setBounds(0,

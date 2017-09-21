@@ -31,18 +31,18 @@ public interface CarriageEventListener extends EventListener {
     void offsetChanged(CarriageEvent e);
 
     /**
-     * Event handler for a track's bookmark request.
+     * Event handler for a track's marker request.
      *
      * @param e The event to handle.
      */
-    void requestBookmark(CarriageEvent e);
+    void requestMarker(CarriageEvent e);
 
     /**
      * Event handler for a track requesting bookmark saving.
      *
      * @param e The event to handle.
      */
-    void saveBookmark(CarriageEvent e);
+    void saveMarker(CarriageEvent e);
 
     /**
      * Event handler for a track's selected state change.

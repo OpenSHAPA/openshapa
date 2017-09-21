@@ -16,7 +16,7 @@ package org.datavyu.undoableedits;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.controllers.DeleteCellC;
+import org.datavyu.controllers.DeleteCellController;
 import org.datavyu.models.db.Cell;
 import org.datavyu.models.db.Variable;
 
@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Undoable edit for removing cells.
  */
-public class RemoveCellEdit extends SpreadsheetEdit {
+public class RemoveCellEdit extends SpreadSheetEdit {
     /**
      * The logger for this class.
      */
@@ -81,7 +81,7 @@ public class RemoveCellEdit extends SpreadsheetEdit {
                 }
             }
         }
-        new DeleteCellC(cellsToDelete);
+        new DeleteCellController(cellsToDelete);
     }
 
     @Override

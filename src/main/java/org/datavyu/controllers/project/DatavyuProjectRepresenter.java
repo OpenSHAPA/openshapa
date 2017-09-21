@@ -47,7 +47,7 @@ public class DatavyuProjectRepresenter extends Representer {
     private class RepresentProject implements Represent {
         public Node representData(final Object obj) {
             Project project = (Project) obj;
-            Map<String, Object> map = new TreeMap<String, Object>();
+            Map<String, Object> map = new TreeMap<>();
             map.put("version", Project.VERSION);
             map.put("name", project.getProjectName());
             map.put("origpath", project.getOriginalProjectDirectory());
@@ -92,7 +92,7 @@ public class DatavyuProjectRepresenter extends Representer {
             map.put("locked", interfaceSettings.isLocked());
 
             final List<Long> bookmarks =
-                    interfaceSettings.getBookmarkPositions();
+                    interfaceSettings.getMarkers();
 
             if (bookmarks.isEmpty()) {
 

@@ -5,10 +5,9 @@
     <groupId>org.datavyu</groupId>
     <artifactId>datavyu</artifactId>
     <packaging>jar</packaging>
-    <version>1.3.5</version>
+    <version>1.3.7</version>
     <name>Datavyu</name>
     <url>http://datavyu.org</url>
-
 
     <!-- Our organisation. -->
     <organization>
@@ -166,6 +165,21 @@
             </roles>
             <timezone>-5</timezone>
         </developer>
+
+        <developer>
+            <id>Florian</id>
+            <name>Florian Raudies</name>
+            <email>florian.raudies@_no_spam_gmail.com</email>
+            <roles>
+                <role>Developer</role>
+                <role>Backend</role>
+                <role>Frontend</role>
+                <role>Plugins</role>
+                <role>FFmpeg</role>
+                <role>System integration</role>
+            </roles>
+            <timezone>-8</timezone>
+        </developer>
     </developers>
 
     <contributors>
@@ -206,22 +220,10 @@
         </contributor>
     </contributors>
 
-    <!--  <reporting>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-checkstyle-plugin</artifactId>
-            <configuration>
-              <configLocation>checkstyle.xml</configLocation>
-            </configuration>
-          </plugin>
-        </plugins>
-      </reporting>-->
-
-    <!-- Our bugtracking. -->
+    <!-- Our bug tracking. -->
     <issueManagement>
-        <system>Bugzilla</system>
-        <url>https://datavyu.org/bugs</url>
+        <system>JIRA</system>
+        <url>projects.databrary.org</url>
     </issueManagement>
 
     <!-- Our source control. -->
@@ -264,21 +266,6 @@
             <url>http://maven.hello2morrow.com/repository</url>
             <layout>default</layout>
         </repository>
-
-        <repository>
-            <id>xuggle repo</id>
-            <url>http://xuggle.googlecode.com/svn/trunk/repo/share/java/</url>
-        </repository>
-
-        <repository>
-            <id>xuggle repo for 5.5</id>
-            <url>http://m2.funambol.com/repositories/artifacts</url>
-        </repository>
-
-        <!--<repository>-->
-            <!--<id>sonatype snapshots</id>-->
-            <!--<url>https://oss.sonatype.org/content/repositories/snapshots/</url>-->
-        <!--</repository>-->
 
     </repositories>
 
@@ -481,43 +468,6 @@
 
             </dependencies>
 
-            <!--<build>-->
-                <!--<plugins>-->
-                    <!--<plugin>-->
-                        <!--<groupId>org.apache.maven.plugins</groupId>-->
-                        <!--<artifactId>maven-dependency-plugin</artifactId>-->
-                        <!--<version>2.9</version>-->
-                        <!--<executions>-->
-                            <!--<execution>-->
-                                <!--<id>copy-package</id>-->
-                                <!--<phase>package</phase>-->
-                                <!--<goals>-->
-                                    <!--<goal>copy</goal>-->
-                                <!--</goals>-->
-                                <!--<configuration>-->
-                                    <!--<artifactItems>-->
-                                        <!--<artifactItem>-->
-                                            <!--<groupId>org.datavyu</groupId>-->
-                                            <!--<artifactId>vlcLibs-windows64</artifactId>-->
-                                            <!--<type>jar</type>-->
-                                            <!--<overWrite>true</overWrite>-->
-                                            <!--<outputDirectory>-->
-                                                <!--${project.build.directory}/jfx/app/lib/vlc-windows-${os.arch}-->
-                                            <!--</outputDirectory>-->
-                                            <!--<destFileName>vlc-windows-${os.arch}.jar</destFileName>-->
-                                        <!--</artifactItem>-->
-                                    <!--</artifactItems>-->
-                                    <!--<outputDirectory>${project.build.directory}/jfx/app/lib/vlc-windows-${os.arch}-->
-                                    <!--</outputDirectory>-->
-                                    <!--<overWriteReleases>false</overWriteReleases>-->
-                                    <!--<overWriteSnapshots>true</overWriteSnapshots>-->
-                                <!--</configuration>-->
-                            <!--</execution>-->
-                        <!--</executions>-->
-                    <!--</plugin>-->
-                <!--</plugins>-->
-            <!--</build>-->
-
         </profile>
 
         <profile>
@@ -542,8 +492,12 @@
             <build>
                 <plugins>
                     <plugin>
+                        <!-- The Compiler Plugin is used to compile the sources of your project -->
+                        <!-- Artifact: https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
+                        <!-- Documentation: https://maven.apache.org/plugins/maven-compiler-plugin -->
+                        <!-- Updated 09/19/2017 -->
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>2.0.2</version>
+                        <version>3.7.0</version>
                         <configuration>
                             <debug>false</debug>
                             <optimize>true</optimize>
@@ -578,10 +532,14 @@
         <plugins>
 
             <!-- BugzID:137 - Checks and Adds license header to source. -->
+            <!-- Checks and updates license headers in source files -->
+            <!-- Artifactory: https://mvnrepository.com/artifact/com.mycila/license-maven-plugin -->
+            <!-- Documentation: http://www.mojohaus.org/license-maven-plugin/plugin-info.html -->
+            <!-- Updated here: 09/20/2017 -->
             <plugin>
-                <groupId>com.mycila.maven-license-plugin</groupId>
-                <artifactId>maven-license-plugin</artifactId>
-                <version>1.10.b1</version>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>3.0</version>
                 <configuration>
                     <includes>
                         <include>src/main/java/**</include>
@@ -594,36 +552,31 @@
                 </configuration>
             </plugin>
 
-            <!--
-            <plugin>
-              <artifactId>maven-site-plugin</artifactId>
-              <configuration>
-                <templateDirectory>src/site</templateDirectory>
-                <template>site.vm</template>
-              </configuration>
-            </plugin>
-            -->
-
+            <!-- Assembles distributable bundles for JavaFX applications within Maven -->
+            <!-- Artifact: https://mvnrepository.com/artifact/com.zenjava/javafx-maven-plugin -->
+            <!-- Documentation: https://github.com/javafx-maven-plugin/javafx-maven-plugin -->
+            <!-- Updated here: 09/20/2017 -->
             <plugin>
                 <groupId>com.zenjava</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
-                <!--<version>2.0</version>-->
-                <version>8.1.2</version>
+                <version>8.8.3</version>
                 <configuration>
                     <mainClass>org.datavyu.Datavyu</mainClass>
                     <jvmArgs>
                         <argument>-Xmx1g</argument>
-                        <!--<argument>-Dapple.laf.useScreenMenuBar=true</argument>-->
                     </jvmArgs>
                     <appName>datavyu</appName>
-                    <!--<jfxMainAppJarName>datavyu-jfx</jfxMainAppJarName>-->
                 </configuration>
             </plugin>
 
+            <!-- Copies project resources to the output directory -->
+            <!-- Artifact: https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-resources-plugin -->
+            <!-- Documentation: -->
+            <!-- Updated here: 09/20/2017 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>2.5</version>
+                <version>3.0.2</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
                 </configuration>
@@ -662,9 +615,9 @@
                         <fileSet>
                             <directory>src/main/</directory>
                             <includes>
-                                <include>favourites/*.rb</include>
-                                <include>favourites/*.opf</include>
-                                <include>favourites/*.cha</include>
+                                <include>favorites/*.rb</include>
+                                <include>favorites/*.opf</include>
+                                <include>favorites/*.cha</include>
                             </includes>
                         </fileSet>
                         <fileSet>
@@ -680,7 +633,7 @@
                     <iconFile>${basedir}/src/main/resources/icons/datavyu.icns</iconFile>
                     <javaApplicationStub>${basedir}/src/main/mac-resources/JavaApplicationStub</javaApplicationStub>
                     <dictionaryFile>${basedir}/Info.plist</dictionaryFile>
-                    <!-- see teh antrun goal - need to create snapshot directory before this will work. -->
+                    <!-- see the antrun goal - need to create snapshot directory before this will work. -->
                     <diskImageFile>
                         ${project.build.directory}/site/snapshots/${project.build.finalName}-OSX-${buildNumber}.dmg
                     </diskImageFile>
@@ -698,19 +651,26 @@
                 </configuration>
             </plugin>
 
+            <!-- Maven compiler -->
+            <!-- Artifact: https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
+            <!-- Documentation: https://maven.apache.org/plugins/maven-compiler-plugin/plugin-info.html -->
+            <!-- Updated here: 09/20/2017 -->
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.0.2</version>
+                <version>3.7.0</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
             </plugin>
 
-            <!-- Creates the JAR -->
+            <!-- Create JAR -->
+            <!-- Artifact: https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-jar-plugin -->
+            <!-- Documentation: https://maven.apache.org/plugins/maven-jar-plugin/ -->
+            <!-- Updated here: 09/20/2017 -->
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>3.0.2</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -724,19 +684,24 @@
                 </configuration>
             </plugin>
 
+            <!-- A plugin to allow execution of system and Java programs -->
+            <!-- Artifact: https://mvnrepository.com/artifact/org.codehaus.mojo/exec-maven-plugin -->
+            <!-- Documentation: http://www.mojohaus.org/exec-maven-plugin/plugin-info.html -->
+            <!-- Updated here: 09/20/2017 -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.2.1</version>
+                <version>1.6.0</version>
                 <configuration>
-                    <!--<includeProjectDependencies>false</includeProjectDependencies>-->
                     <includePluginDependencies>true</includePluginDependencies>
                 </configuration>
+                <!-- Pick up the jar packaged with the JRE used during compilation -->
+                <!-- See: https://stackoverflow.com/questions/15278215/maven-project-with-javafx-with-jar-file-in-lib -->
                 <dependencies>
                     <dependency>
-                        <groupId>com.oracle</groupId>
-                        <artifactId>javafx</artifactId>
-                        <version>2.2</version>
+                        <groupId>javafx</groupId>
+                        <artifactId>jfxrt</artifactId>
+                        <version>${java.version}</version>
                         <scope>system</scope>
                         <systemPath>${java.home}/lib/ext/jfxrt.jar</systemPath>
                     </dependency>
@@ -744,9 +709,15 @@
             </plugin>
 
             <plugin>
+                <!-- Documentation http://www.mojohaus.org/buildnumber-maven-plugin/usage.html -->
+                <!-- Note that the latest version of buildnumber-maven-plugin has a bug with svn git access, see:  -->
+                <!-- https://stackoverflow.com/questions/35572205/cannot-get-the-branch-information-from-the-scm-repository -->
+                <!-- Note, on note: Updating the git version did not work for me (updated to git version 2.14.1.0) -->
+                <!-- For that reason, I downgraded to 1.3 -->
+                <!-- Updated here: 09/19/2017 -->
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
-                <version>1.2</version>
+                <version>1.3</version>
                 <executions>
                     <execution>
                         <phase>validate</phase>
@@ -765,7 +736,7 @@
                 </configuration>
             </plugin>
 
-            <!-- BugzID:571 - Insert build ID into properties file. -->
+            <!-- BugzID:571 - Insert buIdentifierd ID into properties file. -->
             <plugin>
                 <dependencies>
                     <dependency>
@@ -840,59 +811,36 @@
             </plugin>
 
             <plugin>
+                <!-- Used to run the JUnit unit tests in an isolated classloader -->
+                <!-- Documentation https://maven.apache.org/surefire/maven-surefire-plugin/ -->
+                <!-- Artifact: https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
+                <!-- Updated here: 09/19/2017 -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.4.2</version>
+                <version>2.20.1</version>
                 <configuration>
                     <systemProperties>
                         <property>
                             <name>testPath</name>
-                            <value>${basedir}/src/test/resources/</value>
+                            <cellValue>${basedir}/src/test/resources/</cellValue>
                         </property>
                     </systemProperties>
                 </configuration>
             </plugin>
 
-
-            <!--      <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-shade-plugin</artifactId>
-                    <version>1.7.1</version>
-                    <executions>
-                      <execution>
-                        <phase>package</phase>
-                        <goals>
-                          <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                          <minimizeJar>true</minimizeJar>
-                            <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <shadedClassifierName>shaded</shadedClassifierName>
-                            <transformers>
-                                    <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                            <mainClass>org.datavyu.Datavyu</mainClass>
-                            </transformer>
-                            </transformers>
-                            <artifactSet>
-                            <excludes>
-                              <exclude>org.mongodb:mongodb-win32:*</exclude>
-                            </excludes>
-                            </artifactSet>
-                        </configuration>
-                      </execution>
-                    </executions>
-                  </plugin>-->
-
             <!-- BugzID:305 - Windows Application Bundle -->
+            <!-- Replace org.bluestemsoftware.open.maven.plugin by com.akathist which has a newer launch4j -->
+            <!-- Documentation here: http://launch4j.sourceforge.net/docs.html -->
+            <!-- Debug by running with datavyu-1.3.7.exe - -l4j-debug-all -->
+            <!-- Updated here: 09/18/2017 -->
             <plugin>
-                <groupId>org.bluestemsoftware.open.maven.plugin</groupId>
-                <artifactId>launch4j-plugin</artifactId>
-                <version>1.0.0.3</version>
+                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                <artifactId>launch4j-maven-plugin</artifactId>
+                <version>1.7.21</version>
                 <executions>
                     <execution>
-                        <id>launch4j</id>
-                        <phase>verify</phase>
+                        <id>l4j-gui</id>
+                        <phase>package</phase>
                         <goals>
                             <goal>launch4j</goal>
                         </goals>
@@ -902,7 +850,7 @@
                     <headerType>gui</headerType>
                     <outfile>${basedir}/target/${project.build.finalName}.exe</outfile>
                     <jar>${basedir}/target/${project.build.finalName}.jar</jar>
-                    <errTitle>32bit JVM not found. Please get it. 64bit will not do.</errTitle>
+                    <stayAlive>true</stayAlive>
                     <icon>${basedir}/src/main/resources/icons/Datavyu.ico</icon>
                     <splash>
                         <file>${basedir}/src/main/resources/icons/splash.bmp</file>
@@ -911,17 +859,16 @@
                         <timeoutErr>true</timeoutErr>
                     </splash>
                     <jre>
-                        <minVersion>1.6.0</minVersion>
+                        <minVersion>1.7.0</minVersion> <!-- Because of javafx runtime environment -->
+                        <jdkPreference>preferJre</jdkPreference>
                     </jre>
-                    <!--<singleInstance>-->
-                    <!--<mutexName>Datavyu</mutexName>-->
-                    <!--&lt;!&ndash;<windowTitle>Datavyu</windowTitle>&ndash;&gt;-->
-                    <!--</singleInstance>-->
                     <classPath>
                         <mainClass>org.datavyu.Datavyu</mainClass>
+                        <!-- Add project jar: https://sourceforge.net/p/launch4j/discussion/332684/thread/049f9c89/ -->
+                        <postCp>${project.build.finalName}.jar</postCp>
                         <preCp>jna-3.5.2.jar</preCp>
                         <preCp>appframework-1.0.3.jar</preCp>
-                        <preCp>snakeyaml-1.7.jar</preCp>
+                        <preCp>snakeyaml-1.18.jar</preCp>
                         <preCp>miglayout-3.7.3.1-swing.jar</preCp>
                         <preCp>commons-io-2.0.jar</preCp>
                         <preCp>fest-reflect-1.2.jar</preCp>
@@ -929,252 +876,250 @@
                         <preCp>commons-lang-2.5.jar</preCp>
                         <preCp>QTJava-7.jar</preCp>
                         <preCp>trove-2.1.0.jar</preCp>
-                        <preCp>jregistrykey-1.4.5.jar</preCp>
                         <preCp>vlcj-3.0.0.jar</preCp>
                         <preCp>libvlc-win32-2.0.1.jar</preCp>
-                        <preCp>xuggle-xuggler-5.4.jar</preCp>
                         <preCp>slf4j-api-1.7.7.jar</preCp>
                         <preCp>slf4j-simple-1.7.7.jar</preCp>
                     </classPath>
+                    <messages>
+                        <startupErr>Startup error. Most likely error in classpath.</startupErr>
+                        <bundledJreErr>Bundled JRE is incompatible with source code requirements.</bundledJreErr>
+                        <jreVersionErr>Version of JRE is incompatible.</jreVersionErr>
+                        <launcherErr>Error when launching application.</launcherErr>
+                        <!-- Used by console header only. -->
+                        <instanceAlreadyExistsMsg>Application is already running.</instanceAlreadyExistsMsg>
+                    </messages>
                 </configuration>
             </plugin>
-
-            <!-- Copy the VLC native libs to the correct directory -->
-
-
         </plugins>
     </build>
 
     <!--
-
         Third party dependencies.
-
          =========================================================================
          MAKE SURE YOU ALSO EDIT:
          =========================================================================
            * Above list as well - so that the windows build works correctly.
            * Info.plist - so that the OSX build works correctly.
-
     -->
     <dependencies>
-        <!-- We must specifiy this JNA version first so that all our dependencies
-             are happy. -->
+        <!-- We must specify this JNA version first so that all our dependencies are happy -->
+
+        <!-- Native interface access -->
+        <!-- Documentation: http://java-native-access.github.io/jna/4.5.0/javadoc/ -->
+        <!-- Artifact: https://mvnrepository.com/artifact/net.java.dev.jna/jna -->
+        <!-- Updated here: 09/19/2017 -->
         <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
-            <version>3.5.2</version>
+            <version>4.5.0</version>
         </dependency>
 
+        <!-- Run ruby scripts from java -->
+        <!-- Artifact: https://mvnrepository.com/artifact/org.jruby/jruby-complete -->
+        <!-- Documentation: http://jruby.org/apidocs/ -->
+        <!-- Release notes: http://jruby.org/2017/09/06/jruby-9-1-13-0 -->
+        <!-- Updated here: 09/19/2017 -->
         <dependency>
             <groupId>org.jruby</groupId>
             <artifactId>jruby-complete</artifactId>
-            <version>1.7.21</version>
+            <version>9.1.13.0</version>
         </dependency>
 
+        <!-- Note, need to remove this because it is not actively developed anymore, last version 1.0.3 from 2010 -->
+        <!-- Artifact: https://mvnrepository.com/artifact/org.jdesktop/appframework -->
         <dependency>
             <groupId>org.jdesktop</groupId>
             <artifactId>appframework</artifactId>
             <version>1.0.3</version>
         </dependency>
 
+        <!-- Note, remove this when removing org.jdesktop appframework -->
+        <!-- Cross platform consistent layout used by org.jdesktop.layout -->
+        <!-- Artifact: https://mvnrepository.com/artifact/org.swinglabs/swing-layout -->
+        <!-- Last update is from 2007; not actively maintained -->
         <dependency>
             <groupId>org.swinglabs</groupId>
             <artifactId>swing-layout</artifactId>
             <version>1.0.3</version>
         </dependency>
 
+        <!-- YAML 1.1 parser that emits to Java -->
+        <!-- Artifact: https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
+        <!-- Documentation: https://bitbucket.org/asomov/snakeyaml/wiki/Documentation -->
+        <!-- Updated here: 09/19/2017 -->
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>1.7</version>
+            <version>1.18</version>
         </dependency>
 
+        <!-- Note, remove this dependency, fest-swing-testng has been updated to 1.2.1 Jun 2010 -->
+        <!-- TestNG-specific extension for FEST-Swing -->
+        <!-- Artifact: https://mvnrepository.com/artifact/org.easytesting/fest-swing-testng -->
         <dependency>
             <groupId>org.easytesting</groupId>
             <artifactId>fest-swing-testng</artifactId>
-            <version>1.2a4</version>
+            <version>1.2.1</version>
             <scope>test</scope>
         </dependency>
 
+        <!-- A testing framework for the JVM -->
+        <!-- Artifactory: https://mvnrepository.com/artifact/org.testng/testng -->
+        <!-- Documentation: http://testng.org/doc/documentation-main.html -->
+        <!-- Updated here: 09/19/2017 -->
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>6.3</version>
+            <version>6.11</version>
             <scope>test</scope>
         </dependency>
 
+        <!-- A mock framework for java objects from java class information -->
+        <!-- Artifactory: http://search.maven.org/#artifactdetails%7Corg.mockito%7Cmockito-core%7C2.10.0%7C -->
+        <!-- Documentation: -->
+        <!-- Comparison with other frameworks: https://www.slant.co/topics/259/~best-mock-frameworks-for-java -->
+        <!-- Changed to core only and central artifactory; Updated 09/19/2017 -->
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.9.0-rc1</version>
+            <artifactId>mockito-core</artifactId>
+            <version>2.10.0</version>
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>junit-addons</groupId>
-            <artifactId>junit-addons</artifactId>
-            <version>1.4</version>
-            <scope>test</scope>
-        </dependency>
-
+        <!-- Note, remove this dependency,  miglayout has last been updated Jan 2011 to 3.7.4 -->
+        <!-- Used as net.miginfocom.swing by VideoController, MixerController, TrackController, StreamViewerDialog, -->
+        <!-- VariableListV, and TracksEditorPainter -->
         <dependency>
             <groupId>com.miglayout</groupId>
             <artifactId>miglayout</artifactId>
-            <version>3.7.3.1</version>
+            <version>3.7.4</version>
             <classifier>swing</classifier>
         </dependency>
 
+        <!-- IO library that contains utility classes, stream implementations, file filters, file comparators, -->
+        <!-- endian transformation classes etc. -->
+        <!-- Artifact: https://mvnrepository.com/artifact/commons-io/commons-io -->
+        <!-- Documentation: http://commons.apache.org/proper/commons-io/javadocs/api-release/index.html?org/apache/commons/io/package-summary.html -->
+        <!-- Updated here: 09/19/2017 -->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.0</version>
+            <version>2.5</version>
         </dependency>
 
+        <!-- Multi touch events specific to mac -->
+        <!-- Long-term find a different solution, e.g. JNI, 1.4 updated in Oct 2010 -->
+        <!-- TODO: Need to check if this works for Mac with java 1.8 -->
+        <!-- See the discussion here: https://stackoverflow.com/questions/15048220/can-java-7-use-apple-java-extensions -->
         <dependency>
             <groupId>apple.java</groupId>
             <artifactId>applejavaextensions</artifactId>
             <version>1.4</version>
         </dependency>
 
+        <!-- Apache Commons Lang, a package of Java utility classes -->
+        <!-- commons-lang was moved to org.apache.commons under id commons-lang3 -->
+        <!-- Artifact: https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+        <!-- Documentation: https://commons.apache.org/proper/commons-lang/javadocs/api-release/index.html -->
+        <!-- Updated here: 09/19/2017 -->
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.5</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.6</version>
         </dependency>
 
+        <!-- Deprecated, see https://lists.apple.com/archives/quicktime-java/2008/Jun/msg00018.html -->
+        <!-- From our own artifactory on the www server at NYU -->
         <dependency>
             <groupId>quicktime</groupId>
             <artifactId>QTJava</artifactId>
             <version>7</version>
         </dependency>
 
+        <!-- Core and expanded libraries including utility classes, google's collections, io classes, etc. -->
+        <!-- guava replaces the google-collections -->
+        <!-- Artifactory: https://mvnrepository.com/artifact/com.google.guava/guava -->
+        <!-- Documentation: https://github.com/google/guava/wiki -->
+        <!-- Updated here: 09/19/2017 -->
         <dependency>
-            <groupId>com.google.collections</groupId>
-            <artifactId>google-collections</artifactId>
-            <version>1.0</version>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>23.0</version>
         </dependency>
 
-        <dependency>
-            <groupId>gnu</groupId>
-            <artifactId>trove</artifactId>
-            <version>2.1.0</version>
-        </dependency>
-
+        <!-- OSX look and feel file chooser -->
+        <!-- Dependency resides in local maven repository on NYU server -->
+        <!-- Could not update this dependency because https://mvnrepository.com/artifact/ch.randelshofer/quaqua/8.0 -->
+        <!-- does not include the jar anymore 09/19/2017 -->
         <dependency>
             <groupId>ch.randelshofer.quaqua</groupId>
             <artifactId>quaqua-filechooser-only</artifactId>
             <version>7.0.1</version>
         </dependency>
 
+        <!-- Connects java to an installed R program -->
+        <!-- Artifactory: https://mvnrepository.com/artifact/com.github.jbytecode/RCaller -->
+        <!-- Documentation:  https://github.com/jbytecode/rcaller/tree/master/doc/rcaller3 -->
+        <!-- Updated here: 09/19/2017 -->
         <dependency>
-            <groupId>ca.beq</groupId>
-            <artifactId>jregistrykey</artifactId>
-            <version>1.4.5</version>
-        </dependency>
-
-        <dependency>
-            <groupId>rcaller</groupId>
+            <groupId>com.github.jbytecode</groupId>
             <artifactId>RCaller</artifactId>
-            <version>2.1.1-SNAPSHOT</version>
+            <version>3.0</version>
         </dependency>
 
+        <!-- Java Framework for the vlc Media Player -->
+        <!-- Artifact: https://mvnrepository.com/artifact/uk.co.caprica/vlcj -->
+        <!-- Documentation: http://caprica.github.io/vlcj/javadoc/3.5.0/index.html -->
+        <!-- Updated here: 09/20/2017 -->
         <dependency>
             <groupId>uk.co.caprica</groupId>
             <artifactId>vlcj</artifactId>
-            <version>3.0.1</version>
+            <version>3.10.1</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.7</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.7.7</version>
-        </dependency>
-
-        <!-- NOTE THIS DOES SOME SORT OF POM FILE MAGIC THAT MAKES VLC WORK... -->
-        <dependency>
-            <groupId>org.bytedeco</groupId>
-            <artifactId>javacv</artifactId>
-            <version>0.9</version>
-        </dependency>
-
+        <!-- Logger API -->
+        <!-- Artifact: https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api -->
+        <!-- Documentation: https://logging.apache.org/log4j/2.x/manual/api.html -->
+        <!-- Updated here: 09/20/2017 -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.3</version>
+            <version>2.9.0</version>
         </dependency>
+
+        <!-- Logger Core -->
+        <!-- Artifact: https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+        <!-- Documentation: (see API) -->
+        <!-- Updated here: 09/20/2017 -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.3</version>
+            <version>2.9.0</version>
         </dependency>
 
         <dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>javafx</artifactId>
-            <version>2.2</version>
+            <groupId>datavyu</groupId>
+            <artifactId>ffmpeg-libs</artifactId>
+            <version>0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>datavyu</groupId>
+            <artifactId>ffmpeg-plugin</artifactId>
+            <version>0.5</version>
+        </dependency>
+
+        <!-- Updates with JRE from java version >= 1.7 -->
+        <!-- See: https://stackoverflow.com/questions/15278215/maven-project-with-javafx-with-jar-file-in-lib -->
+        <dependency>
+            <groupId>javafx</groupId>
+            <artifactId>jfxrt</artifactId>
+            <version>${java.version}</version>
             <scope>system</scope>
             <systemPath>${java.home}/lib/ext/jfxrt.jar</systemPath>
         </dependency>
 
-        <!--<dependency>-->
-        <!--<groupId>org.rococoa</groupId>-->
-        <!--<artifactId>rococoa-parent</artifactId>-->
-        <!--<version>0.5</version>-->
-        <!--</dependency>-->
-
-
-        <!--<dependency>-->
-        <!--<groupId>org.robovm</groupId>-->
-        <!--<artifactId>robovm-rt</artifactId>-->
-        <!--<version>1.0.0-SNAPSHOT</version>-->
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-        <!--<groupId>org.robovm</groupId>-->
-        <!--<artifactId>robovm-cocoatouch</artifactId>-->
-        <!--<version>1.0.0-SNAPSHOT</version>-->
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-        <!--<groupId>com.oracle</groupId>-->
-        <!--<artifactId>javafx-macosx</artifactId>-->
-        <!--<version>2.2</version>-->
-        <!--<scope>system</scope>-->
-        <!--<systemPath>${java.home}/lib/jfxrt.jar</systemPath>-->
-
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-        <!--<groupId>com.oracle</groupId>-->
-        <!--<artifactId>javafx-runtime</artifactId>-->
-        <!--<version>2.2</version>-->
-        <!--&lt;!&ndash;<scope>system</scope>&ndash;&gt;-->
-        <!--&lt;!&ndash;<systemPath>${java.home}/lib/jfxrt.jar</systemPath>&ndash;&gt;-->
-
-        <!--</dependency>-->
-
-
-        <!-- temporary add of QTJava and deps -->
-
-        <!--    <dependency>
-              <groupId>org.rococoa</groupId>
-              <artifactId>rococoa-core</artifactId>
-              <version>0.5.1x3</version>
-            </dependency>
-
-            <dependency>
-              <groupId>org.rococoa</groupId>
-              <artifactId>rococoa-cocoa</artifactId>
-              <version>0.5.1x3</version>
-            </dependency>-->
-
     </dependencies>
-
 
 </project>

@@ -17,6 +17,7 @@ package org.datavyu.models.component;
 import java.beans.PropertyChangeListener;
 
 public final class MixerModelImpl extends MixerComponentModelImpl implements MixerModel {
+
     private final RegionModel regionModel;
     private final NeedleModel needleModel;
     private final ViewportModel viewportModel;

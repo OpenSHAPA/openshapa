@@ -16,7 +16,7 @@ package org.datavyu.undoableedits;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.controllers.DeleteColumnC;
+import org.datavyu.controllers.DeleteColumnController;
 import org.datavyu.models.db.Variable;
 
 import javax.swing.undo.CannotRedoException;
@@ -61,7 +61,7 @@ public class RemoveVariableEdit extends VocabEditorEdit {
     public void redo() throws CannotUndoException {
         super.redo();
 
-        new DeleteColumnC(deletedVariables);
+        new DeleteColumnController(deletedVariables);
         unselectAll();
     }
 }

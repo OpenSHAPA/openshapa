@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="1.8.0_91" class="java.beans.XMLDecoder">
+ <object class="org.datavyu.util.ConfigurationProperties">
+  <void property="doWarnOnIllegalColumnNames">
+   <boolean>true</boolean>
+  </void>
+  <void property="favoritesFolder">
+   <string>favorites</string>
+  </void>
+  <void property="ignoreVersion">
+   <string></string>
+  </void>
+  <void property="lastChosenDirectory">
+   <string>C:\Users\Florian</string>
+  </void>
+  <void property="spreadSheetBackgroundColor">
+   <object class="java.awt.Color">
+    <int>249</int>
+    <int>249</int>
+    <int>249</int>
+    <int>255</int>
+   </object>
+  </void>
+  <void property="spreadSheetDataFont">
+   <object class="java.awt.Font">
+    <string>DejaVu Sans Condensed</string>
+    <int>0</int>
+    <int>14</int>
+   </object>
+  </void>
+  <void property="spreadSheetForegroundColor">
+   <object class="java.awt.Color">
+    <int>58</int>
+    <int>58</int>
+    <int>58</int>
+    <int>255</int>
+   </object>
+  </void>
+  <void property="spreadSheetLabelFont">
+   <object class="java.awt.Font">
+    <string>DejaVu Sans Condensed</string>
+    <int>0</int>
+    <int>12</int>
+   </object>
+  </void>
+  <void property="spreadSheetOrdinalForegroundColor">
+   <object class="java.awt.Color">
+    <int>175</int>
+    <int>175</int>
+    <int>175</int>
+    <int>255</int>
+   </object>
+  </void>
+  <void property="spreadSheetOverlapColor">
+   <object class="java.awt.Color">
+    <int>255</int>
+    <int>0</int>
+    <int>0</int>
+    <int>255</int>
+   </object>
+  </void>
+  <void property="spreadSheetSelectedColor">
+   <object class="java.awt.Color">
+    <int>176</int>
+    <int>197</int>
+    <int>227</int>
+    <int>255</int>
+   </object>
+  </void>
+  <void property="spreadSheetTimeStampForegroundColor">
+   <object class="java.awt.Color">
+    <int>90</int>
+    <int>90</int>
+    <int>90</int>
+    <int>255</int>
+   </object>
+  </void>
+  <void property="supportSiteUrl">
+   <string>http://www.datavyu.org/support</string>
+  </void>
+  <void property="userGuideUrl">
+   <string>http://www.datavyu.org/user-guide/index.html</string>
+  </void>
+  <void property="downloadUrl">
+   <string>http://www.datavyu.org/download.html</string>
+  </void>
+  <void property="conversionUrl">
+   <string>https://handbrake.fr/</string>
+  </void>
+ </object>
+</java>

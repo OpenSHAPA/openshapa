@@ -16,13 +16,13 @@ package org.datavyu.views.discrete;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.Configuration;
 import org.datavyu.Datavyu;
 import org.datavyu.models.db.*;
 import org.datavyu.undoableedits.ChangeNameVariableEdit;
 import org.datavyu.util.ClockTimer;
+import org.datavyu.util.ConfigurationProperties;
 import org.datavyu.util.Constants;
-import org.datavyu.util.DragAndDrop.GhostGlassPane;
+import org.datavyu.util.DragAndDrop.TransparentPanel;
 import org.jdesktop.application.Action;
 
 import javax.swing.*;
@@ -41,11 +41,11 @@ import java.util.ListIterator;
  * This class maintains the visual representation of the column in the
  * Spreadsheet window.
  */
-public final class SpreadsheetColumn extends JLabel
-        implements VariableListener,
-        MouseListener,
-        MouseMotionListener,
+public final class SpreadsheetColumn extends JLabel implements VariableListener, MouseListener, MouseMotionListener,
         ClockTimer.ClockListener {
+
+    /** The logger for this class */
+    private static Logger logger = LogManager.getLogger(SpreadsheetColumn.class);
 
     /**
      * Default column width.
@@ -55,7 +55,7 @@ public final class SpreadsheetColumn extends JLabel
     /**
      * Default column height.
      */
-    public static final int DEFAULT_HEADER_HEIGHT = 16;
+    public static final int DEFAULT_HEADER_HEIGHT = 25;
 
     /**
      * The logger for this class.
@@ -65,7 +65,7 @@ public final class SpreadsheetColumn extends JLabel
     /**
      * Database reference.
      */
-    private Datastore datastore;
+    private DataStore dataStore;
 
     /**
      * Reference to the variable.
@@ -137,7 +137,7 @@ public final class SpreadsheetColumn extends JLabel
      */
     private int offsetPadding = 0;
 
-    private GhostGlassPane glassPane = (GhostGlassPane) Datavyu.getView().getFrame().getGlassPane();
+    private TransparentPanel transparentPanel = (TransparentPanel) Datavyu.getView().getFrame().getGlassPane();
 
     private int previouslyFocusedCellIdx = -1;
 
@@ -149,12 +149,12 @@ public final class SpreadsheetColumn extends JLabel
      * @param cellSelL Spreadsheet cell selection listener to notify
      * @param colSelL  Column selection listener to notify.
      */
-    public SpreadsheetColumn(final Datastore db,
+    public SpreadsheetColumn(final DataStore db,
                              final Variable var,
                              final CellSelectionListener cellSelL,
                              final ColumnSelectionListener colSelL,
                              final ColumnVisibilityListener colVisL) {
-        this.datastore = db;
+        this.dataStore = db;
         this.variable = var;
         this.cellSelList = cellSelL;
         this.columnSelList = colSelL;
@@ -176,7 +176,7 @@ public final class SpreadsheetColumn extends JLabel
         this.setVisible(!var.isHidden());
         datapanel.setVisible(!var.isHidden());
 
-        Datavyu.getDataController().getClock().registerListener(this);
+        Datavyu.getVideoController().getClock().registerListener(this);
     }
 
     /**
@@ -408,7 +408,7 @@ public final class SpreadsheetColumn extends JLabel
         this.selected = isSelected;
 
         if (selected) {
-            setBackground(Configuration.getInstance().getSSSelectedColour());
+            setBackground(ConfigurationProperties.getInstance().getSpreadSheetSelectedColor());
         } else {
             setBackground(backColor);
         }
@@ -456,7 +456,7 @@ public final class SpreadsheetColumn extends JLabel
 
     @Action
     public void addNewCellToVar() {
-//        new NewVariableC();
+//        new NewVariableController();
     }
 
     /**
@@ -467,15 +467,15 @@ public final class SpreadsheetColumn extends JLabel
     }
 
     private void focusNextCell() {
-        long time = Datavyu.getDataController().getCurrentTime();
+        long time = Datavyu.getVideoController().getCurrentTime();
         List<SpreadsheetCell> tempCells = getCellsTemporally();
         for(int i = 0; i < tempCells.size(); i++) {
             SpreadsheetCell c = tempCells.get(i);
             if(c.getCell().isInTimeWindow(time)) {
                 if(!c.isFocusOwner()) {
-                    if(c.getCell().getValue() instanceof MatrixValue) {
+                    if(c.getCell().getCellValue() instanceof MatrixCellValue) {
                         int firstEmpty = -1;
-                        List<Value> args = ((MatrixValue) c.getCell().getValue()).getArguments();
+                        List<CellValue> args = ((MatrixCellValue) c.getCell().getCellValue()).getArguments();
                         for(int j = 0; j < args.size(); j++) {
                             if(args.get(j).isEmpty()) {
                                 firstEmpty = j;
@@ -489,7 +489,7 @@ public final class SpreadsheetColumn extends JLabel
                             c.requestFocus();
                         }
                     } else {
-                        if(c.getCell().getValue().isEmpty()) {
+                        if(c.getCell().getCellValue().isEmpty()) {
                             c.requestFocus();
                         }
                     }
@@ -505,7 +505,7 @@ public final class SpreadsheetColumn extends JLabel
     public void setColumnName(final String newName) throws UserWarningException {
         try {
             // Make sure this column name isn't already in the column
-            for (Variable v : datastore.getAllVariables()) {
+            for (Variable v : dataStore.getAllVariables()) {
                 if (v.getName().equals(newName)) {
                     Datavyu.getApplication().showWarningDialog("Error: Column name already exists.");
                     return;
@@ -560,7 +560,7 @@ public final class SpreadsheetColumn extends JLabel
 
     @Override
     public void cellInserted(final Cell newCell) {
-        datapanel.insertCell(datastore, newCell, cellSelList);
+        datapanel.insertCell(dataStore, newCell, cellSelList);
     }
 
     @Override
@@ -588,13 +588,7 @@ public final class SpreadsheetColumn extends JLabel
     public void mousePressed(final MouseEvent me) {
         if(moveable && !draggable) {
             System.out.println("Pressed X: " + me.getX());
-
-            if(System.getProperty("os.name").startsWith("Mac OS X")){
-                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            }
-            else{
-                setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-            }
+            setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
         }
     }
 
@@ -607,21 +601,19 @@ public final class SpreadsheetColumn extends JLabel
 
             Component c = me.getComponent();
 
-            Point p = (Point) me.getPoint().clone();
-            SwingUtilities.convertPointToScreen(p, c);
+            Point destination = (Point) me.getPoint().clone();
+            SwingUtilities.convertPointToScreen(destination, c);
+            SwingUtilities.convertPointFromScreen(destination, transparentPanel);
 
-            Point eventPoint = (Point) p.clone();
-            SwingUtilities.convertPointFromScreen(p, glassPane);
-
-            glassPane.setPoint(p);
-            glassPane.setVisible(false);
-            glassPane.setImage(null);
+            transparentPanel.setDestination(destination);
+            transparentPanel.setVisible(false);
+            transparentPanel.setImage(null);
 
             int x = me.getX();
-            System.out.println("Released X: " + x);
+            logger.info("Released X: " + x);
             // Iterate over the spreadsheet columns, starting at current column, to figure out how many
             // positions to shift by.
-            SpreadsheetPanel sp = (SpreadsheetPanel) Datavyu.getView().getComponent();
+            SpreadSheetPanel sp = (SpreadSheetPanel) Datavyu.getView().getComponent();
             List<SpreadsheetColumn> cols = sp.getVisibleColumns();
             ListIterator<SpreadsheetColumn> itr = cols.listIterator(cols.indexOf(this));
 
@@ -689,33 +681,33 @@ public final class SpreadsheetColumn extends JLabel
                 this.setWidth(newWidth);
             }
         } else if (moveable) {
-            if (glassPane.getImage() == null) {
+            if (transparentPanel.getImage() == null) {
                 Component c = me.getComponent();
 
                 BufferedImage image = new BufferedImage(c.getWidth(), c.getHeight(), BufferedImage.TYPE_INT_ARGB);
                 Graphics g = image.getGraphics();
                 c.paint(g);
 
-                glassPane.setVisible(true);
+                transparentPanel.setVisible(true);
 
-                Point p = (Point) me.getPoint().clone();
-                SwingUtilities.convertPointToScreen(p, c);
-                SwingUtilities.convertPointFromScreen(p, glassPane);
+                Point destination = (Point) me.getPoint().clone();
+                SwingUtilities.convertPointToScreen(destination, c);
+                SwingUtilities.convertPointFromScreen(destination, transparentPanel);
 
-                glassPane.setPoint(p);
-                glassPane.setImage(image);
-                glassPane.setBackground(Color.BLACK);
-                glassPane.repaint();
+                transparentPanel.setDestination(destination);
+                transparentPanel.setImage(image);
+                transparentPanel.setBackground(Color.BLACK);
+                transparentPanel.repaint();
             }
 
             Component c = me.getComponent();
 
-            Point p = (Point) me.getPoint().clone();
-            SwingUtilities.convertPointToScreen(p, c);
-            SwingUtilities.convertPointFromScreen(p, glassPane);
-            glassPane.setPoint(p);
+            Point destination = (Point) me.getPoint().clone();
+            SwingUtilities.convertPointToScreen(destination, c);
+            SwingUtilities.convertPointFromScreen(destination, transparentPanel);
+            transparentPanel.setDestination(destination);
 
-            glassPane.repaint();
+            transparentPanel.repaint();
         }
     }
 
@@ -723,11 +715,12 @@ public final class SpreadsheetColumn extends JLabel
     public void mouseMoved(final MouseEvent me) {
         final int xCoord = me.getX();
         final int componentWidth = this.getSize().width;
+        final int RESIZE_BOUNDARY_SIZE = Math.max(10, (int)(componentWidth * 0.10));
 //        final int rangeStart = Math.round(componentWidth / 4F);
 //        final int rangeEnd = Math.round(3F * componentWidth / 4F);
 
         // BugzID:660 - Implements columns dragging.
-        if ((componentWidth - xCoord) < 6) {
+        if ((componentWidth - xCoord) < RESIZE_BOUNDARY_SIZE) {
             setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
             draggable = true;
 
@@ -743,7 +736,7 @@ public final class SpreadsheetColumn extends JLabel
 
     @Override
     public void clockTick(long time) {
-        if(isSelected() && Datavyu.getDataController().getCellHighlightAndFocus()) {
+        if(isSelected() && Datavyu.getVideoController().getCellHighlightAndFocus()) {
             focusNextCell();
         }
     }
@@ -765,7 +758,7 @@ public final class SpreadsheetColumn extends JLabel
 
     @Override
     public void clockStep(long time) {
-        if(isSelected() && Datavyu.getDataController().getCellHighlightAndFocus()) {
+        if(isSelected() && Datavyu.getVideoController().getCellHighlightAndFocus()) {
             focusNextCell();
         }
     }

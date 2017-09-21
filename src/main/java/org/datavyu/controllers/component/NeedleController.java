@@ -156,16 +156,6 @@ public final class NeedleController implements PropertyChangeListener {
         }
 
         @Override
-        public void mouseReleased(MouseEvent e) {
-//            System.out.println("MOUSE RELEASED");
-//            if (viewport != null) {
-//                final double dx = Math.min(Math.max(e.getX() - NeedleConstants.NEEDLE_HEAD_WIDTH - needlePositionOffsetX, 0), view.getWidth());
-//                long newTime = viewport.computeTimeFromXOffset(dx) + viewport.getViewStart();
-//                newTime = Math.min(Math.max(newTime, viewport.getViewStart()), viewport.getViewEnd());
-//                mixerController.getTimescaleController().jumpToTime(newTime, false); // TEMPORARY UGLY HACK
-//            }
-//            viewport = null;
-//            needlePositionOffsetX = 0.0;
-        }
+        public void mouseReleased(MouseEvent e) { }
     }
 }

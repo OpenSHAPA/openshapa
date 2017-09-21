@@ -17,7 +17,6 @@ package org.datavyu.views.component;
 import org.datavyu.models.component.MixerModel;
 import org.datavyu.models.component.RegionState;
 import org.datavyu.models.component.ViewportState;
-import org.datavyu.util.G2DUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -53,6 +52,16 @@ public final class RegionView extends JComponent implements PropertyChangeListen
     public RegionView(final MixerModel mixerModel) {
         this.mixerModel = mixerModel;
         mixerModel.getRegionModel().addPropertyChangeListener(this);
+    }
+
+    public static GeneralPath createRectangle(double x, double y, double width, double height) {
+        final GeneralPath rectangle = new GeneralPath(GeneralPath.WIND_EVEN_ODD, 4);
+        rectangle.moveTo((float) x, (float) y);
+        rectangle.lineTo((float) (x + width), (float) y);
+        rectangle.lineTo((float) (x + width), (float) (y + height));
+        rectangle.lineTo((float) x, (float) (y + height));
+        rectangle.closePath();
+        return rectangle;
     }
 
     /**
@@ -190,7 +199,7 @@ public final class RegionView extends JComponent implements PropertyChangeListen
 
             if (width > 0) {
                 g2d.setColor(outsideRegionFillColor);
-                g2d.fill(G2DUtils.rect(x, y, width, height));
+                g2d.fill(createRectangle(x, y, width, height));
             }
         }
 
@@ -207,7 +216,7 @@ public final class RegionView extends JComponent implements PropertyChangeListen
 
             if (width > 0) {
                 g2d.setColor(outsideRegionFillColor);
-                g2d.fill(G2DUtils.rect(x, y, width, height));
+                g2d.fill(createRectangle(x, y, width, height));
             }
         }
     }

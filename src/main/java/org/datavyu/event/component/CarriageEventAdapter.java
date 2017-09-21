@@ -30,19 +30,19 @@ public abstract class CarriageEventAdapter implements CarriageEventListener {
 
     /**
      * @see org.datavyu.event.component.CarriageEventListener
-     * #requestBookmark(org.datavyu.event.component.CarriageEvent)
+     * #requestMarker(org.datavyu.event.component.CarriageEvent)
      */
     @Override
-    public void requestBookmark(final CarriageEvent e) {
+    public void requestMarker(final CarriageEvent e) {
         // Blank implementation.
     }
 
     /**
      * @see org.datavyu.event.component.CarriageEventListener
-     * #saveBookmark(org.datavyu.event.component.CarriageEvent)
+     * #saveMarker(org.datavyu.event.component.CarriageEvent)
      */
     @Override
-    public void saveBookmark(final CarriageEvent e) {
+    public void saveMarker(final CarriageEvent e) {
         // Blank implementation.
     }
 

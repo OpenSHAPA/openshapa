@@ -2,29 +2,29 @@ require 'java'
 require 'csv'
 require 'time'
 
-import 'org.datavyu.models.db.legacy.Database'
-import 'org.datavyu.models.db.legacy.DataColumn'
-import 'org.datavyu.models.db.legacy.MatrixVocabElement'
-import 'org.datavyu.models.db.legacy.Matrix'
-import 'org.datavyu.models.db.legacy.FloatDataValue'
-import 'org.datavyu.models.db.legacy.IntDataValue'
-import 'org.datavyu.models.db.legacy.TextStringDataValue'
-import 'org.datavyu.models.db.legacy.QuoteStringDataValue'
-import 'org.datavyu.models.db.legacy.UndefinedDataValue'
-import 'org.datavyu.models.db.legacy.NominalDataValue'
-import 'org.datavyu.models.db.legacy.PredDataValue'
-import 'org.datavyu.models.db.legacy.Predicate'
-import 'org.datavyu.models.db.legacy.PredicateVocabElement'
-import 'org.datavyu.models.db.legacy.FloatFormalArg'
-import 'org.datavyu.models.db.legacy.IntFormalArg'
-import 'org.datavyu.models.db.legacy.NominalFormalArg'
-import 'org.datavyu.models.db.legacy.PredFormalArg'
-import 'org.datavyu.models.db.legacy.QuoteStringFormalArg'
-import 'org.datavyu.models.db.legacy.UnTypedFormalArg'
-import 'org.datavyu.models.db.legacy.DBElement'
-import 'org.datavyu.models.db.legacy.TimeStamp'
-import 'org.datavyu.models.db.legacy.DataCell'
-import 'org.datavyu.models.db.legacy.SystemErrorException'
+import 'org.datavyu.models.dataStore.legacy.Database'
+import 'org.datavyu.models.dataStore.legacy.DataColumn'
+import 'org.datavyu.models.dataStore.legacy.MatrixVocabElement'
+import 'org.datavyu.models.dataStore.legacy.Matrix'
+import 'org.datavyu.models.dataStore.legacy.FloatDataValue'
+import 'org.datavyu.models.dataStore.legacy.IntDataValue'
+import 'org.datavyu.models.dataStore.legacy.TextStringDataValue'
+import 'org.datavyu.models.dataStore.legacy.QuoteStringDataValue'
+import 'org.datavyu.models.dataStore.legacy.UndefinedDataValue'
+import 'org.datavyu.models.dataStore.legacy.NominalDataValue'
+import 'org.datavyu.models.dataStore.legacy.PredDataValue'
+import 'org.datavyu.models.dataStore.legacy.Predicate'
+import 'org.datavyu.models.dataStore.legacy.PredicateVocabElement'
+import 'org.datavyu.models.dataStore.legacy.FloatFormalArg'
+import 'org.datavyu.models.dataStore.legacy.IntFormalArg'
+import 'org.datavyu.models.dataStore.legacy.NominalFormalArg'
+import 'org.datavyu.models.dataStore.legacy.PredFormalArg'
+import 'org.datavyu.models.dataStore.legacy.QuoteStringFormalArg'
+import 'org.datavyu.models.dataStore.legacy.UnTypedFormalArg'
+import 'org.datavyu.models.dataStore.legacy.DBElement'
+import 'org.datavyu.models.dataStore.legacy.TimeStamp'
+import 'org.datavyu.models.dataStore.legacy.DataCell'
+import 'org.datavyu.models.dataStore.legacy.SystemErrorException'
 
 begin
 
@@ -42,44 +42,44 @@ begin
     MatrixVocabElement::MatrixType::MATRIX ]
 
   for cc in 0...colnames.length
-    if !$db.col_name_in_use(colnames[cc])
-      col = DataColumn.new($db, colnames[cc], coltypes[cc])
-      $db.add_column(col)
+    if !$dataStore.col_name_in_use(colnames[cc])
+      col = DataColumn.new($dataStore, colnames[cc], coltypes[cc])
+      $dataStore.add_column(col)
     end
   end
 
   # Check if predicate already defined
-  if !$db.pred_name_in_use("test0")
+  if !$dataStore.pred_name_in_use("test0")
     # Make demo Predicate structure
-    pve0 = PredicateVocabElement.new($db, "test0");
-    farg = FloatFormalArg.new($db, "<float>")
+    pve0 = PredicateVocabElement.new($dataStore, "test0");
+    farg = FloatFormalArg.new($dataStore, "<float>")
     pve0.append_formal_arg(farg)
-    farg = IntFormalArg.new($db, "<int>")
+    farg = IntFormalArg.new($dataStore, "<int>")
     pve0.append_formal_arg(farg)
-    farg = NominalFormalArg.new($db, "<nominal>")
+    farg = NominalFormalArg.new($dataStore, "<nominal>")
     pve0.append_formal_arg(farg)
-    farg = QuoteStringFormalArg.new($db, "<qstring>")
+    farg = QuoteStringFormalArg.new($dataStore, "<qstring>")
     pve0.append_formal_arg(farg)
-    predID0 = $db.add_pred_ve(pve0)
+    predID0 = $dataStore.add_pred_ve(pve0)
   end
-  predID0 = $db.get_pred_ve("test0").get_id()
+  predID0 = $dataStore.get_pred_ve("test0").get_id()
 
   # Check if matrix already defined
-  mve0 = $db.get_vocab_element("matrix")
+  mve0 = $dataStore.get_vocab_element("matrix")
   if mve0.get_num_formal_args() == 1
     # Setup structure of matrix column
     mve0 = MatrixVocabElement.new(mve0)
     mve0.delete_formal_arg(0)
 
-    farg = FloatFormalArg.new($db, "<float>")
+    farg = FloatFormalArg.new($dataStore, "<float>")
     mve0.append_formal_arg(farg)
-    farg = IntFormalArg.new($db, "<int>")
+    farg = IntFormalArg.new($dataStore, "<int>")
     mve0.append_formal_arg(farg)
-    farg = NominalFormalArg.new($db, "<nominal>")
+    farg = NominalFormalArg.new($dataStore, "<nominal>")
     mve0.append_formal_arg(farg)
-    farg = QuoteStringFormalArg.new($db, "<qstring>")
+    farg = QuoteStringFormalArg.new($dataStore, "<qstring>")
     mve0.append_formal_arg(farg)
-    $db.replace_matrix_ve(mve0)
+    $dataStore.replace_matrix_ve(mve0)
   end
   matID0 = mve0.get_id()
 
@@ -91,27 +91,27 @@ begin
   col4 = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38]
   specialstring = "moo"
   for cc in 0...colnames.length
-    col = $db.get_column(colnames[cc])
-    mve = $db.get_matrix_ve(col.its_mve_id)
+    col = $dataStore.get_column(colnames[cc])
+    mve = $dataStore.get_matrix_ve(col.its_mve_id)
 
     for dd in 0...numrows
-      cell = DataCell.new($db, col.get_id, mve.get_id)
+      cell = DataCell.new($dataStore, col.get_id, mve.get_id)
 #      onset = cc * 1000 + (cc + dd) * 2000
 #      offset = onset + (dd * 200)
 
-      # Set different data values
+      # Set different data cellValues
       if coltypes[cc] == MatrixVocabElement::MatrixType::FLOAT
-        dv = FloatDataValue.new($db)
+        dv = FloatDataValue.new($dataStore)
         dv.set_its_value(coldata[cc] * dd)
         cell.onset = TimeStamp.new(1000, col1[dd * 2] * 1000)
         cell.offset = TimeStamp.new(1000, col1[dd * 2 + 1] * 1000)
       elsif coltypes[cc] == MatrixVocabElement::MatrixType::INTEGER
-        dv = IntDataValue.new($db)
+        dv = IntDataValue.new($dataStore)
         dv.set_its_value(coldata[cc] * dd)
         cell.onset = TimeStamp.new(1000, col2[dd * 2] * 1000)
         cell.offset = TimeStamp.new(1000, col2[dd * 2 + 1] * 1000)
       elsif coltypes[cc] == MatrixVocabElement::MatrixType::TEXT
-        dv = TextStringDataValue.new($db)
+        dv = TextStringDataValue.new($dataStore)
 		if dd % 2 == 0 
 		 dv.set_its_value(coldata[cc] + dd.to_s())
 		else
@@ -120,66 +120,66 @@ begin
         cell.onset = TimeStamp.new(1000, col3[dd * 2] * 1000)
         cell.offset = TimeStamp.new(1000, col3[dd * 2 + 1] * 1000)
       elsif coltypes[cc] == MatrixVocabElement::MatrixType::NOMINAL
-        dv = NominalDataValue.new($db)
+        dv = NominalDataValue.new($dataStore)
         dv.set_its_value(coldata[cc])
         cell.onset = TimeStamp.new(1000, col4[dd * 2] * 1000)
         cell.offset = TimeStamp.new(1000, col4[dd * 2 + 1] * 1000)
       elsif coltypes[cc] == MatrixVocabElement::MatrixType::PREDICATE
         cell.onset = TimeStamp.new(1000, col1[dd * 2] * 1000)
         cell.offset = TimeStamp.new(1000, col1[dd * 2 + 1] * 1000)
-        pve0 = $db.get_pred_ve(predID0)
+        pve0 = $dataStore.get_pred_ve(predID0)
 
         fargid = pve0.get_formal_arg(0).get_id()
-        fdv0 = FloatDataValue.new($db, fargid, 1.234)
+        fdv0 = FloatDataValue.new($dataStore, fargid, 1.234)
         fargid = pve0.get_formal_arg(1).get_id()
-        fdv1 = IntDataValue.new($db, fargid, 1234)
+        fdv1 = IntDataValue.new($dataStore, fargid, 1234)
         fargid = pve0.get_formal_arg(2).get_id()
-        fdv2 = NominalDataValue.new($db, fargid, "a_nominal")
+        fdv2 = NominalDataValue.new($dataStore, fargid, "a_nominal")
         fargid = pve0.get_formal_arg(3).get_id()
-        fdv3 = QuoteStringDataValue.new($db, fargid, "quote_string")
+        fdv3 = QuoteStringDataValue.new($dataStore, fargid, "quote_string")
 
         if dd == 0
           # construct a predicate with null args in first cell of column
-          pred = Predicate.new($db, predID0)
+          pred = Predicate.new($dataStore, predID0)
         else
-          pred = Predicate.new(Predicate.construct($db, predID0, fdv0, fdv1, fdv2, fdv3))
+          pred = Predicate.new(Predicate.construct($dataStore, predID0, fdv0, fdv1, fdv2, fdv3))
         end
 
-        dv = PredDataValue.new($db)
+        dv = PredDataValue.new($dataStore)
         dv.set_its_value(pred)
 
       elsif coltypes[cc] == MatrixVocabElement::MatrixType::MATRIX
         cell.onset = TimeStamp.new(1000, col2[dd * 2] * 1000)
         cell.offset = TimeStamp.new(1000, col2[dd * 2 + 1] * 1000)
-        mve0 = $db.get_matrix_ve(matID0)
+        mve0 = $dataStore.get_matrix_ve(matID0)
 
         fargid = mve0.get_formal_arg(0).get_id()
-        fdv0 = FloatDataValue.new($db, fargid, 1.2)
+        fdv0 = FloatDataValue.new($dataStore, fargid, 1.2)
         fargid = mve0.get_formal_arg(1).get_id()
-        fdv1 = IntDataValue.new($db, fargid, 4)
+        fdv1 = IntDataValue.new($dataStore, fargid, 4)
         fargid = mve0.get_formal_arg(2).get_id()
-        fdv2 = NominalDataValue.new($db, fargid, "nm")
+        fdv2 = NominalDataValue.new($dataStore, fargid, "nm")
         fargid = mve0.get_formal_arg(3).get_id()
-        fdv3 = QuoteStringDataValue.new($db, fargid, "qs")
+        fdv3 = QuoteStringDataValue.new($dataStore, fargid, "qs")
 
         if dd == 0
           # construct a matrix with null args in first cell of column
-          mat = Matrix.new($db, matID0)
+          mat = Matrix.new($dataStore, matID0)
         else
-          mat = Matrix.new(Matrix.construct($db, matID0, fdv0, fdv1, fdv2, fdv3))
+          mat = Matrix.new(Matrix.construct($dataStore, matID0, fdv0, fdv1, fdv2, fdv3))
         end
       end
 
       # the ones that are only datavalues need to be put in a 1 arg matrix
       if coltypes[cc] != MatrixVocabElement::MatrixType::MATRIX
-        mat = Matrix.new(Matrix.construct($db, mve.get_id, dv))
+        mat = Matrix.new(Matrix.construct($dataStore, mve.get_id, dv))
       end
 
-      # set the cell value
+      # set the cell cellValue
       cell.set_val(mat)
 
       # Add the cell to the database.
-      $db.append_cell(cell)
+      $dataStore.append_cell(cell)
 
     end
   end

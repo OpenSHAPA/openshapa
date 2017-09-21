@@ -17,7 +17,7 @@ package org.datavyu.views;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
-import org.datavyu.controllers.NewProjectC;
+import org.datavyu.controllers.NewProjectController;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 
@@ -161,20 +161,20 @@ public final class NewProjectV extends DatavyuDialog {
         if (!isValidProjectName(getProjectName())) {
             Datavyu.getApplication().showWarningDialog(r.getString("Error.invalidName"));
             dispose();
-            new NewProjectC();
+            new NewProjectController();
         } else {
 
             s.createNewSpreadsheet(getProjectName());
 
             // The DB we just created doesn't really have any unsaved changes.
-            Datavyu.getProjectController().getDB().markAsUnchanged();
+            Datavyu.getProjectController().getDataStore().markAsUnchanged();
             dispose();
         }
 
 //        Datavyu.getApplication().resetApp();
 
         // BugzID:2411 - Show data controller after creating a new project.
-//        Datavyu.getApplication().show(Datavyu.getDataController());
+//        Datavyu.getApplication().show(Datavyu.getVideoController());
     } // GEN-LAST:event_okButtonActionPerformed
 
     private boolean isValidProjectName(final String name) {

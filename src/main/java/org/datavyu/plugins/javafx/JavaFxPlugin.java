@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.datavyu.Datavyu;
-import org.datavyu.plugins.DataViewer;
+import org.datavyu.plugins.StreamViewer;
 import org.datavyu.plugins.Filter;
 import org.datavyu.plugins.FilterNames;
 import org.datavyu.plugins.Plugin;
@@ -12,13 +12,13 @@ import org.datavyu.plugins.Plugin;
 import javax.swing.*;
 import java.awt.*;
 import java.io.FileFilter;
-import java.net.URL;
 import java.util.List;
 
 
 public class JavaFxPlugin implements Plugin {
 
-    private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(Datavyu.Platform.WINDOWS, Datavyu.Platform.MAC, Datavyu.Platform.LINUX);
+    private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(
+            Datavyu.Platform.WINDOWS, Datavyu.Platform.MAC, Datavyu.Platform.LINUX);
 
     private static final Filter VIDEO_FILTER = new Filter() {
         final SuffixFileFilter ff;
@@ -48,7 +48,7 @@ public class JavaFxPlugin implements Plugin {
     private static final Filter[] FILTERS = new Filter[]{VIDEO_FILTER};
 
     @Override
-    public String getClassifier() {
+    public String getNamespace() {
         return "datavyu.video";
     }
 
@@ -58,9 +58,9 @@ public class JavaFxPlugin implements Plugin {
     }
 
     @Override
-    public DataViewer getNewDataViewer(final Frame parent,
-                                       final boolean modal) {
-        return new JavaFXDataViewer(parent, modal);
+    public StreamViewer getNewStreamViewer(final Frame parent,
+                                           final boolean modal) {
+        return new JavaFXStreamViewerDialog(parent, modal);
     }
 
     @Override
@@ -70,15 +70,12 @@ public class JavaFxPlugin implements Plugin {
 
     @Override
     public ImageIcon getTypeIcon() {
-        URL typeIconURL = getClass().getResource(
-                "/icons/vlc_cone.png");
-
-        return new ImageIcon(typeIconURL);
+        return new ImageIcon(getClass().getResource("/icons/vlc_cone.png"));
     }
 
     @Override
-    public Class<? extends DataViewer> getViewerClass() {
-        return JavaFXDataViewer.class;
+    public Class<? extends StreamViewer> getViewerClass() {
+        return JavaFXStreamViewerDialog.class;
     }
 
     @Override

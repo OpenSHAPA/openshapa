@@ -47,47 +47,53 @@
 
 package org.datavyu.plugins.qtkitplayer;
 
-import org.datavyu.util.NativeLoader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.datavyu.util.NativeLibraryLoader;
 
 import java.awt.*;
 import java.io.File;
 
 public class QTKitPlayer extends Canvas {
 
-    protected static int playerCount = 0;
+    private static Logger logger = LogManager.getLogger(QTKitPlayer.class);
 
-    static {
-        // Standard JNI: load the native library
-
-//        System.loadLibrary("QTKitCanvas");
-
-//        System.load("/Users/jesse/Library/Developer/Xcode/DerivedData/JAWTExample-cdhbmpdibiannlgigweelsyjyces/Build/Products/Debug/libQTKitCanvas.jnilib");
-
-    }
+    private static int playerCount = 0;
 
     public final int id;
-    File fileToLoad;
 
-    public QTKitPlayer(File fileToLoad) {
+    private File sourceFile;
+
+    private static final String LIB_NAME = "QTKitCanvas";
+
+    public QTKitPlayer(File sourceFile) {
         super();
         try {
-            NativeLoader.LoadNativeLib("QTKitCanvas");
+            logger.info("Trying to extract and load: " + LIB_NAME);
+            NativeLibraryLoader.extractAndLoad(LIB_NAME);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed loading: " + LIB_NAME + ". Error is: ", e);
         }
         this.id = QTKitPlayer.playerCount;
-        QTKitPlayer.playerCount += 1;
-        this.fileToLoad = fileToLoad;
+        QTKitPlayer.incPlayerCount();
+        this.sourceFile = sourceFile;
+    }
+
+    private static void incPlayerCount() {
+        playerCount++;
+    }
+
+    public static void decPlayerCount() {
+        playerCount--;
     }
 
     public void addNotify() {
         super.addNotify();
-        System.out.println("Opening video file: " + fileToLoad.toURI().getPath());
+        logger.info("Opening video: " + sourceFile.toURI().getPath());
         try {
-            addNativeCoreAnimationLayer("file://" + fileToLoad.toURI().getPath());
+            addNativeCoreAnimationLayer("file://" + sourceFile.toURI().getPath());
         } catch (Exception e) {
-            System.out.println("ERROR CAUGHT");
-            e.printStackTrace();
+            logger.error("Unable to load " + sourceFile.toURI().getPath() + ". Error: ", e);
         }
     }
 

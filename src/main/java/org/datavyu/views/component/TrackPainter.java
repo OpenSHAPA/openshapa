@@ -183,7 +183,7 @@ public abstract class TrackPainter extends JComponent
         }
 
         // paint the bookmarks
-        for (Long bookmark : trackModel.getBookmarks()) {
+        for (Long bookmark : trackModel.getMarkers()) {
 	        final double bookmarkXPos = viewport.computePixelXOffset(trackModel.getOffset() + bookmark);
 	
 	        GeneralPath bookmarkLine = new GeneralPath();

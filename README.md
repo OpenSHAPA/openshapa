@@ -28,6 +28,17 @@ To build and run Datavyu an in IDE like IntelliJ Idea or Netbeans set Datavyu up
 
 	clean compile jfx:run
 
+## Developer's Corner
+Datavyu uses the Swing Application Framework to persist the state of frames and windows and to ease the loading and setup of GUI components in java. 
+Further information about the framework can be found here: https://en.wikipedia.org/wiki/Swing_Application_Framework#cite_note-1.
+However, this framework is not officially supported by Sun (Java) as the proposal was withdrawn over design disputes: https://jcp.org/en/jsr/results?id=3801.
+Documentation on using this framework is limited and one of the best places to find documentation is here: http://www.oracle.com/technetwork/articles/javase/index-141957.html#code19.
+Also, notice that underneath the Swing Application Framwork uses JavaBeans to provide additional storage; aside from the internal mechanism of saving state of the windows in properties files. This mechanism uses the LocalStorage class; see Example 19 (http://www.oracle.com/technetwork/articles/javase/index-141957.html#code19). 
+A tutorial on javaBeans is here: http://docs.oracle.com/javaee/5/tutorial/doc/bnair.html.
+
+## Deployment Information
+pre_version.txt, version.txt
+
 ## More Information
 
 See the [wiki](https://github.com/databrary/datavyu/wiki) for more information on how to code and contribute improvements to Datavyu.

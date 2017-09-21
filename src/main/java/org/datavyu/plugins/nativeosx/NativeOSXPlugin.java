@@ -19,7 +19,7 @@ import com.sun.jna.Platform;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.datavyu.Datavyu;
-import org.datavyu.plugins.DataViewer;
+import org.datavyu.plugins.StreamViewer;
 import org.datavyu.plugins.Filter;
 import org.datavyu.plugins.FilterNames;
 import org.datavyu.plugins.Plugin;
@@ -62,11 +62,11 @@ public final class NativeOSXPlugin implements Plugin {
     };
 
     @Override
-    public DataViewer getNewDataViewer(final java.awt.Frame parent,
-                                       final boolean modal) {
+    public StreamViewer getNewStreamViewer(final java.awt.Frame parent,
+                                           final boolean modal) {
 
         if (Platform.isMac() || Platform.isWindows()) {
-            return new NativeOSXViewer(parent, modal);
+            return new NativeOSXViewerDialog(parent, modal);
         } else {
             return null;
         }
@@ -84,7 +84,7 @@ public final class NativeOSXPlugin implements Plugin {
     }
 
     @Override
-    public String getClassifier() {
+    public String getNamespace() {
         return "datavyu.video";
     }
 
@@ -99,10 +99,10 @@ public final class NativeOSXPlugin implements Plugin {
     }
 
     @Override
-    public Class<? extends DataViewer> getViewerClass() {
+    public Class<? extends StreamViewer> getViewerClass() {
 
         if (Platform.isMac()) {
-            return NativeOSXViewer.class;
+            return NativeOSXViewerDialog.class;
         }
 
         return null;

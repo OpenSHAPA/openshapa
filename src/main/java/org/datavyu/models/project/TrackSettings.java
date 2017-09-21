@@ -19,15 +19,15 @@ import java.util.List;
 
 
 /**
- * This class is used to store user interface settings relating to a given
- * track.
+ * This class is used to store user interface settings relating to a given track.
  *
  * @author Douglas Teoh
  */
+// TODO: Could this functionality be in track model?
 public final class TrackSettings {
 
     /** TrackSettings specification version. */
-    public static final int VERSION = 2;
+    public static final int VERSION = 2; // TODO: Why is this different from the main datavyu version?
 
     /** Absolute file path to the data source */
     @Deprecated private String filePath;
@@ -35,14 +35,11 @@ public final class TrackSettings {
     /** Is the track's movement locked on the interface */
     private boolean isLocked;
 
-    /** The track's bookmark positions */
-    private List<Long> bookmarkPositions;
-    
-    /* The track's datarate */
-    private float fps;
+    /** The track's markers positions */
+    private List<Long> markers;
 
     public TrackSettings() {
-        bookmarkPositions = new ArrayList<Long>();
+        markers = new ArrayList<>();
     }
 
     /**
@@ -53,8 +50,7 @@ public final class TrackSettings {
     private TrackSettings(final TrackSettings other) {
         filePath = other.filePath;
         isLocked = other.isLocked;
-        bookmarkPositions = other.bookmarkPositions;
-        fps = other.fps;
+        markers = other.markers;
     }
 
     /**
@@ -75,25 +71,24 @@ public final class TrackSettings {
     /**
      * @return bookmark positions
      */
-    public List<Long> getBookmarkPositions() {
-        return bookmarkPositions;
+    public List<Long> getMarkers() {
+        return markers;
     }
 
     /**
-     * Add a bookmark position to our settings.
+     * Add a bookmark marker to our settings.
      *
-     * @param position
+     * @param marker
      */
-    public void addBookmarkPosition(final long position) {
-        bookmarkPositions.add(position);
+    public void addMarkerPosition(final long marker) {
+        markers.add(marker);
     }
 
     /**
-     * @param bookmarkPosition
-     *            the bookmark position to set
+     * @param markers the bookmark position to set
      */
-    public void setBookmarkPositions(final List<Long> bookmarkPositions) {
-        this.bookmarkPositions = bookmarkPositions;
+    public void setMarkers(final List<Long> markers) {
+        this.markers = markers;
     }
 
     /**
@@ -104,21 +99,17 @@ public final class TrackSettings {
     }
 
     /**
-     * @param filePath
-     *            the filePath to set
+     * @param filePath Set this file path
      */
     @Deprecated public void setFilePath(final String filePath) {
         this.filePath = filePath;
     }
-    
-    public float getFps() {
-        return fps;
-    }
-    
-    public void setFps(float fps) {
-        this.fps = fps;
-    }
 
+    /**
+     * Copy constructor that makes a deep copy.
+     *
+     * @return A new instance of track settings.
+     */
     public TrackSettings copy() {
         return new TrackSettings(this);
     }

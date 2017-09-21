@@ -28,6 +28,7 @@ import javax.swing.AbstractButton;
 /**
  * Convenience class with default implementation of unsupported custom actions.
  */
+// TODO: Bad idea!!! No clear documentation. Avoid this.
 public class CustomActionsAdapter implements CustomActions {
 
     @Override public AbstractButton getActionButton1() {

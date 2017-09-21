@@ -176,7 +176,7 @@ JNIEXPORT jlong JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_getCu
     CMTime newQTTime = GetQtMovie(movieId).currentTime;
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
 
-    long long time = (newQTTime.value * 1000.0f) / newQTTime.timescale;
+    long long time = (newQTTime.cellValue * 1000.0f) / newQTTime.timescale;
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
 
     
@@ -196,7 +196,7 @@ JNIEXPORT jlong JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_getDu
     CMTime newQTTime = GetQtMovie(movieId).currentItem.duration;
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
 
-    long long time = (newQTTime.value * 1000.0f) / newQTTime.timescale;
+    long long time = (newQTTime.cellValue * 1000.0f) / newQTTime.timescale;
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
 
     
@@ -298,15 +298,15 @@ JNIEXPORT jfloat JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_getF
 #ifdef JAWT_MACOSX_USE_CALAYER // Java for Mac OS X 10.6 Update 4 or later required
     
     JNF_COCOA_ENTER(env);
-    float fps = 0.00;
+    float framesPerSecond = 0.00;
     for (AVPlayerItemTrack *track in GetQtMovie(movieId).currentItem.tracks) {
         if ([track.assetTrack.mediaType isEqualToString:AVMediaTypeVideo]) {
-            //            fps = track.currentVideoFrameRate;
-            fps = track.assetTrack.nominalFrameRate;
+            //            framesPerSecond = track.currentVideoFrameRate;
+            framesPerSecond = track.assetTrack.nominalFrameRate;
         }
     }
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
-    return fps;
+    return framesPerSecond;
 //    return [[fpses objectAtIndex:movieId] floatValue];
     
 //    for (QTTrack *track in [GetQtMovie(movieId) tracks]) {
@@ -447,12 +447,12 @@ JNIEXPORT void JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_setTim
     
     CMTime newQTTime = [GetQtMovie(movieId) currentTime];
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
-    newQTTime.value = ((long long)time / 1000.0f) * newQTTime.timescale;
+    newQTTime.cellValue = ((long long)time / 1000.0f) * newQTTime.timescale;
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
     [GetQtMovie(movieId) seekToTime:newQTTime toleranceBefore:kCMTimeZero toleranceAfter:kCMTimeZero];
     
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
-    long long t = (newQTTime.value * 1000.0f) / newQTTime.timescale;
+    long long t = (newQTTime.cellValue * 1000.0f) / newQTTime.timescale;
     
     
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
@@ -483,12 +483,12 @@ JNIEXPORT void JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_setTim
     CMTime tol = CMTimeMake(500, 1000);
     CMTime newQTTime = [GetQtMovie(movieId) currentTime];
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
-    newQTTime.value = ((long long)time / 1000.0f) * newQTTime.timescale;
+    newQTTime.cellValue = ((long long)time / 1000.0f) * newQTTime.timescale;
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
     [GetQtMovie(movieId) seekToTime:newQTTime toleranceBefore:tol toleranceAfter:tol];
     
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
-    long long t = (newQTTime.value * 1000.0f) / newQTTime.timescale;
+    long long t = (newQTTime.cellValue * 1000.0f) / newQTTime.timescale;
     
     
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
@@ -519,12 +519,12 @@ JNIEXPORT void JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_setTim
     
     CMTime newQTTime = [GetQtMovie(movieId) currentTime];
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
-    newQTTime.value = ((long long)time / 1000.0f) * newQTTime.timescale;
+    newQTTime.cellValue = ((long long)time / 1000.0f) * newQTTime.timescale;
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
     [GetQtMovie(movieId) seekToTime:newQTTime];
 
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
-    long long t = (newQTTime.value * 1000.0f) / newQTTime.timescale;
+    long long t = (newQTTime.cellValue * 1000.0f) / newQTTime.timescale;
 
     
     JNF_CHECK_AND_RETHROW_EXCEPTION(env);
@@ -650,11 +650,11 @@ JNIEXPORT void JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_releas
 //        sleep(1);
 //    }
     
-    float fps = 0.00;
+    float framesPerSecond = 0.00;
     for (AVPlayerItemTrack *track in playerItem.tracks) {
         if ([track.assetTrack.mediaType isEqualToString:AVMediaTypeVideo]) {
-//            fps = track.currentVideoFrameRate;
-            fps = track.assetTrack.nominalFrameRate;
+//            framesPerSecond = track.currentVideoFrameRate;
+            framesPerSecond = track.assetTrack.nominalFrameRate;
         }
     }
     
@@ -665,7 +665,7 @@ JNIEXPORT void JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_releas
     if(movie == nil || error)
         NSLog(@"Error: %@ %@", error, [error userInfo]);
 //    NSLog(@"Movie loaded: %lld, %ld", [movie duration].timeValue, [movie duration].timeScale);
-    NSLog(@"Playback Height: %f, Width: %f, FPS %f", sourceSize.height, sourceSize.width, fps);
+    NSLog(@"Playback Height: %f, Width: %f, FPS %f", sourceSize.height, sourceSize.width, framesPerSecond);
 
 //    NSLog@(@"Movie width: %ld, height: %ld", [movie ])
     
@@ -676,7 +676,7 @@ JNIEXPORT void JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_releas
     [movies addObject:movie];
     NSLog(@"Added movie");
     [movieLayers addObject:self];
-    [fpses addObject:[NSNumber numberWithFloat:fps]];
+    [fpses addObject:[NSNumber numberWithFloat:framesPerSecond]];
     
     NSLog(@"Returning, movie loaded");
 	return self;
@@ -741,7 +741,7 @@ JNIEXPORT void JNICALL Java_org_datavyu_plugins_nativeosx_NativeOSXPlayer_releas
     if ([object isKindOfClass:[AVPlayerItem class]])
     {
         AVPlayerItem *item = (AVPlayerItem *)object;
-        //playerItem status value changed?
+        //playerItem status cellValue changed?
         if ([keyPath isEqualToString:@"status"])
         {   //yes->check it...
             switch(item.status)
