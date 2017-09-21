@@ -33,7 +33,6 @@ require 'rbconfig'
 require 'matrix'
 
 import 'org.datavyu.Datavyu'
-<<<<<<< HEAD
 import 'org.datavyu.models.db.DataStore'
 import 'org.datavyu.models.db.MatrixCellValue'
 import 'org.datavyu.models.db.NominalCellValue'
@@ -42,16 +41,6 @@ import 'org.datavyu.models.db.CellValue'
 import 'org.datavyu.models.db.Variable'
 import 'org.datavyu.models.db.Cell'
 import 'org.datavyu.models.db.Argument'
-=======
-import 'org.datavyu.models.dataStore.DataStore'
-import 'org.datavyu.models.dataStore.MatrixValue'
-import 'org.datavyu.models.dataStore.NominalValue'
-import 'org.datavyu.models.dataStore.TextValue'
-import 'org.datavyu.models.dataStore.Value'
-import 'org.datavyu.models.dataStore.Variable'
-import 'org.datavyu.models.dataStore.Cell'
-import 'org.datavyu.models.dataStore.Argument'
->>>>>>> 6a3275ff21ff066bc8c6c5ee7a6cf23ec4a52239
 import 'org.datavyu.models.project.Project'
 import 'org.datavyu.controllers.SaveController'
 import 'org.datavyu.controllers.OpenController'
@@ -1649,11 +1638,7 @@ def load_db(filename)
   # If the open went well - query the database, do calculations or whatever
   unless dataStore.nil?
     # This just prints the number of columns in the database.
-<<<<<<< HEAD
     print_debug "SUCCESSFULLY Opened a project with #{dataStore.get_all_variables.length.to_s} columns!"
-=======
-    print_debug "SUCCESSFULLY Opened a project with '" + dataStore.get_all_variables.length.to_s + "' columns!"
->>>>>>> 6a3275ff21ff066bc8c6c5ee7a6cf23ec4a52239
   else
     raise "Unable to open file '#{filename}'"
   end
