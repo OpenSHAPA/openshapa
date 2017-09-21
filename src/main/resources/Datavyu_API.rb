@@ -88,7 +88,7 @@ class RCell
 
   # @!visibility private
   # @note This method is not for general use, it is used only when creating
-  #       this variable from the database in the getVariable method.
+  #       this variable from the database in the get_column method.
   # Sets up methods that can be used to reference the arguments in
   # the cell.
   # @param argvals (required): Values of the arguments being created
@@ -228,8 +228,8 @@ class RCell
   # @param outer_cell [RCell]: cell to check nesting against
   # @return [true, false]
   # @example
-  #       trial = getVariable("trial")
-  #       id = getVariable("id")
+  #       trial = get_column("trial")
+  #       id = get_column("id")
   #       if trial.cells[0].is_within(id.cells[0])
   #           do something
   #       end
@@ -241,8 +241,8 @@ class RCell
   # @param inner_cell [RCell] cell to check if contained by this cell
   # @return [true, false]
   # @example
-  #       trial = getVariable("trial")
-  #       id = getVariable("id")
+  #       trial = get_column("trial")
+  #       id = get_column("id")
   #       if id.cells[0].contains(trial.cells[0])
   #           do something
   #       end
@@ -350,7 +350,7 @@ class RColumn
 
   # @note This function is not for general use.
   # Creates the cell object in the Variable object.
-  # @param newcells (required): Array of cells coming from the database via getVariable
+  # @param newcells (required): Array of cells coming from the database via get_column
   # @param arglist (required): Array of the names of the arguments from the database
   def set_cells(newcells, arglist)
     print_debug "Setting cells"
@@ -665,8 +665,8 @@ def compute_kappa(pri_col, rel_col, *codes)
   codes = pri_col.arglist if codes.nil? || codes.empty?
   raise "No codes!" if codes.empty?
 
-  pri_col = getVariable(pri_col) if pri_col.class == String
-  rel_col = getVariable(rel_col) if rel_col.class == String
+  pri_col = get_column(pri_col) if pri_col.class == String
+  rel_col = get_column(rel_col) if rel_col.class == String
   codes.flatten!
 
   raise "Invalid parameters for getKappa()" unless (pri_col.class==RColumn && rel_col.class==RColumn)
@@ -767,7 +767,7 @@ alias :getColumn :get_column
 # @param args [String, RColumn] the name and RColumn object to save; the name parameter may be omitted
 # @return nil
 # @example
-#       trial = getVariable("trial")
+#       trial = get_column("trial")
 #         ... Do some modification to trial ...
 #       set_column(trial)
 def set_column(*args)
@@ -1004,9 +1004,9 @@ def make_reliability(relname, var_to_copy, multiple_to_keep, *args_to_keep)
   # Get the primary variable from the DB
 
   if var_to_copy.class == String
-    var_to_copy = getVariable(var_to_copy)
+    var_to_copy = get_column(var_to_copy)
   else
-    var_to_copy = getVariable(var_to_copy.name)
+    var_to_copy = get_column(var_to_copy.name)
   end
 
   if args_to_keep[0].class == Array
@@ -1104,41 +1104,42 @@ alias :createColumn :new_column
 # blank column for the free coding within that block.
 # @param relname [String] name of the rel column to be made
 # @param var_to_copy [String] name of column being copied
-# @param binding [String] name of column to bind copy to
+# @param binding_column [String] name of column to bind copy to
 # @param block_dur [Integer] duration, in seconds, for each block
 # @param skip_blocks [Integer] multiple of block_dur to skip between coding blocks
 # @return nil
 # @note Column is written to spreadsheet.
-def makeDurationBlockRel(relname, var_to_copy, binding, block_dur, skip_blocks)
-  block_var = createVariable(relname + "_blocks", "block_num")
+# @deprecated
+def makeDurationBlockRel(relname, var_to_copy, binding_column, block_dur, skip_blocks)
+  block_var = new_column(relname + "_blocks", "block_num")
   rel_var = make_rel(relname, var_to_copy, 0)
 
-  var_to_copy = getVariable(var_to_copy)
-  binding = getVariable(binding)
+  var_to_copy = get_column(var_to_copy)
+  binding_col = get_column(binding_column)
 
 
   block_dur = block_dur * 1000 # Convert to milliseconds
   block_num = 1
-  for bindcell in binding.cells
+  for bindcell in binding_col.cells
     cell_dur = bindcell.offset - bindcell.onset
     if cell_dur <= block_dur
-      cell = block_var.make_new_cell()
-      cell.change_arg("block_num", block_num.to_s)
-      cell.change_arg("onset", bindcell.onset)
-      cell.change_arg("offset", bindcell.offset)
+      cell = block_var.new_cell()
+      cell.change_code("block_num", block_num.to_s)
+      cell.onset = bindcell.onset
+      cell.offset = bindcell.offset
       block_num += 1
     else
       num_possible_blocks = cell_dur / block_dur #Integer division
       if num_possible_blocks > 0
         for i in 0..num_possible_blocks
           if i % skip_blocks == 0
-            cell = block_var.make_new_cell()
-            cell.change_arg("block_num", block_num.to_s)
-            cell.change_arg("onset", bindcell.onset + i * block_dur)
+            cell = block_var.new_cell()
+            cell.change_code("block_num", block_num.to_s)
+            cell.onset = bindcell.onset + i * block_dur
             if bindcell.onset + (i + 1) * block_dur <= bindcell.offset
-              cell.change_arg("offset", bindcell.onset + (i + 1) * block_dur)
+              cell.offset =  bindcell.onset + (i + 1) * block_dur
             else
-              cell.change_arg("offset", bindcell.offset)
+              cell.offset = bindcell.offset
             end
             block_num += 1
           end
@@ -1146,7 +1147,7 @@ def makeDurationBlockRel(relname, var_to_copy, binding, block_dur, skip_blocks)
       end
     end
   end
-  setVariable(relname + "_blocks", block_var)
+  set_column(relname + "_blocks", block_var)
 end
 
 # Add a new code to a column
@@ -1160,7 +1161,7 @@ end
 #   set_column("test", test)
 def add_codes_to_column(var, *args)
   if var.class == "".class
-    var = getVariable(var)
+    var = get_column(var)
   end
 
   var_new = createVariable(var.name, var.arglist + args)
@@ -1277,12 +1278,12 @@ end
 #   set_column("test",test)
 def create_mutually_exclusive(name, var1name, var2name, var1_argprefix=nil, var2_argprefix=nil)
   if var1name.class == "".class
-    var1 = getVariable(var1name)
+    var1 = get_column(var1name)
   else
     var1 = var1name
   end
   if var2name.class == "".class
-    var2 = getVariable(var2name)
+    var2 = get_column(var2name)
   else
     var2 = var2name
   end
@@ -1814,8 +1815,8 @@ def load_macshapa_db(filename, write_to_gui, *ignore_vars)
 
         print_debug id
         varname = id.slice(0, id.index("(")).gsub(/\W+/,'_')
-        if getVariableList.include?(varname)
-          col = getVariable(varname)
+        if get_column_list.include?(varname)
+          col = get_column(varname)
         else
           puts "Column #{varname} not found. Skipping."
           next
@@ -1993,7 +1994,7 @@ def load_macshapa_db2(filename, write_to_gui, *ignore_vars)
 
         print_debug id
         colname = id.slice(0, id.index("(")).gsub(/\W+/,'_')
-        col = getVariable(colname)
+        col = get_column(colname)
         #print_debug varname
         start = varSection.index(l) + 1
 
@@ -2228,8 +2229,8 @@ alias :transferVariables :transfer_columns
 alias :transferVariable :transfer_columns
 
 # Do a quick, in Datavyu, check of reliability errors.
-# @param main_col [String, RColumn] Either the string name or the Ruby column from getVariable of the primary column to compare against.
-# @param rel_col [String, RColumn] Either the string name or the Ruby column from getVariable of the reliability column to compare to the primary column.
+# @param main_col [String, RColumn] Either the string name or the Ruby column from get_column of the primary column to compare against.
+# @param rel_col [String, RColumn] Either the string name or the Ruby column from get_column of the reliability column to compare to the primary column.
 # @param match_arg [String] The string of the argument to use to match the relability cells to the primary cells.  This must be a unique identifier between the cells.
 # @param time_tolerance [Integer] The amount of slack you allow, in milliseconds, for difference between onset and offset before it is considered an error.  Set to 0
 #     for no difference allowed and to a very large number for infinite distance allowed.
@@ -2250,10 +2251,10 @@ def check_reliability(main_col, rel_col, match_arg, time_tolerance, *dump_file)
   # Set up our method variables
   dump_file = dump_file[0]
   if main_col.class == "".class
-    main_col = getVariable(main_col)
+    main_col = get_column(main_col)
   end
   if rel_col.class == "".class
-    rel_col = getVariable(rel_col)
+    rel_col = get_column(rel_col)
   end
 
   printing = false
@@ -2336,7 +2337,7 @@ alias :checkRel :check_reliability
 #  check_valid_codes("trial", "", "hand", ["l","r","b","n"], "turn", ["l","r"], "unit", [1,2,3])
 def check_valid_codes(var, dump_file, *arg_code_pairs)
   if var.class == "".class
-    var = getVariable(var)
+    var = get_column(var)
   end
 
   if dump_file != ""
@@ -2385,7 +2386,7 @@ alias :checkValidCodes :check_valid_codes
 
 # Check valid codes on cells in a column using regex. Backwards-compatible with checkValidCodes
 # @since 1.3.5
-# @param data [String, RColumn, Hash] When this parameter is a String or a column object from getVariable(), the function operates on codes within this column. If the parameter is a Hash (associative array), the function ignores the arg_code_pairs arguments and uses data from this Hash. The Hash must be structured as a nested mapping from columns (either as Strings or RColumns) to Hashes. These nested hashes must be mappings from code names (as Strings) to valid code values (as either lists (Arrays) or patterns (Regexp)).
+# @param data [String, RColumn, Hash] When this parameter is a String or a column object from get_column(), the function operates on codes within this column. If the parameter is a Hash (associative array), the function ignores the arg_code_pairs arguments and uses data from this Hash. The Hash must be structured as a nested mapping from columns (either as Strings or RColumns) to Hashes. These nested hashes must be mappings from code names (as Strings) to valid code values (as either lists (Arrays) or patterns (Regexp)).
 # @param outfile [String, File] The full path of the file to print output to. Use '' to print to scripting console.
 # @param arg_filt_pairs Pairs of code name and acceptable values either as an array of values or regexp. Ignored if first parameter is a Hash.
 # @return nothing
@@ -2394,7 +2395,7 @@ alias :checkValidCodes :check_valid_codes
 #   checkValidCodes2("trial", "", "hand", ["l","r","b","n"], "turn", ["l","r"], "unit", /\A\d+\Z/)
 def check_valid_codes2(data, outfile, *arg_filt_pairs)
 	if data.class == "".class
-		data = getVariable(data)
+		data = get_column(data)
   elsif data.class == Hash
     # data is already a hashmap
     map = data
@@ -2436,7 +2437,7 @@ def check_valid_codes2(data, outfile, *arg_filt_pairs)
 	errors = false
   # Iterate over key,entry (column, valid code mapping) in map
   map.each_pair do |var, col_map|
-    var = getVariable(var) if var.class == String
+    var = get_column(var) if var.class == String
 
     # Iterate over cells in var and check each code's value
   	for cell in var.cells
@@ -2483,7 +2484,7 @@ def check_valid_codes3(map, outfile = nil)
   err_count = 0
   # Iterate over key,entry (column, valid code mapping) in map
   map.each_pair do |var, col_map|
-    var = getVariable(var) if var.class == String
+    var = get_column(var) if var.class == String
 
     # Iterate over cells in var and check each code's value
   	var.cells.each do |cell|
@@ -2570,7 +2571,7 @@ private :print_all_nested
 # @return nil
 # @note Only the onset is changed; not the offset.
 def smooth_column(colname, tol=33)
-  col = getVariable(colname)
+  col = get_column(colname)
   for i in 0..col.cells.length-2
     curcell = col.cells[i]
     nextcell = col.cells[i+1]
