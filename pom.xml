@@ -412,10 +412,14 @@
 
             <build>
                 <plugins>
+                    <!-- Provides utility goals to work with dependencies like copying, unpacking, analyzing, resolving -->
+                    <!-- Artifact: https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-dependency-plugin -->
+                    <!-- Documentation: https://maven.apache.org/plugins/maven-dependency-plugin/plugin-info.html -->
+                    <!-- Updated here: 09/21/2017 -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
-                        <version>2.9</version>
+                        <version>3.0.2</version>
                         <executions>
                             <execution>
                                 <id>copy-package</id>
@@ -509,22 +513,6 @@
             </build>
         </profile>
 
-        <profile>
-            <id>all</id>
-            <properties>
-                <exclude.markers>none</exclude.markers>
-                <exclude.calibration>none</exclude.calibration>
-                <exclude.ffmpeg>none</exclude.ffmpeg>
-                <exclude.dc1394>none</exclude.dc1394>
-                <exclude.flycapture>none</exclude.flycapture>
-                <exclude.openkinect>none</exclude.openkinect>
-                <exclude.ps3eye>none</exclude.ps3eye>
-                <exclude.videoinput>none</exclude.videoinput>
-                <exclude.opengl>none</exclude.opengl>
-                <exclude.opencl>none</exclude.opencl>
-            </properties>
-        </profile>
-
     </profiles>
 
     <!-- Build properties. -->
@@ -582,10 +570,15 @@
                 </configuration>
             </plugin>
 
+            <!-- Clover is a tool that generates test coverage reports -->
+            <!-- Renaming: https://confluence.atlassian.com/clover/what-happened-to-maven-clover2-plugin-792634162.html -->
+            <!-- Artifact: http://search.maven.org/#artifactdetails%7Corg.openclover%7Cclover-maven-plugin%7C4.2.0%7Cmaven-plugin -->
+            <!-- Documentation: http://openclover.org/documentation -->
+            <!-- Updated here: 09/21/2017 -->
             <plugin>
-                <groupId>com.atlassian.maven.plugins</groupId>
-                <artifactId>maven-clover2-plugin</artifactId>
-                <version>2.6.0</version>
+                <groupId>org.openclover</groupId>
+                <artifactId>clover-maven-plugin</artifactId>
+                <version>4.2.0</version>
                 <configuration>
                     <licenseLocation>/var/clover/clover.license</licenseLocation>
                     <historyDir>/var/clover/datavyu</historyDir>
@@ -594,15 +587,25 @@
             </plugin>
 
             <!-- BugzID:304 - Generate an OSX style app bundle & disk image.-->
+            <!-- The plugin from osxappbundle-maven-plugin from org.codehaus.mojo is no longer maintained as of 2010 -->
+            <!-- In particular it does not work for java > 1.6. -->
+            <!-- For this reason I switched to appbundle-maven-plugin by sh.tak.appbundler version 1.2.0 -->
+            <!-- Artifact: https://mvnrepository.com/artifact/sh.tak.appbundler/appbundle-maven-plugin -->
+            <!-- Documentation: -->
+            <!-- Updated here: 09/21/2017 -->
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>osxappbundle-maven-plugin</artifactId>
+                <groupId>sh.tak.appbundler</groupId>
+                <artifactId>appbundle-maven-plugin</artifactId>
+                <version>1.2.0</version>
                 <!--  BugzID:306 - This version has been custom built for support of the new "resources" tag and so that it functions correctly via hudson. Don't update this to the mainstream version until after the tag has been added to the SVN repository... see http://jira.codehaus.org/browse/MOJO-1527 -->
-                <version>1.0-alpha-2c</version>
+                <!-- <groupId>org.codehaus.mojo</groupId> -->
+                <!-- <artifactId>osxappbundle-maven-plugin</artifactId> -->
+                <!-- <version>1.0-alpha-2c</version> -->
                 <configuration>
                     <bundleName>Datavyu</bundleName>
                     <mainClass>org.datavyu.Launcher</mainClass>
                     <jvmVersion>1.8+</jvmVersion>
+                    <!-- TODO: Test if the splash is added correctly under additional resources
                     <resources>
                         <fileSet>
                             <directory>${basedir}/src/main/resources/icons</directory>
@@ -611,6 +614,7 @@
                             </includes>
                         </fileSet>
                     </resources>
+                    -->
                     <additionalResources>
                         <fileSet>
                             <directory>src/main/</directory>
@@ -628,10 +632,15 @@
                                 <include>*.webloc</include>
                                 <include>*.pdf</include>
                             </includes>
+                            <directory>${basedir}/src/main/resources/icons</directory>
+                            <includes>
+                                <include>splash.png</include>
+                            </includes>
                         </fileSet>
                     </additionalResources>
                     <iconFile>${basedir}/src/main/resources/icons/datavyu.icns</iconFile>
-                    <javaApplicationStub>${basedir}/src/main/mac-resources/JavaApplicationStub</javaApplicationStub>
+                    <!-- Java application stub is not required anymore by this plugin -->
+                    <!-- <javaApplicationStub>${basedir}/src/main/mac-resources/JavaApplicationStub</javaApplicationStub> -->
                     <dictionaryFile>${basedir}/Info.plist</dictionaryFile>
                     <!-- see the antrun goal - need to create snapshot directory before this will work. -->
                     <diskImageFile>
@@ -752,9 +761,13 @@
                     </dependency>
                 </dependencies>
 
+                <!-- Runs Ant scripts embedded in the POM  -->
+                <!-- Artifact: https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-antrun-plugin/1.8 -->
+                <!-- Documentation: http://maven.apache.org/plugins/maven-antrun-plugin/plugin-info.html -->
+                <!-- Updated here: 09/21/2017 -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.3</version>
+                <version>1.8</version>
                 <executions>
 
                     <!-- Set the build number in the bundles file. -->
@@ -866,20 +879,6 @@
                         <mainClass>org.datavyu.Datavyu</mainClass>
                         <!-- Add project jar: https://sourceforge.net/p/launch4j/discussion/332684/thread/049f9c89/ -->
                         <postCp>${project.build.finalName}.jar</postCp>
-                        <preCp>jna-3.5.2.jar</preCp>
-                        <preCp>appframework-1.0.3.jar</preCp>
-                        <preCp>snakeyaml-1.18.jar</preCp>
-                        <preCp>miglayout-3.7.3.1-swing.jar</preCp>
-                        <preCp>commons-io-2.0.jar</preCp>
-                        <preCp>fest-reflect-1.2.jar</preCp>
-                        <preCp>google-collections-1.0.jar</preCp>
-                        <preCp>commons-lang-2.5.jar</preCp>
-                        <preCp>QTJava-7.jar</preCp>
-                        <preCp>trove-2.1.0.jar</preCp>
-                        <preCp>vlcj-3.0.0.jar</preCp>
-                        <preCp>libvlc-win32-2.0.1.jar</preCp>
-                        <preCp>slf4j-api-1.7.7.jar</preCp>
-                        <preCp>slf4j-simple-1.7.7.jar</preCp>
                     </classPath>
                     <messages>
                         <startupErr>Startup error. Most likely error in classpath.</startupErr>
