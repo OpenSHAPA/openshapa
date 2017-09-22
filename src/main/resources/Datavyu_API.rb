@@ -33,14 +33,14 @@ require 'rbconfig'
 require 'matrix'
 
 import 'org.datavyu.Datavyu'
-import 'org.datavyu.models.dataStore.DataStore'
-import 'org.datavyu.models.dataStore.MatrixValue'
-import 'org.datavyu.models.dataStore.NominalValue'
-import 'org.datavyu.models.dataStore.TextValue'
-import 'org.datavyu.models.dataStore.Value'
-import 'org.datavyu.models.dataStore.Variable'
-import 'org.datavyu.models.dataStore.Cell'
-import 'org.datavyu.models.dataStore.Argument'
+import 'org.datavyu.models.db.DataStore'
+import 'org.datavyu.models.db.MatrixCellValue'
+import 'org.datavyu.models.db.NominalCellValue'
+import 'org.datavyu.models.db.TextCellValue'
+import 'org.datavyu.models.db.CellValue'
+import 'org.datavyu.models.db.Variable'
+import 'org.datavyu.models.db.Cell'
+import 'org.datavyu.models.db.Argument'
 import 'org.datavyu.models.project.Project'
 import 'org.datavyu.controllers.SaveController'
 import 'org.datavyu.controllers.OpenController'
@@ -57,7 +57,7 @@ def print_debug(*s)
 end
 
 # Set $db, this is so that JRuby doesn't decide to overwrite it halfway thru the script.
-$db = Datavyu.get_project_controller.get_db
+$db = Datavyu.get_project_controller.get_data_store
 $pj = Datavyu.get_project_controller.get_project
 
 # Ruby representation of a spreadsheet cell.
@@ -73,22 +73,22 @@ $pj = Datavyu.get_project_controller.get_project
 #   @return [Fixnum] offset time of the cell in milliseconds
 # @!attribute [rw] arglist
 #   @note Use RColumn methods to modify column codes. Changing this list for the cell has no effect on the column.
-#   @return [Array<String>] list of codes inherited from videoController column.
+#   @return [Array<String>] list of codes inherited from parent column.
 # @!attribute argvals
-#   @note Dangerous to modify this directly since the order of the cellValues must match the order of the code names.
-#   @return [Array] list of code cellValues
+#   @note Dangerous to modify this directly since the order of the values must match the order of the code names.
+#   @return [Array] list of code values
 # @!attribute db_cell
 #   @note MODIFY AT OWN RISK.
 #   @return native Datavyu object corresponding to this cell.
-# @!attribute videoController
+# @!attribute parent
 #   @note MODIFY AT OWN RISK.
 #   @return [RColumn] the column this cell belongs to
 class RCell
-  attr_accessor :ordinal, :onset, :offset, :arglist, :argvals, :db_cell, :videoController
+  attr_accessor :ordinal, :onset, :offset, :arglist, :argvals, :db_cell, :parent
 
   # @!visibility private
   # @note This method is not for general use, it is used only when creating
-  #       this variable from the database in the getVariable method.
+  #       this variable from the database in the get_column method.
   # Sets up methods that can be used to reference the arguments in
   # the cell.
   # @param argvals (required): Values of the arguments being created
@@ -104,7 +104,7 @@ class RCell
     end
   end
 
-  # Map the specified code names to their cellValues.
+  # Map the specified code names to their values.
   # If no names specified, use self.arglist.
   # @note Onset, offset, and ordinal are returned as Integers; all else are Strings
   # @param codes [Array<String>] (optional): Names of codes.
@@ -152,7 +152,7 @@ class RCell
   end
   alias :add_arg :add_code
 
-  # Removes code from arglist and associated cellValue from argvals
+  # Removes code from arglist and associated value from argvals
   # @param name [String] name of code to remove
   # @return [nil]
   def remove_code(name)
@@ -161,9 +161,9 @@ class RCell
   end
   alias :remove_arg :remove_code
 
-  # Get cellValue of a code
+  # Get value of a code
   # @param name [String] name of code
-  # @return [String, Integer] cellValue of code
+  # @return [String, Integer] value of code
   def get_code(name)
     if %w(onset offset ordinal).include?(name) || @arglist.include?(name)
       return self.send(name)
@@ -174,9 +174,9 @@ class RCell
   end
   alias :get_arg :get_code
 
-  # Changes the cellValue of an argument in a cell.
+  # Changes the value of an argument in a cell.
   # @param arg [String] name of the argument to be changed
-  # @param val [String, Fixnum] cellValue to change the argument to
+  # @param val [String, Fixnum] value to change the argument to
   # @return [nil]
   # @example
   #       trial = get_column("trial")
@@ -205,7 +205,7 @@ class RCell
   end
   alias :change_arg :change_code
 
-  # Print ordinal, onset, offset, and cellValues of all codes in the cell to console.
+  # Print ordinal, onset, offset, and values of all codes in the cell to console.
   # @param sep [String] seperator used between the arguments
   # @return [nil]
   # @example Print the first cell in the 'trial' column
@@ -228,8 +228,8 @@ class RCell
   # @param outer_cell [RCell]: cell to check nesting against
   # @return [true, false]
   # @example
-  #       trial = getVariable("trial")
-  #       id = getVariable("id")
+  #       trial = get_column("trial")
+  #       id = get_column("id")
   #       if trial.cells[0].is_within(id.cells[0])
   #           do something
   #       end
@@ -241,8 +241,8 @@ class RCell
   # @param inner_cell [RCell] cell to check if contained by this cell
   # @return [true, false]
   # @example
-  #       trial = getVariable("trial")
-  #       id = getVariable("id")
+  #       trial = get_column("trial")
+  #       id = get_column("id")
   #       if id.cells[0].contains(trial.cells[0])
   #           do something
   #       end
@@ -339,7 +339,9 @@ class RColumn
   # @return [String] validated code name
   # @since 1.3.5
   def self.sanitize_codename(name)
-    return name.gsub(/(\W)+/, "").gsub(/^\d{1}/, '_').downcase
+    sanitized = name.gsub(/(\W)+/, "").downcase
+    sanitized.gsub(/(^\d{1})/, '_\\1')
+    return sanitized
   end
 
   def convert_argname(arg)
@@ -348,7 +350,7 @@ class RColumn
 
   # @note This function is not for general use.
   # Creates the cell object in the Variable object.
-  # @param newcells (required): Array of cells coming from the database via getVariable
+  # @param newcells (required): Array of cells coming from the database via get_column
   # @param arglist (required): Array of the names of the arguments from the database
   def set_cells(newcells, arglist)
     print_debug "Setting cells"
@@ -370,14 +372,14 @@ class RColumn
         c.onset = cell.getOnset
         c.offset = cell.getOffset
         c.db_cell = cell
-        c.videoController = @name
+        c.parent = @name
         vals = Array.new
         if cell.getVariable.getRootNode.type == Argument::Type::MATRIX
-          for val in cell.getValue().getArguments
+          for val in cell.getCellValue().getArguments
             vals << val.toString
           end
         else
-          vals << cell.getValue().toString
+          vals << cell.getCellValue().toString
         end
         c.set_args(vals, @arglist)
         c.ordinal = ord
@@ -387,14 +389,14 @@ class RColumn
   end
 
   # Creates a new, blank cell at the end of this variable's cell array.
-  # If a template cell is provided, copies over onset and offset times and code cellValues for any matching code names.
+  # If a template cell is provided, copies over onset and offset times and code values for any matching code names.
   # @param cell [RCell] template cell
   # @return [RCell] Reference to the cell that was just created.  Modify the cell using this reference.
   # @example
-  #   trial = getVariable("trial")
-  #   new_cell = trial.make_new_cell()
-  #   new_cell.change_arg("onset", 1000)
-  #   setVariable("trial", trial)
+  #   trial = get_column("trial")
+  #   new_cell = trial.new_cell()
+  #   new_cell.onset = 1000
+  #   set_column(trial)
   def new_cell(cell = nil)
     c = RCell.new
     c.set_args('', @arglist)
@@ -409,7 +411,7 @@ class RColumn
         c.change_arg(code, cell.get_arg(code)) if cell.arglist.include?(code)
       end
     end
-    c.videoController = @name
+    c.parent = @name
     @cells << c
     return c
   end
@@ -481,10 +483,10 @@ class RColumn
   alias :remove_arg :remove_code
 
   # Set hidden state of this column
-  # @param cellValue [true, false] true to hide column in spreadsheet, false to show
+  # @param value [true, false] true to hide column in spreadsheet, false to show
   # @return nil
-  def set_hidden(cellValue)
-    @hidden = cellValue
+  def set_hidden(value)
+    @hidden = value
   end
 
   # Resamples the cells of this column using given step size.
@@ -554,36 +556,36 @@ class Matrix
   # Add setter method of form matrix[0][0] = 1
   # @param row row index
   # @param column column index
-  # @param cellValue new cellValue
+  # @param value new value
   # @return nil
-  def []=(row, column, cellValue)
-    @rows[row][column] = cellValue
+  def []=(row, column, value)
+    @rows[row][column] = value
   end
 end
 
 # Class for keeping track of the agreement table for one code.
 # !@attr table
-#   @return [Matrix] contingency table of cellValues
+#   @return [Matrix] contingency table of values
 # !@attr codes
 #   @return [Array<String>] list of code valus; indices serve as keys for table
 class CTable
   attr_accessor :table, :codes
 
-  def initialize(*cellValues)
-    raise "CTable must have at least 2 valid cellValues. Got : #{cellValues}" if cellValues.size<2
-    @codes = cellValues
-    @table = Matrix.zero(cellValues.size)
+  def initialize(*values)
+    raise "CTable must have at least 2 valid values. Got : #{values}" if values.size<2
+    @codes = values
+    @table = Matrix.zero(values.size)
   end
 
   # Add a code pair.  Order always pri,rel. Increments the appropriate index of the table by 1.
-  # @param pri_value primary coder's cellValue
-  # @param rel_value reliability coder's cellValue
+  # @param pri_value primary coder's value
+  # @param rel_value reliability coder's value
   # @return nil
   def add(pri_value, rel_value)
     pri_idx = @codes.index(pri_value)
-    raise "Invalid primary cellValue: #{pri_value}" if pri_idx.nil?
+    raise "Invalid primary value: #{pri_value}" if pri_idx.nil?
     rel_idx = @codes.index(rel_value)
-    raise "Invalid reliability cellValue: #{rel_value}" if rel_idx.nil?
+    raise "Invalid reliability value: #{rel_value}" if rel_idx.nil?
 
     @table[pri_idx, rel_idx] += 1
   end
@@ -632,7 +634,7 @@ class CTable
 
   # Table to String
   # Return formatted string to display the table
-  # @return [String] tab-delimited string showing cellValues in contingency table
+  # @return [String] tab-delimited string showing values in contingency table
   def to_s
     str = "\t" + codes.join("\t") + "\n"
     for i in 0..@codes.size-1
@@ -651,7 +653,7 @@ end
 # @param pri_col [RColumn, String] primary coder's column
 # @param rel_col [RColumn, String] reliability coder's column
 # @param codes [Array<String>] codes to compute scores for
-# @return [Hash<String, Fixnum>] mapping from code names to kappa cellValues
+# @return [Hash<String, Fixnum>] mapping from code names to kappa values
 # @return [Hash<String, Matrix>] mapping fromm code names to contingency tables
 # @example
 #     primary_column_name = 'trial'
@@ -663,16 +665,16 @@ def compute_kappa(pri_col, rel_col, *codes)
   codes = pri_col.arglist if codes.nil? || codes.empty?
   raise "No codes!" if codes.empty?
 
-  pri_col = getVariable(pri_col) if pri_col.class == String
-  rel_col = getVariable(rel_col) if rel_col.class == String
+  pri_col = get_column(pri_col) if pri_col.class == String
+  rel_col = get_column(rel_col) if rel_col.class == String
   codes.flatten!
 
   raise "Invalid parameters for getKappa()" unless (pri_col.class==RColumn && rel_col.class==RColumn)
 
-  # Get the list of observed cellValues in each cell, per code
+  # Get the list of observed values in each cell, per code
   cells = pri_col.cells + rel_col.cells
 
-  # Build a hashmap from the list of codes to all observed cellValues for that code
+  # Build a hashmap from the list of codes to all observed values for that code
   # across primary and reliability cells.
   observed_values = Hash.new{ |h, k| h[k] = [] }
   cells.each do |cell|
@@ -765,7 +767,7 @@ alias :getColumn :get_column
 # @param args [String, RColumn] the name and RColumn object to save; the name parameter may be omitted
 # @return nil
 # @example
-#       trial = getVariable("trial")
+#       trial = get_column("trial")
 #         ... Do some modification to trial ...
 #       set_column(trial)
 def set_column(*args)
@@ -817,12 +819,12 @@ def set_column(*args)
 
     #p var.db_var
     if var.db_var.getRootNode.type == Argument::Type::MATRIX
-      cellValues = var.db_var.getRootNode.childArguments
-      #p cellValues
+      values = var.db_var.getRootNode.childArguments
+      #p values
       for arg in var.old_args
         #p var.old_args
         flag = false
-        for dbarg in cellValues
+        for dbarg in values
           if arg == dbarg.name
             flag = true
             break
@@ -848,7 +850,7 @@ def set_column(*args)
       end
 
       # Now see if we have deleted any arguments
-      deleted_args = cellValues.map { |x| x.name } - var.old_args
+      deleted_args = values.map { |x| x.name } - var.old_args
       deleted_args.each do |arg|
         puts "DELETING ARG: #{arg}"
         var.db_var.removeArgument(arg)
@@ -862,11 +864,11 @@ def set_column(*args)
   for cell in var.cells
     # Copy the information from the ruby variable to the new cell
 
-    if cell.db_cell == nil or cell.videoController != name
+    if cell.db_cell == nil or cell.parent != name
       cell.db_cell = var.db_var.createCell()
     end
 
-    cellValue = cell.db_cell.getValue()
+    value = cell.db_cell.getCellValue()
 
     if cell.onset != cell.db_cell.getOnset
       cell.db_cell.setOnset(cell.onset)
@@ -878,11 +880,11 @@ def set_column(*args)
 
     # Matrix cell
     if cell.db_cell.getVariable.getRootNode.type == Argument::Type::MATRIX
-      cellValues = cell.db_cell.getValue().getArguments()
+      values = cell.db_cell.getCellValue().getArguments()
       for arg in var.old_args
         # Find the arg in the dataStore's arglist that we are looking for
-        for i in 0...cellValues.size
-          dbarg = cellValues[i]
+        for i in 0...values.size
+          dbarg = values[i]
           dbarg_name = dbarg.getArgument.name
           if dbarg_name == arg and not ["", nil].include?(cell.get_arg(var.convert_argname(arg)))
             dbarg.set(cell.get_arg(var.convert_argname(arg)))
@@ -893,8 +895,8 @@ def set_column(*args)
 
       # Non-matrix cell
     else
-      cellValue = cell.db_cell.getValue()
-      cellValue.set(cell.get_arg("var"))
+      value = cell.db_cell.getCellValue()
+      value.set(cell.get_arg("var"))
     end
 
     # Save the changes back to the DB
@@ -951,7 +953,7 @@ def set_column!(*args)
     # Copy the information from the ruby variable to the new cell
     cell.db_cell = var.db_var.createCell()
 
-    cellValue = cell.db_cell.getValue()
+    value = cell.db_cell.getCellValue()
 
     if cell.onset != cell.db_cell.getOnset
       cell.db_cell.setOnset(cell.onset)
@@ -963,11 +965,11 @@ def set_column!(*args)
 
     # Matrix cell
     if cell.db_cell.getVariable.getRootNode.type == Argument::Type::MATRIX
-      cellValues = cell.db_cell.getValue().getArguments()
+      values = cell.db_cell.getCellValue().getArguments()
       for arg in var.old_args
         # Find the arg in the dataStore's arglist that we are looking for
-        for i in 0...cellValues.size
-          dbarg = cellValues[i]
+        for i in 0...values.size
+          dbarg = values[i]
           dbarg_name = dbarg.getArgument.name
           if dbarg_name == arg and not ["", nil].include?(cell.get_arg(var.convert_argname(arg)))
             dbarg.set(cell.get_arg(var.convert_argname(arg)))
@@ -977,8 +979,8 @@ def set_column!(*args)
       end
       # Non-matrix cell
     else
-      cellValue = cell.db_cell.getValue()
-      cellValue.set(cell.get_arg("var"))
+      value = cell.db_cell.getCellValue()
+      value.set(cell.get_arg("var"))
     end
   end
 
@@ -1002,9 +1004,9 @@ def make_reliability(relname, var_to_copy, multiple_to_keep, *args_to_keep)
   # Get the primary variable from the DB
 
   if var_to_copy.class == String
-    var_to_copy = getVariable(var_to_copy)
+    var_to_copy = get_column(var_to_copy)
   else
-    var_to_copy = getVariable(var_to_copy.name)
+    var_to_copy = get_column(var_to_copy.name)
   end
 
   if args_to_keep[0].class == Array
@@ -1102,41 +1104,42 @@ alias :createColumn :new_column
 # blank column for the free coding within that block.
 # @param relname [String] name of the rel column to be made
 # @param var_to_copy [String] name of column being copied
-# @param binding [String] name of column to bind copy to
+# @param binding_column [String] name of column to bind copy to
 # @param block_dur [Integer] duration, in seconds, for each block
 # @param skip_blocks [Integer] multiple of block_dur to skip between coding blocks
 # @return nil
 # @note Column is written to spreadsheet.
-def makeDurationBlockRel(relname, var_to_copy, binding, block_dur, skip_blocks)
-  block_var = createVariable(relname + "_blocks", "block_num")
+# @deprecated
+def makeDurationBlockRel(relname, var_to_copy, binding_column, block_dur, skip_blocks)
+  block_var = new_column(relname + "_blocks", "block_num")
   rel_var = make_rel(relname, var_to_copy, 0)
 
-  var_to_copy = getVariable(var_to_copy)
-  binding = getVariable(binding)
+  var_to_copy = get_column(var_to_copy)
+  binding_col = get_column(binding_column)
 
 
   block_dur = block_dur * 1000 # Convert to milliseconds
   block_num = 1
-  for bindcell in binding.cells
+  for bindcell in binding_col.cells
     cell_dur = bindcell.offset - bindcell.onset
     if cell_dur <= block_dur
-      cell = block_var.make_new_cell()
-      cell.change_arg("block_num", block_num.to_s)
-      cell.change_arg("onset", bindcell.onset)
-      cell.change_arg("offset", bindcell.offset)
+      cell = block_var.new_cell()
+      cell.change_code("block_num", block_num.to_s)
+      cell.onset = bindcell.onset
+      cell.offset = bindcell.offset
       block_num += 1
     else
       num_possible_blocks = cell_dur / block_dur #Integer division
       if num_possible_blocks > 0
         for i in 0..num_possible_blocks
           if i % skip_blocks == 0
-            cell = block_var.make_new_cell()
-            cell.change_arg("block_num", block_num.to_s)
-            cell.change_arg("onset", bindcell.onset + i * block_dur)
+            cell = block_var.new_cell()
+            cell.change_code("block_num", block_num.to_s)
+            cell.onset = bindcell.onset + i * block_dur
             if bindcell.onset + (i + 1) * block_dur <= bindcell.offset
-              cell.change_arg("offset", bindcell.onset + (i + 1) * block_dur)
+              cell.offset =  bindcell.onset + (i + 1) * block_dur
             else
-              cell.change_arg("offset", bindcell.offset)
+              cell.offset = bindcell.offset
             end
             block_num += 1
           end
@@ -1144,7 +1147,7 @@ def makeDurationBlockRel(relname, var_to_copy, binding, block_dur, skip_blocks)
       end
     end
   end
-  setVariable(relname + "_blocks", block_var)
+  set_column(relname + "_blocks", block_var)
 end
 
 # Add a new code to a column
@@ -1158,7 +1161,7 @@ end
 #   set_column("test", test)
 def add_codes_to_column(var, *args)
   if var.class == "".class
-    var = getVariable(var)
+    var = get_column(var)
   end
 
   var_new = createVariable(var.name, var.arglist + args)
@@ -1275,12 +1278,12 @@ end
 #   set_column("test",test)
 def create_mutually_exclusive(name, var1name, var2name, var1_argprefix=nil, var2_argprefix=nil)
   if var1name.class == "".class
-    var1 = getVariable(var1name)
+    var1 = get_column(var1name)
   else
     var1 = var1name
   end
   if var2name.class == "".class
-    var2 = getVariable(var2name)
+    var2 = get_column(var2name)
   else
     var2 = var2name
   end
@@ -1537,7 +1540,7 @@ def merge_columns(name, *cols)
     when RColumn
       x
     else
-      raise "Unhandled column cellValue or class: #{x}, #{x.class}."
+      raise "Unhandled column value or class: #{x}, #{x.class}."
     end
   end
 
@@ -1608,41 +1611,42 @@ def load_db(filename)
     raise "File does not exist. Please make sure to put the full path to the file."
   end
 
-  print_debug "Opening Project: "
+  infile = java.io.File.new(filename)
+
+  print_debug "Opening Project: #{infile}"
 
   # Create the controller that holds all the logic for opening projects and
   # databases.
-  open_c = OpenC.new
+  open_c = OpenController.new
 
   # Opens a project and associated database (i.e. either compressed or
   # uncompressed .shapa files). If you want to just open a standalone database
   # (i.e .odb or .csv file) call open_c.open_database("filename") instead. These
   # methods do *NOT* open the project within the Datavyu UI.
-  dataStore = nil
+  db = nil
   proj = nil
   if filename.include?(".csv")
-    open_c.open_datastore(filename)
+    db = open_c.open_datastore(filename)
   else
-    open_c.open_project(filename)
+    db = open_c.open_project(infile)
     # Get the project that was opened (if you want).
     proj = open_c.get_project
   end
 
   # Get the database that was opened.
-  dataStore = open_c.get_datastore
-
+  db = open_c.get_data_store
 
   # If the open went well - query the database, do calculations or whatever
-  unless dataStore.nil?
+  unless db.nil?
     # This just prints the number of columns in the database.
-    print_debug "SUCCESSFULLY Opened a project with '" + dataStore.get_all_variables.length.to_s + "' columns!"
+    print_debug "SUCCESSFULLY Opened a project with #{db.get_all_variables.length.to_s} columns!"
   else
-    print_debug "Unable to open the project '" + filename + "'"
+    raise "Unable to open file '#{filename}'"
   end
 
-  print_debug filename + " has been loaded."
+  print_debug "#{filename} has been loaded."
 
-  return dataStore, proj
+  return db, proj
 end
 alias :loadDB :load_db
 
@@ -1775,7 +1779,7 @@ def load_macshapa_db(filename, write_to_gui, *ignore_vars)
   puts "Got predicate index"
 
   # Create the columns for the variables
-  variables.each do |key, cellValue|
+  variables.each do |key, value|
     # Create column
     if getColumnList().include?(key)
       deleteVariable(key)
@@ -1783,7 +1787,7 @@ def load_macshapa_db(filename, write_to_gui, *ignore_vars)
 
 
     args = Array.new
-    cellValue.each { |v|
+    value.each { |v|
       # Strip out the ordinal, onset, and offset.  These will be handled on a
       # cell by cell basis.
       if v != "<ord>" and v != "<onset>" and v != "<offset>"
@@ -1811,8 +1815,8 @@ def load_macshapa_db(filename, write_to_gui, *ignore_vars)
 
         print_debug id
         varname = id.slice(0, id.index("(")).gsub(/\W+/,'_')
-        if getVariableList.include?(varname)
-          col = getVariable(varname)
+        if get_column_list.include?(varname)
+          col = get_column(varname)
         else
           puts "Column #{varname} not found. Skipping."
           next
@@ -1901,6 +1905,177 @@ def load_macshapa_db(filename, write_to_gui, *ignore_vars)
 end
 alias :loadMacshapaDB :load_macshapa_db
 
+# Updated function. Keeping original as is in case edits break previously working imports.
+def load_macshapa_db2(filename, write_to_gui, *ignore_vars)
+  # Create a new DB for us to use so we don't touch the GUI... some of these
+  # files can be huge.
+  # Since I don't know how to make a whole new project, lets just load a blank file.
+  if not write_to_gui
+    #$db,$pj = load_db("/Users/j4lingeman/Desktop/blank.opf")
+    # $db = Datastore.new
+    # $pj = Project.new()
+  end
+
+
+  puts "Opening file"
+  f = File.open(filename, 'r')
+
+  puts "Opened file"
+  # Read and split file by lines.  '\r' is used because that is the default
+  # format for OS9 files.
+  lines = ""
+  while (line = f.gets)
+    lines += line
+  end
+  lines = lines.split(/[\r\n]/)
+
+  # Find the variable names in the file and use these to create and set up
+  # our columns.
+  predIndex = lines.index("***Predicates***")
+  varIndex = lines.index("***Variables***")
+  spreadIndex = lines.index("***SpreadPane***")
+  predIndex += 2
+
+  variables = Hash.new
+  varIdent = Array.new
+
+  while predIndex < varIndex
+    line = lines[predIndex].strip
+    parser = /(?<d1>\d+)\s*(?<d2>\d+)\s*(?<d3>\d+)\s*(?<vardata>(?<varname>.*)\((?<codes>.*)\))/
+    matches = parser.match(line)
+    # l = lines[predIndex].split(/ /)[5]
+    # varname = l[0..l.index("(") - 1]
+    varname = matches['varname']
+    if varname != "###QueryVar###" and varname != "div" and varname != "qnotes" \
+			and not ignore_vars.include?(varname)
+      print_debug varname
+
+      # Replace non-alphabet with underscores
+      vname2 = varname.gsub(/\W+/, '_')
+      if vname2 != varname
+        puts "Replacing #{varname} with #{vname2}"
+        varname = vname2
+      end
+
+      variables[varname] = matches['codes'].split(/,/)
+      varIdent << matches['vardata']
+    end
+    predIndex += 1
+  end
+
+  puts "Got predicate index"
+
+  # Create the columns for the variables
+  variables.each do |key, value|
+    puts "Creating column: #{key}"
+    # Create column
+    args = Array.new
+    value.each { |v|
+      # Strip out the ordinal, onset, and offset.  These will be handled on a
+      # cell by cell basis.
+      if v != "<ord>" and v != "<onset>" and v != "<offset>"
+        args << v.sub("<", "").sub(">", "")
+      end
+    }
+
+    set_column(new_column(key, args))
+  end
+
+  # Search for where in the file the var's cells are, create them, then move
+  # on to the next variable.
+  varSection = lines[varIndex..spreadIndex]
+
+  varIdent.each do |id|
+
+    # Search the variable section for the above id
+    varSection.each do |l|
+      line = l.split(/[\t\s]/)
+      if line[2] == id
+
+        print_debug id
+        colname = id.slice(0, id.index("(")).gsub(/\W+/,'_')
+        col = get_column(colname)
+        #print_debug varname
+        start = varSection.index(l) + 1
+
+        stringCol = false
+
+        if varSection[start - 2].index("strID") != nil
+          stringCol = true
+        end
+
+        #Found it!  Now build the cells
+        while varSection[start] != "0"
+
+          if stringCol == false
+            cellData = varSection[start].split(/[\t]/)
+            cellData[cellData.length - 1] = cellData[cellData.length-1][cellData[cellData.length-1].index("(")..cellData[cellData.length-1].length]
+          else
+            cellData = varSection[start].split(/[\t]/)
+          end
+
+          # Init cell to null
+
+          cell = col.create_cell
+
+          # Convert onset/offset from 60 ticks/sec to milliseconds
+          onset = cellData[0].to_i / 60.0 * 1000
+          offset = cellData[1].to_i / 60.0 * 1000
+
+          # Set onset/offset of cell
+          cell.change_arg("onset", onset.round)
+          cell.change_arg("offset", offset.round)
+
+          # Split up cell data
+          data = cellData[cellData.length - 1]
+          print_debug data
+          if stringCol == false
+            data = data[1..data.length-2]
+            data = data.gsub(/[() ]*/, "")
+            data = data.split(/,/)
+          elsif data != nil #Then this is a string var
+            data = data.strip()
+            if data.split(" ").length > 1
+              data = data[data.index(" ")..data.length] # Remove the char count
+              data = data.gsub("/", " or ")
+              data = data.gsub(/[^\w ]*/, "")
+              data = data.gsub(/  /, " ")
+            else
+              data = ""
+            end
+          else
+            data = Array.new
+            data << nil
+          end
+          # Cycle thru cell data arguments and fill them into the cell matrix
+          narg = 0
+          if data.is_a?(String)
+            argname = cell.arglist.last
+            cell.change_arg(argname, data)
+          elsif data.is_a?(Array)
+            data.each_with_index do |d, i|
+              print_debug cell.arglist[1]
+              argname = cell.arglist[i]
+              if d == nil
+                cell.change_arg(argname, "")
+              elsif d == "" or d.index("<") != nil
+                cell.change_arg(argname, "")
+              else
+                cell.change_arg(argname, d)
+              end
+            end
+          end
+          start += 1
+        end
+        setVariable(col)
+      end
+    end
+  end
+
+  f.close()
+
+  return $db, $pj
+end
 
 # Transfers columns between databases.
 # If db1 or db2 are set to the empty string "", then that database is the current database in $db (usually the GUI's database).
@@ -2054,8 +2229,8 @@ alias :transferVariables :transfer_columns
 alias :transferVariable :transfer_columns
 
 # Do a quick, in Datavyu, check of reliability errors.
-# @param main_col [String, RColumn] Either the string name or the Ruby column from getVariable of the primary column to compare against.
-# @param rel_col [String, RColumn] Either the string name or the Ruby column from getVariable of the reliability column to compare to the primary column.
+# @param main_col [String, RColumn] Either the string name or the Ruby column from get_column of the primary column to compare against.
+# @param rel_col [String, RColumn] Either the string name or the Ruby column from get_column of the reliability column to compare to the primary column.
 # @param match_arg [String] The string of the argument to use to match the relability cells to the primary cells.  This must be a unique identifier between the cells.
 # @param time_tolerance [Integer] The amount of slack you allow, in milliseconds, for difference between onset and offset before it is considered an error.  Set to 0
 #     for no difference allowed and to a very large number for infinite distance allowed.
@@ -2076,10 +2251,10 @@ def check_reliability(main_col, rel_col, match_arg, time_tolerance, *dump_file)
   # Set up our method variables
   dump_file = dump_file[0]
   if main_col.class == "".class
-    main_col = getVariable(main_col)
+    main_col = get_column(main_col)
   end
   if rel_col.class == "".class
-    rel_col = getVariable(rel_col)
+    rel_col = get_column(rel_col)
   end
 
   printing = false
@@ -2162,7 +2337,7 @@ alias :checkRel :check_reliability
 #  check_valid_codes("trial", "", "hand", ["l","r","b","n"], "turn", ["l","r"], "unit", [1,2,3])
 def check_valid_codes(var, dump_file, *arg_code_pairs)
   if var.class == "".class
-    var = getVariable(var)
+    var = get_column(var)
   end
 
   if dump_file != ""
@@ -2211,16 +2386,16 @@ alias :checkValidCodes :check_valid_codes
 
 # Check valid codes on cells in a column using regex. Backwards-compatible with checkValidCodes
 # @since 1.3.5
-# @param data [String, RColumn, Hash] When this parameter is a String or a column object from getVariable(), the function operates on codes within this column. If the parameter is a Hash (associative array), the function ignores the arg_code_pairs arguments and uses data from this Hash. The Hash must be structured as a nested mapping from columns (either as Strings or RColumns) to Hashes. These nested hashes must be mappings from code names (as Strings) to valid code cellValues (as either lists (Arrays) or patterns (Regexp)).
+# @param data [String, RColumn, Hash] When this parameter is a String or a column object from get_column(), the function operates on codes within this column. If the parameter is a Hash (associative array), the function ignores the arg_code_pairs arguments and uses data from this Hash. The Hash must be structured as a nested mapping from columns (either as Strings or RColumns) to Hashes. These nested hashes must be mappings from code names (as Strings) to valid code values (as either lists (Arrays) or patterns (Regexp)).
 # @param outfile [String, File] The full path of the file to print output to. Use '' to print to scripting console.
-# @param arg_filt_pairs Pairs of code name and acceptable cellValues either as an array of cellValues or regexp. Ignored if first parameter is a Hash.
+# @param arg_filt_pairs Pairs of code name and acceptable values either as an array of values or regexp. Ignored if first parameter is a Hash.
 # @return nothing
 #
 # @example
 #   checkValidCodes2("trial", "", "hand", ["l","r","b","n"], "turn", ["l","r"], "unit", /\A\d+\Z/)
 def check_valid_codes2(data, outfile, *arg_filt_pairs)
 	if data.class == "".class
-		data = getVariable(data)
+		data = get_column(data)
   elsif data.class == Hash
     # data is already a hashmap
     map = data
@@ -2262,13 +2437,13 @@ def check_valid_codes2(data, outfile, *arg_filt_pairs)
 	errors = false
   # Iterate over key,entry (column, valid code mapping) in map
   map.each_pair do |var, col_map|
-    var = getVariable(var) if var.class == String
+    var = get_column(var) if var.class == String
 
-    # Iterate over cells in var and check each code's cellValue
+    # Iterate over cells in var and check each code's value
   	for cell in var.cells
       for arg, filt in col_map
       	val = eval "cell.#{arg}"
-        # Check whether cellValue is valid — different functions depending on filter type
+        # Check whether value is valid — different functions depending on filter type
         valid = case # note: we can't use case on filt.class because case uses === for comparison
         when filt.class == Regexp
         	!(filt.match(val).nil?)
@@ -2295,7 +2470,7 @@ alias :checkValidCodes2 :check_valid_codes2
 
 # Check valid codes on cells in a column using regex. Not backwards-compatible with check_valid_codes().
 # @since 1.3.5
-# @param [Hash] map The Hash must be structured as a nested mapping from columns (either as Strings or RColumns) to Hashes. These nested hashes must be mappings from code names (as Strings) to valid code cellValues (as either lists (Arrays) or patterns (Regexp)).
+# @param [Hash] map The Hash must be structured as a nested mapping from columns (either as Strings or RColumns) to Hashes. These nested hashes must be mappings from code names (as Strings) to valid code values (as either lists (Arrays) or patterns (Regexp)).
 # @param outfile [String, File] The full path of the file to print output to. Omit to print only to console.
 # @return number of detected errors
 # @return a list containing all error messages
@@ -2309,13 +2484,13 @@ def check_valid_codes3(map, outfile = nil)
   err_count = 0
   # Iterate over key,entry (column, valid code mapping) in map
   map.each_pair do |var, col_map|
-    var = getVariable(var) if var.class == String
+    var = get_column(var) if var.class == String
 
-    # Iterate over cells in var and check each code's cellValue
+    # Iterate over cells in var and check each code's value
   	var.cells.each do |cell|
       col_map.each_pair do |code, filt|
       	val = cell.get_code(code)
-        # Check whether cellValue is valid — different functions depending on filter type
+        # Check whether value is valid — different functions depending on filter type
         valid = case # note: we can't use case on filt.class because case uses === for comparison
         when filt.class == Regexp
         	!(filt.match(val).nil?)
@@ -2396,7 +2571,7 @@ private :print_all_nested
 # @return nil
 # @note Only the onset is changed; not the offset.
 def smooth_column(colname, tol=33)
-  col = getVariable(colname)
+  col = get_column(colname)
   for i in 0..col.cells.length-2
     curcell = col.cells[i]
     nextcell = col.cells[i+1]
@@ -2409,7 +2584,7 @@ def smooth_column(colname, tol=33)
 end
 alias :smoothColumn :smooth_column
 
-# Outputs the cellValues of all codes specified from the given cell to the given output file.
+# Outputs the values of all codes specified from the given cell to the given output file.
 # Row is delimited by tabs.
 # @param cell [RCell] cell to print codes from
 # @param file [File] output file
@@ -2437,10 +2612,10 @@ def get_cell_from_time(col, time)
 end
 alias :getCellFromTime :get_cell_from_time
 
-# Returns ordinal, onset, offset, and the cellValues of all codes from the given cell.
+# Returns ordinal, onset, offset, and the values of all codes from the given cell.
 # TODO change method name to something more appropriate
 # @param cell [RCell] cell whose codes to print
-# @return [Array<String>] array of cellValues for all codes in cell
+# @return [Array<String>] array of values for all codes in cell
 def print_cell_codes(cell)
   s = Array.new
   s << cell.ordinal.to_s
