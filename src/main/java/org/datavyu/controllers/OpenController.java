@@ -34,20 +34,30 @@ public final class OpenController {
     private static Logger logger = LogManager.getLogger(OpenController.class);
 
     /** Reference to the data base that this controller opened */
-    private DataStore database = null;
+    private DataStore dataStore = null;
 
     /** Reference to the project that this controller opened */
     private Project project = null;
 
     /**
-     * Opens a file as a Datavyu database.
+     * Opens a file as a Datavyu dataStore.
      *
-     * @param databaseFile The file to use when opening a file as a database.
+     * @param dataStoreFile The file to use when opening a file as a dataStore.
      */
-    public void openDataStore(final File databaseFile) {
+    @SuppressWarnings("unused") // This method is used by the Ruby datavyu API
+    public void openDataStore(final String dataStoreFile) {
+        this.openDataStore(new File(dataStoreFile));
+    }
+
+    /**
+     * Opens a file as a Datavyu dataStore.
+     *
+     * @param dataStoreFile The file to use when opening a file as a dataStore.
+     */
+    public void openDataStore(final File dataStoreFile) {
         OpenDataStoreFileController odc = new OpenDataStoreFileController();
-        database = odc.open(databaseFile);
-        database.deselectAll();
+        dataStore = odc.open(dataStoreFile);
+        dataStore.deselectAll();
     }
 
     /**
@@ -71,16 +81,16 @@ public final class OpenController {
 
             if (project != null) {
                 OpenDataStoreFileController odc = new OpenDataStoreFileController();
-                database = odc.open(new File(projectFile.getParent(),
+                dataStore = odc.open(new File(projectFile.getParent(),
                         project.getDatabaseFileName()));
             }
         }
-        database.setName(projectFile.getName());
+        dataStore.setName(projectFile.getName());
 
-        database.deselectAll();
+        dataStore.deselectAll();
 
         // Mark as unchanged after loading spreadsheet
-        database.markAsUnchanged();
+        dataStore.markAsUnchanged();
     }
 
     /**
@@ -91,54 +101,62 @@ public final class OpenController {
     private void openProjectArchive(final File archiveFile) {
 
         try {
-            ZipFile zf = new ZipFile(archiveFile);
+            ZipFile zipFile = new ZipFile(archiveFile);
 
-            String arch = archiveFile.getName().substring(0,
-                    archiveFile.getName().lastIndexOf('.'));
-            ZipEntry zProj = zf.getEntry("project");
+            String arch = archiveFile.getName().substring(0, archiveFile.getName().lastIndexOf('.'));
+            ZipEntry zippedProjectFile = zipFile.getEntry("project");
 
             // BugzID:1941 - Older project files are nested within a directory.
             // Try in the nested location if unable to find a project.
-            if (zProj == null) {
-                zProj = zf.getEntry(arch + File.separator + "project");
+            if (zippedProjectFile == null) {
+                zippedProjectFile = zipFile.getEntry(arch + File.separator + "project");
             }
 
             OpenProjectFileController opc = new OpenProjectFileController();
-            project = opc.open(zf.getInputStream(zProj));
+            project = opc.open(zipFile.getInputStream(zippedProjectFile));
 
-            ZipEntry zDb = zf.getEntry("db");
+            ZipEntry zippedDataStore = zipFile.getEntry("db");
 
-            // BugzID:1941 - Older database files are nested within a directory
+            // BugzID:1941 - Older dataStore files are nested within a directory
             // Try in the nested location if unable to find a project.
-            if (zDb == null) {
-                zDb = zf.getEntry(arch + File.separator + "db");
+            if (zippedDataStore == null) {
+                zippedDataStore = zipFile.getEntry(arch + File.separator + "db");
             }
 
             OpenDataStoreFileController odc = new OpenDataStoreFileController();
-            database = odc.openAsCsv(zf.getInputStream(zDb));
+            dataStore = odc.openAsCsv(zipFile.getInputStream(zippedDataStore));
 
             // BugzID:1806
             for (ViewerSetting vs : project.getViewerSettings()) {
-
                 if (vs.getSettingsId() != null) {
-                    ZipEntry entry = zf.getEntry(vs.getSettingsId());
-                    vs.copySettings(zf.getInputStream(entry));
+                    ZipEntry entry = zipFile.getEntry(vs.getSettingsId());
+                    vs.copySettings(zipFile.getInputStream(entry));
                 }
             }
 
-            zf.close();
+            zipFile.close();
         } catch (Exception e) {
             logger.error("Unable to open project archive", e);
         }
 
-        database.deselectAll();
+        dataStore.deselectAll();
     }
 
     /**
-     * @return The instance of the data store that was opened by this controller, returns null if no database opened.
+     * Opens a file as a Datavyu project
+     *
+     * @param projectFile the file to use when opening a file as a project.
+     */
+    @SuppressWarnings("unused") // This method is used by the Ruby datavyu API
+    public void openProject(final String projectFile) {
+        this.openProject(new File(projectFile));
+    }
+
+    /**
+     * @return The instance of the data store that was opened by this controller, returns null if no dataStore opened.
      */
     public DataStore getDataStore() {
-        return database;
+        return dataStore;
     }
 
     /**
