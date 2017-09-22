@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Used a macOS Serria 10.12.16
 #
 # Setup java (here SDK 1.8.144)
