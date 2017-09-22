@@ -59,7 +59,8 @@
       <!--<string>-Xms1024m -Xmx2048m -XX:MaxDirectMemorySize=512M</string>-->
       <string>-d32 -Xms1024m -Xmx1280m -XX:MaxDirectMemorySize=512M</string>
 
-      <!-- Update the mac build -->
+      <!-- Update the mac build: Do we need this? -->
+      <!--
       <key>ClassPath</key>
       <array>
         <string>$JAVAROOT/repo/org/datavyu/datavyu/1.2/datavyu-1.2.jar</string>
@@ -100,6 +101,7 @@
 
         <string>$JAVAROOT/repo/com/oracle/javafx-macosx/2.2/vlcLibs-macosx-2.2.1.jar</string>
       </array>
+      -->
     </dict>
   </dict>
 </plist>

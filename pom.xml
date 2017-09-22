@@ -591,30 +591,16 @@
             <!-- In particular it does not work for java > 1.6. -->
             <!-- For this reason I switched to appbundle-maven-plugin by sh.tak.appbundler version 1.2.0 -->
             <!-- Artifact: https://mvnrepository.com/artifact/sh.tak.appbundler/appbundle-maven-plugin -->
-            <!-- Documentation: -->
+            <!-- Documentation: https://github.com/federkasten/appbundle-maven-plugin -->
             <!-- Updated here: 09/21/2017 -->
             <plugin>
                 <groupId>sh.tak.appbundler</groupId>
                 <artifactId>appbundle-maven-plugin</artifactId>
                 <version>1.2.0</version>
-                <!--  BugzID:306 - This version has been custom built for support of the new "resources" tag and so that it functions correctly via hudson. Don't update this to the mainstream version until after the tag has been added to the SVN repository... see http://jira.codehaus.org/browse/MOJO-1527 -->
-                <!-- <groupId>org.codehaus.mojo</groupId> -->
-                <!-- <artifactId>osxappbundle-maven-plugin</artifactId> -->
-                <!-- <version>1.0-alpha-2c</version> -->
                 <configuration>
                     <bundleName>Datavyu</bundleName>
                     <mainClass>org.datavyu.Launcher</mainClass>
                     <jvmVersion>1.8+</jvmVersion>
-                    <!-- TODO: Test if the splash is added correctly under additional resources
-                    <resources>
-                        <fileSet>
-                            <directory>${basedir}/src/main/resources/icons</directory>
-                            <includes>
-                                <include>splash.png</include>
-                            </includes>
-                        </fileSet>
-                    </resources>
-                    -->
                     <additionalResources>
                         <fileSet>
                             <directory>src/main/</directory>
@@ -638,11 +624,11 @@
                             </includes>
                         </fileSet>
                     </additionalResources>
-                    <iconFile>${basedir}/src/main/resources/icons/datavyu.icns</iconFile>
-                    <!-- Java application stub is not required anymore by this plugin -->
-                    <!-- <javaApplicationStub>${basedir}/src/main/mac-resources/JavaApplicationStub</javaApplicationStub> -->
-                    <dictionaryFile>${basedir}/Info.plist</dictionaryFile>
-                    <!-- see the antrun goal - need to create snapshot directory before this will work. -->
+                    <!-- This plugin only seems to support the default location src/main/resources for the icon file -->
+                    <iconFile>datavyu.icns</iconFile>
+                    <!-- This plugin only seems to support the default location src/main/resources for the dictionary file -->
+                    <dictionaryFile>Info.plist</dictionaryFile>
+                    <generateDiskImageFile>true</generateDiskImageFile>
                     <diskImageFile>
                         ${project.build.directory}/site/snapshots/${project.build.finalName}-OSX-${buildNumber}.dmg
                     </diskImageFile>
