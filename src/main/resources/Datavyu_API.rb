@@ -1621,7 +1621,7 @@ def load_db(filename)
   dataStore = nil
   proj = nil
   if filename.include?(".csv")
-    open_c.open_database(filename)
+    open_c.open_datastore(filename)
   else
     open_c.open_project(filename)
     # Get the project that was opened (if you want).
