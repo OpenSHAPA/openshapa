@@ -158,6 +158,8 @@ public final class ConfigurationProperties implements Serializable {
         try {
             logger.info("Copying " + Constants.CONFIGURATION_FILE + " to " + localDirectory);
             // It is important that the path into the resource with "/"
+            File configurationFile = new File(localDirectory + "/" + Constants.CONFIGURATION_FILE);
+            configurationFile.getParentFile().mkdirs();
             InputStream inputStream = configurationProperties.getClass().getResourceAsStream(
                                                                         "/" + Constants.CONFIGURATION_FILE);
             FileOutputStream fileOutputStream = new FileOutputStream(new File(localDirectory,
