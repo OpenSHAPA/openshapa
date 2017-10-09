@@ -3,6 +3,7 @@ package org.datavyu.plugins.ffmpegplayer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.util.DatavyuVersion;
+import org.datavyu.util.NativeLibraryLoader;
 
 import javax.sound.sampled.AudioFormat;
 import javax.swing.*;
@@ -10,20 +11,36 @@ import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.io.IOException;
 
-
 public class FFPlayer extends JPanel {
-	
-	/** Identifier for object serialization */
-	private static final long serialVersionUID = 5109839668203738974L;
 
-	/** The logger for this class */
-	private static Logger logger = LogManager.getLogger(FFPlayer.class);
+    /** Identifier for object serialization */
+    private static final long serialVersionUID = 5109839668203738974L;
+
+    /** The logger for this class */
+    private static Logger logger = LogManager.getLogger(FFPlayer.class);
+
+    /** Load the native library that interfaces to ffmpeg */
+    static {
+        try {
+            logger.info("Extracting and loading libraries for ffmpeg.");
+            NativeLibraryLoader.extract("avutil-55");
+            NativeLibraryLoader.extract("swscale-4");
+            NativeLibraryLoader.extract("swresample-2");
+            NativeLibraryLoader.extract("avcodec-57");
+            NativeLibraryLoader.extract("avformat-57");
+            // Ensure that the above dependent libraries are extracted first before loading MovieStream.
+            //NativeLibraryLoader.extractAndLoad("MovieStream");
+            NativeLibraryLoader.extract("MovieStream");
+        } catch (Exception e) {
+            logger.error("Failed loading libraries. Error: ", e);
+        }
+    }
 	
 	/** The requested color space */
 	private final ColorSpace reqColorSpace = ColorSpace.getInstance(ColorSpace.CS_sRGB);
 	
 	/** The requested audio format */
-	private final AudioFormat reqAudioFormat = AudioStream.MONO_FORMAT;
+	private final AudioFormat reqAudioFormat = AudioSound.getNewMonoFormat();
 	
 	/** The movie stream for this movie player */
 	private MovieStreamProvider movieStreamProvider;
@@ -63,14 +80,7 @@ public class FFPlayer extends JPanel {
 		// Assign a new movie file.
 		try {
 			// The input audio format will be manipulated by the open method!
-			AudioFormat input = new AudioFormat(
-					reqAudioFormat.getEncoding(), 
-					reqAudioFormat.getSampleRate(),
-					reqAudioFormat.getSampleSizeInBits(),
-					reqAudioFormat.getChannels(),
-					reqAudioFormat.getFrameSize(),
-					reqAudioFormat.getFrameRate(),
-					reqAudioFormat.isBigEndian());
+			AudioFormat input = reqAudioFormat;
 			
 			// Open the stream
 			DatavyuVersion localVersion = DatavyuVersion.getLocalVersion();
@@ -130,12 +140,10 @@ public class FFPlayer extends JPanel {
 	 */
 	public void seek(double position) {
 		logger.info("Seeking position: " + position);
-		// TODO: May have to stop the video here!
 		movieStreamProvider.seek(position);
 		movieStreamProvider.dropImageFrame();
 		movieStreamProvider.startVideoListeners();
 		movieStreamProvider.nextImageFrame();
-		// TODO: May have to start the video here!
 	}
 
 	/**
@@ -152,7 +160,9 @@ public class FFPlayer extends JPanel {
 	 */
 	public void setPlaybackSpeed(float playbackSpeed) {
 		this.playbackSpeed = playbackSpeed;
-
+		if (playbackSpeed < Math.ulp(1f)) {
+		    stop();
+        }
 		// Need to set speed first so that the reverse is set correctly!!!
 		movieStreamProvider.setSpeed(playbackSpeed);
 		// Then we can start/stop the audio
