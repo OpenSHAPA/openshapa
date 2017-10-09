@@ -1623,30 +1623,30 @@ def load_db(filename)
   # uncompressed .shapa files). If you want to just open a standalone database
   # (i.e .odb or .csv file) call open_c.open_database("filename") instead. These
   # methods do *NOT* open the project within the Datavyu UI.
-  dataStore = nil
+  db = nil
   proj = nil
   if filename.include?(".csv")
-    dataStore = open_c.open_database(infile)
+    db = open_c.open_datastore(filename)
   else
-    dataStore = open_c.open_project(infile)
+    db = open_c.open_project(infile)
     # Get the project that was opened (if you want).
     proj = open_c.get_project
   end
 
   # Get the database that was opened.
-  dataStore = open_c.get_data_store
+  db = open_c.get_data_store
 
   # If the open went well - query the database, do calculations or whatever
-  unless dataStore.nil?
+  unless db.nil?
     # This just prints the number of columns in the database.
-    print_debug "SUCCESSFULLY Opened a project with #{dataStore.get_all_variables.length.to_s} columns!"
+    print_debug "SUCCESSFULLY Opened a project with #{db.get_all_variables.length.to_s} columns!"
   else
     raise "Unable to open file '#{filename}'"
   end
 
   print_debug "#{filename} has been loaded."
 
-  return dataStore, proj
+  return db, proj
 end
 alias :loadDB :load_db
 
