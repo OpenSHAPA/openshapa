@@ -5,7 +5,7 @@
     <groupId>org.datavyu</groupId>
     <artifactId>datavyu</artifactId>
     <packaging>jar</packaging>
-    <version>1.3.7</version>
+    <version>1.4.0</version>
     <name>Datavyu</name>
     <url>http://datavyu.org</url>
 
@@ -432,12 +432,22 @@
                                 <!-- Used by console header only. -->
                                 <instanceAlreadyExistsMsg>Application is already running.</instanceAlreadyExistsMsg>
                             </messages>
+                            <versionInfo>
+                                <fileVersion>1.3.7.1</fileVersion>
+                                <txtFileVersion>FFmpeg</txtFileVersion>
+                                <fileDescription>Datavyu</fileDescription>
+                                <copyright>Copyright Datavyu</copyright>
+                                <productVersion>1.3.7.0</productVersion>
+                                <txtProductVersion>Product</txtProductVersion>
+                                <productName>Datavyu</productName>
+                                <companyName>Datavyu</companyName>
+                                <internalName>DatavyuInternal</internalName>
+                                <originalFilename>DatavyuRunner.exe</originalFilename>
+                            </versionInfo>
                         </configuration>
                     </plugin>
                 </plugins>
             </build>
-
-
         </profile>
 
         <profile>

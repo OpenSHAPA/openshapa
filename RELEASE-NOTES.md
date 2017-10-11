@@ -1,3 +1,22 @@
+# Datavyu 1.4. Pre-Release Notes
+## 10/10/2017
+
+### New features
+* Added ffmpeg plugin for playback under windows
+* Updated dependencies for R and Ruby script plugins
+
+### Bug fixes
+* Allows to save filenames with non-ascii characters, e.g. Umlaut in German
+
+### Known Issues
+* When using the ffmpeg plugin 
+  * the window can't be resized
+  * sound only plays back when playing at 1x
+  * jumping to random locations within the stream may take 1-2sec
+  * the sound after a stop/jump and playback may be a bit distorted
+
+
+
 #Datavyu 1.3.7 release
 ## 07/18/2017
 
