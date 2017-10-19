@@ -20,6 +20,7 @@ import org.datavyu.controllers.project.DatavyuProjectConstructor;
 import org.datavyu.models.project.Project;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.*;
@@ -63,14 +64,20 @@ public final class OpenProjectFileController {
         DumperOptions options = new DumperOptions();
         options.setAllowUnicode(false); // Allow for the encoding of foreign characters by using escape characters
         Yaml yaml = new Yaml(new DatavyuProjectConstructor(), new Representer(), options);
-        Object o = yaml.load(inputStream);
 
-        // Make sure the de-serialised object is a project file
-        if (!(o instanceof Project)) {
-            logger.error("Not a Datavyu project file");
-            return null;
+        Project p;
+        try {
+            Object o = yaml.load(inputStream);
+            if (o instanceof Project) {
+                p = (Project) o;
+            } else {
+                logger.error("Not a Datavyu project file");
+                p = new Project();
+            }
+        } catch(YAMLException e){
+            p = new Project(); // default: empty project
+            logger.error("Failed to open project file. Using default: empty project.");
         }
-
-        return (Project) o;
+        return p;
     }
 }
