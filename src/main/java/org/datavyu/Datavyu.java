@@ -229,7 +229,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                 // Code table used by Windows is different.
                 case WINDOWS: {
                     switch (WindowsOS.remapKeyChar(evt.getKeyChar())) {
-
                         case '+':
                         case '-':
                             // Plus and minus do not respond. Uncomment

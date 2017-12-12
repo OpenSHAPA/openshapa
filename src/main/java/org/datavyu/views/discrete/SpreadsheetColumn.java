@@ -14,6 +14,7 @@
  */
 package org.datavyu.views.discrete;
 
+import com.headius.invokebinder.transform.Spread;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
@@ -412,8 +413,7 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
         } else {
             setBackground(backColor);
         }
-
-//        repaint();
+        repaint();
     }
 
     /**
@@ -452,6 +452,21 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
      */
     public List<SpreadsheetCell> getCellsTemporally() {
         return datapanel.getCellsTemporally();
+    }
+
+    public SpreadsheetCell getNearestCellTemporally(SpreadsheetCell sc) {
+        SpreadsheetCell closestCell = null;
+        for(SpreadsheetCell c : datapanel.getCellsTemporally()) {
+            if(closestCell == null) {
+                closestCell = c;
+            } else {
+                if(Math.abs(sc.getOnsetTicks() - c.getOnsetTicks()) < Math.abs(sc.getOnsetTicks()
+                        - closestCell.getOnsetTicks())) {
+                    closestCell = c;
+                }
+            }
+        }
+        return closestCell;
     }
 
     @Action
