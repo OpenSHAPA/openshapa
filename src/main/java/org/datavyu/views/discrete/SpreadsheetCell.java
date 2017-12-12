@@ -488,12 +488,14 @@ public class SpreadsheetCell extends JPanel
             } else if (cellPanel.getBackground() == pastTimeHighlightColor) {
                 cellPanel.setBackground(ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor());
             }
-        } else if (Datavyu.getVideoController().getCellHighlighting() &&
-                model.isInTimeWindow(Datavyu.getVideoController().getCurrentTime())) {
-            cellPanel.setBackground(timeHighlightColor);
-        } else if (cellPanel.getBackground() == timeHighlightColor &&
-                !model.isInTimeWindow(Datavyu.getVideoController().getCurrentTime())) {
-            cellPanel.setBackground(ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor());
+        } else if (Datavyu.getVideoController().getCellHighlighting()) {
+            if(model.isPastTimeWindow(Datavyu.getVideoController().getCurrentTime())) {
+                cellPanel.setBackground(pastTimeHighlightColor);
+            } else if(model.isInTimeWindow(Datavyu.getVideoController().getCurrentTime())) {
+                cellPanel.setBackground(timeHighlightColor);
+            } else {
+                cellPanel.setBackground(ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor());
+            }
         } else {
             cellPanel.setBackground(ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor());
         }
