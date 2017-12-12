@@ -265,6 +265,17 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
 
                             return true;
 
+                        case 'W':
+                            if(safeQuit(getView().getTabbedPane().getSelectedComponent())) {
+                                getView().getTabbedPane().remove(getView().getTabbedPane().getSelectedComponent());
+                            }
+                            if(getView().getTabbedPane().getTabCount() == 0) {
+                                Datavyu.getApplication().exit();
+                                System.exit(0);
+                            }
+                            evt.consume();
+                            return true;
+
                         default:
                             break;
                     }
@@ -316,6 +327,11 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                             getView().newCellRight();
                             evt.consume();
 
+                            return true;
+
+                        case 'w':
+                            safeQuit(getView().getTabbedPane().getSelectedComponent());
+                            evt.consume();
                             return true;
 
                         default:

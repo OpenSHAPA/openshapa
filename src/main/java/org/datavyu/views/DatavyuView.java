@@ -136,6 +136,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     private javax.swing.JMenuItem newCellMenuItem;
     private javax.swing.JMenuItem newCellRightMenuItem;
     private javax.swing.JMenuItem newMenuItem;
+    private javax.swing.JMenuItem closeTabMenuItem;
     private javax.swing.JMenuItem newVariableMenuItem;
     private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JMenu openRecentFileMenu;
@@ -241,6 +242,9 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
         // Set the new accelerator to keyMask + 'N';
         newMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, keyMask));
+
+        // Set the close accerator to keyMask + 'W';
+        closeTabMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, keyMask));
 
         // Set the new accelerator to keyMask + 'L';
         newCellLeftMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, keyMask));
@@ -799,6 +803,19 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     @Action
     public void showNewProjectForm() {
         new NewProjectController();
+    }
+
+    /**
+     * Action for closing current tab
+     */
+    @Action
+    public void closeTab() {
+        if(Datavyu.getApplication().safeQuit(getTabbedPane().getSelectedComponent())) {
+            getTabbedPane().remove(getTabbedPane().getSelectedComponent());
+        }
+        if(getTabbedPane().getTabCount() == 0) {
+            safeQuit();
+        }
     }
 
     /**
@@ -1820,6 +1837,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
         newMenuItem = new javax.swing.JMenuItem();
+        closeTabMenuItem = new javax.swing.JMenuItem();
         openMenuItem = new javax.swing.JMenuItem();
         openRecentFileMenu = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
@@ -1934,6 +1952,11 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
             public void menuCanceled(javax.swing.event.MenuEvent evt) {
             }
         });
+
+        closeTabMenuItem.setAction(actionMap.get("closeTab"));
+        closeTabMenuItem.setText(bundle.getString("file_close.text"));
+        closeTabMenuItem.setName(bundle.getString("file_close.text"));
+        fileMenu.add(closeTabMenuItem);
 
         jMenuItem2.setEnabled(false);
         jMenuItem2.setName("jMenuItem2");
