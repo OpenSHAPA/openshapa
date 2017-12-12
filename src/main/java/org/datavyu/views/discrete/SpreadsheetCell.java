@@ -468,20 +468,18 @@ public class SpreadsheetCell extends JPanel
             } else {
                 cellPanel.setBorder(HIGHLIGHT_BORDER);
             }
-        } else if (model.isSelected() && !model.isHighlighted()) {
+        } else if (model.isSelected()) {
             if (cellOverlap) {
                 cellPanel.setBorder(FILL_OVERLAP_BORDER);
             } else {
                 cellPanel.setBorder(FILL_BORDER);
             }
-            cellPanel.setBackground(ConfigurationProperties.getInstance().getSpreadSheetSelectedColor());
         } else {
             if (cellOverlap) {
                 cellPanel.setBorder(OVERLAP_BORDER);
             } else {
                 cellPanel.setBorder(NORMAL_BORDER);
             }
-            cellPanel.setBackground(ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor());
         }
 
         if (Datavyu.getVideoController().getCellHighlightAndFocus()) {
@@ -490,15 +488,19 @@ public class SpreadsheetCell extends JPanel
             } else if (cellPanel.getBackground() == pastTimeHighlightColor) {
                 cellPanel.setBackground(ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor());
             }
-        }
-
-        if (Datavyu.getVideoController().getCellHighlighting() &&
-                model.isInTimeWindow(Datavyu.getVideoController().getCurrentTime()) &&
-                cellPanel.getBackground() != timeHighlightColor) {
+        } else if (Datavyu.getVideoController().getCellHighlighting() &&
+                model.isInTimeWindow(Datavyu.getVideoController().getCurrentTime())) {
             cellPanel.setBackground(timeHighlightColor);
-        } else if (cellPanel.getBackground() == timeHighlightColor) {
+        } else if (cellPanel.getBackground() == timeHighlightColor &&
+                !model.isInTimeWindow(Datavyu.getVideoController().getCurrentTime())) {
+            cellPanel.setBackground(ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor());
+        } else {
             cellPanel.setBackground(ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor());
         }
+
+
+
+
 
     }
 

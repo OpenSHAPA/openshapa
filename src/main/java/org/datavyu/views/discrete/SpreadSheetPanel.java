@@ -827,7 +827,7 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
     @Override
     public void setHighlightedCell(final SpreadsheetCell cell) {
         if (highlightedCell != null) {
-            highlightedCell.getCell().setSelected(false);
+//            highlightedCell.getCell().setSelected(false);
             highlightedCell.invalidate();
         }
 
