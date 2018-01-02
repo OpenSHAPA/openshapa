@@ -145,10 +145,7 @@ public final class VideoController extends DatavyuDialog
         CLOCK_FORMAT_HTML.setTimeZone(new SimpleTimeZone(0, "NO_ZONE"));
     }
 
-    // Initialize SHUTTLE_RATES, for 0 players stop
-    private static float[] SHUTTLE_RATES = new float[]{
-            -32F, -16F, -8F, -4F, -2F, -1F, -1/2F, -1/4F, -1/8F, -1/16F, -1/32F,
-                0F, 1/32F, 1/16F, 1/8F, 1/4F, 1/2F, 1F, 2F, 4F, 8F, 16F, 32F};
+    private static RateController shuttleRates = new RateController();
 
     /**
      * // TODO: What is this doing?
@@ -163,11 +160,11 @@ public final class VideoController extends DatavyuDialog
     /** Determines whether or not 'control' key is being held */
     private boolean ctrlMask = false;
 
-    /** The list of streamViewers associated with this controller */
+    /** The set of streamViewers associated with this controller */
     private Set<StreamViewer> streamViewers;
 
     /** Clock timer */
-    private ClockTimer clock = new ClockTimer();
+    private final ClockTimer clock = new ClockTimer();
 
     /** Is the tracks panel currently shown */
     private boolean tracksPanelVisible = true;
@@ -176,76 +173,76 @@ public final class VideoController extends DatavyuDialog
     private MixerController mixerController;
 
     /** Button to create a new cell */
-    private javax.swing.JButton createNewCell;
+    private JButton createNewCell;
 
     /** Button to create a new cell setting offset */
-    private javax.swing.JButton createNewCellSettingOffset;
+    private JButton createNewCellSettingOffset;
 
     /** */
-    private javax.swing.JButton findButton;
+    private JButton findButton;
 
     /** */
-    private javax.swing.JTextField offsetTextField;
+    private JTextField offsetTextField;
 
     /** */
-    private javax.swing.JTextField onsetTextField;
+    private JTextField onsetTextField;
 
     /** */
-    private javax.swing.JButton goBackButton;
+    private JButton goBackButton;
 
     /** */
-    private javax.swing.JTextField goBackTextField;
+    private JTextField goBackTextField;
 
     /** */
-    private javax.swing.JTextField stepSizeTextField;
+    private JTextField stepSizeTextField;
 
     /** */
-    private javax.swing.JLabel stepSizeLabel = new JLabel("Steps per second");
+    private JLabel stepSizeLabel = new JLabel("Steps per second");
 
     /** */
-    private javax.swing.JPanel stepSizePanel;
+    private JPanel stepSizePanel;
 
     /** */
-    private javax.swing.JPanel gridButtonPanel;
+    private JPanel gridButtonPanel;
 
     /** */
-    private javax.swing.JLabel labelSpeed;
+    private JLabel labelSpeed;
 
     /** */
-    private javax.swing.JButton pauseButton;
+    private JButton pauseButton;
 
     /** */
-    private javax.swing.JButton playButton;
+    private JButton playButton;
 
     /** */
-    private javax.swing.JButton nineSetCellOffsetButton;
+    private JButton nineSetCellOffsetButton;
 
     /** */
-    private javax.swing.JButton setCellOffsetButton;
+    private JButton setCellOffsetButton;
 
     /** */
-    private javax.swing.JButton setCellOnsetButton;
+    private JButton setCellOnsetButton;
 
     /** */
-    private javax.swing.JButton pointCellButton;
+    private JButton pointCellButton;
 
     /** */
-    private javax.swing.JButton showTracksSmallButton;
+    private JButton showTracksSmallButton;
 
     /** */
-    private javax.swing.JButton shuttleBackButton;
+    private JButton shuttleBackButton;
 
     /** */
-    private javax.swing.JButton shuttleForwardButton;
+    private JButton shuttleForwardButton;
 
     /** */
-    private javax.swing.JButton stopButton;
+    private JButton stopButton;
 
     /** */
-    private javax.swing.JLabel timeStampLabel;
+    private JLabel timeStampLabel;
 
     /** */
-    private javax.swing.JPanel tracksPanel;
+    private JPanel tracksPanel;
 
     /** Model containing playback information */
     private PlaybackModel playbackModel;
@@ -254,7 +251,7 @@ public final class VideoController extends DatavyuDialog
 
     private org.jdesktop.application.ResourceMap resourceMap;
 
-    private javax.swing.ActionMap actionMap;
+    private ActionMap actionMap;
 
     private String osModifier;
 
@@ -294,7 +291,7 @@ public final class VideoController extends DatavyuDialog
         streamViewers = new LinkedHashSet<>();
 
         playbackModel = new PlaybackModel();
-        playbackModel.setPauseRate(0);
+        playbackModel.setResumeRate(0);
         playbackModel.setLastSyncTime(0);
         playbackModel.setMaxDuration(ViewportStateImpl.MINIMUM_MAX_END);
 
@@ -492,17 +489,15 @@ public final class VideoController extends DatavyuDialog
                         playbackModel.setLastSyncTime(time);
 
                         for (StreamViewer v : streamViewers) {
-                        /*
-                         * Use offsets to determine if the video file should
-                         * start playing.
-                         */
+                            // Use offsets to determine if the video file should start playing.
                             if (!v.isPlaying() && isInPlayRange(time, v)) {
+                                logger.info("Start playing.");
                                 v.play();
                             }
 
-                            // BugzID:1797 - Viewers who are "playing" outside their
-                            // timeframe should be asked to stop.
+                            // BugzID:1797 - Viewers who are "playing" outside their time frame should be asked to stop.
                             if (v.isPlaying() && !isInPlayRange(time, v)) {
+                                logger.info("Stop playing.");
                                 v.stop();
                             }
                         }
@@ -510,8 +505,7 @@ public final class VideoController extends DatavyuDialog
                 }
             }
 
-            // BugzID:466 - Prevent rewind wrapping the clock past the start
-            // point of the view window.
+            // BugzID:466 - Prevent rewind wrapping the clock past the start point of the view window.
             final long windowPlayStart = playbackModel.getStartTime();
 
             if (time < windowPlayStart) {
@@ -634,8 +628,7 @@ public final class VideoController extends DatavyuDialog
         resetSync();
         labelSpeed.setText(FloatingPointUtils.doubleToFractionStr(rate));
 
-        // If the rate is faster than 2x or slower than -1x, some viewers require a sequential seeks to play back
-        // smoothly
+        // If the rate is faster than 2x or slower than -1x, some viewers require sequential seeks to play back smoothly
         if (Math.abs(rate) > 2.0 || rate < -1) {
             long time = getCurrentTime();
             for (StreamViewer streamViewer : streamViewers) {
@@ -655,7 +648,7 @@ public final class VideoController extends DatavyuDialog
                 }
             }
 
-            // Use the
+            // No fake playback
         } else {
             for (StreamViewer streamViewer : streamViewers) {
                 // Reset fake playback
@@ -735,8 +728,7 @@ public final class VideoController extends DatavyuDialog
 
         if (streamViewers.isEmpty()) {
             mixerController.getNeedleController().resetNeedlePosition();
-            mixerController.getMixerModel().getRegionModel()
-                    .resetPlaybackRegion();
+            mixerController.getMixerModel().getRegionModel().resetPlaybackRegion();
         }
     }
 
@@ -746,6 +738,7 @@ public final class VideoController extends DatavyuDialog
      * @param viewer The viewer to shutdown.
      * @return True if the controller contained this viewer.
      */
+    /*
     public boolean shutdown(final StreamViewer viewer) {
 
         // Did we remove the viewer?
@@ -772,6 +765,7 @@ public final class VideoController extends DatavyuDialog
 
         return removed;
     }
+    */
 
     /**
      * Get the stream viewer with the id.
@@ -899,7 +893,7 @@ public final class VideoController extends DatavyuDialog
         return buildButton(name, null);
     }
 
-    private JPanel makeLabelAndTextfieldPanel(JLabel label, JTextField textField) {
+    private JPanel makeLabelAndTextFieldPanel(JLabel label, JTextField textField) {
         JPanel jPanel = new JPanel();
         label.setFont(TEXT_LABEL_FONT);
         textField.setFont(TEXT_FIELD_FONT);
@@ -1124,7 +1118,7 @@ public final class VideoController extends DatavyuDialog
         onsetTextField.setToolTipText(resourceMap.getString(
                 "onsetTextField.toolTipText"));
         onsetTextField.setName("findOnsetLabel");
-        gridButtonPanel.add(makeLabelAndTextfieldPanel(new JLabel("Onset"), onsetTextField), WIDE_TEXT_FIELD_SIZE);
+        gridButtonPanel.add(makeLabelAndTextFieldPanel(new JLabel("Onset"), onsetTextField), WIDE_TEXT_FIELD_SIZE);
 
         // Create new cell setting offset button with zero
         createNewCellSettingOffset = buildButton("createNewCellAndSetOffset");
@@ -1140,7 +1134,7 @@ public final class VideoController extends DatavyuDialog
         offsetTextField.setToolTipText(resourceMap.getString("offsetTextField.toolTipText"));
         offsetTextField.setEnabled(false); // Do we really want this? i don't see what makes it different from onset
         offsetTextField.setName("findOffsetLabel");
-        gridButtonPanel.add(makeLabelAndTextfieldPanel(new JLabel("Offset"), offsetTextField),
+        gridButtonPanel.add(makeLabelAndTextFieldPanel(new JLabel("Offset"), offsetTextField),
                 WIDE_TEXT_FIELD_SIZE);
 
         getContentPane().setLayout(new MigLayout("ins 0, hidemode 3, fillx", "[growprio 0]0[]", ""));
@@ -1162,7 +1156,7 @@ public final class VideoController extends DatavyuDialog
         goBackTextField.setHorizontalAlignment(SwingConstants.CENTER);
         goBackTextField.setText("00:00:05:000");
         goBackTextField.setName("goBackTextField");
-        gridButtonPanel.add(makeLabelAndTextfieldPanel(new JLabel("Jump back by"), goBackTextField),
+        gridButtonPanel.add(makeLabelAndTextFieldPanel(new JLabel("Jump back by"), goBackTextField),
                 WIDE_TEXT_FIELD_SIZE);
     }
 
@@ -1201,7 +1195,7 @@ public final class VideoController extends DatavyuDialog
             public void keyTyped(KeyEvent e) {}
             public void keyReleased(KeyEvent e) {}
         });
-        stepSizePanel = makeLabelAndTextfieldPanel(stepSizeLabel, stepSizeTextField);
+        stepSizePanel = makeLabelAndTextFieldPanel(stepSizeLabel, stepSizeTextField);
         gridButtonPanel.add(stepSizePanel, WIDE_TEXT_FIELD_SIZE);
         updateStepSizeTextField();
     }
@@ -1407,7 +1401,7 @@ public final class VideoController extends DatavyuDialog
     }
 
     /**
-     * Action to invoke when the user clicks on the set cell offest button.
+     * Action to invoke when the user clicks on the set cell offset button.
      */
     @Action
     public void setCellOffsetAction() {
@@ -1689,13 +1683,13 @@ public final class VideoController extends DatavyuDialog
 
         // Resume from pause at playback rate prior to pause.
         if (clock.isStopped()) {
-            shuttleAt(playbackModel.getPauseRate());
+            shuttleAt(playbackModel.getResumeRate());
 
             // Pause views - store current playback rate.
         } else {
-            playbackModel.setPauseRate(clock.getRate());
+            playbackModel.setResumeRate(clock.getRate());
             clock.stop();
-            labelSpeed.setText("[" + FloatingPointUtils.doubleToFractionStr(playbackModel.getPauseRate())  + "]");
+            labelSpeed.setText("[" + FloatingPointUtils.doubleToFractionStr(playbackModel.getResumeRate())  + "]");
         }
     }
 
@@ -1704,9 +1698,9 @@ public final class VideoController extends DatavyuDialog
      */
     @Action
     public void stopAction() {
-        logger.info("Stop event..." + System.currentTimeMillis());
+        logger.info("Stop event.");
         clock.stop();
-        playbackModel.setPauseRate(0);
+        playbackModel.setResumeRate(0);
     }
 
     /**
@@ -1716,7 +1710,7 @@ public final class VideoController extends DatavyuDialog
      */
     @Action
     public void shuttleForwardAction() {
-        logger.info("Shuttle forward..." + System.currentTimeMillis());
+        logger.info("Shuttle forward.");
         shuttle(1);
     }
 
@@ -1727,22 +1721,6 @@ public final class VideoController extends DatavyuDialog
     public void shuttleBackAction() {
         logger.info("Shuttle back");
         shuttle(-1);
-    }
-
-    /**
-     * Searches the shuttle rates array for the given rate, and returns the
-     * index.
-     *
-     * @param rate The rate to search for.
-     * @return The index of the rate, or -100 if not found.
-     */
-    private int rateToShuttleIndex(final float rate) {
-        for (int i = 0; i < SHUTTLE_RATES.length; i++) {
-            if (SHUTTLE_RATES[i] == rate) {
-                return i;
-            }
-        }
-        return -100; // TODO: FIX ME!
     }
 
     /**
@@ -1921,7 +1899,7 @@ public final class VideoController extends DatavyuDialog
             }
 
             long stepSize = ((ONE_SECOND) / (long) playbackModel.getCurrentFramesPerSecond());
-            long nextTime = (long) (mul * stepSize);
+            long nextTime = mul * stepSize;
 
             /* BugzID:1544 - Preserve precision - force jog to frame markers. */
             long mod = (clock.getTime() % stepSize);
@@ -1944,7 +1922,7 @@ public final class VideoController extends DatavyuDialog
      * @param rate Rate of play.
      */
     private void playAt(final float rate) {
-        playbackModel.setPauseRate(0);
+        playbackModel.setResumeRate(0);
         shuttleAt(rate);
     }
 
@@ -1953,16 +1931,12 @@ public final class VideoController extends DatavyuDialog
      */
     private void shuttle(final int shuttleJump) {
         float currentRate = clock.getRate();
-
         if (currentRate == 0) {
-            currentRate = playbackModel.getPauseRate();
+            currentRate = playbackModel.getResumeRate();
         }
-
-        try {
-            shuttleAt(SHUTTLE_RATES[rateToShuttleIndex(currentRate) + shuttleJump]);
-        } catch (java.lang.ArrayIndexOutOfBoundsException e) {
-            logger.error("Error finding shuttle index given at the current rate " + currentRate);
-        }
+        float nextRate = shuttleRates.nextRate(currentRate, shuttleJump);
+        logger.info("Changed rate from " + currentRate + " to " + nextRate + " for " + shuttleJump + " jumps.");
+        shuttleAt(nextRate);
     }
 
     /**
@@ -1978,8 +1952,7 @@ public final class VideoController extends DatavyuDialog
      */
     private void jump(final long step) {
         if ((clock.getTime() + step) > playbackModel.getStartTime()) {
-//            stopAction();
-//            clock.stop();
+            stopAction();
             clock.stepTime(step);
         } else {
             jumpTo(playbackModel.getStartTime());

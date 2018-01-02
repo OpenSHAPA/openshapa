@@ -40,16 +40,10 @@ public class FFPlayer extends JPanel {
 	private final ColorSpace reqColorSpace = ColorSpace.getInstance(ColorSpace.CS_sRGB);
 	
 	/** The requested audio format */
-	private final AudioFormat reqAudioFormat = AudioSound.getNewMonoFormat();
+	private final AudioFormat reqAudioFormat = AudioSoundStreamListener.getNewMonoFormat();
 	
 	/** The movie stream for this movie player */
 	private MovieStreamProvider movieStreamProvider;
-
-	/** Play back speed for this player */
-	private float playbackSpeed = 1f;
-	
-	/** Set to true if this player is in stepping mode */
-	private boolean isStepping = false;
 
 	/** This is the audio sound stream listener */
 	private AudioSoundStreamListener audioSound = null;
@@ -59,7 +53,7 @@ public class FFPlayer extends JPanel {
 	 * and registering stream listeners for the video and audio. The stream
 	 * listener for the video will show the image in this JPanel.
 	 */
-	public FFPlayer() {
+	FFPlayer() {
 		setLayout(new BorderLayout());
 		movieStreamProvider = new MovieStreamProvider();
 		audioSound = new AudioSoundStreamListener(movieStreamProvider);
@@ -75,34 +69,30 @@ public class FFPlayer extends JPanel {
 	 *
 	 * @param fileName The filename.
 	 */
-	protected void openFile(String fileName) {
+	void openFile(String fileName) {
 		movieStreamProvider.stop();
 		// Assign a new movie file.
 		try {
 			// The input audio format will be manipulated by the open method!
-			AudioFormat input = reqAudioFormat;
+			AudioFormat input = new AudioFormat(reqAudioFormat.getEncoding(),
+                                                reqAudioFormat.getSampleRate(),
+                                                reqAudioFormat.getSampleSizeInBits(),
+                                                reqAudioFormat.getChannels(),
+                                                reqAudioFormat.getFrameSize(),
+                                                reqAudioFormat.getFrameRate(),
+                                                reqAudioFormat.isBigEndian());
 			
 			// Open the stream
 			DatavyuVersion localVersion = DatavyuVersion.getLocalVersion();
 	        movieStreamProvider.open(fileName, localVersion.getVersion(), reqColorSpace, input);
 	        
 	        // Load and display first frame.
+            movieStreamProvider.startVideoListeners();
 	        movieStreamProvider.nextImageFrame();
+	        //movieStreamProvider.stopVideoListeners();
 		} catch (IOException io) {
 			logger.info("Unable to open movie. Error: ", io);
 		}
-	}
-	
-	/**
-	 * Returns true if values are set for the video to be played back at 1x 
-	 * speed.
-	 *  
-	 * @return True if we play forward at 1x; otherwise false.
-	 */
-	private boolean playsAtForward1x() {
-		double speedValue = Math.abs(playbackSpeed);
-		int speedSign = (int) Math.signum(playbackSpeed);
-		return Math.abs(speedValue - 1.0) <= Math.ulp(1.0) && speedSign == 1 && !isStepping;
 	}
 
 	/**
@@ -120,8 +110,7 @@ public class FFPlayer extends JPanel {
 	 * @return Original stream size: width, height.
 	 */
 	public Dimension getOriginalVideoSize() {
-		return new Dimension(movieStreamProvider.getWidthOfStream(),
-							 movieStreamProvider.getHeightOfStream());
+		return new Dimension(movieStreamProvider.getWidthOfStream(), movieStreamProvider.getHeightOfStream());
 	}
 
 	/**
@@ -139,17 +128,17 @@ public class FFPlayer extends JPanel {
 	 * @param position Position in seconds.
 	 */
 	public void seek(double position) {
-		logger.info("Seeking position: " + position);
-		movieStreamProvider.seek(position);
-		movieStreamProvider.dropImageFrame();
-		movieStreamProvider.startVideoListeners();
-		movieStreamProvider.nextImageFrame();
-	}
+        logger.info("Seeking position: " + position);
+        movieStreamProvider.seek(position);
+        movieStreamProvider.startVideoListeners();
+        movieStreamProvider.nextImageFrame();
+    }
 
 	/**
 	 * Clean up the player before closing.
 	 */
 	public void cleanUp() {
+	    logger.info("Closing stream.");
 		movieStreamProvider.stop();
 	}
 
@@ -159,34 +148,16 @@ public class FFPlayer extends JPanel {
 	 * @param playbackSpeed The play back speed.
 	 */
 	public void setPlaybackSpeed(float playbackSpeed) {
-		this.playbackSpeed = playbackSpeed;
-		if (playbackSpeed < Math.ulp(1f)) {
-		    stop();
-        }
-		// Need to set speed first so that the reverse is set correctly!!!
+		logger.info("Setting play back speed: " + playbackSpeed);
 		movieStreamProvider.setSpeed(playbackSpeed);
-		// Then we can start/stop the audio
-		if (playsAtForward1x()) {
-			movieStreamProvider.startAudio();
-		} else {
-			movieStreamProvider.stopAudio();
-		}
 	}
 
 	/**
 	 * Play the video/audio.
 	 */
 	public void play() {
-		// Must set is stepping to false BEFORE calling playsAtForward1x
-		isStepping = false;
-		// Play sound only if we are in forward direction
-		if (playsAtForward1x()) {
-			logger.info("Starting playing audio.");
-			movieStreamProvider.startAudio();
-		}
-		// Play video
 		logger.info("Starting playing video");
-		movieStreamProvider.startVideo();
+		movieStreamProvider.start();
 	}
 
 	/**
@@ -208,17 +179,8 @@ public class FFPlayer extends JPanel {
 	 * Instead of playing a sequence of frames just step by one frame.
 	 */
 	public void step() {
-		if (!isStepping) {
-			// Set natively no sound (otherwise the audio buffer will block the video stream)
-			movieStreamProvider.setPlaySound(false);
-			// Stops all stream providers
-			movieStreamProvider.stop();
-			// Enables stepping to display the frames without starting the video thread
-			movieStreamProvider.startVideoListeners();
-			// We are stepping, set isStepping
-			isStepping = true;
-		}
-		movieStreamProvider.nextImageFrame();
+	    logger.info("Stepping.");
+	    movieStreamProvider.step();
 	}
 
 	/**

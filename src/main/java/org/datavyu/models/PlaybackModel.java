@@ -26,7 +26,7 @@ public final class PlaybackModel {
     private float currentFramesPerSecond = 1F;
 
     /** The rate to use when resumed from pause. */
-    private float pauseRate;
+    private float resumeRate;
 
     /** The time the last sync was performed. */
     private long lastSyncTime;
@@ -54,12 +54,12 @@ public final class PlaybackModel {
         this.currentFramesPerSecond = currentFramesPerSecond;
     }
 
-    public float getPauseRate() {
-        return pauseRate;
+    public float getResumeRate() {
+        return resumeRate;
     }
 
-    public void setPauseRate(final float pauseRate) {
-        this.pauseRate = pauseRate;
+    public void setResumeRate(final float resumeRate) {
+        this.resumeRate = resumeRate;
     }
 
     public long getLastSyncTime() {

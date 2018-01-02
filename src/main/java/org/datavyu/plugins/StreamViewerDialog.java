@@ -130,13 +130,13 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     /** Enable fake playback for this stream viewer */
     private boolean enableFakePlayback;
 
-    /** Is this stream viewer in fake play back*/
+    /** Is this stream viewer is in fake play back*/
     private boolean fakePlayback;
 
     /**
      * Constructs a base data video viewer.
      */
-    public StreamViewerDialog(final java.awt.Frame parent, final boolean modal) {
+    public StreamViewerDialog(final Frame parent, final boolean modal) {
 
         super(parent, modal);
 
@@ -293,8 +293,7 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
      */
     protected void resizeVideo(final float scale) {
 
-        // TODO: Better do some resampling!!
-
+        // Resampling is assumed to be done in the plugin
         int scaleHeight = (int) (originalVideoSize.getHeight() * scale);
 
         // lock the aspect ratio
@@ -561,7 +560,7 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     }
 
     /**
-     * Action to invoke when the QTDataViewerDialog window is being hidden.
+     * Action to invoke when the window is hidden.
      *
      * @param evt The event that triggered this action.
      */
