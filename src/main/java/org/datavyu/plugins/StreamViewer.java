@@ -109,17 +109,16 @@ public interface StreamViewer {
 
     /**
      * @return The current position within the data feed in milliseconds.
-     * @throws Exception If an error occurs.
      */
-    long getCurrentTime() throws Exception;
+    long getCurrentTime();
 
     /**
-     * Plays the continuous data stream at set speed.
+     * Plays the continuous data stream at the set speed.
      */
     void play();
 
     /**
-     * Stops the play back
+     * Stops the play back.
      */
     void stop();
 

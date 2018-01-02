@@ -107,7 +107,7 @@ public class MacOS {
             }
             logger.info("Press and hold for OSX command returned: " + stringBuilder);
         } catch (Exception e) {
-            logger.error("Error occured when processing press and hold " + e);
+            logger.error("Error occurred when processing press and hold " + e);
         }
     }
 
@@ -177,7 +177,7 @@ public class MacOS {
             } catch (IllegalAccessException e) {
                 logger.error("Unable to access application excapeion", e);
             } catch (InvocationTargetException e) {
-                logger.error("Unable to invocate target", e);
+                logger.error("Unable to invoke target", e);
             } catch (ClassNotFoundException e) {
                 logger.error("Unable to find apple classes", e);
             }
@@ -199,13 +199,13 @@ public class MacOS {
         // handleAbout(ApplicationEvent event) {
         // Datavyu.getApplication().showAboutWindow(); event.setHandled(true); } } }
         try {
-            Class appc = Class.forName("com.apple.eawt.Application");
-            Object app = appc.newInstance();
-            Class applc = Class.forName("com.apple.eawt.ApplicationListener");
+            Class appClass = Class.forName("com.apple.eawt.Application");
+            Object app = appClass.newInstance();
+            Class appListenerClass = Class.forName("com.apple.eawt.ApplicationListener");
             Object listener = Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-                    new Class[]{applc}, new HandlerForApplicationAdapter());
+                    new Class[]{appListenerClass}, new HandlerForApplicationAdapter());
             // Add the listener to the application.
-            Method m = appc.getMethod("addApplicationListener", applc);
+            Method m = appClass.getMethod("addApplicationListener", appListenerClass);
             m.invoke(app, listener);
             return true;
         } catch (ClassNotFoundException e) {
@@ -217,7 +217,7 @@ public class MacOS {
         } catch (NoSuchMethodException e) {
             logger.error("Unable to access method in application", e);
         } catch (InvocationTargetException e) {
-            logger.error("Unable to invocate target", e);
+            logger.error("Unable to invoke target", e);
         }
         return false;
     }
