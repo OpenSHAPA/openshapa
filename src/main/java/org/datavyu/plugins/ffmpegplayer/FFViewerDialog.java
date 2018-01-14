@@ -18,7 +18,7 @@ public class FFViewerDialog extends StreamViewerDialog {
     private long previousSeekTime = -1;
 
     /** The player this viewer is displaying */
-    private FFPlayer player = null;
+    private FFPlayer player;
 
     /** Currently is seeking */
     private boolean isSeeking = false;

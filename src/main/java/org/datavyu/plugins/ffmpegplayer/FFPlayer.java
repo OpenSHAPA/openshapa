@@ -22,14 +22,12 @@ public class FFPlayer extends JPanel {
     /** Load the native library that interfaces to ffmpeg */
     static {
         try {
-            logger.info("Extracting and loading libraries for ffmpeg.");
+            logger.info("Extracting libraries for ffmpeg.");
             NativeLibraryLoader.extract("avutil-55");
             NativeLibraryLoader.extract("swscale-4");
             NativeLibraryLoader.extract("swresample-2");
             NativeLibraryLoader.extract("avcodec-57");
             NativeLibraryLoader.extract("avformat-57");
-            // Ensure that the above dependent libraries are extracted first before loading MovieStream.
-            //NativeLibraryLoader.extractAndLoad("MovieStream");
             NativeLibraryLoader.extract("MovieStream");
         } catch (Exception e) {
             logger.error("Failed loading libraries. Error: ", e);
@@ -46,7 +44,7 @@ public class FFPlayer extends JPanel {
 	private MovieStreamProvider movieStreamProvider;
 
 	/** This is the audio sound stream listener */
-	private AudioSoundStreamListener audioSound = null;
+	private AudioSoundStreamListener audioSound;
 
 	/**
 	 * Construct an FFPlayer by creating the underlying movie stream provider
