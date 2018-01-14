@@ -21,10 +21,10 @@ import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
-import org.datavyu.plugins.StreamViewer;
 import org.datavyu.plugins.Filter;
 import org.datavyu.plugins.FilterNames;
 import org.datavyu.plugins.Plugin;
+import org.datavyu.plugins.StreamViewer;
 import org.datavyu.util.NativeLibraryLoader;
 
 import javax.swing.*;
@@ -71,20 +71,27 @@ public final class QTPlugin implements Plugin {
     // TODO: Move this into the QTDataViewerDialog class!!
     public static boolean hasQuicktimeLibs() {
         boolean found = false;
-        try {
-            Class.forName("quicktime.QTSession");
-            found = true;
-            librariersLoaded = true;
-        } catch (UnsatisfiedLinkError noLink) {
-            logger.error("No link: " + noLink.getMessage());
-        } catch (NoClassDefFoundError noClass) {
-            logger.error("No class found: " + noClass.getMessage());
-        } catch (ClassNotFoundException ce) {
-            logger.error("Class not found: " + ce.getMessage());
-        } catch (Exception e) {
-            logger.error("General exception: " + e.getMessage());
+        if(VALID_OPERATING_SYSTEMS.contains(Datavyu.getPlatform())) {
+
+
+            try {
+                Class.forName("quicktime.QTSession");
+                found = true;
+                librariersLoaded = true;
+            } catch (UnsatisfiedLinkError noLink) {
+                logger.error("No link: " + noLink.getMessage());
+            } catch (NoClassDefFoundError noClass) {
+                logger.error("No class found: " + noClass.getMessage());
+            } catch (ClassNotFoundException ce) {
+                logger.error("Class not found: " + ce.getMessage());
+            } catch (Exception e) {
+                logger.error("General exception: " + e.getMessage());
+            }
+            return found;
         }
-        return found;
+        else {
+            return false;
+        }
     }
 
     public static boolean isLibrariersLoaded() {
