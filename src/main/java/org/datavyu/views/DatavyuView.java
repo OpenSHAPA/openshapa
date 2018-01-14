@@ -135,7 +135,10 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     private javax.swing.JMenuItem newCellLeftMenuItem;
     private javax.swing.JMenuItem newCellMenuItem;
     private javax.swing.JMenuItem newCellRightMenuItem;
+    private javax.swing.JMenuItem selectColumnLeftMenuItem;
+    private javax.swing.JMenuItem selectColumnRightMenuItem;
     private javax.swing.JMenuItem newMenuItem;
+    private javax.swing.JMenuItem closeTabMenuItem;
     private javax.swing.JMenuItem newVariableMenuItem;
     private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JMenu openRecentFileMenu;
@@ -217,8 +220,14 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         // is handled in Datavyu.java
         newCellMenuItem.setAccelerator(KeyStroke.getKeyStroke('\u21A9'));
 
+
         // BugzID:521 + 468 - Define accelerator keys based on Operating system.
         int keyMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+
+        // Actually handled in SpreadsheetPanel
+        selectColumnLeftMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, keyMask));
+        selectColumnRightMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, keyMask));
+
         weakTemporalAlignmentMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, keyMask));
 
         // Set zoom in to keyMask + '+'
@@ -241,6 +250,9 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
         // Set the new accelerator to keyMask + 'N';
         newMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, keyMask));
+
+        // Set the close accerator to keyMask + 'W';
+        closeTabMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, keyMask));
 
         // Set the new accelerator to keyMask + 'L';
         newCellLeftMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, keyMask));
@@ -799,6 +811,37 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     @Action
     public void showNewProjectForm() {
         new NewProjectController();
+    }
+
+    @Action
+    public void selectColumnLeft() {
+        SpreadsheetColumn col = panel.getSelectedColumn();
+        if(col != null) {
+            int index = panel.getColumns().indexOf(col);
+            panel.selectColumn(index-1);
+        }
+    }
+
+    @Action
+    public void selectColumnRight() {
+        SpreadsheetColumn col = panel.getSelectedColumn();
+        if(col != null) {
+            int index = panel.getColumns().indexOf(col);
+            panel.selectColumn(index+1);
+        }
+    }
+
+    /**
+     * Action for closing current tab
+     */
+    @Action
+    public void closeTab() {
+        if(Datavyu.getApplication().safeQuit(getTabbedPane().getSelectedComponent())) {
+            getTabbedPane().remove(getTabbedPane().getSelectedComponent());
+        }
+        if(getTabbedPane().getTabCount() == 0) {
+            safeQuit();
+        }
     }
 
     /**
@@ -1735,6 +1778,14 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         panel.setLayoutType(type);
     }
 
+    public SheetLayoutType getSheetLayout() {
+        if(weakTemporalAlignmentMenuItem.isSelected()) {
+            return SheetLayoutType.WeakTemporal;
+        } else {
+            return SheetLayoutType.Ordinal;
+        }
+    }
+
     public boolean getRedraw() {
         return redraw;
     }
@@ -1820,6 +1871,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
         newMenuItem = new javax.swing.JMenuItem();
+        closeTabMenuItem = new javax.swing.JMenuItem();
         openMenuItem = new javax.swing.JMenuItem();
         openRecentFileMenu = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
@@ -1854,6 +1906,8 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         weakTemporalAlignmentMenuItem = new javax.swing.JCheckBoxMenuItem();
         zoomMenu = new javax.swing.JMenu();
         zoomInMenuItem = new javax.swing.JMenuItem();
+        selectColumnLeftMenuItem = new javax.swing.JMenuItem();
+        selectColumnRightMenuItem = new javax.swing.JMenuItem();
         zoomOutMenuItem = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JSeparator();
         resetZoomMenuItem = new javax.swing.JMenuItem();
@@ -1934,6 +1988,11 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
             public void menuCanceled(javax.swing.event.MenuEvent evt) {
             }
         });
+
+        closeTabMenuItem.setAction(actionMap.get("closeTab"));
+        closeTabMenuItem.setText(bundle.getString("file_close.text"));
+        closeTabMenuItem.setName(bundle.getString("file_close.text"));
+        fileMenu.add(closeTabMenuItem);
 
         jMenuItem2.setEnabled(false);
         jMenuItem2.setName("jMenuItem2");
@@ -2093,6 +2152,14 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
             }
         });
         spreadsheetMenu.add(weakTemporalAlignmentMenuItem);
+
+        selectColumnLeftMenuItem.setName("Select Column (Left)");
+        selectColumnLeftMenuItem.setAction(actionMap.get("selectColumnLeft"));
+        spreadsheetMenu.add(selectColumnLeftMenuItem);
+
+        selectColumnRightMenuItem.setName("Select Column (Right)");
+        selectColumnRightMenuItem.setAction(actionMap.get("selectColumnRight"));
+        spreadsheetMenu.add(selectColumnRightMenuItem);
 
         zoomMenu.setName("zoomMenu");
 

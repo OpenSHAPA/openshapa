@@ -85,7 +85,7 @@ public abstract class SpreadSheetEdit extends AbstractUndoableEdit {
     }
 
     protected void unselectAll() {
-        view.getSpreadsheetPanel().clearColumnSelection();
+//        view.getSpreadsheetPanel().clearColumnSelection();
         view.getSpreadsheetPanel().clearCellSelection();
     }
 

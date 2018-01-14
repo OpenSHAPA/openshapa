@@ -229,7 +229,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                 // Code table used by Windows is different.
                 case WINDOWS: {
                     switch (WindowsOS.remapKeyChar(evt.getKeyChar())) {
-
                         case '+':
                         case '-':
                             // Plus and minus do not respond. Uncomment
@@ -263,6 +262,17 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                             getView().newCellRight();
                             evt.consume();
 
+                            return true;
+
+                        case 'W':
+                            if(safeQuit(getView().getTabbedPane().getSelectedComponent())) {
+                                getView().getTabbedPane().remove(getView().getTabbedPane().getSelectedComponent());
+                            }
+                            if(getView().getTabbedPane().getTabCount() == 0) {
+                                Datavyu.getApplication().exit();
+                                System.exit(0);
+                            }
+                            evt.consume();
                             return true;
 
                         default:
@@ -316,6 +326,11 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                             getView().newCellRight();
                             evt.consume();
 
+                            return true;
+
+                        case 'w':
+                            safeQuit(getView().getTabbedPane().getSelectedComponent());
+                            evt.consume();
                             return true;
 
                         default:

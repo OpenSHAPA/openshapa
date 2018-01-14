@@ -481,7 +481,8 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
             // User is attempting to move to the column to the left.
             if ((e.getKeyCode() == KeyEvent.VK_LEFT)
                     && platformCellMovementMask(e)) {
-                highlightAdjacentCell(LEFT_DIR);
+                System.out.println("GOING LEFT");
+                Datavyu.getView().selectColumnLeft();
                 e.consume();
 
                 return true;
@@ -489,7 +490,7 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
                 // User is attempting to move to the column to the right.
             } else if ((e.getKeyCode() == KeyEvent.VK_RIGHT)
                     && platformCellMovementMask(e)) {
-                highlightAdjacentCell(RIGHT_DIR);
+                Datavyu.getView().selectColumnRight();
                 e.consume();
 
                 return true;
@@ -539,6 +540,7 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
 
         // No cell selected - simply return, can't move left or right.
         if (highlightedCell == null) {
+            System.out.println("null");
             return;
         }
 
@@ -796,7 +798,7 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
      */
     @Override
     public void addCellToSelection(final SpreadsheetCell cell) {
-        clearColumnSelection();
+//        clearColumnSelection();
 
         if (highlightedCell != null) {
             highlightedCell.getCell().setSelected(true);
@@ -827,14 +829,14 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
     @Override
     public void setHighlightedCell(final SpreadsheetCell cell) {
         if (highlightedCell != null) {
-            highlightedCell.getCell().setSelected(false);
+//            highlightedCell.getCell().setSelected(false);
             highlightedCell.invalidate();
         }
 
         highlightedCell = cell;
         lastSelectedCell = cell;
         highlightedCell.getCell().setHighlighted(true);
-        clearColumnSelection();
+//        clearColumnSelection();
     }
 
     /**
@@ -948,6 +950,60 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
             }
         }
         return null;
+    }
+
+    public SpreadsheetColumn getSelectedColumn() {
+        SpreadsheetColumn col = null;
+        for(SpreadsheetColumn c : getVisibleColumns()) {
+            if(c.isSelected()) {
+                col = c;
+                break;
+            }
+        }
+        return col;
+    }
+
+    public void selectColumn(int index) {
+        // Find currently selected cell, if there is one
+        SpreadsheetCell sc = lastSelectedCell;
+        SpreadsheetColumn selectedCol = null;
+        for(SpreadsheetColumn col : getColumns()) {
+            if(col.isSelected()) {
+                selectedCol = col;
+            }
+            for(SpreadsheetCell cell : col.getCellsTemporally()) {
+                if(cell.getCell().isSelected()) {
+                    sc = cell;
+                    break;
+                }
+            }
+            if(sc != null) {
+                break;
+            }
+        }
+
+        clearCellSelection();
+        clearColumnSelection();
+        requestFocus();
+
+        if(0 <= index && index < getColumns().size()) {
+            getColumns().get(index).setExclusiveSelected(true);
+            getColumns().get(index).requestFocus();
+            if(sc != null) {
+                if (Datavyu.getView().getSheetLayout() == SheetLayoutType.WeakTemporal) {
+                    getColumns().get(index).getNearestCellTemporally(sc).requestFocus();
+                } else {
+                    int ord = selectedCol.getCellsTemporally().indexOf(sc);
+                    if(getColumns().get(index).getCellsTemporally().size() >= ord) {
+                        getColumns().get(index).getCellsTemporally().get(ord).requestFocus();
+                    } else {
+                        getColumns().get(index).getCellsTemporally().get(getColumns().get(index).getCellsTemporally().size()-1);
+                    }
+                }
+            } else {
+                getColumns().get(index).getCellTemporally(0).requestFocus();
+            }
+        }
     }
 
     /**

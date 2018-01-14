@@ -1110,7 +1110,7 @@ alias :createColumn :new_column
 # @return nil
 # @note Column is written to spreadsheet.
 # @deprecated
-def makeDurationBlockRel(relname, var_to_copy, binding_column, block_dur, skip_blocks)
+def make_duration_block_rel(relname, var_to_copy, binding_column, block_dur, skip_blocks)
   block_var = new_column(relname + "_blocks", "block_num")
   rel_var = make_rel(relname, var_to_copy, 0)
 
@@ -1149,6 +1149,7 @@ def makeDurationBlockRel(relname, var_to_copy, binding_column, block_dur, skip_b
   end
   set_column(relname + "_blocks", block_var)
 end
+alias :makeDurationBlockRel :make_duration_block_rel
 
 # Add a new code to a column
 # @param var [String, RColumn] The variable to add args to.  This can be a name or a variable object.
@@ -1474,7 +1475,7 @@ alias :createMutuallyExclusive :create_mutually_exclusive
 
 # @!visibility private
 # Helper method for #create_mutually_exclusive
-def fillMutexCell(v1cell, v2cell, cell, mutex, var1_argprefix, var2_argprefix)
+def fill_mutex_cell(v1cell, v2cell, cell, mutex, var1_argprefix, var2_argprefix)
   if v1cell != nil and v2cell != nil
     for arg in mutex.arglist
       a = arg.gsub(var1_argprefix, "")
@@ -1509,6 +1510,7 @@ def fillMutexCell(v1cell, v2cell, cell, mutex, var1_argprefix, var2_argprefix)
     end
   end
 end
+alias :fillMutexCell :fill_mutex_cell
 
 # Combine cells of different columns into a new column.
 # Iteratively runs #create_mutually_exclusive on additional columns.
