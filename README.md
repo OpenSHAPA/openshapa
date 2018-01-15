@@ -22,11 +22,27 @@ To build and package Datavyu, use the following commands:
 	export MAVEN_OPTS="-Xmx256M"
 	mvn clean -U -Dmaven.test.skip=true jfx:native
 
-## Running Datavyu in an IDE
+## Build and Running Datavyu as Javafx Application through Maven in Intellij
 
-To build and run Datavyu an in IDE like IntelliJ Idea or Netbeans set Datavyu up as a Maven project and run it with the following maven command line options:
+Follow these steps for the setup.
 
-	clean compile jfx:run
+1. Next to the run button click on the drop-down menu item 'Edit configuration'
+2. In the dialog select on the left-hand side 'maven' and then '+'
+3. Fill out working directory: 'C:/Users/Florian/integration/datavyu' (yours is different)
+4. Add the command line: -Dmaven.test.skip=true clean compile jfx:run (for now we exclude tests)
+
+Note, this setup will not run with the debugger in Intellij.
+
+
+## Debugging Datavyu as Java Application in Intellij
+
+Follow these steps for the setup.
+
+1. Next to the run button click on the drop-down menu item 'Edit configuration'
+2. In the dialog select on the left-hand side select 'Defaults' and 'Application' then '+'
+3. Fill out the working directory 'C:/Users/Florian/integration/datavyu' (yours is different)
+4. Add as main class 'org.datavyu.Datavyu'
+
 
 ## Developer's Corner
 Datavyu uses the Swing Application Framework to persist the state of frames and windows and to ease the loading and setup of GUI components in java. 
