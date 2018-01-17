@@ -181,4 +181,14 @@ public final class QTKitViewerDialog extends StreamViewerDialog {
         // TODO: Do we need to release the player here?
 //        player.release();
     }
+
+    @Override
+    public boolean isStepEnabled() {
+        return false;
+    }
+
+    @Override
+    public void step() {
+        // Nothing to do here
+    }
 }

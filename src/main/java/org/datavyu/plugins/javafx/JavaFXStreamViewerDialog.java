@@ -269,4 +269,13 @@ public class JavaFXStreamViewerDialog extends StreamViewerDialog {
         return assumedFPS;
     }
 
+    @Override
+    public boolean isStepEnabled() {
+        return false;
+    }
+
+    @Override
+    public void step() {
+        // Nothing to do here since the plugin does not provide this functionality
+    }
 }

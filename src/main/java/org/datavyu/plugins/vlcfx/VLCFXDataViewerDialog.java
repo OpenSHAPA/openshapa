@@ -277,4 +277,14 @@ public class VLCFXDataViewerDialog extends StreamViewerDialog {
             logger.error("Unable to save the settings. Error: ", io);
         }
     }
+
+    @Override
+    public boolean isStepEnabled() {
+        return false;
+    }
+
+    @Override
+    public void step() {
+        // Nothing to do here
+    }
 }

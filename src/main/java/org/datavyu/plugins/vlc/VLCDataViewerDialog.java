@@ -413,4 +413,13 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
         return assumedFPS;
     }
 
+    @Override
+    public boolean isStepEnabled() {
+        return false;
+    }
+
+    @Override
+    public void step() {
+        // Nothing to do here
+    }
 }

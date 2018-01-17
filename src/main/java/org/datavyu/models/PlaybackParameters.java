@@ -17,28 +17,18 @@ package org.datavyu.models;
 import org.datavyu.models.component.ViewportStateImpl;
 
 /**
- * Model for playback
+ * Parameters for playback
  */
-// TODO: Merge this class with StreamViewer and convert it into an interface
-public final class PlaybackModel {
+public final class PlaybackParameters {
 
     /** Stores the highest frame rate for all available viewers. */
-    private float currentFramesPerSecond = 1F;
+    private float highestFramesPerSecond = 1F;
 
     /** The rate to use when resumed from pause. */
     private float resumeRate;
 
-    /** The time the last sync was performed. */
-    private long lastSyncTime;
-
     /** The maximum duration out of all data being played. */
     private long maxDuration = ViewportStateImpl.MINIMUM_MAX_END;
-
-    /** Are we currently faking playback of the viewers?
-     * Fake playback is used by most players to control the play back at rates of >=2x or <=-2x through a sequence
-     * of subsequent seeks.
-     **/
-    private boolean fakePlayback = false;
 
     /** The start time of the playback window. */
     private long startTime;
@@ -46,12 +36,12 @@ public final class PlaybackModel {
     /** The end time of the playback window. */
     private long endTime;
 
-    public float getCurrentFramesPerSecond() {
-        return currentFramesPerSecond;
+    public float getHighestFramesPerSecond() {
+        return highestFramesPerSecond;
     }
 
-    public void setCurrentFramesPerSecond(final float currentFramesPerSecond) {
-        this.currentFramesPerSecond = currentFramesPerSecond;
+    public void setHighestFramesPerSecond(final float highestFramesPerSecond) {
+        this.highestFramesPerSecond = highestFramesPerSecond;
     }
 
     public float getResumeRate() {
@@ -62,26 +52,12 @@ public final class PlaybackModel {
         this.resumeRate = resumeRate;
     }
 
-    public long getLastSyncTime() {
-        return lastSyncTime;
-    }
-
-    public void setLastSyncTime(final long lastSyncTime) { this.lastSyncTime = lastSyncTime; }
-
     public long getMaxDuration() {
         return maxDuration;
     }
 
     public void setMaxDuration(final long maxDuration) {
         this.maxDuration = Math.max(maxDuration, ViewportStateImpl.MINIMUM_MAX_END);
-    }
-
-    public boolean isFakePlayback() {
-        return fakePlayback;
-    }
-
-    public void setFakePlayback(final boolean fakePlayback) {
-        this.fakePlayback = fakePlayback;
     }
 
     public long getStartTime() {

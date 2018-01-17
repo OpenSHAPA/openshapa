@@ -67,7 +67,7 @@ public class FFViewerDialog extends StreamViewerDialog {
         launch(() -> {
             try {
                 logger.info("Seeking position: " + position);
-                if (!isSeeking && player != null && (previousSeekTime != position)) {
+                if (!isSeeking && (previousSeekTime != position)) {
                     previousSeekTime = position;
                     EventQueue.invokeLater(() -> {
                         logger.info("Starting seek.");
@@ -102,7 +102,7 @@ public class FFViewerDialog extends StreamViewerDialog {
     @Override
     public void play() {
         launch(() -> {
-            if (player != null && !playing) {
+            if (!playing) {
                 player.play();
                 FFViewerDialog.super.play();
             }
@@ -112,7 +112,7 @@ public class FFViewerDialog extends StreamViewerDialog {
     @Override
     public void stop() {
         launch(() -> {
-            if (player != null && playing) {
+            if (playing) {
                 player.stop();
                 FFViewerDialog.super.stop();
             }
@@ -123,12 +123,10 @@ public class FFViewerDialog extends StreamViewerDialog {
     public void setPlaybackSpeed(float speed) {
         launch(() -> {
             playBackSpeed = speed;
-            if (player != null) {
-                if (speed == 0) {
-                    player.stop();
-                } else {
-                    player.setPlaybackSpeed(speed);
-                }
+            if (speed == 0) {
+                player.stop();
+            } else {
+                player.setPlaybackSpeed(speed);
             }
         });
     }
@@ -151,5 +149,17 @@ public class FFViewerDialog extends StreamViewerDialog {
     @Override
     protected void cleanUp() {
         player.cleanUp();
+    }
+
+    @Override
+    public boolean isStepEnabled() {
+        return true;
+    }
+
+    @Override
+    public void step() {
+        launch(() -> {
+            player.step();
+        });
     }
 }

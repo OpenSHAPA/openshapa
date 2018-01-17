@@ -46,7 +46,7 @@ public interface Plugin {
     Class<? extends StreamViewer> getViewerClass();
 
     /**
-     * @return The icon for representing this plugin. This can return null if
+     * @return The icon representing this plugin. This can return null if
      *         this plugin has no icon representing its type.
      */
     ImageIcon getTypeIcon();

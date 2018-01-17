@@ -262,4 +262,14 @@ public final class QTDataViewerDialog extends StreamViewerDialog {
     protected void cleanUp() {
         // TODO: Check if we need to do some cleanup?
     }
+
+    @Override
+    public boolean isStepEnabled() {
+        return false;
+    }
+
+    @Override
+    public void step() {
+        // Nothing to do here
+    }
 }

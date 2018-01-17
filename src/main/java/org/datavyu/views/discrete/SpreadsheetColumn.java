@@ -750,20 +750,10 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
     }
 
     @Override
-    public void clockTick(long time) {
+    public void clockSync(double elapsedTime) {
         if(isSelected() && Datavyu.getVideoController().getCellHighlightAndFocus()) {
             focusNextCell();
         }
-    }
-
-    @Override
-    public void clockStart(long time) {
-
-    }
-
-    @Override
-    public void clockStop(long time) {
-
     }
 
     @Override
@@ -772,9 +762,12 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
     }
 
     @Override
-    public void clockStep(long time) {
-        if(isSelected() && Datavyu.getVideoController().getCellHighlightAndFocus()) {
-            focusNextCell();
-        }
+    public void clockStart(double elapsedTime) {
+
+    }
+
+    @Override
+    public void clockStop(double elapsedTime) {
+
     }
 }

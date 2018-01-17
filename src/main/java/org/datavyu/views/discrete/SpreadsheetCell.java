@@ -329,10 +329,10 @@ public class SpreadsheetCell extends JPanel
     /**
      * Set the ordinal value.
      *
-     * @param ord The new ordinal value to use with this cell.
+     * @param ordinal The new ordinal value to use with this cell.
      */
-    public void setOrdinal(final Integer ordInt) {
-        ord.setText(ordInt.toString());
+    public void setOrdinal(final Integer ordinal) {
+        ord.setText(ordinal.toString());
     }
 
     /**
@@ -693,27 +693,22 @@ public class SpreadsheetCell extends JPanel
     }
 
     @Override
-    public void clockTick(long time) {
+    public void clockSync(double elapsedTime) {
         updateSelectionDisplay();
     }
 
     @Override
-    public void clockStart(long time) {
+    public void clockStop(double elapsedTime) {
 
     }
 
     @Override
-    public void clockStop(long time) {
+    public void clockStart(double elapsedTime) {
 
     }
 
     @Override
     public void clockRate(float rate) {
 
-    }
-
-    @Override
-    public void clockStep(long time) {
-        updateSelectionDisplay();
     }
 }

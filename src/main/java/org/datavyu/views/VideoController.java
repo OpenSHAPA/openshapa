@@ -30,7 +30,7 @@ import org.datavyu.event.component.TimescaleEvent;
 import org.datavyu.event.component.TracksControllerEvent;
 import org.datavyu.event.component.TracksControllerListener;
 import org.datavyu.models.Identifier;
-import org.datavyu.models.PlaybackModel;
+import org.datavyu.models.PlaybackParameters;
 import org.datavyu.models.component.*;
 import org.datavyu.plugins.StreamViewer;
 import org.datavyu.plugins.Plugin;
@@ -245,11 +245,11 @@ public final class VideoController extends DatavyuDialog
     private JPanel tracksPanel;
 
     /** Model containing playback information */
-    private PlaybackModel playbackModel;
+    private PlaybackParameters playbackParameters;
 
     private boolean qtWarningShown = false;
 
-    private org.jdesktop.application.ResourceMap resourceMap;
+    private ResourceMap resourceMap;
 
     private ActionMap actionMap;
 
@@ -265,7 +265,7 @@ public final class VideoController extends DatavyuDialog
      * @param parent The parent of this form.
      * @param modal  Should the dialog be modal or not?
      */
-    public VideoController(final java.awt.Frame parent, final boolean modal) {
+    public VideoController(final Frame parent, final boolean modal) {
         super(parent, modal);
 
         clock.registerListener(this);
@@ -290,15 +290,14 @@ public final class VideoController extends DatavyuDialog
         setName(this.getClass().getSimpleName());
         streamViewers = new LinkedHashSet<>();
 
-        playbackModel = new PlaybackModel();
-        playbackModel.setResumeRate(0);
-        playbackModel.setLastSyncTime(0);
-        playbackModel.setMaxDuration(ViewportStateImpl.MINIMUM_MAX_END);
+        playbackParameters = new PlaybackParameters();
+        playbackParameters.setResumeRate(0);
+        playbackParameters.setMaxDuration(ViewportStateImpl.MINIMUM_MAX_END);
 
         final int defaultEndTime = (int) MixerController.DEFAULT_DURATION;
 
-        playbackModel.setStartTime(0);
-        playbackModel.setEndTime(defaultEndTime);
+        playbackParameters.setStartTime(0);
+        playbackParameters.setEndTime(defaultEndTime);
 
         mixerController = new MixerController();
         tracksPanel.add(mixerController.getTracksPanel(), "growx");
@@ -350,7 +349,7 @@ public final class VideoController extends DatavyuDialog
                     Identifier newIdentifier = Identifier.generateIdentifier();
                     streamViewer.setIdentifier(newIdentifier);
                     streamViewer.setSourceFile(selectedFile);
-                    streamViewer.seek(clock.getTime());
+                    streamViewer.seek(streamViewer.getStartTime());
                     // Fake playback is not available for the ffmpeg plugin
                     streamViewer.setEnableFakePlayback( !"FFmpeg Plugin".equals(plugin.getPluginName()) );
                     addStreamViewer(plugin.getTypeIcon(), streamViewer, selectedFile, streamViewer.getTrackPainter());
@@ -414,7 +413,7 @@ public final class VideoController extends DatavyuDialog
      *
      * @param shift True for shift held; false otherwise.
      */
-    public void setShiftMask(final boolean shift) {
+    public void setShiftMask(boolean shift) {
         shiftMask = shift;
     }
 
@@ -423,39 +422,21 @@ public final class VideoController extends DatavyuDialog
      *
      * @param ctrl True for ctrl held; false otherwise.
      */
-    public void setCtrlMask(final boolean ctrl) {
+    public void setCtrlMask(boolean ctrl) {
         ctrlMask = ctrl;
     }
 
     /**
-     * @param time Current clock time in milliseconds.
+     * @param elapsedTime Current clock time in milliseconds.
      */
-    public void clockStart(final long time) {
-        resetSync();
-
-        long playTime = time;
-        final long windowPlayStart = playbackModel.getStartTime();
-
-        if (playTime < windowPlayStart) {
-            playTime = windowPlayStart;
-            clockStep(playTime);
+    public void clockStart(double elapsedTime) {
+        for (StreamViewer streamViewer : streamViewers) {
+            // Update difference
+            //streamViewer.seek(toPlayRange(elapsedTime, streamViewer));
+            // TODO: Whenever we seek in the stream we need to update the clock too
+            // Start playing
+            streamViewer.play();
         }
-
-        float currentRate = clock.getRate();
-        clock.stop();
-
-        setCurrentTime(playTime);
-        clock.setTime(playTime);
-        clock.setRate(currentRate);
-
-        clock.start();
-    }
-
-    /**
-     * Reset the sync.
-     */
-    private void resetSync() {
-        playbackModel.setLastSyncTime(0);
     }
 
     /**
@@ -470,212 +451,53 @@ public final class VideoController extends DatavyuDialog
     }
 
     /**
-     * @param time Current clock time in milliseconds.
+     * @param elapsedTime Current clock time in milliseconds.
      */
-    public void clockTick(final long time) {
-        try {
-            setCurrentTime(time);
-
-            for (StreamViewer streamViewer : streamViewers) {
-                // Fake play back; rapid search of times
-                if (streamViewer.isFakePlayback()) {
-                    if ((time > streamViewer.getStartTime()) && isInPlayRange(time, streamViewer)) {
-                        streamViewer.seek(time - streamViewer.getStartTime());
-                    }
-                } else {
-                    // Synchronise streamViewers only if we have exceeded our pulse time.
-                    if ((time - playbackModel.getLastSyncTime())
-                            > (SYNC_PULSE * clock.getRate()) || playbackModel.getLastSyncTime() == 0) {
-                        playbackModel.setLastSyncTime(time);
-
-                        for (StreamViewer v : streamViewers) {
-                            // Use offsets to determine if the video file should start playing.
-                            if (!v.isPlaying() && isInPlayRange(time, v)) {
-                                logger.info("Start playing.");
-                                v.play();
-                            }
-
-                            // BugzID:1797 - Viewers who are "playing" outside their time frame should be asked to stop.
-                            if (v.isPlaying() && !isInPlayRange(time, v)) {
-                                logger.info("Stop playing.");
-                                v.stop();
-                            }
-                        }
-                    }
-                }
+    public void clockSync(double elapsedTime) {
+        /*
+        logger.info("Sync event");
+        for (StreamViewer streamViewer : streamViewers) {
+            if (Math.abs((long) elapsedTime - streamViewer.getCurrentTime() - streamViewer.getStartTime()) >=
+                    ClockTimer.SYNC_THRESHOLD) {
+                logger.info("Sync stream: " + streamViewer.getIdentifier());
+                streamViewer.seek(toPlayRange(elapsedTime, streamViewer));
             }
-
-            // BugzID:466 - Prevent rewind wrapping the clock past the start point of the view window.
-            final long windowPlayStart = playbackModel.getStartTime();
-
-            if (time < windowPlayStart) {
-                setCurrentTime(windowPlayStart);
-                clock.stop();
-                clockStop(windowPlayStart);
-            }
-
-            // BugzID:756 - don't play video once past the max duration.
-            final long windowPlayEnd = playbackModel.getEndTime();
-
-            if ((time >= windowPlayEnd) && (clock.getRate() >= 0)) {
-                clock.stop();
-                setCurrentTime(windowPlayEnd);
-                clockStop(windowPlayEnd);
-                clock.setTime(windowPlayEnd);
-            }
-        } catch (Exception e) {
-            logger.error("Unable to Sync streamViewers " + e);
         }
+        */
     }
 
     /**
      * Determines whether a StreamViewer has data for the desired time.
      *
-     * @param time The time we wish to play at or seek to.
-     * @param view The StreamViewer to check.
+     * @param elapsedTime The time we wish to play at or seek to.
+     * @param viewer The StreamViewer to check.
      * @return True if data exists at this time, and false otherwise.
      */
-    private boolean isInPlayRange(final long time, final StreamViewer view) {
-        return (time >= view.getStartTime()) && (time < (view.getStartTime() + view.getDuration()));
+    private long toPlayRange(double elapsedTime, final StreamViewer viewer) {
+        return Math.min(Math.max((long) elapsedTime + viewer.getStartTime(), viewer.getStartTime()),
+                viewer.getDuration());
     }
 
     /**
-     * Method to sync the clock to the video.
-     *
-     * @param time
+     * @param elapsedTime Current clock time in milliseconds.
      */
-    private void adjustClock(final long time) {
-        if (streamViewers.size() == 1
-                && (time < playbackModel.getEndTime() && time > playbackModel.getStartTime())) {
-            // Using an iterator because streamViewers is a set
-            for (StreamViewer viewer : streamViewers) {
-                try {
-                    long viewerTime = viewer.getCurrentTime();
-
-                    long stepSize = ((ONE_SECOND) / (long) playbackModel.getCurrentFramesPerSecond());
-
-                     /* BugzID:1544 - Preserve precision - force jog to frame markers. */
-                    if (!clock.isStopped()) {
-                        long mod = (viewerTime % stepSize);
-
-                        if (mod != 0) {
-                            viewerTime = viewerTime + stepSize - mod;
-                        }
-                    }
-
-                    clock.setTimeWithoutNotify(viewerTime);
-                    resetSync();
-                    updateCurrentTimeLabel();
-                } catch (Exception e) {
-                    logger.error("Could not adjust clock. Error: " + e);
-                }
-            }
-        }
-    }
-
-    /**
-     * @param time Current clock time in milliseconds.
-     */
-    public void clockStop(final long time) {
-        clock.stop();
-        resetSync();
-
-        /*
-            This is the new style time reckoning where the timer gets updated from the video
-         */
-        if (streamViewers.size() == 1 && (time < playbackModel.getEndTime()
-                && time > playbackModel.getStartTime())) {
-            // Using an iterator because streamViewers is a set
-            for (StreamViewer viewer : streamViewers) {
-                if (viewer.isPlaying()) {
-                    viewer.stop();
-                    try {
-                        long viewerTime = time;
-
-                        long stepSize = ((ONE_SECOND) / (long) playbackModel.getCurrentFramesPerSecond());
-
-                        /* BugzID:1544 - Preserve precision - force jog to frame markers. */
-                        long mod = (viewerTime % stepSize);
-
-                        if (mod != 0) {
-                            viewerTime = viewerTime + stepSize - mod;
-                        }
-
-                        viewer.seek(viewerTime);
-
-                        clock.setTimeWithoutNotify(viewerTime);
-                        resetSync();
-                        updateCurrentTimeLabel();
-                    } catch (Exception e) {
-                        logger.error("Error when stopping clock " + e);
-                    }
-                }
-            }
-        } else {
-            setCurrentTime(time);
-            for (StreamViewer viewer : streamViewers) {
-                if (viewer.isPlaying()) {
-                    viewer.stop();
-                }
-            }
+    public void clockStop(double elapsedTime) {
+        for (StreamViewer streamViewer : streamViewers) {
+            streamViewer.stop();
         }
     }
 
     /**
      * @param rate Current (updated) clock rate.
      */
-    public void clockRate(final float rate) {
-        resetSync();
+    public void clockRate(float rate) {
         labelSpeed.setText(FloatingPointUtils.doubleToFractionStr(rate));
-
-        // If the rate is faster than 2x or slower than -1x, some viewers require sequential seeks to play back smoothly
-        if (Math.abs(rate) > 2.0 || rate < -1) {
-            long time = getCurrentTime();
-            for (StreamViewer streamViewer : streamViewers) {
-                if (streamViewer.isEnableFakePlayback()) {
-                    // If the viewer requires fake playback use it
-                    streamViewer.setFakePlayback(true);
-                    streamViewer.stop();
-                    if (isInPlayRange(time, streamViewer)) {
-                        streamViewer.setPlaybackSpeed(rate);
-                    }
-                } else {
-                    // No fake playback, just set the new playback speed
-                    streamViewer.setPlaybackSpeed(rate);
-                    if (!clock.isStopped()) {
-                        streamViewer.play();
-                    }
-                }
-            }
-
-            // No fake playback
-        } else {
-            for (StreamViewer streamViewer : streamViewers) {
-                // Reset fake playback
-                streamViewer.setFakePlayback(false);
-                // Set the playback speed
-                streamViewer.setPlaybackSpeed(rate);
-                // If we are not stopped play
-                if (!clock.isStopped()) {
-                    streamViewer.play();
-                }
-            }
-        }
-    }
-
-    /**
-     * @param time Current clock time in milliseconds.
-     */
-    public void clockStep(final long time) {
-        resetSync();
-        setCurrentTime(time);
-        for (StreamViewer viewer : streamViewers) {
-            try {
-                if (isInPlayRange(time, viewer) && time != viewer.getCurrentTime()) {
-                    viewer.seek(time - viewer.getStartTime());
-                }
-            } catch (Exception e) {
-                logger.info("Error when stepping clock " + e);
+        for (StreamViewer streamViewer : streamViewers) {
+            // Set the playback speed
+            streamViewer.setPlaybackSpeed(rate);
+            // If we are not stopped play
+            if (!clock.isStopped()) {
+                streamViewer.play();
             }
         }
     }
@@ -698,7 +520,7 @@ public final class VideoController extends DatavyuDialog
      * @return Time in milliseconds.
      */
     public long getCurrentTime() {
-        return clock.getTime();
+        return (long) clock.getElapsedTime() + playbackParameters.getStartTime();
     }
 
     /**
@@ -707,7 +529,8 @@ public final class VideoController extends DatavyuDialog
      * @param milliseconds The millisecond time.
      */
     public void setCurrentTime(final long milliseconds) {
-        resetSync();
+        //resetSync();
+        //TODO: Implement setting time in clock streams
         updateCurrentTimeLabel();
         mixerController.getMixerModel().getNeedleModel().setCurrentTime(milliseconds);
     }
@@ -731,41 +554,6 @@ public final class VideoController extends DatavyuDialog
             mixerController.getMixerModel().getRegionModel().resetPlaybackRegion();
         }
     }
-
-    /**
-     * Remove the specified viewer from the controller.
-     *
-     * @param viewer The viewer to shutdown.
-     * @return True if the controller contained this viewer.
-     */
-    /*
-    public boolean shutdown(final StreamViewer viewer) {
-
-        // Did we remove the viewer?
-        boolean removed = streamViewers.remove(viewer);
-
-        if (removed) {
-
-            viewer.unsetSourceFile();
-
-            // BugzID:2000
-            viewer.removeViewerStateListener(
-                    mixerController.getTracksEditorController()
-                            .getViewerStateListener(viewer.getIdentifier()));
-
-            // Recalculate the maximum playback duration.
-            updateMaxViewerDuration();
-
-            // Remove the data viewer from the tracks panel.
-            mixerController.deregisterTrack(viewer.getIdentifier());
-
-            // Data viewer removed, mark project as changed.
-            Datavyu.getProjectController().projectChanged();
-        }
-
-        return removed;
-    }
-    */
 
     /**
      * Get the stream viewer with the id.
@@ -808,7 +596,7 @@ public final class VideoController extends DatavyuDialog
 
         // DO SOMETHING CONCERNING STEP_SIZE
         if (streamViewers.isEmpty()) {
-            playbackModel.setCurrentFramesPerSecond(0f);
+            playbackParameters.setHighestFramesPerSecond(0f);
             updateStepSizeTextField();
         }
 
@@ -828,9 +616,9 @@ public final class VideoController extends DatavyuDialog
     }
 
     /**
-     * Binds a window event listener to a data viewer.
+     * Binds a window event listener to a stream viewer.
      *
-     * @param id The identifier of the viewer to bind to.
+     * @param id The identifier of the viewer.
      */
     public void bindWindowListenerToStreamViewer(final Identifier id, final WindowListener windowListener) {
         StreamViewer viewer = getStreamViewer(id);
@@ -880,13 +668,13 @@ public final class VideoController extends DatavyuDialog
      */
     private JButton buildButton(final String name, final String modifier) {
         String dotModifier = (modifier == null) || modifier.isEmpty() ? "" : "." + modifier;
-        JButton result = new JButton();
-        result.setAction(actionMap.get(name + "Action"));
-        result.setIcon(resourceMap.getIcon(name + "Button.icon" + dotModifier));
-        result.setPressedIcon(resourceMap.getIcon(name + "SelectedButton.icon" + dotModifier));
-        result.setFocusPainted(false);
-        result.setName(name + "Button");
-        return result;
+        JButton jButton = new JButton();
+        jButton.setAction(actionMap.get(name + "Action"));
+        jButton.setIcon(resourceMap.getIcon(name + "Button.icon" + dotModifier));
+        jButton.setPressedIcon(resourceMap.getIcon(name + "SelectedButton.icon" + dotModifier));
+        jButton.setFocusPainted(false);
+        jButton.setName(name + "Button");
+        return jButton;
     }
 
     private JButton buildButton(final String name) {
@@ -984,7 +772,7 @@ public final class VideoController extends DatavyuDialog
                     int newTime = Integer.parseInt(JOptionPane.showInputDialog(null,
                             "Enter new time in ms", getCurrentTime()));
                     setCurrentTime(newTime);
-                    clock.setTime(newTime);
+                    //clock.setTime(newTime);
                 }
             }
         });
@@ -1184,7 +972,7 @@ public final class VideoController extends DatavyuDialog
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     float newFramesPerSecond = Float.parseFloat(stepSizeTextField.getText());
-                    playbackModel.setCurrentFramesPerSecond(newFramesPerSecond);
+                    playbackParameters.setHighestFramesPerSecond(newFramesPerSecond);
                     for (StreamViewer dv : streamViewers) {
                         dv.setFramesPerSecond(newFramesPerSecond);
                     }
@@ -1201,13 +989,13 @@ public final class VideoController extends DatavyuDialog
     }
 
     private void updateStepSizeTextField() {
-        if (playbackModel == null) {
+        if (playbackParameters == null) {
             stepSizeTextField.setEnabled(false);
-        } else if (playbackModel.getCurrentFramesPerSecond() == 0f) {
+        } else if (playbackParameters.getHighestFramesPerSecond() == 0f) {
             stepSizeTextField.setEnabled(false);
             stepSizeTextField.setText("");
         } else {
-            stepSizeTextField.setText(Float.toString(playbackModel.getCurrentFramesPerSecond()));
+            stepSizeTextField.setText(Float.toString(playbackParameters.getHighestFramesPerSecond()));
         }
     }
 
@@ -1369,14 +1157,14 @@ public final class VideoController extends DatavyuDialog
 
         // Adjust the overall frame rate
         float framesPerSecond = viewer.getFramesPerSecond();
-        if (framesPerSecond > playbackModel.getCurrentFramesPerSecond()) {
-            playbackModel.setCurrentFramesPerSecond(framesPerSecond);
+        if (framesPerSecond > playbackParameters.getHighestFramesPerSecond()) {
+            playbackParameters.setHighestFramesPerSecond(framesPerSecond);
         }
         updateStepSizeTextField();
         updateStepSizePanelColor();
 
         // Update track viewer
-        long maxDuration = playbackModel.getMaxDuration();
+        long maxDuration = playbackParameters.getMaxDuration();
 
         if ((viewer.getStartTime() + viewer.getDuration()) > maxDuration) {
             maxDuration = viewer.getStartTime() + viewer.getDuration();
@@ -1452,24 +1240,10 @@ public final class VideoController extends DatavyuDialog
             playAt(PLAY_RATE);
             clockStart(e.getTime());
         } else {
-            seekTime(e.getTime());
+            // TODO: Handle timescale event
+
+            //seekTime(e.getTime());
         }
-    }
-
-    private void seekTime(final long time) {
-        long newTime = time;
-
-        if (newTime < playbackModel.getStartTime()) {
-            newTime = playbackModel.getStartTime();
-        }
-
-        if (newTime > playbackModel.getEndTime()) {
-            newTime = playbackModel.getEndTime();
-        }
-
-        clockStop(newTime);
-        setCurrentTime(newTime);
-        clock.setTime(newTime);
     }
 
     /**
@@ -1526,8 +1300,7 @@ public final class VideoController extends DatavyuDialog
 
         if (clock.isStopped()) {
             final long newTime = mixerController.getMixerModel().getNeedleModel().getCurrentTime();
-            clock.setTime(newTime);
-            clockStep(newTime);
+            // TODO: Handle time change
         }
 
         updateCurrentTimeLabel();
@@ -1535,13 +1308,13 @@ public final class VideoController extends DatavyuDialog
 
     private void handleRegionChanged(final PropertyChangeEvent e) {
         final RegionState region = mixerController.getMixerModel().getRegionModel().getRegion();
-        playbackModel.setStartTime(region.getRegionStart());
-        playbackModel.setEndTime(region.getRegionEnd());
+        playbackParameters.setStartTime(region.getRegionStart());
+        playbackParameters.setEndTime(region.getRegionEnd());
     }
 
     private void handleViewportChanged(final PropertyChangeEvent e) {
         final ViewportState viewport = mixerController.getMixerModel().getViewportModel().getViewport();
-        playbackModel.setMaxDuration(viewport.getMaxEnd());
+        playbackParameters.setMaxDuration(viewport.getMaxEnd());
     }
 
     /**
@@ -1645,15 +1418,19 @@ public final class VideoController extends DatavyuDialog
     @Action
     public void playAction() {
         logger.info("Play");
+        clock.setRate(1f);
+        clock.start();
 
         // BugzID:464 - When stopped at the end of the region of interest.
         // pressing play jumps the stream back to the start of the video before
         // starting to play again.
-        if ((getCurrentTime() >= playbackModel.getEndTime()) && clock.isStopped()) {
-            jumpTo(playbackModel.getStartTime());
+        /*
+        if ((getCurrentTime() >= playbackParameters.getEndTime()) && clock.isStopped()) {
+            jumpTo(playbackParameters.getStartTime());
         }
 
         playAt(PLAY_RATE);
+        */
     }
 
     /**
@@ -1683,13 +1460,13 @@ public final class VideoController extends DatavyuDialog
 
         // Resume from pause at playback rate prior to pause.
         if (clock.isStopped()) {
-            shuttleAt(playbackModel.getResumeRate());
+            shuttleAt(playbackParameters.getResumeRate());
 
             // Pause views - store current playback rate.
         } else {
-            playbackModel.setResumeRate(clock.getRate());
+            playbackParameters.setResumeRate(clock.getRate());
             clock.stop();
-            labelSpeed.setText("[" + FloatingPointUtils.doubleToFractionStr(playbackModel.getResumeRate())  + "]");
+            labelSpeed.setText("[" + FloatingPointUtils.doubleToFractionStr(playbackParameters.getResumeRate())  + "]");
         }
     }
 
@@ -1700,13 +1477,11 @@ public final class VideoController extends DatavyuDialog
     public void stopAction() {
         logger.info("Stop event.");
         clock.stop();
-        playbackModel.setResumeRate(0);
+        playbackParameters.setResumeRate(0);
     }
 
     /**
      * Action to invoke when the user clicks on the shuttle forward button.
-     *
-     * TODO: proper behavior for reversing shuttle direction?
      */
     @Action
     public void shuttleForwardAction() {
@@ -1753,7 +1528,8 @@ public final class VideoController extends DatavyuDialog
             try {
                 logger.info("Finding to " + onsetTextField.getText() + " "
                         + CLOCK_FORMAT.parse(onsetTextField.getText()).getTime());
-                jumpTo(CLOCK_FORMAT.parse(onsetTextField.getText()).getTime());
+                // TODO: Jump to
+                //jumpTo(CLOCK_FORMAT.parse(onsetTextField.getText()).getTime());
             } catch (ParseException e) {
                 logger.error("unable to find within video", e);
             }
@@ -1764,11 +1540,13 @@ public final class VideoController extends DatavyuDialog
      * Action to invoke when the user holds shift down.
      */
     public void findOffsetAction() {
+        // TODO: Jump to frame
+        /*
         try {
             jumpTo(CLOCK_FORMAT.parse(offsetTextField.getText()).getTime());
         } catch (ParseException e) {
             logger.error("Unable to find offset " + e);
-        }
+        }*/
     }
 
     public void toggleCellHighlighting() {
@@ -1827,7 +1605,8 @@ public final class VideoController extends DatavyuDialog
         try {
             long j = -CLOCK_FORMAT.parse(goBackTextField.getText()).getTime();
             logger.info("Jump back by " + j);
-            jump(j);
+            // TODO: Jump
+            //jump(j);
 
             //Bugzilla bug #179 - undoes the behavior from FogBugz BugzID:721
             // BugzID:721 - After going back - start playing again.
@@ -1843,7 +1622,7 @@ public final class VideoController extends DatavyuDialog
     @Action
     public void jogBackAction() {
         logger.info("Jog back");
-
+        /*
         if (!clock.isStopped()) {
             clockStop(clock.getTime());
         } else {
@@ -1858,7 +1637,7 @@ public final class VideoController extends DatavyuDialog
                 mul = CTRL_JOG;
             }
 
-            long stepSize = ((-ONE_SECOND) / (long) playbackModel.getCurrentFramesPerSecond());
+            long stepSize = ((-ONE_SECOND) / (long) playbackParameters.getHighestFramesPerSecond());
             long nextTime = mul * stepSize;
 
             long mod = clock.getTime() % stepSize;
@@ -1867,14 +1646,15 @@ public final class VideoController extends DatavyuDialog
                 nextTime = -mod;
             }
 
-            /* BugzID:1361 - Disallow jog to skip past the region boundaries. */
-            if ((clock.getTime() + nextTime) > playbackModel.getStartTime()) {
+            // BugzID:1361 - Disallow jog to skip past the region boundaries.
+            if ((clock.getTime() + nextTime) > playbackParameters.getStartTime()) {
                 stopAction();
                 jump(nextTime);
             } else {
-                jumpTo(playbackModel.getStartTime());
+                jumpTo(playbackParameters.getStartTime());
             }
         }
+        */
     }
 
     /**
@@ -1883,7 +1663,7 @@ public final class VideoController extends DatavyuDialog
     @Action
     public void jogForwardAction() {
         logger.info("Jog forward");
-
+        /*
         if (!clock.isStopped()) {
             clockStop(clock.getTime());
         } else {
@@ -1898,31 +1678,32 @@ public final class VideoController extends DatavyuDialog
                 mul = CTRL_JOG;
             }
 
-            long stepSize = ((ONE_SECOND) / (long) playbackModel.getCurrentFramesPerSecond());
+            long stepSize = ((ONE_SECOND) / (long) playbackParameters.getHighestFramesPerSecond());
             long nextTime = mul * stepSize;
 
-            /* BugzID:1544 - Preserve precision - force jog to frame markers. */
+            // BugzID:1544 - Preserve precision - force jog to frame markers.
             long mod = (clock.getTime() % stepSize);
 
             if (mod != 0) {
                 nextTime = nextTime + stepSize - mod;
             }
 
-            /* BugzID:1361 - Disallow jog to skip past the region boundaries. */
-            if ((clock.getTime() + nextTime) < playbackModel.getEndTime()) {
+            // BugzID:1361 - Disallow jog to skip past boundaries.
+            if ((clock.getTime() + nextTime) < playbackParameters.getEndTime()) {
                 stopAction();
                 jump(nextTime);
             } else {
-                jumpTo(playbackModel.getEndTime());
+                jumpTo(playbackParameters.getEndTime());
             }
         }
+        */
     }
 
     /**
      * @param rate Rate of play.
      */
     private void playAt(final float rate) {
-        playbackModel.setResumeRate(0);
+        playbackParameters.setResumeRate(0);
         shuttleAt(rate);
     }
 
@@ -1932,7 +1713,7 @@ public final class VideoController extends DatavyuDialog
     private void shuttle(final int shuttleJump) {
         float currentRate = clock.getRate();
         if (currentRate == 0) {
-            currentRate = playbackModel.getResumeRate();
+            currentRate = playbackParameters.getResumeRate();
         }
         float nextRate = shuttleRates.nextRate(currentRate, shuttleJump);
         logger.info("Changed rate from " + currentRate + " to " + nextRate + " for " + shuttleJump + " jumps.");
@@ -1948,34 +1729,13 @@ public final class VideoController extends DatavyuDialog
     }
 
     /**
-     * @param step Milliseconds to jump.
-     */
-    private void jump(final long step) {
-        if ((clock.getTime() + step) > playbackModel.getStartTime()) {
-            stopAction();
-            clock.stepTime(step);
-        } else {
-            jumpTo(playbackModel.getStartTime());
-        }
-    }
-
-    /**
-     * @param time Absolute time to jump to.
-     */
-    private void jumpTo(final long time) {
-        synchronized (clock) {
-            clock.stop();
-            clock.setTime(time);
-        }
-    }
-
-    /**
      * Action to invoke when the user clicks on the create new cell button.
      */
     @Action
     public void createNewCellAction() {
         logger.info("New cell");
-        if (!clock.isStopped()) adjustClock(getCurrentTime());
+        // TODO: Fix adjust clock
+        //if (!clock.isStopped()) adjustClock(getCurrentTime());
         CreateNewCellController controller = new CreateNewCellController();
         controller.createDefaultCell(true);
     }
@@ -1986,7 +1746,8 @@ public final class VideoController extends DatavyuDialog
     @Action
     public void createNewCellAndSetOffsetAction() {
         logger.info("New cell set offset");
-        if (!clock.isStopped()) adjustClock(getCurrentTime());
+        // TODO: Fixme adjust clock
+        //if (!clock.isStopped()) adjustClock(getCurrentTime());
         new CreateNewCellController(getCurrentTime(), true);
     }
 
@@ -1996,8 +1757,8 @@ public final class VideoController extends DatavyuDialog
     @Action
     public void pointCellAction() {
         logger.info("Set new cell offset");
-
-        adjustClock(getCurrentTime());
+        // TODO: Fixme adjust clock
+        //adjustClock(getCurrentTime());
         long time = getCurrentTime();
         new CreateNewCellController(time, false);
         new SetNewCellStopTimeController(time);
@@ -2025,7 +1786,7 @@ public final class VideoController extends DatavyuDialog
     }
 
     public float getCurrentFPS() {
-        return playbackModel.getCurrentFramesPerSecond();
+        return playbackParameters.getHighestFramesPerSecond();
     }
 
     public ClockTimer getClock() {

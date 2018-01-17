@@ -256,4 +256,14 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
         // TODO: Check if the release is required?
 //        movie.release();
     }
+
+    @Override
+    public boolean isStepEnabled() {
+        return false;
+    }
+
+    @Override
+    public void step() {
+        // Nothing to do here
+    }
 }

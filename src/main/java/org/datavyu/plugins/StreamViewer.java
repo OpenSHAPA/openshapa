@@ -123,7 +123,12 @@ public interface StreamViewer {
     void stop();
 
     /**
-     * Does this data viewer play?
+     * Steps in the current playback direction. If the start/end has been reached repeats the first/last frame.
+     */
+    void step();
+
+    /**
+     * Does this viewer play?
      */
     boolean isPlaying();
 
@@ -176,9 +181,9 @@ public interface StreamViewer {
     void removeViewerStateListener(ViewerStateListener vsl);
 
     /**
-     * Used to query the data viewer for custom actions.
+     * Used to query the viewer for custom actions.
      *
-     * @return custom actions handler.
+     * @return custom actions.
      * @see CustomActionsAdapter
      */
     CustomActions getCustomActions();
@@ -188,6 +193,8 @@ public interface StreamViewer {
      * of setSourceFile. Call to reduce the data viewer to a low-resource state.
      */
     void unsetSourceFile();
+
+    boolean isStepEnabled();
 
     /**
      * Did we assume the frames per second play back rate?
