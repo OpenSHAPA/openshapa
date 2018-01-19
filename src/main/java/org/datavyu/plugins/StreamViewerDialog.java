@@ -63,7 +63,7 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     /** List of listeners interested in changes made to the project */
     private final List<ViewerStateListener> viewerListeners = new LinkedList<>();
 
-    /** Volume for play back in dB? */
+    /** Volume for start back in dB? */
     protected float volume = 1f;
 
     /** Controls visibility */
@@ -85,8 +85,8 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     // TODO: Why do we have this startTime? Is it the current time in the stream?
     private long startTime = 0;
 
-    /** Is this movie currently playing? */
-    protected boolean playing = false;
+    /** Is this movie currently isPlaying? */
+    protected boolean isPlaying = false;
 
     /** The current video file */
     private File sourceFile;
@@ -130,7 +130,7 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     /** Enable fake playback for this stream viewer */
     private boolean enableFakePlayback;
 
-    /** Is this stream viewer is in fake play back*/
+    /** Is this stream viewer is in fake start back*/
     private boolean fakePlayback;
 
     /**
@@ -141,7 +141,7 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
         super(parent, modal);
 
         startTime = 0;
-        playing = false;
+        isPlaying = false;
 
         volumeButton = new JButton();
         volumeButton.setIcon(getVolumeButtonIcon());
@@ -428,22 +428,22 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     /**
      * {@inheritDoc}
      */
-    public void play() {
-        playing = true;
+    public void start() {
+        isPlaying = true;
     }
 
     /**
      * {@inheritDoc}
      */
     public void stop() {
-        playing = false;
+        isPlaying = false;
     }
 
     /**
      * {@inheritDoc}
      */
     public boolean isPlaying() {
-        return playing;
+        return isPlaying;
     }
 
     /**
@@ -602,5 +602,11 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
 
     public boolean isAssumedFramesPerSecond() {
         return isAssumedFramesPerSecond;
+    }
+
+    @Override
+    public boolean closeToStartOrEnd(long milliseconds) {
+        return getCurrentTime() <= getStartTime() + milliseconds
+                || getCurrentTime() >= getStartTime() + getDuration() - milliseconds;
     }
 }

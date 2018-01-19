@@ -25,7 +25,7 @@ public class MPlayerDataViewerDialog extends StreamViewerDialog {
      */
     private File data;
     /**
-     * Boolean to keep track of whether or not we are playing
+     * Boolean to keep track of whether or not we are isPlaying
      */
     private boolean playing;
 
@@ -243,7 +243,7 @@ public class MPlayerDataViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void play() {
+    public void start() {
         playing = true;
         javafxapp.play();
     }

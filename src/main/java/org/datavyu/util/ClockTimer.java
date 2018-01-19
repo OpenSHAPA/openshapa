@@ -21,11 +21,11 @@ import java.util.TimerTask;
 
 
 /**
- * ClockTime is a class which can be used as a time to keep multiple objects in sync.
+ * Keeps multiple streams in sync and does not play beyond the boundaries of a stream.
  */
 public final class ClockTimer {
 
-    /** Syncronization threshold in milliseconds */
+    /** Synchronization threshold in milliseconds */
     public static final long SYNC_THRESHOLD = 50L;
 
     /** Clock tick period in milliseconds */
@@ -37,8 +37,14 @@ public final class ClockTimer {
     /** Convert nanoseconds to milliseconds */
     private static final long NANO_IN_MILLI = 1000000L;
 
+    private long minStreamTime;
+
+    private long maxStreamTime;
+
+    private float maxFramesPerSecond;
+
     /** Current time of the clock */
-    private double elapsedTime;
+    private double clockTime;
 
     /** Used to calculate elapsed time */
     private double lastTime;
@@ -56,8 +62,10 @@ public final class ClockTimer {
      * Default constructor.
      */
     public ClockTimer() {
-        elapsedTime = 0;
+        clockTime = 0;
         lastTime = 0;
+        minStreamTime = Long.MAX_VALUE;
+        maxStreamTime = Long.MIN_VALUE;
         isStopped = true;
         new Timer().scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -67,8 +75,24 @@ public final class ClockTimer {
         }, CLOCK_SYNC_DELAY, CLOCK_SYNC_INTERVAL);
     }
 
-    public synchronized double getElapsedTime() {
-        return elapsedTime;
+    public synchronized void setMinStreamTime(long minStreamTime) {
+        this.minStreamTime = Long.min(minStreamTime, this.minStreamTime);
+    }
+
+    public synchronized void setMaxStreamTime(long maxStreamTime) {
+        this.maxStreamTime = Long.max(maxStreamTime, this.maxStreamTime);
+    }
+
+    public synchronized long getMaxStreamTime() {
+        return maxStreamTime;
+    }
+
+    public synchronized double getStreamTime() {
+        return (long)clockTime + minStreamTime;
+    }
+
+    public synchronized double absDrift(long currentStreamTime) {
+        return Math.abs(Math.abs(currentStreamTime - minStreamTime) - clockTime);
     }
 
     /**
@@ -84,7 +108,14 @@ public final class ClockTimer {
     public synchronized void setRate(float newRate) {
         updateElapsedTime();
         rate = newRate;
+        // FIRST notify about the rate change
         notifyRate();
+        // SECOND start or stop
+        if (Math.abs(rate) < Math.ulp(1f)) {
+            stop();
+        } else {
+            start();
+        }
     }
 
     /**
@@ -125,7 +156,7 @@ public final class ClockTimer {
 
     private synchronized void updateElapsedTime() {
         double newTime = System.nanoTime();
-        elapsedTime += isStopped ? 0 : rate * (newTime - lastTime) / NANO_IN_MILLI;
+        clockTime += isStopped ? 0 : rate * (newTime - lastTime) / NANO_IN_MILLI;
         lastTime = newTime;
     }
 
@@ -144,7 +175,7 @@ public final class ClockTimer {
      */
     private void notifySync() {
         for (ClockListener clockListener : clockListeners) {
-            clockListener.clockSync(elapsedTime);
+            clockListener.clockSync(clockTime);
         }
     }
 
@@ -162,7 +193,7 @@ public final class ClockTimer {
      */
     private void notifyStart() {
         for (ClockListener clockListener : clockListeners) {
-            clockListener.clockStart(elapsedTime);
+            clockListener.clockStart(clockTime);
         }
     }
 
@@ -171,7 +202,7 @@ public final class ClockTimer {
      */
     private void notifyStop() {
         for (ClockListener clockListener : clockListeners) {
-            clockListener.clockStop(elapsedTime);
+            clockListener.clockStop(clockTime);
         }
     }
 

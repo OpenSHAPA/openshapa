@@ -50,7 +50,7 @@ public class VLCApplication extends Application {
     /** Lightweight JavaFX canvas to render the video */
     private final Canvas canvas;
 
-    /** Source file for the playing video */
+    /** Source file for the isPlaying video */
     private File sourceFile;
 
     /** Variable that indicates that this player is initialized */
@@ -127,7 +127,7 @@ public class VLCApplication extends Application {
         if (directMediaPlayer.isPlaying()) {
             directMediaPlayer.pause();
         }
-        logger.info("Stated of player is " + (directMediaPlayer.isPlaying() ? "playing." : " not playing"));
+        logger.info("Stated of player is " + (directMediaPlayer.isPlaying() ? "isPlaying." : " not isPlaying"));
     }
 
     public void play() {
@@ -317,7 +317,7 @@ public class VLCApplication extends Application {
             // TODO: Need to do this differently
             while (!directMediaPlayer.isPlaying()) { }
 
-            logger.info("Was playing: " + isPlaying);
+            logger.info("Was isPlaying: " + isPlaying);
             if (!isPlaying) {
                 directMediaPlayer.pause();
             }

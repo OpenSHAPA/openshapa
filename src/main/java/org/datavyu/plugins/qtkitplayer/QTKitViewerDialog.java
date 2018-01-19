@@ -97,8 +97,8 @@ public final class QTKitViewerDialog extends StreamViewerDialog {
      * {@inheritDoc}
      */
     @Override
-    public void play() {
-        super.play();
+    public void start() {
+        super.start();
         logger.info("Playing at speed: " + getPlaybackSpeed());
         try {
             if (player != null) {
@@ -110,7 +110,7 @@ public final class QTKitViewerDialog extends StreamViewerDialog {
                 });
             }
         } catch (Exception e) {
-            logger.error("Unable to play", e);
+            logger.error("Unable to start", e);
         }
     }
 

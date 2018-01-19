@@ -241,8 +241,8 @@ public class VLCFXDataViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void play() {
-        super.play();
+    public void start() {
+        super.start();
         vlcFxApp.play();
     }
 

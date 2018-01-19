@@ -61,7 +61,7 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
     public VLCDataViewerDialog(final Frame parent, final boolean modal) {
         super(parent, modal);
 
-        playing = false;
+        isPlaying = false;
         vlcDialog = new JDialog(parent, modal);
         vlcDialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
         vlcDialog.setName("VLCDataViewerDialog");
@@ -212,7 +212,7 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
         mediaPlayer.startMedia(sourceFile.getAbsolutePath());
 
         // Because of the way VLC works, we have to wait for the metadata to become available a short time after we
-        // start playing
+        // start isPlaying
         // TODO: Reimplement this using the video output event
         try {
             int i = 0;
@@ -239,7 +239,7 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
         mediaPlayer.pause();
         mediaPlayer.setTime(0);
 
-        playing = false;
+        isPlaying = false;
 
         if (dimension != null) {
             vlcDialog.setSize(dimension);
@@ -275,7 +275,7 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
                     return;
                 }
 
-                if (!playing) {
+                if (!isPlaying) {
                     if (position > 0) {
                         mediaPlayer.setTime(position);
                     } else {
@@ -290,7 +290,7 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
 
     @Override
     public boolean isPlaying() {
-        return playing;
+        return isPlaying;
     }
 
     @Override
@@ -298,9 +298,9 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
         Runnable edtTask = new Runnable() {
             @Override
             public void run() {
-                if (playing) {
+                if (isPlaying) {
                     mediaPlayer.pause();
-                    playing = false;
+                    isPlaying = false;
                 }
             }
         };
@@ -314,12 +314,12 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
             @Override
             public void run() {
                 if (rate < 0) {
-                    // VLC cannot play in reverse, so we're going to rely
+                    // VLC cannot start in reverse, so we're going to rely
                     // on the clock to do fake jumping
                     mediaPlayer.setRate(0);
-                    if (playing) {
+                    if (isPlaying) {
                         mediaPlayer.pause();
-                        playing = false;
+                        isPlaying = false;
                     }
                 }
                 mediaPlayer.setRate(rate);
@@ -329,13 +329,13 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void play() {
+    public void start() {
         Runnable edtTask = new Runnable() {
             @Override
             public void run() {
-                if (!playing && mediaPlayer.getRate() > 0) {
+                if (!isPlaying && mediaPlayer.getRate() > 0) {
                     mediaPlayer.play();
-                    playing = true;
+                    isPlaying = true;
                 }
             }
         };

@@ -100,11 +100,11 @@ public class FFViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void play() {
+    public void start() {
         launch(() -> {
-            if (!playing) {
+            if (!isPlaying) {
                 player.play();
-                FFViewerDialog.super.play();
+                FFViewerDialog.super.start();
             }
         });
     }
@@ -112,7 +112,7 @@ public class FFViewerDialog extends StreamViewerDialog {
     @Override
     public void stop() {
         launch(() -> {
-            if (playing) {
+            if (isPlaying) {
                 player.stop();
                 FFViewerDialog.super.stop();
             }

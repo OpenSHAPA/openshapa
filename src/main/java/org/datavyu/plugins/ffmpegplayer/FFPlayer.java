@@ -141,12 +141,12 @@ public class FFPlayer extends JPanel {
 	}
 
 	/**
-	 * Set the play back speed for this player.
+	 * Set the start back speed for this player.
 	 *
-	 * @param playbackSpeed The play back speed.
+	 * @param playbackSpeed The start back speed.
 	 */
 	public void setPlaybackSpeed(float playbackSpeed) {
-		logger.info("Setting play back speed: " + playbackSpeed);
+		logger.info("Setting start back speed: " + playbackSpeed);
 		movieStreamProvider.setSpeed(playbackSpeed);
 	}
 
@@ -154,7 +154,7 @@ public class FFPlayer extends JPanel {
 	 * Play the video/audio.
 	 */
 	public void play() {
-		logger.info("Starting playing video");
+		logger.info("Starting isPlaying video");
 		movieStreamProvider.start();
 	}
 
@@ -167,14 +167,14 @@ public class FFPlayer extends JPanel {
 	}
 
 	/**
-	 * Rewind to the start/end of file depending if we play forward or backward, respectively.
+	 * Rewind to the start/end of file depending if we start forward or backward, respectively.
 	 */
 	public void rewind() {
 		movieStreamProvider.reset();
 	}
 
 	/**
-	 * Instead of playing a sequence of frames just step by one frame.
+	 * Instead of isPlaying a sequence of frames just step by one frame.
 	 */
 	public void step() {
 	    logger.info("Stepping.");

@@ -39,6 +39,15 @@ import org.datavyu.views.component.TrackPainter;
 public interface StreamViewer {
 
     /**
+     * We have reached the start or end of the stream for this viewer.
+     *
+     * @param milliseconds Milliseconds threshold to be close to the start or end.
+     *
+     * @return True if we reached the start or end; otherwise false.
+     */
+    boolean closeToStartOrEnd(long milliseconds);
+
+    /**
      * Sets the identifier used to identify this viewer.
      *
      * @param id Identifier to use.
@@ -115,10 +124,10 @@ public interface StreamViewer {
     /**
      * Plays the continuous data stream at the set speed.
      */
-    void play();
+    void start();
 
     /**
-     * Stops the play back.
+     * Stops the start back.
      */
     void stop();
 
@@ -128,12 +137,12 @@ public interface StreamViewer {
     void step();
 
     /**
-     * Does this viewer play?
+     * Does this viewer start?
      */
     boolean isPlaying();
 
     /**
-     * Set the play back speed.
+     * Set the start back speed.
      *
      * @param speed Positive implies forwards, while negative implies reverse.
      */
@@ -197,7 +206,7 @@ public interface StreamViewer {
     boolean isStepEnabled();
 
     /**
-     * Did we assume the frames per second play back rate?
+     * Did we assume the frames per second start back rate?
      *
      * @return True if we assumed the playback rate; otherwise false.
      */
@@ -206,28 +215,28 @@ public interface StreamViewer {
     /**
      * Use fake playback for this stream viewer.
      *
-     * @return True if we can use fake play back; otherwise false.
+     * @return True if we can use fake start back; otherwise false.
      */
     boolean isEnableFakePlayback();
 
     /**
-     * Enable fake play back.
+     * Enable fake start back.
      *
-     * @param enableFakePlayback Boolean of fake play back.
+     * @param enableFakePlayback Boolean of fake start back.
      */
     void setEnableFakePlayback(boolean enableFakePlayback);
 
     /**
-     * Is ths in fake play back.
+     * Is ths in fake start back.
      *
-     * @return True if this viewer is in fake play back; otherwise false.
+     * @return True if this viewer is in fake start back; otherwise false.
      */
     boolean isFakePlayback();
 
     /**
-     * Set the fake play back.
+     * Set the fake start back.
      *
-     * @param fakePlayback Fake play back state.
+     * @param fakePlayback Fake start back state.
      */
     void setFakePlayback(boolean fakePlayback);
 }

@@ -144,8 +144,8 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
      * {@inheritDoc}
      */
     @Override
-    public void play() {
-        super.play();
+    public void start() {
+        super.start();
         logger.info("Playing at speed: " + getPlaybackSpeed());
 
         try {
@@ -162,7 +162,7 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
                 logger.info("No movie loaded!");
             }
         } catch (Exception e) {
-            logger.error("Unable to play! Error: ", e);
+            logger.error("Unable to start! Error: ", e);
         }
     }
 

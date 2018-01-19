@@ -192,8 +192,8 @@ public final class QTDataViewerDialog extends StreamViewerDialog {
      * {@inheritDoc}
      */
     @Override
-    public void play() {
-        super.play();
+    public void start() {
+        super.start();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -202,7 +202,7 @@ public final class QTDataViewerDialog extends StreamViewerDialog {
                         movie.setRate(getPlaybackSpeed());
                     }
                 } catch (QTException e) {
-                    logger.error("Unable to play. Error: ", e);
+                    logger.error("Unable to start. Error: ", e);
                 }
             }
         });

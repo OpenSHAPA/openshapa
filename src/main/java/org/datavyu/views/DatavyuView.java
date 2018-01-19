@@ -614,13 +614,13 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
                 for (Component tab : tabbedPane.getComponents()) {
                     if (tab instanceof SpreadSheetPanel) {
-                        VideoController dv = ((SpreadSheetPanel) tab).getVideoController();
+                        VideoController videoController = ((SpreadSheetPanel) tab).getVideoController();
 
-                        dv.stopAction();
-                        for (StreamViewer d : dv.getStreamViewers()) {
-                            d.setViewerVisible(false);
+                        videoController.stopAction();
+                        for (StreamViewer streamViewer : videoController.getStreamViewers()) {
+                            streamViewer.setViewerVisible(false);
                         }
-                        dv.setVisible(false);
+                        videoController.setVisible(false);
                     }
                 }
 

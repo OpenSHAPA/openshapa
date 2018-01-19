@@ -451,7 +451,7 @@ public final class PluginManager {
     public Plugin getCompatiblePlugin(final String classifier, final File file) {
 
         // Short circuit this for the preferred new plugins for Windows and OSX
-        // FR: What is this doing? (One selects the play back plugin in the open file dialog)
+        // FR: What is this doing? (One selects the start back plugin in the open file dialog)
         if (classifier.equals("datavyu.video")) {
             if (Datavyu.getPlatform() == Datavyu.Platform.MAC) {
                 return MacOS.getNativeOSXPlugin();
