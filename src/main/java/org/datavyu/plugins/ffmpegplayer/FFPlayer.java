@@ -125,9 +125,9 @@ public class FFPlayer extends JPanel {
 	 *
 	 * @param position Position in seconds.
 	 */
-	public void seek(double position) {
+	public void setCurrentTime(double position) {
         logger.info("Seeking position: " + position);
-        movieStreamProvider.seek(position);
+        movieStreamProvider.setCurrentTime(position);
         movieStreamProvider.startVideoListeners();
         movieStreamProvider.nextImageFrame();
     }

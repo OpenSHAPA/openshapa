@@ -83,7 +83,7 @@ public final class VideoController extends DatavyuDialog
     /** Rate of playback for fast forwarding */
     private static final float FAST_FORWARD_RATE = 32F;
 
-    /** How often to synchronise the streamViewers with the master clock */
+    /** How often to synchronise the streamViewers with the master clockTimer */
     private static final long SYNC_PULSE = 500;
 
     /** The jump multiplier for shift-jogging */
@@ -124,7 +124,7 @@ public final class VideoController extends DatavyuDialog
 
     private static int timeStampFontSize = 15;
 
-    // initialize standard date format for clock display.
+    // initialize standard date format for clockTimer display.
     static {
         CLOCK_FORMAT = new SimpleDateFormat("HH:mm:ss:SSS");
         CLOCK_FORMAT.setTimeZone(new SimpleTimeZone(0, "NO_ZONE"));
@@ -160,10 +160,10 @@ public final class VideoController extends DatavyuDialog
     private boolean ctrlMask = false;
 
     /** The set of streamViewers associated with this controller */
-    private Set<StreamViewer> streamViewers;
+    private Set<StreamViewer> streamViewers = new LinkedHashSet<>();
 
     /** Clock timer */
-    private final ClockTimer clock = new ClockTimer();
+    private final ClockTimer clockTimer = new ClockTimer();
 
     /** Is the tracks panel currently shown */
     private boolean tracksPanelVisible = true;
@@ -264,7 +264,7 @@ public final class VideoController extends DatavyuDialog
     public VideoController(final Frame parent, final boolean modal) {
         super(parent, modal);
 
-        clock.registerListener(this);
+        clockTimer.registerListener(this);
 
         setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 
@@ -284,12 +284,11 @@ public final class VideoController extends DatavyuDialog
 
         setResizable(false);
         setName(this.getClass().getSimpleName());
-        streamViewers = new LinkedHashSet<>();
 
         final int defaultEndTime = (int) MixerController.DEFAULT_DURATION;
 
-        clock.setMinStreamTime(0);
-        clock.setMaxStreamTime(defaultEndTime);
+        clockTimer.setMinStreamTime(0);
+        clockTimer.setMaxStreamTime(defaultEndTime);
 
         mixerController = new MixerController();
         tracksPanel.add(mixerController.getTracksPanel(), "growx");
@@ -341,7 +340,7 @@ public final class VideoController extends DatavyuDialog
                     Identifier newIdentifier = Identifier.generateIdentifier();
                     streamViewer.setIdentifier(newIdentifier);
                     streamViewer.setSourceFile(selectedFile);
-                    streamViewer.seek(streamViewer.getStartTime());
+                    streamViewer.setCurrentTime(streamViewer.getStartTime());
                     // Fake playback is not available for the ffmpeg plugin
                     streamViewer.setEnableFakePlayback( !"FFmpeg Plugin".equals(plugin.getPluginName()) );
                     addStreamViewer(plugin.getTypeIcon(), streamViewer, selectedFile, streamViewer.getTrackPainter());
@@ -419,9 +418,9 @@ public final class VideoController extends DatavyuDialog
     }
 
     /**
-     * @param elapsedTime Current clock time in milliseconds.
+     * @param clockTime Current clockTimer time in milliseconds.
      */
-    public void clockStart(double elapsedTime) {
+    public void clockStart(double clockTime) {
         for (StreamViewer streamViewer : streamViewers) {
             streamViewer.start();
         }
@@ -438,23 +437,21 @@ public final class VideoController extends DatavyuDialog
         visible = v;
     }
 
-    /**
-     * @param elapsedTime Current clock time in milliseconds.
-     */
-    public void clockSync(double elapsedTime) {
-        logger.info("Sync event");
+    public void clockForceSync(double clockTime) {
+        logger.info("Forced sync");
         for (StreamViewer streamViewer : streamViewers) {
-            // Sync only if we are not at the start or end of the viewer
-            // At start or end does not work with the ffmpeg plugin
-            if (!streamViewer.closeToStartOrEnd((long)(5000f/streamViewer.getFramesPerSecond()))
-                    && Math.abs((long) elapsedTime - streamViewer.getCurrentTime() - streamViewer.getStartTime()) >=
+            streamViewer.setCurrentTime((long) clockTime);
+        }
+    }
+
+    /**
+     * @param clockTime Current clockTimer time in milliseconds.
+     */
+    public void clockPeriodicSync(double clockTime) {
+        for (StreamViewer streamViewer : streamViewers) {
+            if (Math.abs((long) clockTime  - streamViewer.getStartTime() - streamViewer.getCurrentTime()) >=
                     ClockTimer.SYNC_THRESHOLD) {
-                logger.info("Start time: " + streamViewer.getStartTime() + "\n"
-                             + "End time: " + streamViewer.getStartTime() + streamViewer.getDuration() + "\n"
-                             + "Current time: " + streamViewer.getCurrentTime() + "\n"
-                             + "Threshold: " + (long)(5000f/streamViewer.getFramesPerSecond()));
-                logger.info("SYNC stream: " + streamViewer.getIdentifier());
-                //streamViewer.seek(toPlayRange(elapsedTime, streamViewer));
+                streamViewer.setCurrentTime((long) clockTime);
             }
         }
     }
@@ -462,7 +459,7 @@ public final class VideoController extends DatavyuDialog
     /**
      * Determines whether a StreamViewer has data for the desired time.
      *
-     * @param elapsedTime The time we wish to start at or seek to.
+     * @param elapsedTime The time we wish to start at or setCurrentTime to.
      * @param viewer The StreamViewer to check.
      * @return True if data exists at this time, and false otherwise.
      */
@@ -472,16 +469,16 @@ public final class VideoController extends DatavyuDialog
     }
 
     /**
-     * @param elapsedTime Current clock time in milliseconds.
+     * @param clockTime Current clockTimer time in milliseconds.
      */
-    public void clockStop(double elapsedTime) {
+    public void clockStop(double clockTime) {
         for (StreamViewer streamViewer : streamViewers) {
             streamViewer.stop();
         }
     }
 
     /**
-     * @param rate Current (updated) clock rate.
+     * @param rate Current (updated) clockTimer rate.
      */
     public void clockRate(float rate) {
         labelSpeed.setText(FloatingPointUtils.doubleToFractionStr(rate));
@@ -503,12 +500,12 @@ public final class VideoController extends DatavyuDialog
     }
 
     /**
-     * Get the current master clock time for the controller.
+     * Get the current master clockTimer time for the controller.
      *
      * @return Time in milliseconds.
      */
     public long getCurrentTime() {
-        return (long) clock.getStreamTime();
+        return (long) clockTimer.getStreamTime();
     }
 
     /**
@@ -518,7 +515,7 @@ public final class VideoController extends DatavyuDialog
      */
     public void setCurrentTime(final long milliseconds) {
         //resetSync();
-        //TODO: Implement setting time in clock streams
+        //TODO: Implement setting time in clockTimer streams
         updateCurrentTimeLabel();
         mixerController.getMixerModel().getNeedleModel().setCurrentTime(milliseconds);
     }
@@ -755,13 +752,12 @@ public final class VideoController extends DatavyuDialog
         timeStampLabel.setName("timeStampLabel");
         timeStampLabel.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                // you can open a new frame here as
-                // i have assumed you have declared "frame" as instance variable
+                // Open a new frame here as i have assumed you have declared "frame" as instance variable
                 if (e.getClickCount() >= 3) {
                     int newTime = Integer.parseInt(JOptionPane.showInputDialog(null,
                             "Enter new time in ms", getCurrentTime()));
                     setCurrentTime(newTime);
-                    //clock.setTime(newTime);
+                    //clockTimer.setTime(newTime);
                 }
             }
         });
@@ -1169,8 +1165,8 @@ public final class VideoController extends DatavyuDialog
         if (streamViewers.size() == 1) {
             maxDuration = viewer.getStartTime() + viewer.getDuration();
         }*/
-        clock.setMaxStreamTime(viewer.getStartTime() + viewer.getDuration());
-        mixerController.getMixerModel().getViewportModel().setViewportMaxEnd(clock.getMaxStreamTime(), true);
+        clockTimer.setMaxStreamTime(viewer.getStartTime() + viewer.getDuration());
+        mixerController.getMixerModel().getViewportModel().setViewportMaxEnd(clockTimer.getMaxStreamTime(), true);
     }
 
     /**
@@ -1210,7 +1206,7 @@ public final class VideoController extends DatavyuDialog
      * @param e event
      */
     public void tracksControllerChanged(final TracksControllerEvent e) {
-        switch (e.getTracksEvent()) {
+        switch (e.getEventType()) {
             case CARRIAGE_EVENT:
                 handleCarriageEvent((CarriageEvent) e.getEventObject());
                 break;
@@ -1228,30 +1224,25 @@ public final class VideoController extends DatavyuDialog
      * @param e The timescale event that triggered this action.
      */
     private void handleTimescaleEvent(final TimescaleEvent e) {
-//        final boolean wasClockRunning = !clock.isStopped();
-//        final boolean togglePlaybackMode = e.getTogglePlaybackMode();
-//
-//        if (!wasClockRunning && togglePlaybackMode) {
-//            // TODO: Handle the playback
-//            //playAt(PLAY_RATE);
-//            //clockStart(e.getTime());
-//        } else {
-//            // TODO: Handle timescale event
-//
-//            //seekTime(e.getTime());
-//        }
+        logger.info("Change time to " + e.getTime() + " milliseconds and toggle: " + e.getToggleStartStop());
+
+        // Set the time
+        clockTimer.setTime(e.getTime());
+
+        // Toggle
+        if (e.getToggleStartStop()) {
+            clockTimer.toggle();
+        }
     }
 
     /**
-     * Handles a CarriageEvent (when the carriage moves due to user
-     * interaction).
+     * Handles a CarriageEvent when the carriage moves due to user interaction
      *
-     * @param e The carriage event that triggered this action.
+     * @param e The carriage event
      */
     private void handleCarriageEvent(final CarriageEvent e) {
 
         switch (e.getEventType()) {
-
             case OFFSET_CHANGE:
                 handleCarriageOffsetChangeEvent(e);
                 break;
@@ -1294,7 +1285,7 @@ public final class VideoController extends DatavyuDialog
 
     private void handleNeedleChanged(final PropertyChangeEvent e) {
 
-        if (clock.isStopped()) {
+        if (clockTimer.isStopped()) {
             final long newTime = mixerController.getMixerModel().getNeedleModel().getCurrentTime();
             // TODO: Handle time change
         }
@@ -1304,16 +1295,13 @@ public final class VideoController extends DatavyuDialog
 
     private void handleRegionChanged(final PropertyChangeEvent e) {
         final RegionState region = mixerController.getMixerModel().getRegionModel().getRegion();
-        clock.setMinStreamTime(region.getRegionStart());
-        clock.setMaxStreamTime(region.getRegionEnd());
-        //playbackParameters.setStartTime(region.getRegionStart());
-        //playbackParameters.setEndTime(region.getRegionEnd());
+        clockTimer.setMinStreamTime(region.getRegionStart());
+        clockTimer.setMaxStreamTime(region.getRegionEnd());
     }
 
     private void handleViewportChanged(final PropertyChangeEvent e) {
         final ViewportState viewport = mixerController.getMixerModel().getViewportModel().getViewport();
-        //playbackParameters.setMaxDuration(viewport.getMaxEnd());
-        clock.setMaxStreamTime(viewport.getMaxEnd());
+        clockTimer.setMaxStreamTime(viewport.getMaxEnd());
     }
 
     /**
@@ -1415,36 +1403,27 @@ public final class VideoController extends DatavyuDialog
      * Action to invoke when the user clicks on the start button.
      */
     @Action
+    @SuppressWarnings("unused")  // Called through actionMap
     public void startAction() {
         logger.info("Play");
-        clock.setRate(1f);
-
-        // BugzID:464 - When stopped at the end of the region of interest.
-        // pressing start jumps the stream back to the start of the video before
-        // starting to start again.
-        /*
-        if ((getCurrentTime() >= playbackParameters.getEndTime()) && clock.isStopped()) {
-            jumpTo(playbackParameters.getStartTime());
-        }
-
-        playAt(PLAY_RATE);
-        */
+        clockTimer.setRate(1f);
     }
 
     /**
      * Action to invoke when the user clicks on the pause button.
      */
     @Action
+    @SuppressWarnings("unused")  // Called through actionMap
     public void pauseAction() {
         // Toggle between isPlaying and not isPlaying
-        if (clock.isStopped()) {
-            logger.info("Pause: Resume isPlaying at rate: " + clock.getRate());
-            clock.start();
-            labelSpeed.setText(FloatingPointUtils.doubleToFractionStr(clock.getRate()));
+        if (clockTimer.isStopped()) {
+            logger.info("Pause: Resume isPlaying at rate: " + clockTimer.getRate());
+            clockTimer.start();
+            labelSpeed.setText(FloatingPointUtils.doubleToFractionStr(clockTimer.getRate()));
         } else {
-            logger.info("Pause: Stop isPlaying at rate: " + clock.getRate());
-            clock.stop();
-            labelSpeed.setText("[" + FloatingPointUtils.doubleToFractionStr(clock.getRate())  + "]");
+            logger.info("Pause: Stop isPlaying at rate: " + clockTimer.getRate());
+            clockTimer.stop();
+            labelSpeed.setText("[" + FloatingPointUtils.doubleToFractionStr(clockTimer.getRate())  + "]");
         }
     }
 
@@ -1454,13 +1433,14 @@ public final class VideoController extends DatavyuDialog
     @Action
     public void stopAction() {
         logger.info("Stop.");
-        clock.stop();
+        clockTimer.stop();
     }
 
     /**
      * Action to invoke when the user clicks on the shuttle forward button.
      */
     @Action
+    @SuppressWarnings("unused")  // Called through actionMap
     public void shuttleForwardAction() {
         logger.info("Shuttle forward.");
         shuttle(1);
@@ -1470,6 +1450,7 @@ public final class VideoController extends DatavyuDialog
      * Action to invoke when the user clicks on the shuttle back button.
      */
     @Action
+    @SuppressWarnings("unused")  // Called through actionMap
     public void shuttleBackAction() {
         logger.info("Shuttle back.");
         shuttle(-1);
@@ -1497,6 +1478,7 @@ public final class VideoController extends DatavyuDialog
      * Action to invoke when the user clicks on the find button.
      */
     @Action
+    @SuppressWarnings("unused")  // Called through actionMap
     public void findAction() {
         if (shiftMask) {
             findOffsetAction();
@@ -1556,18 +1538,14 @@ public final class VideoController extends DatavyuDialog
     public void setRegionOfInterestAction() {
         if (this.getStreamViewers().size() > 0) {
             try {
-                final long findTextTime = CLOCK_FORMAT.parse(
-                        onsetTextField.getText()).getTime();
-                final long findOffsetTime = CLOCK_FORMAT.parse(
-                        offsetTextField.getText()).getTime();
+                final long findTextTime = CLOCK_FORMAT.parse(onsetTextField.getText()).getTime();
+                final long findOffsetTime = CLOCK_FORMAT.parse(offsetTextField.getText()).getTime();
 
                 final long newWindowPlayStart = findTextTime;
                 final long newWindowPlayEnd = (findOffsetTime > newWindowPlayStart)
                         ? findOffsetTime : newWindowPlayStart;
-                mixerController.getMixerModel().getNeedleModel().setCurrentTime(
-                        newWindowPlayStart);
-                mixerController.getMixerModel().getRegionModel().setPlaybackRegion(
-                        newWindowPlayStart, newWindowPlayEnd);
+                mixerController.getMixerModel().getNeedleModel().setCurrentTime(newWindowPlayStart);
+                mixerController.getMixerModel().getRegionModel().setPlaybackRegion(newWindowPlayStart, newWindowPlayEnd);
             } catch (ParseException e) {
                 logger.error("Unable to set region of interest for playback " + e);
             }
@@ -1578,6 +1556,7 @@ public final class VideoController extends DatavyuDialog
      * Action to invoke when the user clicks on the go back button.
      */
     @Action
+    @SuppressWarnings("unused")  // Called through actionMap
     public void goBackAction() {
         try {
             long j = -CLOCK_FORMAT.parse(goBackTextField.getText()).getTime();
@@ -1600,8 +1579,8 @@ public final class VideoController extends DatavyuDialog
     public void jogBackAction() {
         logger.info("Jog back");
         /*
-        if (!clock.isStopped()) {
-            clockStop(clock.getTime());
+        if (!clockTimer.isStopped()) {
+            clockStop(clockTimer.getTime());
         } else {
 
             int mul = 1;
@@ -1617,14 +1596,14 @@ public final class VideoController extends DatavyuDialog
             long stepSize = ((-ONE_SECOND) / (long) playbackParameters.getHighestFramesPerSecond());
             long nextTime = mul * stepSize;
 
-            long mod = clock.getTime() % stepSize;
+            long mod = clockTimer.getTime() % stepSize;
 
             if (mod != 0) {
                 nextTime = -mod;
             }
 
             // BugzID:1361 - Disallow jog to skip past the region boundaries.
-            if ((clock.getTime() + nextTime) > playbackParameters.getStartTime()) {
+            if ((clockTimer.getTime() + nextTime) > playbackParameters.getStartTime()) {
                 stopAction();
                 jump(nextTime);
             } else {
@@ -1641,8 +1620,8 @@ public final class VideoController extends DatavyuDialog
     public void jogForwardAction() {
         logger.info("Jog forward");
         /*
-        if (!clock.isStopped()) {
-            clockStop(clock.getTime());
+        if (!clockTimer.isStopped()) {
+            clockStop(clockTimer.getTime());
         } else {
 
             int mul = 1;
@@ -1659,14 +1638,14 @@ public final class VideoController extends DatavyuDialog
             long nextTime = mul * stepSize;
 
             // BugzID:1544 - Preserve precision - force jog to frame markers.
-            long mod = (clock.getTime() % stepSize);
+            long mod = (clockTimer.getTime() % stepSize);
 
             if (mod != 0) {
                 nextTime = nextTime + stepSize - mod;
             }
 
             // BugzID:1361 - Disallow jog to skip past boundaries.
-            if ((clock.getTime() + nextTime) < playbackParameters.getEndTime()) {
+            if ((clockTimer.getTime() + nextTime) < playbackParameters.getEndTime()) {
                 stopAction();
                 jump(nextTime);
             } else {
@@ -1680,9 +1659,9 @@ public final class VideoController extends DatavyuDialog
      * @param shuttleJump The required rate and direction of the shuttle.
      */
     private void shuttle(int shuttleJump) {
-        float currentRate = clock.getRate();
+        float currentRate = clockTimer.getRate();
         float nextRate = shuttleRates.nextRate(currentRate, shuttleJump);
-        clock.setRate(nextRate);
+        clockTimer.setRate(nextRate);
         logger.info("Changed rate from " + currentRate + " to " + nextRate + " for " + shuttleJump + " jumps.");
     }
 
@@ -1690,10 +1669,11 @@ public final class VideoController extends DatavyuDialog
      * Action to invoke when the user clicks on the create new cell button.
      */
     @Action
+    @SuppressWarnings("unused")  // Called through actionMap
     public void createNewCellAction() {
         logger.info("New cell");
-        // TODO: Fix adjust clock
-        //if (!clock.isStopped()) adjustClock(getCurrentTime());
+        // TODO: Fix adjust clockTimer by calling sync event
+        //if (!clockTimer.isStopped()) adjustClock(getCurrentTime());
         CreateNewCellController controller = new CreateNewCellController();
         controller.createDefaultCell(true);
     }
@@ -1702,10 +1682,11 @@ public final class VideoController extends DatavyuDialog
      * Action to invoke when the user clicks on the new cell button.
      */
     @Action
+    @SuppressWarnings("unused")  // Called through actionMap
     public void createNewCellAndSetOffsetAction() {
         logger.info("New cell set offset");
-        // TODO: Fixme adjust clock
-        //if (!clock.isStopped()) adjustClock(getCurrentTime());
+        // TODO: Fixme adjust clockTimer
+        //if (!clockTimer.isStopped()) adjustClock(getCurrentTime());
         new CreateNewCellController(getCurrentTime(), true);
     }
 
@@ -1713,9 +1694,10 @@ public final class VideoController extends DatavyuDialog
      * Action to invoke when the user clicks on the new cell offset button.
      */
     @Action
+    @SuppressWarnings("unused")  // Called through actionMap
     public void pointCellAction() {
         logger.info("Set new cell offset");
-        // TODO: Fixme adjust clock
+        // TODO: Fixme adjust clockTimer
         //adjustClock(getCurrentTime());
         long time = getCurrentTime();
         new CreateNewCellController(time, false);
@@ -1740,7 +1722,7 @@ public final class VideoController extends DatavyuDialog
         //return playbackParameters.getHighestFramesPerSecond();
     }
 
-    public ClockTimer getClock() {
-        return clock;
+    public ClockTimer getClockTimer() {
+        return clockTimer;
     }
 }

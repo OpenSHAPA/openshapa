@@ -194,7 +194,7 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
      * {@inheritDoc}
      */
     @Override
-    public void seek(final long position) {
+    public void setCurrentTime(final long time) {
 
         // TODO: Check what is this 35 magic (this seems the only place)?
         if(System.currentTimeMillis() - timeOfPrevSeek < 35) {
@@ -205,21 +205,21 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
             seeking = true;
             try {
                 if (movie != null) {
-                    prevSeekTime = position;
+                    prevSeekTime = time;
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
-                            logger.info("Seeking to position: " + position);
+                            logger.info("Seeking to position: " + time);
                             boolean wasPlaying = isPlaying();
                             float prevRate = getPlaybackSpeed();
                             if (isPlaying()) {
                                 movie.stop(movie.id);
                             }
                             if (prevRate >= 0 && prevRate <= 8) {
-                                movie.setTimePrecise(position, movie.id);
+                                movie.setTimePrecise(time, movie.id);
                             } else if (prevRate < 0  && prevRate > -8) {
-                                movie.setTimeModerate(position, movie.id);
+                                movie.setTimeModerate(time, movie.id);
                             } else {
-                                movie.setTime(position, movie.id);
+                                movie.setTime(time, movie.id);
                             }
                             if (wasPlaying) {
                                 movie.setRate(prevRate, movie.id);

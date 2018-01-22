@@ -48,7 +48,7 @@ public class MPlayerApplication extends Application {
                 rate = mp.getCurrentRate();
             }
 
-            // NOTE: JavaFX only seems to be able to seek accurately in 2.2 when the rate != 0,
+            // NOTE: JavaFX only seems to be able to setCurrentTime accurately in 2.2 when the rate != 0,
             // so lets fake that here.
             mp.setRate(1);
             mp.seek(Duration.millis(time));

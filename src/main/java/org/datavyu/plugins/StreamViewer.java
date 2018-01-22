@@ -149,11 +149,11 @@ public interface StreamViewer {
     void setPlaybackSpeed(float speed);
 
     /**
-     * Set the stream position.
+     * Set the stream time. If the time is out of range set to the next closest value in the stream.
      *
-     * @param position Position in milliseconds.
+     * @param time Position in milliseconds.
      */
-    void seek(long position);
+    void setCurrentTime(long time);
 
     /**
      * @return Custom track painter implementation. Must not return null.

@@ -256,7 +256,7 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     /**
      * {@inheritDoc}
      */
-    public abstract void seek(final long position);
+    public abstract void setCurrentTime(final long time);
 
     protected abstract float getPlayerFramesPerSecond();
 
@@ -399,7 +399,7 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
         logger.info("Frames per second: " + framesPerSecond);
 
         // Display the first frame
-        seek(0L);
+        setCurrentTime(0L);
     }
 
     /**

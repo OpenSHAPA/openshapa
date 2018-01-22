@@ -117,7 +117,7 @@ public final class QTDataViewerDialog extends StreamViewerDialog {
             // WARNING there seems to be a bug in QTJava where the video will be rendered as blank if the QT
             // component is added before the window is displayable/visible
             add(QTFactory.makeQTComponent(movie).asComponent());
-            seek(0L);
+            setCurrentTime(0L);
         } catch (QTException e) {
             logger.error("Unable to " + playerSourceFile.getAbsolutePath() + ". Error: ", e);
         }
@@ -232,7 +232,7 @@ public final class QTDataViewerDialog extends StreamViewerDialog {
      * {@inheritDoc}
      */
     @Override
-    public void seek(final long position) {
+    public void setCurrentTime(final long position) {
         try {
             stop();
             if (movie != null && position != getCurrentTime()) {

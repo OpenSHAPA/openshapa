@@ -227,8 +227,8 @@ public class JavaFXStreamViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void seek(final long position) {
-        javafxapp.seek(position);
+    public void setCurrentTime(final long time) {
+        javafxapp.seek(time);
     }
 
     @Override

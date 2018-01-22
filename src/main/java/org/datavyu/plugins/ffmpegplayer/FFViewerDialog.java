@@ -14,7 +14,7 @@ public class FFViewerDialog extends StreamViewerDialog {
     /** The logger for this class */
     private static Logger logger = LogManager.getLogger(FFViewerDialog.class);
 
-    /** Previous seek time */
+    /** Previous setCurrentTime time */
     private long previousSeekTime = -1;
 
     /** The player this viewer is displaying */
@@ -63,26 +63,28 @@ public class FFViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void seek(long position) {
+    public void setCurrentTime(long time) {
         launch(() -> {
             try {
-                logger.info("Seeking position: " + position);
-                if (!isSeeking && (previousSeekTime != position)) {
-                    previousSeekTime = position;
+                logger.info("Set time to: " + time + " milliseconds.");
+                if (!isSeeking && (previousSeekTime != time)) {
+                    previousSeekTime = time;
                     EventQueue.invokeLater(() -> {
-                        logger.info("Starting seek.");
+                        logger.info("At start for setting time.");
                         isSeeking = true;
-                        boolean wasPlaying = isPlaying();
-                        float playbackSpeed = getPlaybackSpeed();
-                        if (isPlaying()) {
-                            player.stop();
-                        }
-                        player.seek(position/1000.0);
-                        player.repaint();
-                        if (wasPlaying) {
-                            player.setPlaybackSpeed(playbackSpeed);
-                        }
+                        player.setCurrentTime(time / 1000.0);
+//                        boolean wasPlaying = isPlaying();
+//                        float playbackSpeed = getPlaybackSpeed();
+//                        if (isPlaying()) {
+//                            player.stop();
+//                        }
+//                        player.setCurrentTime(time /1000.0);
+//                        player.repaint();
+//                        if (wasPlaying) {
+//                            player.setPlaybackSpeed(playbackSpeed);
+//                        }
                         isSeeking = false;
+                        logger.info("At end for setting time.");
                     });
                 }
             } catch (Exception e) {

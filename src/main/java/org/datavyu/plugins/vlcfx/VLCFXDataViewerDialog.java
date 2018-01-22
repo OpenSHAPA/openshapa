@@ -220,8 +220,8 @@ public class VLCFXDataViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void seek(final long position) {
-        vlcFxApp.seek(position);
+    public void setCurrentTime(final long time) {
+        vlcFxApp.seek(time);
     }
 
     @Override

@@ -104,7 +104,7 @@ public abstract class DataValueEditor extends EditorComponent {
             //Q: How can I get the Cell reference from the value
             UndoableEdit edit = new ChangeValCellEdit(cell);                        
             // notify the listeners
-            Datavyu.getView().getUndoSupport().postEdit(edit);
+            Datavyu.getTimescaleComponent().getUndoSupport().postEdit(edit);
 */
         }
     }

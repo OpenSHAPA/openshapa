@@ -26,12 +26,12 @@ public class TimescaleEvent extends EventObject {
     private long time;
 
     /** Starts playback if it is currently stopped (and vice versa). */
-    private boolean togglePlaybackMode;
+    private boolean toggleStartStop;
     
-    public TimescaleEvent(final Object source, final long time, boolean togglePlaybackMode) {
+    public TimescaleEvent(final Object source, final long time, boolean toggleStartStop) {
         super(source);
         this.time = time;
-        this.togglePlaybackMode = togglePlaybackMode;
+        this.toggleStartStop = toggleStartStop;
     }
 
     /**
@@ -44,7 +44,7 @@ public class TimescaleEvent extends EventObject {
     /**
      * @return True if the current playback mode should be toggled after performing the jump
      */
-    public boolean getTogglePlaybackMode() {
-    	return togglePlaybackMode;
+    public boolean getToggleStartStop() {
+    	return toggleStartStop;
     }
 }

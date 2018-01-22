@@ -31,7 +31,7 @@ public final class QTKitViewerDialog extends StreamViewerDialog {
     /** The logger for this class */
     private static Logger logger = LogManager.getLogger(QTKitViewerDialog.class);
 
-    /** Last seek time */
+    /** Last setCurrentTime time */
     private long lastSeekTime = -1;
 
     /** The player this viewer is displaying */
@@ -139,18 +139,18 @@ public final class QTKitViewerDialog extends StreamViewerDialog {
      * {@inheritDoc}
      */
     @Override
-    public void seek(final long position) {
+    public void setCurrentTime(final long time) {
         try {
-            if (player != null && (lastSeekTime != position)) {
-                lastSeekTime = position;
-                logger.info("Seeking position: " + position);
+            if (player != null && (lastSeekTime != time)) {
+                lastSeekTime = time;
+                logger.info("Seeking position: " + time);
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         boolean wasPlaying = isPlaying();
                         float prevRate = getPlaybackSpeed();
                         if (isPlaying())
                             player.stop(player.id);
-                        player.setTime(position, player.id);
+                        player.setTime(time, player.id);
                         if (wasPlaying) {
                             player.setRate(prevRate, player.id);
                         }
@@ -159,7 +159,7 @@ public final class QTKitViewerDialog extends StreamViewerDialog {
 
             }
         } catch (Exception e) {
-            logger.error("Unable to seek! Error: ", e);
+            logger.error("Unable to setCurrentTime! Error: ", e);
         }
     }
 

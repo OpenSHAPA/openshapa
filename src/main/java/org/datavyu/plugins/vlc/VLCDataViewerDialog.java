@@ -264,20 +264,20 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void seek(final long position) {
+    public void setCurrentTime(final long time) {
         Runnable edtTask = new Runnable() {
             @Override
             public void run() {
 
                 long current = mediaPlayer.getTime();
 
-                if (position == current) {
+                if (time == current) {
                     return;
                 }
 
                 if (!isPlaying) {
-                    if (position > 0) {
-                        mediaPlayer.setTime(position);
+                    if (time > 0) {
+                        mediaPlayer.setTime(time);
                     } else {
                         mediaPlayer.setTime(0);
                     }

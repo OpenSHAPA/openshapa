@@ -21,15 +21,15 @@ import java.util.TimerTask;
 
 
 /**
- * Keeps multiple streams in sync and does not play beyond the boundaries of a stream.
+ * Keeps multiple streams in periodicSync and does not play beyond the boundaries of a stream.
  */
 public final class ClockTimer {
 
     /** Synchronization threshold in milliseconds */
-    public static final long SYNC_THRESHOLD = 50L;
+    public static final long SYNC_THRESHOLD = 500L;
 
     /** Clock tick period in milliseconds */
-    private static final long CLOCK_SYNC_INTERVAL = 2000L;
+    private static final long CLOCK_SYNC_INTERVAL = 500L;
 
     /** Clock initial delay in milliseconds */
     private static final long CLOCK_SYNC_DELAY = 0L;
@@ -43,16 +43,16 @@ public final class ClockTimer {
 
     private float maxFramesPerSecond;
 
-    /** Current time of the clock */
+    /** Current time of the clock in milliseconds */
     private double clockTime;
 
-    /** Used to calculate elapsed time */
+    /** Used to calculate elapsed time in nanoseconds */
     private double lastTime;
 
-    /** Is the clock currently stopped */
+    /** Is the clock stopped */
     private boolean isStopped;
 
-    /** Update multiplier */
+    /** The rate factor for the clock updates */
     private float rate = 1F;
 
     /** The set of objects that listen to this clock */
@@ -70,7 +70,7 @@ public final class ClockTimer {
         new Timer().scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                sync();
+                periodicSync();
             }
         }, CLOCK_SYNC_DELAY, CLOCK_SYNC_INTERVAL);
     }
@@ -88,7 +88,7 @@ public final class ClockTimer {
     }
 
     public synchronized double getStreamTime() {
-        return (long)clockTime + minStreamTime;
+        return (long) clockTime + minStreamTime;
     }
 
     public synchronized double absDrift(long currentStreamTime) {
@@ -100,6 +100,28 @@ public final class ClockTimer {
      */
     public synchronized float getRate() {
         return rate;
+    }
+
+    public synchronized void setTime(long time) {
+        if (minStreamTime <= time || time <= maxStreamTime) {
+            clockTime = time;
+            // Don't notify because we assume that the time will be corrected by periodic sync events
+        }
+    }
+
+    public synchronized void setForceTime(long time) {
+        if (minStreamTime <= time || time <= maxStreamTime) {
+            clockTime = time;
+            notifyForceSync();
+        }
+    }
+
+    public synchronized void toggle() {
+        if (isStopped) {
+            start();
+        } else {
+            stop();
+        }
     }
 
     /**
@@ -161,21 +183,28 @@ public final class ClockTimer {
     }
 
     /**
-     * The "sync" of the clock - updates listeners of changes in time.
+     * The "periodicSync" of the clock - updates listeners of changes in time.
      */
-    private synchronized void sync() {
-        if (!isStopped) {
-            updateElapsedTime();
-            notifySync();
+    private synchronized void periodicSync() {
+        updateElapsedTime();
+        notifyPeriodicSync();
+    }
+
+    /**
+     * Notify clock listeners of a force periodicSync -- consumers must act on this
+     */
+    private void notifyForceSync() {
+        for (ClockListener clockListener : clockListeners) {
+            clockListener.clockForceSync(clockTime);
         }
     }
 
     /**
-     * Notify clock listeners of sync.
+     * Notify clock listeners of a periodic periodicSync -- consumers may act on this
      */
-    private void notifySync() {
+    private void notifyPeriodicSync() {
         for (ClockListener clockListener : clockListeners) {
-            clockListener.clockSync(clockTime);
+            clockListener.clockPeriodicSync(clockTime);
         }
     }
 
@@ -212,19 +241,24 @@ public final class ClockTimer {
     public interface ClockListener {
 
         /**
-         * @param elapsedTime Current time in milliseconds
+         * @param clockTime Current time in milliseconds
          */
-        void clockSync(double elapsedTime);
+        void clockForceSync(double clockTime);
 
         /**
-         * @param elapsedTime Current time in milliseconds
+         * @param clockTime Current time in milliseconds
          */
-        void clockStart(double elapsedTime);
+        void clockPeriodicSync(double clockTime);
 
         /**
-         * @param elapsedTime Current time in milliseconds
+         * @param clockTime Current time in milliseconds
          */
-        void clockStop(double elapsedTime);
+        void clockStart(double clockTime);
+
+        /**
+         * @param clockTime Current time in milliseconds
+         */
+        void clockStop(double clockTime);
 
         /**
          * @param rate Current (updated) rate.

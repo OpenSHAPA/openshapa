@@ -249,7 +249,7 @@ public class SpreadsheetCell extends JPanel
         stretcher = new Filler(d, d, d);
         cellPanel.add(stretcher, BorderLayout.SOUTH);
 
-        Datavyu.getVideoController().getClock().registerListener(this);
+        Datavyu.getVideoController().getClockTimer().registerListener(this);
 
         brandNew = true;
     }
@@ -693,17 +693,20 @@ public class SpreadsheetCell extends JPanel
     }
 
     @Override
-    public void clockSync(double elapsedTime) {
+    public void clockForceSync(double clockTime) {}
+
+    @Override
+    public void clockPeriodicSync(double clockTime) {
         updateSelectionDisplay();
     }
 
     @Override
-    public void clockStop(double elapsedTime) {
+    public void clockStop(double clockTime) {
 
     }
 
     @Override
-    public void clockStart(double elapsedTime) {
+    public void clockStart(double clockTime) {
 
     }
 

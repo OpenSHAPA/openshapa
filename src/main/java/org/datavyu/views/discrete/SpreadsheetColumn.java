@@ -14,7 +14,6 @@
  */
 package org.datavyu.views.discrete;
 
-import com.headius.invokebinder.transform.Spread;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
@@ -177,7 +176,7 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
         this.setVisible(!var.isHidden());
         datapanel.setVisible(!var.isHidden());
 
-        Datavyu.getVideoController().getClock().registerListener(this);
+        Datavyu.getVideoController().getClockTimer().registerListener(this);
     }
 
     /**
@@ -750,10 +749,15 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
     }
 
     @Override
-    public void clockSync(double elapsedTime) {
+    public void clockPeriodicSync(double clockTime) {
         if(isSelected() && Datavyu.getVideoController().getCellHighlightAndFocus()) {
             focusNextCell();
         }
+    }
+
+    @Override
+    public void clockForceSync(double clockTime) {
+
     }
 
     @Override
@@ -762,12 +766,12 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
     }
 
     @Override
-    public void clockStart(double elapsedTime) {
+    public void clockStart(double clockTime) {
 
     }
 
     @Override
-    public void clockStop(double elapsedTime) {
+    public void clockStop(double clockTime) {
 
     }
 }

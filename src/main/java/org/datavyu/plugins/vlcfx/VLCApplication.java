@@ -114,7 +114,7 @@ public class VLCApplication extends Application {
     }
 
     public void seek(long time) {
-        // Only seek if this is a new time (not the last seek time and not the current time)
+        // Only setCurrentTime if this is a new time (not the last setCurrentTime time and not the current time)
         if (lastSeekTime != time || time != directMediaPlayer.getTime()) {
             logger.info("SEEKING TO " + time);
             directMediaPlayer.setTime(time);
