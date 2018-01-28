@@ -46,7 +46,8 @@ package org.datavyu.models.component;
  * </code>
  */
 public interface ViewportState {
-    static final String NAME = ViewportState.class.getName();
+
+    String NAME = ViewportState.class.getName();
 
     /**
      * @return Maximum valid timestamp in milliseconds. Inclusive.

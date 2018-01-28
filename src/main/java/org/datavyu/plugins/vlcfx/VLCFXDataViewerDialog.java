@@ -236,7 +236,7 @@ public class VLCFXDataViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void setPlaybackSpeed(final float rate) {
+    public void setRate(final float rate) {
         vlcFxApp.setRate(rate);
     }
 

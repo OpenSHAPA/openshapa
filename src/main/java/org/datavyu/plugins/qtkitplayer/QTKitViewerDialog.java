@@ -89,8 +89,8 @@ public final class QTKitViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void setPlaybackSpeed(final float rate) {
-        super.setPlaybackSpeed(rate);
+    public void setRate(final float rate) {
+        super.setRate(rate);
     }
 
     /**

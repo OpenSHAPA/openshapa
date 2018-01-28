@@ -79,20 +79,33 @@ public final class ClockTimer {
         this.minStreamTime = Long.min(minStreamTime, this.minStreamTime);
     }
 
+    /**
+     * Set the maximum stream time
+     *
+     * @param maxStreamTime
+     */
     public synchronized void setMaxStreamTime(long maxStreamTime) {
         this.maxStreamTime = Long.max(maxStreamTime, this.maxStreamTime);
     }
 
+    /**
+     * Get the maximum stream time as defined through the boundaries for the play time
+     *
+     * Notice, that this time can be altered through user-imposed boundaries
+     *
+     * @return Maximum stream time
+     */
     public synchronized long getMaxStreamTime() {
         return maxStreamTime;
     }
 
+    /**
+     * Get the current stream time
+     *
+     * @return Current stream time
+     */
     public synchronized double getStreamTime() {
         return (long) clockTime + minStreamTime;
-    }
-
-    public synchronized double absDrift(long currentStreamTime) {
-        return Math.abs(Math.abs(currentStreamTime - minStreamTime) - clockTime);
     }
 
     /**
@@ -102,20 +115,41 @@ public final class ClockTimer {
         return rate;
     }
 
+    /**
+     * Set the time but don't activate any of the listeners
+     *
+     * All listeners will be updated through the auto sync to the new time
+     *
+     * Use this method if eventual synchronization is enough
+     *
+     * @param time The new time
+     */
     public synchronized void setTime(long time) {
         if (minStreamTime <= time || time <= maxStreamTime) {
             clockTime = time;
-            // Don't notify because we assume that the time will be corrected by periodic sync events
+            // Don't notify a sync or force a sync
+            // The time will be updated by a periodic sync
         }
     }
 
+    /**
+     * Set the time and force an update of the clock time to all listeners
+     *
+     * Use this method if immediate synchronization is desired
+     *
+     * @param time The new time
+     */
     public synchronized void setForceTime(long time) {
         if (minStreamTime <= time || time <= maxStreamTime) {
             clockTime = time;
+            // Notify a force sync
             notifyForceSync();
         }
     }
 
+    /**
+     * Toggles between start/stop
+     */
     public synchronized void toggle() {
         if (isStopped) {
             start();
@@ -125,7 +159,9 @@ public final class ClockTimer {
     }
 
     /**
-     * @param newRate Multiplier for CLOCK_TICK.
+     * Sets the update rate for the clock
+     *
+     * @param newRate New update rate
      */
     public synchronized void setRate(float newRate) {
         updateElapsedTime();
@@ -141,7 +177,8 @@ public final class ClockTimer {
     }
 
     /**
-     * Initiate starting of clock.
+     * If the clock is not running, then this starts the clock and fires a notify
+     * start event with the current clock time
      */
     public synchronized void start() {
         if (isStopped) {
@@ -152,7 +189,8 @@ public final class ClockTimer {
     }
 
     /**
-     * Set flag to stop clock at next time update (boundary).
+     * If the clock is not stopped, then this stops the clock and fires a notify
+     * stop event with the current clock time
      */
     public synchronized void stop() {
         if (!isStopped) {
@@ -170,12 +208,17 @@ public final class ClockTimer {
     }
 
     /**
-     * @param listener Listener requiring clockTick updates.
+     * Registers a clock listener
+     *
+     * @param listener Listener requiring clockTick updates
      */
     public synchronized void registerListener(final ClockListener listener) {
         clockListeners.add(listener);
     }
 
+    /**
+     * Update the clock time with the elapsed time since the last update
+     */
     private synchronized void updateElapsedTime() {
         double newTime = System.nanoTime();
         clockTime += isStopped ? 0 : rate * (newTime - lastTime) / NANO_IN_MILLI;

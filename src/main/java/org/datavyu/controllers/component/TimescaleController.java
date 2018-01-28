@@ -41,9 +41,7 @@ public final class TimescaleController implements PropertyChangeListener {
     private final TimescaleModel timescaleModel;
     private final MixerModel mixerModel;
 
-    /**
-     * Listeners interested in needle painter events
-     */
+    /** Listeners interested in needle painter events */
     private final EventListenerList listenerList;
 
     TimescaleController(final MixerModel mixerModel) {
@@ -98,14 +96,12 @@ public final class TimescaleController implements PropertyChangeListener {
     }
 
     public void addTimescaleEventListener(final TimescaleListener listener) {
-
         synchronized (this) {
             listenerList.add(TimescaleListener.class, listener);
         }
     }
 
     public void removeTimescaleEventListener(final TimescaleListener listener) {
-
         synchronized (this) {
             listenerList.remove(TimescaleListener.class, listener);
         }
@@ -121,8 +117,7 @@ public final class TimescaleController implements PropertyChangeListener {
      * @param jumpTime
      * @param togglePlaybackMode
      */
-    private void fireJumpEvent(final long jumpTime,
-                               final boolean togglePlaybackMode) {
+    private void fireJumpEvent(final long jumpTime, final boolean togglePlaybackMode) {
 
         synchronized (this) {
             TimescaleEvent e = new TimescaleEvent(this, jumpTime,
@@ -143,11 +138,10 @@ public final class TimescaleController implements PropertyChangeListener {
     }
 
     /**
-     * Inner class used to handle intercepted events.
+     * Intercepts events
      */
     private class TimescaleEventListener extends MouseInputAdapter {
         private ViewportState viewport;
-
         private final Cursor crosshairCursor = Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR);
         private final Cursor defaultCursor = Cursor.getDefaultCursor();
         private boolean isDraggingOnTimescale = false;

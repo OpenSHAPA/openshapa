@@ -384,7 +384,7 @@ public final class MixerController implements PropertyChangeListener,
 
         // Set up the timing needle's layout
         {
-            JComponent needleView = needleController.getView();
+            JComponent needleView = needleController.getNeedleComponent();
 
             Map<String, String> constraints = Maps.newHashMap();
 

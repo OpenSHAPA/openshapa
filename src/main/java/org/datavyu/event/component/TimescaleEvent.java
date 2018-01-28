@@ -18,14 +18,14 @@ import java.util.EventObject;
 
 
 /**
- * Event object for timescale event.
+ * Timescale event.
  */
 public class TimescaleEvent extends EventObject {
 
-    /** Jump time associated with event. */
+    /** Jump time associated with event */
     private long time;
 
-    /** Starts playback if it is currently stopped (and vice versa). */
+    /** Start playback if it is stopped and stop playback if it is started */
     private boolean toggleStartStop;
     
     public TimescaleEvent(final Object source, final long time, boolean toggleStartStop) {
@@ -40,7 +40,7 @@ public class TimescaleEvent extends EventObject {
     public long getTime() {
         return time;
     }
-    
+
     /**
      * @return True if the current playback mode should be toggled after performing the jump
      */

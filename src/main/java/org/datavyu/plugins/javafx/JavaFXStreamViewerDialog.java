@@ -243,7 +243,7 @@ public class JavaFXStreamViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void setPlaybackSpeed(final float rate) {
+    public void setRate(final float rate) {
         javafxapp.setRate(rate);
     }
 

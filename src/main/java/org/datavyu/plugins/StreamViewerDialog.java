@@ -421,7 +421,7 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     /**
      * {@inheritDoc}
      */
-    public void setPlaybackSpeed(final float speed) {
+    public void setRate(final float speed) {
         playBackSpeed = speed;
     }
 

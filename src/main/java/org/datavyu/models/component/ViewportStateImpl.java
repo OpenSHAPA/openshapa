@@ -20,24 +20,16 @@ package org.datavyu.models.component;
  */
 public final class ViewportStateImpl implements ViewportState {
 
-    /**
-     * The end time of the longest track (offset included) in milliseconds
-     */
+    /** The end time of the longest track (offset included) in milliseconds */
     private final long maxEnd;
 
-    /**
-     * The pixel width of a time interval
-     */
+    /** The pixel width of a time interval */
     private final double viewWidth;
 
-    /**
-     * The start time of the zoomed window
-     */
+    /** The start time of the zoomed window */
     private final long viewStart;
 
-    /**
-     * The end time of the zoomed window
-     */
+    /** The end time of the zoomed window */
     private final long viewEnd;
 
     public final static long MINIMUM_MAX_END = 60000;

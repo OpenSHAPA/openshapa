@@ -169,7 +169,7 @@ public final class VideoController extends DatavyuDialog
     private boolean tracksPanelVisible = true;
 
     /** The controller for manipulating tracks */
-    private MixerController mixerController;
+    private MixerController mixerController = new MixerController();
 
     /** Button to create a new cell */
     private JButton createNewCell;
@@ -283,14 +283,12 @@ public final class VideoController extends DatavyuDialog
         initComponents();
 
         setResizable(false);
-        setName(this.getClass().getSimpleName());
 
         final int defaultEndTime = (int) MixerController.DEFAULT_DURATION;
 
         clockTimer.setMinStreamTime(0);
         clockTimer.setMaxStreamTime(defaultEndTime);
 
-        mixerController = new MixerController();
         tracksPanel.add(mixerController.getTracksPanel(), "growx");
         mixerController.addTracksControllerListener(this);
         mixerController.getMixerModel().getViewportModel().addPropertyChangeListener(this);
@@ -298,7 +296,6 @@ public final class VideoController extends DatavyuDialog
         mixerController.getMixerModel().getNeedleModel().addPropertyChangeListener(this);
 
         showTracksPanel(tracksPanelVisible);
-        updateCurrentTimeLabel();
 
         visible = true;
     }
@@ -421,6 +418,7 @@ public final class VideoController extends DatavyuDialog
      * @param clockTime Current clockTimer time in milliseconds.
      */
     public void clockStart(double clockTime) {
+        logger.info("Start");
         for (StreamViewer streamViewer : streamViewers) {
             streamViewer.start();
         }
@@ -442,6 +440,8 @@ public final class VideoController extends DatavyuDialog
         for (StreamViewer streamViewer : streamViewers) {
             streamViewer.setCurrentTime((long) clockTime);
         }
+        // Updates the position of the needle
+        updateCurrentTime((long) clockTime);
     }
 
     /**
@@ -449,23 +449,15 @@ public final class VideoController extends DatavyuDialog
      */
     public void clockPeriodicSync(double clockTime) {
         for (StreamViewer streamViewer : streamViewers) {
-            if (Math.abs((long) clockTime  - streamViewer.getStartTime() - streamViewer.getCurrentTime()) >=
-                    ClockTimer.SYNC_THRESHOLD) {
+            double difference = Math.abs((long) clockTime - streamViewer.getCurrentTime());
+            if (difference >= ClockTimer.SYNC_THRESHOLD) {
+                logger.info("Sync of clock with difference: " + difference + " milliseconds.");
                 streamViewer.setCurrentTime((long) clockTime);
+                logger.info("Stream viewer time is: " + streamViewer.getCurrentTime());
             }
         }
-    }
-
-    /**
-     * Determines whether a StreamViewer has data for the desired time.
-     *
-     * @param elapsedTime The time we wish to start at or setCurrentTime to.
-     * @param viewer The StreamViewer to check.
-     * @return True if data exists at this time, and false otherwise.
-     */
-    private long toPlayRange(double elapsedTime, final StreamViewer viewer) {
-        return Math.min(Math.max((long) elapsedTime + viewer.getStartTime(), viewer.getStartTime()),
-                viewer.getDuration());
+        // Updates the position of the needle and label
+        updateCurrentTime((long) clockTime);
     }
 
     /**
@@ -475,6 +467,7 @@ public final class VideoController extends DatavyuDialog
         for (StreamViewer streamViewer : streamViewers) {
             streamViewer.stop();
         }
+        updateCurrentTime((long) clockTime);
     }
 
     /**
@@ -483,7 +476,7 @@ public final class VideoController extends DatavyuDialog
     public void clockRate(float rate) {
         labelSpeed.setText(FloatingPointUtils.doubleToFractionStr(rate));
         for (StreamViewer streamViewer : streamViewers) {
-            streamViewer.setPlaybackSpeed(rate);
+            streamViewer.setRate(rate);
         }
     }
 
@@ -494,9 +487,10 @@ public final class VideoController extends DatavyuDialog
         return mixerController;
     }
 
-    private void updateCurrentTimeLabel() {
-        timeStampLabel.setText(tracksPanelVisible ? CLOCK_FORMAT_HTML.format(getCurrentTime())
-                                                  : CLOCK_FORMAT_HTML.format(getCurrentTime()));
+    private void updateCurrentTime(long currentTime) {
+        timeStampLabel.setText(tracksPanelVisible ? CLOCK_FORMAT_HTML.format(currentTime)
+                                                  : CLOCK_FORMAT_HTML.format(currentTime));
+        mixerController.getMixerModel().getNeedleModel().setCurrentTime(currentTime);
     }
 
     /**
@@ -514,10 +508,7 @@ public final class VideoController extends DatavyuDialog
      * @param milliseconds The millisecond time.
      */
     public void setCurrentTime(final long milliseconds) {
-        //resetSync();
-        //TODO: Implement setting time in clockTimer streams
-        updateCurrentTimeLabel();
-        mixerController.getMixerModel().getNeedleModel().setCurrentTime(milliseconds);
+        clockTimer.setForceTime(milliseconds);
     }
 
     /**
@@ -757,7 +748,6 @@ public final class VideoController extends DatavyuDialog
                     int newTime = Integer.parseInt(JOptionPane.showInputDialog(null,
                             "Enter new time in ms", getCurrentTime()));
                     setCurrentTime(newTime);
-                    //clockTimer.setTime(newTime);
                 }
             }
         });
@@ -959,8 +949,8 @@ public final class VideoController extends DatavyuDialog
                     float newFramesPerSecond = Float.parseFloat(stepSizeTextField.getText());
                     // TODO: Set highest frame rate
                     //playbackParameters.setHighestFramesPerSecond(newFramesPerSecond);
-                    for (StreamViewer dv : streamViewers) {
-                        dv.setFramesPerSecond(newFramesPerSecond);
+                    for (StreamViewer streamViewer : streamViewers) {
+                        streamViewer.setFramesPerSecond(newFramesPerSecond);
                     }
                     stepSizeTextField.setEnabled(false);
                     updateStepSizePanelColor();
@@ -1051,14 +1041,13 @@ public final class VideoController extends DatavyuDialog
      *
      * @param evt The event that triggered this action.
      */
-    private void showTracksButtonActionPerformed(final java.awt.event.ActionEvent evt) {
+    private void showTracksButtonActionPerformed(ActionEvent evt) {
 
         // TODO: Fix this assert through proper error handling
         assert (evt.getSource() instanceof JButton);
 
         JButton button = (JButton) evt.getSource();
-        ResourceMap resourceMap = Application.getInstance(
-                org.datavyu.Datavyu.class).getContext().getResourceMap(
+        ResourceMap resourceMap = Application.getInstance(org.datavyu.Datavyu.class).getContext().getResourceMap(
                 VideoController.class);
 
         if (tracksPanelVisible) {
@@ -1075,7 +1064,6 @@ public final class VideoController extends DatavyuDialog
 
         tracksPanelVisible = !tracksPanelVisible;
         showTracksPanel(tracksPanelVisible);
-        updateCurrentTimeLabel();
     }
 
     /**
@@ -1129,12 +1117,9 @@ public final class VideoController extends DatavyuDialog
      * @param startTime The startTime value in milliseconds.
      */
     public void addViewer(final StreamViewer viewer, final long startTime) {
-        // Add the QTDataViewerDialog to the list of streamViewers we are controlling.
         streamViewers.add(viewer);
         viewer.setStartTime(startTime);
 
-        // It is possible that the viewer will be handling its own window. In that case
-        // don't worry about it.
         if (viewer.getParentJDialog() != null) {
             boolean visible = viewer.getParentJDialog().isVisible();
             Datavyu.getApplication().show(viewer.getParentJDialog());
@@ -1153,19 +1138,8 @@ public final class VideoController extends DatavyuDialog
         updateStepSizeTextField();
         updateStepSizePanelColor();
 
-        // Update track viewer
-        /*
-        long maxDuration = playbackParameters.getMaxDuration();
-
-        if ((viewer.getStartTime() + viewer.getDuration()) > maxDuration) {
-            maxDuration = viewer.getStartTime() + viewer.getDuration();
-        }
-
-        // BugzID:2114 - If this is the first viewer we are adding, always reset max duration.
-        if (streamViewers.size() == 1) {
-            maxDuration = viewer.getStartTime() + viewer.getDuration();
-        }*/
         clockTimer.setMaxStreamTime(viewer.getStartTime() + viewer.getDuration());
+        // Adjust the maximum stream time
         mixerController.getMixerModel().getViewportModel().setViewportMaxEnd(clockTimer.getMaxStreamTime(), true);
     }
 
@@ -1194,6 +1168,7 @@ public final class VideoController extends DatavyuDialog
      * @param show true to show the tracks layout, false otherwise.
      */
     private void showTracksPanel(final boolean show) {
+        updateCurrentTime(getCurrentTime());
         tracksPanel.setVisible(show);
         tracksPanel.repaint();
         pack();
@@ -1219,7 +1194,7 @@ public final class VideoController extends DatavyuDialog
     }
 
     /**
-     * Handles a TimescaleEvent.
+     * Handles a TimescaleEvent is created when pulling on the needle with the mouse.
      *
      * @param e The timescale event that triggered this action.
      */
@@ -1283,24 +1258,20 @@ public final class VideoController extends DatavyuDialog
         mixerController.getMixerModel().getViewportModel().setViewportMaxEnd(maxDuration, false);
     }
 
-    private void handleNeedleChanged(final PropertyChangeEvent e) {
-
-        if (clockTimer.isStopped()) {
-            final long newTime = mixerController.getMixerModel().getNeedleModel().getCurrentTime();
-            // TODO: Handle time change
-        }
-
-        updateCurrentTimeLabel();
+    private void handleNeedleChange(final NeedleState needle) {
+        logger.info("Needle changed with time " + needle.getCurrentTime() + " and was dragged " + needle.wasDragged());
+        // TODO: Implementation of dragging the needle
     }
 
-    private void handleRegionChanged(final PropertyChangeEvent e) {
-        final RegionState region = mixerController.getMixerModel().getRegionModel().getRegion();
-        clockTimer.setMinStreamTime(region.getRegionStart());
-        clockTimer.setMaxStreamTime(region.getRegionEnd());
+    private void handleRegionChange(final RegionState region) {
+        final long start = region.getRegionStart();
+        final long end = region.getRegionEnd();
+        logger.info("Set Region with start " + start + " ane end " + end);
+        clockTimer.setMinStreamTime(start);
+        clockTimer.setMaxStreamTime(end);
     }
 
-    private void handleViewportChanged(final PropertyChangeEvent e) {
-        final ViewportState viewport = mixerController.getMixerModel().getViewportModel().getViewport();
+    private void handleViewportChange(final ViewportState viewport) {
         clockTimer.setMaxStreamTime(viewport.getMaxEnd());
     }
 
@@ -1708,12 +1679,12 @@ public final class VideoController extends DatavyuDialog
     @Override
     public void propertyChange(final PropertyChangeEvent e) {
         Object source = e.getSource();
-        if (source == mixerController.getNeedleController().getNeedleModel()) {
-            handleNeedleChanged(e);
-        } else if (source == mixerController.getMixerModel().getViewportModel()) {
-            handleViewportChanged(e);
-        } else if (source == mixerController.getRegionController().getModel()) {
-            handleRegionChanged(e);
+        if (source instanceof NeedleModel) {
+            handleNeedleChange(((NeedleModel) source).getNeedle());
+        } else if (source instanceof ViewportModel) {
+            handleViewportChange(((ViewportModel) source).getViewport());
+        } else if (source instanceof RegionModel) {
+            handleRegionChange(((RegionModel) source).getRegion());
         }
     }
 

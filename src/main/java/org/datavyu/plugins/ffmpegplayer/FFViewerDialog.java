@@ -81,7 +81,7 @@ public class FFViewerDialog extends StreamViewerDialog {
 //                        player.setCurrentTime(time /1000.0);
 //                        player.repaint();
 //                        if (wasPlaying) {
-//                            player.setPlaybackSpeed(playbackSpeed);
+//                            player.setRate(playbackSpeed);
 //                        }
                         isSeeking = false;
                         logger.info("At end for setting time.");
@@ -122,7 +122,7 @@ public class FFViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void setPlaybackSpeed(float speed) {
+    public void setRate(float speed) {
         launch(() -> {
             playBackSpeed = speed;
             if (speed == 0) {

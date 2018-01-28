@@ -117,36 +117,36 @@ public interface StreamViewer {
     void setFramesPerSecond(float framesPerSecond);
 
     /**
-     * @return The current position within the data feed in milliseconds.
+     * @return The current time in milliseconds.
      */
     long getCurrentTime();
 
     /**
-     * Plays the continuous data stream at the set speed.
+     * Plays the stream at the set rate
      */
     void start();
 
     /**
-     * Stops the start back.
+     * Stops the play back of the data stream
      */
     void stop();
 
     /**
-     * Steps in the current playback direction. If the start/end has been reached repeats the first/last frame.
+     * Steps in the current playback direction; if at start/end repeats the first/last frame
      */
     void step();
 
     /**
-     * Does this viewer start?
+     * Does this viewer play?
      */
     boolean isPlaying();
 
     /**
-     * Set the start back speed.
+     * Set rate
      *
      * @param speed Positive implies forwards, while negative implies reverse.
      */
-    void setPlaybackSpeed(float speed);
+    void setRate(float speed);
 
     /**
      * Set the stream time. If the time is out of range set to the next closest value in the stream.

@@ -309,7 +309,7 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void setPlaybackSpeed(final float rate) {
+    public void setRate(final float rate) {
         Runnable edtTask = new Runnable() {
             @Override
             public void run() {
