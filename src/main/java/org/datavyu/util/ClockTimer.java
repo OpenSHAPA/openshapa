@@ -26,7 +26,7 @@ import java.util.TimerTask;
 public final class ClockTimer {
 
     /** Synchronization threshold in milliseconds */
-    public static final long SYNC_THRESHOLD = 500L;
+    public static final long SYNC_THRESHOLD = 1500L; // 1.5 sec  (because some plugins are not very precise in seek)
 
     /** Clock tick period in milliseconds */
     private static final long CLOCK_SYNC_INTERVAL = 500L;

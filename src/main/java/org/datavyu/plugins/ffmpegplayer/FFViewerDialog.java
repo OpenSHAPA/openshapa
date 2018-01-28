@@ -70,21 +70,9 @@ public class FFViewerDialog extends StreamViewerDialog {
                 if (!isSeeking && (previousSeekTime != time)) {
                     previousSeekTime = time;
                     EventQueue.invokeLater(() -> {
-                        logger.info("At start for setting time.");
                         isSeeking = true;
                         player.setCurrentTime(time / 1000.0);
-//                        boolean wasPlaying = isPlaying();
-//                        float playbackSpeed = getPlaybackSpeed();
-//                        if (isPlaying()) {
-//                            player.stop();
-//                        }
-//                        player.setCurrentTime(time /1000.0);
-//                        player.repaint();
-//                        if (wasPlaying) {
-//                            player.setRate(playbackSpeed);
-//                        }
                         isSeeking = false;
-                        logger.info("At end for setting time.");
                     });
                 }
             } catch (Exception e) {

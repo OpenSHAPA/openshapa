@@ -449,11 +449,10 @@ public final class VideoController extends DatavyuDialog
      */
     public void clockPeriodicSync(double clockTime) {
         for (StreamViewer streamViewer : streamViewers) {
-            double difference = Math.abs((long) clockTime - streamViewer.getCurrentTime());
+            double difference = Math.abs(clockTime - streamViewer.getCurrentTime());
             if (difference >= ClockTimer.SYNC_THRESHOLD) {
                 logger.info("Sync of clock with difference: " + difference + " milliseconds.");
                 streamViewer.setCurrentTime((long) clockTime);
-                logger.info("Stream viewer time is: " + streamViewer.getCurrentTime());
             }
         }
         // Updates the position of the needle and label
@@ -1194,9 +1193,9 @@ public final class VideoController extends DatavyuDialog
     }
 
     /**
-     * Handles a TimescaleEvent is created when pulling on the needle with the mouse.
+     * Handles a TimescaleEvent that is created when pulling on the needle with the mouse
      *
-     * @param e The timescale event that triggered this action.
+     * @param e The timescale event that triggered this action
      */
     private void handleTimescaleEvent(final TimescaleEvent e) {
         logger.info("Change time to " + e.getTime() + " milliseconds and toggle: " + e.getToggleStartStop());
@@ -1259,8 +1258,8 @@ public final class VideoController extends DatavyuDialog
     }
 
     private void handleNeedleChange(final NeedleState needle) {
-        logger.info("Needle changed with time " + needle.getCurrentTime() + " and was dragged " + needle.wasDragged());
-        // TODO: Implementation of dragging the needle
+        // Nothing to do here, since we update the needle based on the clock timer and not vice versa
+        // Notice, that dragging on the needle is handled through "handleTimescaleEvent"
     }
 
     private void handleRegionChange(final RegionState region) {
