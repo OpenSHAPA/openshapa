@@ -14,6 +14,9 @@
  */
 package org.datavyu.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Timer;
@@ -21,9 +24,12 @@ import java.util.TimerTask;
 
 
 /**
- * Keeps multiple streams in periodicSync and does not play beyond the boundaries of a stream.
+ * Keeps multiple streams in periodic sync and does not play beyond the boundaries of a stream.
  */
 public final class ClockTimer {
+
+    /** The logger for this class */
+    private static Logger logger = LogManager.getLogger(ClockTimer.class);
 
     /** Synchronization threshold in milliseconds */
     public static final long SYNC_THRESHOLD = 1500L; // 1.5 sec  (because some plugins are not very precise in seek)
@@ -36,6 +42,10 @@ public final class ClockTimer {
 
     /** Convert nanoseconds to milliseconds */
     private static final long NANO_IN_MILLI = 1000000L;
+
+    private static final long CHECK_BOUNDARY_INTERVAL = 100L; // milliseconds
+
+    private static final long CHECK_BOUNDARY_DELAY = 0L;
 
     private long minStreamTime;
 
@@ -67,31 +77,49 @@ public final class ClockTimer {
         minStreamTime = Long.MAX_VALUE;
         maxStreamTime = Long.MIN_VALUE;
         isStopped = true;
+        // Sync timer
         new Timer().scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 periodicSync();
             }
         }, CLOCK_SYNC_DELAY, CLOCK_SYNC_INTERVAL);
-    }
-
-    public synchronized void setMinStreamTime(long minStreamTime) {
-        this.minStreamTime = Long.min(minStreamTime, this.minStreamTime);
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                checkBoundary();
+            }
+        }, CHECK_BOUNDARY_DELAY, CHECK_BOUNDARY_INTERVAL);
     }
 
     /**
-     * Set the maximum stream time
+     * Sets the minimum stream time
      *
-     * @param maxStreamTime
+     * @param minStreamTime The minimum stream time
+     */
+    public synchronized void setMinStreamTime(long minStreamTime) {
+        //this.minStreamTime = Long.min(minStreamTime, this.minStreamTime);
+        this.minStreamTime = minStreamTime;
+    }
+
+    /**
+     * Sets the maximum stream time
+     *
+     * @param maxStreamTime The maximum stream time
      */
     public synchronized void setMaxStreamTime(long maxStreamTime) {
-        this.maxStreamTime = Long.max(maxStreamTime, this.maxStreamTime);
+        //this.maxStreamTime = Long.max(maxStreamTime, this.maxStreamTime);
+        this.maxStreamTime = maxStreamTime;
+    }
+
+    public synchronized long getMinStreamTime() {
+        return minStreamTime;
     }
 
     /**
      * Get the maximum stream time as defined through the boundaries for the play time
      *
-     * Notice, that this time can be altered through user-imposed boundaries
+     * This time can be altered through user-imposed boundaries
      *
      * @return Maximum stream time
      */
@@ -231,6 +259,14 @@ public final class ClockTimer {
     private synchronized void periodicSync() {
         updateElapsedTime();
         notifyPeriodicSync();
+    }
+
+    private synchronized void checkBoundary() {
+        updateElapsedTime();
+        if (getStreamTime() > getMaxStreamTime() || getStreamTime() < getMinStreamTime()) {
+            logger.info("Reached boundary and stop player.");
+            stop();
+        }
     }
 
     /**
