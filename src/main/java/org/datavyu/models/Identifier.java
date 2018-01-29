@@ -60,9 +60,13 @@ public class Identifier {
      */
     @Override
     public boolean equals(final Object obj) {
-        return (this == obj) || (obj != null
-                && getClass() == obj.getClass()
+        return (this == obj) || (obj != null && getClass() == obj.getClass()
                 && sequenceNumber == ((Identifier) obj).sequenceNumber);
+    }
+
+    @Override
+    public String toString() {
+        return "Identifier: " + sequenceNumber;
     }
 
     /**

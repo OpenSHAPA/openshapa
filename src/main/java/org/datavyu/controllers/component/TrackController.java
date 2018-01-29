@@ -16,7 +16,7 @@ package org.datavyu.controllers.component;
 
 import com.google.common.collect.Maps;
 import net.miginfocom.swing.MigLayout;
-import org.apache.commons.lang3.text.StrSubstitutor;
+import org.apache.commons.text.StrSubstitutor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
@@ -72,7 +72,7 @@ public final class TrackController implements ViewerStateListener, PropertyChang
     /** Track label */
     private final JLabel trackLabel;
 
-    /** Label holding the icon for ???*/
+    /** Label holding the icon for the plugin */
     private final JLabel iconLabel;
 
     /** Component that paints the track */

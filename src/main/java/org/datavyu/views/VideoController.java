@@ -1153,7 +1153,7 @@ public final class VideoController extends DatavyuDialog
     }
 
     /**
-     * Action to invoke when the user clicks on the set cell offset button.
+     * Action to invoke when the user clicks on the set cell offset button
      */
     @Action
     public void setCellOffsetAction() {
@@ -1164,7 +1164,7 @@ public final class VideoController extends DatavyuDialog
     }
 
     /**
-     * @param show true to show the tracks layout, false otherwise.
+     * @param show true to show the tracks layout, false otherwise
      */
     private void showTracksPanel(final boolean show) {
         updateCurrentTime(getCurrentTime());

@@ -18,7 +18,7 @@ import com.apple.eawt.event.*;
 import com.google.common.collect.Maps;
 import com.sun.jna.Platform;
 import net.miginfocom.swing.MigLayout;
-import org.apache.commons.lang3.text.StrSubstitutor;
+import org.apache.commons.text.StrSubstitutor;
 import org.datavyu.Datavyu;
 import org.datavyu.event.component.*;
 import org.datavyu.event.component.TracksControllerEvent.EventType;
@@ -467,8 +467,7 @@ public final class MixerController implements PropertyChangeListener,
             constraints.put("width", Integer.toString(MIXER_MIN_WIDTH));
             constraints.put("height", Integer.toString(layeredPaneHeight));
 
-            String template =
-                    "growx, span ${span}, w ${width}::, h ${height}::, wrap";
+            String template = "growx, span ${span}, w ${width}::, h ${height}::, wrap";
             StrSubstitutor sub = new StrSubstitutor(constraints);
 
             tracksPanel.add(layeredPane, sub.replace(template));
@@ -489,12 +488,12 @@ public final class MixerController implements PropertyChangeListener,
      *
      * @param newMaxEnd duration in milliseconds
      */
-    public void setMaxEnd(final long newMaxEnd, final boolean resetViewportWindow) {
+/*    public void setMaxEnd(final long newMaxEnd, final boolean resetViewportWindow) {
         viewportModel.setViewportMaxEnd(newMaxEnd, resetViewportWindow);
         if (resetViewportWindow) {
             regionModel.resetPlaybackRegion();
         }
-    }
+    }*/
 
     /**
      * Add a new track to the interface.

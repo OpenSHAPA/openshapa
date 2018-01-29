@@ -22,6 +22,8 @@
  */
 package org.datavyu.models.component;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.datavyu.models.Identifier;
 
 import java.beans.PropertyChangeListener;
@@ -34,14 +36,17 @@ import java.util.*;
  */
 public final class TrackModel {
 
+    /** The logger for this class */
+    private static Logger logger = LogManager.getLogger(TrackModel.class);
+
     /** Enumeration of track states. */
     public enum TrackState {
-        NORMAL, // Track is in the normal state
-        SELECTED, // Track is in the selected state
-        SNAPPED // Track is in the snapped state
+        NORMAL,     // Track is in the normal state
+        SELECTED,   // Track is in the selected state
+        SNAPPED     // Track is in the snapped state
     }
 
-    /** Track identifier. */
+    /** Track identifier */
     private Identifier id;
 
     /** The duration of the track in milliseconds */
@@ -51,7 +56,6 @@ public final class TrackModel {
     private long offset; // TODO: Is this the current time or the initial offset of this track to all others?
 
     /** Track markers location in milliseconds that are sorted at all times */
-    //private List<Long> markers = new ArrayList<>();
     private Set<Long> markers = new TreeSet<>(new Comparator<Long>() {
         @Override
         public int compare(Long o1, Long o2) {
@@ -179,6 +183,7 @@ public final class TrackModel {
      * @param offset the new offset.
      */
     public void setOffset(final long offset) {
+        logger.info("For track " + id + " set offset to " + offset + " milliseconds");
         long oldOffset = this.offset;
         this.offset = offset;
         change.firePropertyChange("offset", oldOffset, offset);
@@ -236,18 +241,6 @@ public final class TrackModel {
         if (markers.add(marker)) {
             // If we added the marker fire a change event -- otherwise it was already there
             change.firePropertyChange("markers", null, markers);
-        }
-    }
-
-    /**
-     * Adds multiple snap bookmark positions with one property change event.
-     * 
-     * @param markers new bookmark positions in milliseconds
-     */
-    public void addMarkers(final List<Long> markers) {
-        if (this.markers.addAll(markers)) {
-            // If any of the markers was added fire a change event
-            change.firePropertyChange("markers", null, this.markers);
         }
     }
     
