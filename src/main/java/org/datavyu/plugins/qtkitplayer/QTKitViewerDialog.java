@@ -16,6 +16,7 @@ package org.datavyu.plugins.qtkitplayer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.datavyu.models.Identifier;
 import org.datavyu.plugins.StreamViewerDialog;
 
 import java.awt.*;
@@ -37,10 +38,9 @@ public final class QTKitViewerDialog extends StreamViewerDialog {
     /** The player this viewer is displaying */
     private QTKitPlayer player;
 
-    public QTKitViewerDialog(final Frame parent, final boolean modal) {
-        super(parent, modal);
-
-        player = null;
+    QTKitViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
+        super(identifier, parent, modal);
+        setPlayerSourceFile(sourceFile);
     }
 
     @Override
@@ -58,11 +58,10 @@ public final class QTKitViewerDialog extends StreamViewerDialog {
         return player.getDuration(player.id);
     }
 
-    @Override
-    protected void setPlayerSourceFile(final File playerSourceFile) {
+    private void setPlayerSourceFile(final File sourceFile) {
         // Ensure that the native hierarchy is set up
         this.addNotify();
-        player = new QTKitPlayer(playerSourceFile);
+        player = new QTKitPlayer(sourceFile);
         this.add(player, BorderLayout.CENTER);
         EventQueue.invokeLater(() -> {
             try {
@@ -180,11 +179,6 @@ public final class QTKitViewerDialog extends StreamViewerDialog {
     protected void cleanUp() {
         // TODO: Do we need to release the player here?
 //        player.release();
-    }
-
-    @Override
-    public boolean isStepEnabled() {
-        return false;
     }
 
     @Override

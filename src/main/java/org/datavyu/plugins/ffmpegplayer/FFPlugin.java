@@ -5,6 +5,7 @@ import com.sun.jna.Platform;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.datavyu.Datavyu;
+import org.datavyu.models.Identifier;
 import org.datavyu.plugins.StreamViewer;
 import org.datavyu.plugins.Filter;
 import org.datavyu.plugins.FilterNames;
@@ -13,6 +14,7 @@ import org.datavyu.util.VersionRange;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.io.FileFilter;
 import java.util.List;
 
@@ -41,8 +43,9 @@ public class FFPlugin implements Plugin {
     };
 
     @Override
-    public StreamViewer getNewStreamViewer(Frame parent, boolean modal) {
-        return Platform.isWindows() ? new FFViewerDialog(parent, modal) : null;
+    public StreamViewer getNewStreamViewer(final Identifier identifier, final File sourceFile, final Frame parent,
+                                           final boolean modal) {
+        return Platform.isWindows() ? new FFViewerDialog(identifier, sourceFile, parent, modal) : null;
     }
 
     @Override

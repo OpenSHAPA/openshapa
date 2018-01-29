@@ -714,4 +714,9 @@ public class SpreadsheetCell extends JPanel
     public void clockRate(float rate) {
 
     }
+
+    @Override
+    public void clockBoundaryCheck(double clockTime) {
+
+    }
 }

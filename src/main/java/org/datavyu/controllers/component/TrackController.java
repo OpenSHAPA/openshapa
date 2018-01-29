@@ -42,6 +42,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -324,17 +325,19 @@ public final class TrackController implements ViewerStateListener, PropertyChang
      *
      * @param id Identifier to use
      * @param icon Icon to use with this track. {@code null} if no icon.
-     * @param trackName Name of this track
-     * @param trackPath Absolute path to the track's data feed
+     * @param mediaPath Path to the media file
      * @param duration Duration of the data feed in milliseconds
      * @param offset Offset of the data feed in milliseconds
      */
-    void setTrackInformation(final Identifier id, final ImageIcon icon, final String trackName, final String trackPath,
+    void setTrackInformation(final Identifier id, final ImageIcon icon, final File mediaPath,
                              final long duration, final long offset) {
 
         if (icon != null) {
             iconLabel.setIcon(icon);
         }
+        final String trackName = mediaPath.getName();
+        final String trackPath = mediaPath.getAbsolutePath();
+
         trackModel.setId(id);
         trackModel.setTrackName(trackName);
         trackModel.setSourceFile(trackPath);

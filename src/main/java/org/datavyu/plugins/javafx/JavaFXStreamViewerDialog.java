@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.datavyu.models.Identifier;
 import org.datavyu.plugins.*;
 
 import javax.swing.*;
@@ -16,46 +17,35 @@ public class JavaFXStreamViewerDialog extends StreamViewerDialog {
 
     private static Logger logger = LogManager.getLogger(JavaFXStreamViewerDialog.class);
 
-    /**
-     * Data viewer offset.
-     */
-    private long offset;
-    /**
-     * Data to visualize.
-     */
-    private File data;
-    /**
-     * Boolean to keep track of whether or not we are isPlaying
-     */
+    /** Data to visualize */
+    private File sourceFile;
+
+    /** Boolean to keep track of whether or not we are isPlaying */
     private boolean playing;
 
-    /**
-     * FPS of the video, calculated on launch
-     */
+    /** FPS of the video, calculated on launch */
     private float fps;
 
-    /**
-     * The last jog position, making sure we are only calling jog once
-     * VLC has issues when trying to go to the same spot multiple times
-     */
     private JDialog dialog = new JDialog();
-    private JavaFXApplication javafxapp;
+
+    private JavaFXApplication jfxApp;
+
     private boolean assumedFPS = false;
 
 
-    public JavaFXStreamViewerDialog(final Frame parent, final boolean modal) {
-        super(parent, modal);
-        javafxapp = new JavaFXApplication(null);
+    JavaFXStreamViewerDialog(Identifier identifier, File sourceFile, final Frame parent, final boolean modal) {
+        super(identifier, parent, modal);
+        jfxApp = new JavaFXApplication(sourceFile);
+        adjustFrameWithSourceFile(sourceFile);
     }
 
-    public static void runAndWait(final Runnable action) {
+    static void runAndWait(final Runnable action) {
         if (action == null)
             throw new NullPointerException("action");
 
         VlcLibraryLoader.load();
 
         // run synchronously on JavaFX thread
-
         if (Platform.isFxApplicationThread()) {
             logger.info("Javax thread running action.");
             action.run();
@@ -78,31 +68,7 @@ public class JavaFXStreamViewerDialog extends StreamViewerDialog {
 
     @Override
     protected void setPlayerVolume(float volume) {
-        javafxapp.setVolume(volume);
-    }
-
-    private void launchEdtTaskNow(Runnable edtTask) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            edtTask.run();
-        } else {
-            try {
-                SwingUtilities.invokeAndWait(edtTask);
-            } catch (Exception e) {
-                logger.error("Failed edit task now. Error: ", e);
-            }
-        }
-    }
-
-    private void launchEdtTaskLater(Runnable edtTask) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            edtTask.run();
-        } else {
-            try {
-                SwingUtilities.invokeLater(edtTask);
-            } catch (Exception e) {
-                logger.error("Failed edit task later. Error: ", e);
-            }
-        }
+        jfxApp.setVolume(volume);
     }
 
     @Override
@@ -112,7 +78,7 @@ public class JavaFXStreamViewerDialog extends StreamViewerDialog {
 
     @Override
     public float getFramesPerSecond() {
-        return javafxapp.getFrameRate();
+        return jfxApp.getFrameRate();
     }
 
     public void setFramesPerSecond(float framesPerSecond) {
@@ -121,40 +87,25 @@ public class JavaFXStreamViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public float getDetectedFrameRate() {
-        return getFramesPerSecond();
-    }
-
-    @Override
-    public long getStartTime() {
-        return offset;
-    }
-
-    @Override
-    public void setStartTime(final long offset) {
-        this.offset = offset;
-    }
-
-    @Override
     public void setViewerVisible(final boolean isVisible) {
-        javafxapp.setVisible(isVisible);
+        jfxApp.setVisible(isVisible);
         this.isVisible = isVisible;
     }
 
     @Override
     public File getSourceFile() {
-        return data;
+        return sourceFile;
     }
 
     @Override
-    public void setSourceFile(final File sourceFile) {
+    public void adjustFrameWithSourceFile(final File sourceFile) {
         logger.info("Set source file: " + sourceFile.getAbsolutePath());
 
         final CountDownLatch latch = new CountDownLatch(1);
-        data = sourceFile;
+        this.sourceFile = sourceFile;
         Platform.setImplicitExit(false);
 
-        javafxapp = new JavaFXApplication(sourceFile);
+        jfxApp = new JavaFXApplication(sourceFile);
 
         logger.info("Is event dispatch thread? " + (SwingUtilities.isEventDispatchThread() ? "Yes" : "No") + ".");
         logger.info("Is FX application thread? " + (Platform.isFxApplicationThread() ? "Yes" : "No") + ".");
@@ -162,7 +113,7 @@ public class JavaFXStreamViewerDialog extends StreamViewerDialog {
         runAndWait(new Runnable() {
             @Override
             public void run() {
-                javafxapp.start(new Stage());
+                jfxApp.start(new Stage());
                 latch.countDown();
             }
         });
@@ -172,7 +123,7 @@ public class JavaFXStreamViewerDialog extends StreamViewerDialog {
             logger.error("Latch await failed. Error: ", e);
         }
 
-        while (!javafxapp.isInit()) {
+        while (!jfxApp.isInit()) {
             try {
                 Thread.sleep(1000);
             } catch (Exception e) {
@@ -181,7 +132,7 @@ public class JavaFXStreamViewerDialog extends StreamViewerDialog {
         }
 
         logger.info("Finished setting source: " + sourceFile);
-        logger.info("Duration is: " + javafxapp.getDuration());
+        logger.info("Duration is: " + jfxApp.getDuration());
 
         // Hide our fake dialog box
         dialog.setVisible(false);
@@ -197,13 +148,8 @@ public class JavaFXStreamViewerDialog extends StreamViewerDialog {
      */
     @Override
     protected void resizeVideo(final float scale) {
-        javafxapp.setScale(scale);
+        jfxApp.setScale(scale);
         notifyChange();
-    }
-
-    @Override
-    protected void setPlayerSourceFile(File playerSourceFile) {
-        // TODO: Fill in the opening of the source file
     }
 
     @Override
@@ -218,17 +164,17 @@ public class JavaFXStreamViewerDialog extends StreamViewerDialog {
 
     @Override
     public long getDuration() {
-        return javafxapp.getDuration();
+        return jfxApp.getDuration();
     }
 
     @Override
     public long getCurrentTime() {
-        return javafxapp.getCurrentTime();
+        return jfxApp.getCurrentTime();
     }
 
     @Override
     public void setCurrentTime(final long time) {
-        javafxapp.seek(time);
+        jfxApp.seek(time);
     }
 
     @Override
@@ -239,18 +185,18 @@ public class JavaFXStreamViewerDialog extends StreamViewerDialog {
     @Override
     public void stop() {
         playing = false;
-        javafxapp.pause();
+        jfxApp.pause();
     }
 
     @Override
     public void setRate(final float rate) {
-        javafxapp.setRate(rate);
+        jfxApp.setRate(rate);
     }
 
     @Override
     public void start() {
         playing = true;
-        javafxapp.play();
+        jfxApp.play();
     }
 
     @Override
@@ -259,19 +205,10 @@ public class JavaFXStreamViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void unsetSourceFile() {
+    public void close() {
         stop();
-        javafxapp.setVisible(false);
-        javafxapp.closeAndDestroy();
-    }
-
-    public boolean isAssumedFramesPerSecond() {
-        return assumedFPS;
-    }
-
-    @Override
-    public boolean isStepEnabled() {
-        return false;
+        jfxApp.setVisible(false);
+        jfxApp.closeAndDestroy();
     }
 
     @Override

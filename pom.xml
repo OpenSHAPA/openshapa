@@ -930,7 +930,7 @@
         </dependency>
 
         <!-- Apache Commons Lang, a package of Java utility classes -->
-        <!-- commons-lang was moved to org.apache.commons under id commons-lang3 -->
+        <!-- commons-lang was moved to org.apache.commons under identifier commons-lang3 -->
         <!-- Artifact: https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
         <!-- Documentation: https://commons.apache.org/proper/commons-lang/javadocs/api-release/index.html -->
         <!-- Updated here: 09/19/2017 -->

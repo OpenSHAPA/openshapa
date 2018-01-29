@@ -16,6 +16,7 @@ package org.datavyu.plugins.quicktime;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.datavyu.models.Identifier;
 import org.datavyu.plugins.StreamViewerDialog;
 import org.datavyu.util.Constants;
 import quicktime.QTException;
@@ -63,14 +64,14 @@ public final class QTDataViewerDialog extends StreamViewerDialog {
     /** The visual media for the above visual track */
     private Media visualMedia;
 
-    public QTDataViewerDialog(final java.awt.Frame parent, final boolean modal) {
-        super(parent, modal);
-        movie = null;
+    QTDataViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
+        super(identifier, parent, modal);
         try {
             QTSession.open();
         } catch (Throwable e) {
             logger.error("Unable to create " + this.getClass().getName() + ".\nError: ", e);
         }
+        setPlayerSourceFile(sourceFile);
     }
 
     @Override
@@ -99,8 +100,7 @@ public final class QTDataViewerDialog extends StreamViewerDialog {
         return -1;
     }
 
-    @Override
-    protected void setPlayerSourceFile(final File playerSourceFile) {
+    private void setPlayerSourceFile(final File playerSourceFile) {
         try {
             OpenMovieFile omf = OpenMovieFile.asRead(new QTFile(playerSourceFile));
             movie = Movie.fromFile(omf);
@@ -261,11 +261,6 @@ public final class QTDataViewerDialog extends StreamViewerDialog {
     @Override
     protected void cleanUp() {
         // TODO: Check if we need to do some cleanup?
-    }
-
-    @Override
-    public boolean isStepEnabled() {
-        return false;
     }
 
     @Override

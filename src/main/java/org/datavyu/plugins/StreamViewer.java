@@ -39,22 +39,6 @@ import org.datavyu.views.component.TrackPainter;
 public interface StreamViewer {
 
     /**
-     * We have reached the start or end of the stream for this viewer.
-     *
-     * @param milliseconds Milliseconds threshold to be close to the start or end.
-     *
-     * @return True if we reached the start or end; otherwise false.
-     */
-    boolean closeToStartOrEnd(long milliseconds);
-
-    /**
-     * Sets the identifier used to identify this viewer.
-     *
-     * @param id Identifier to use.
-     */
-    void setIdentifier(Identifier id);
-
-    /**
      * @return Identifier used to identify this viewer.
      */
     Identifier getIdentifier();
@@ -69,16 +53,16 @@ public interface StreamViewer {
     /**
      * Retrieve the start time of the underlying stream.
      *
-     * @return Start time in milliseconds.
+     * @return Get the offset for this stream viewer.
      */
-    long getStartTime();
+    long getOffset();
 
     /**
      * Set the start time of the underlying stream.
      *
-     * @param startTime Start time in milliseconds.
+     * @param offset Offset in milliseconds.
      */
-    void setStartTime(final long startTime);
+    void setOffset(final long offset);
 
     /**
      * Get the display window.
@@ -91,13 +75,6 @@ public interface StreamViewer {
      * Hides or shows the windows associated with this data viewer.
      */
     void setViewerVisible(boolean isVisible);
-    
-    /**
-     * Sets the data feed for this viewer.
-     *
-     * @param sourceFile The new data feed for this viewer.
-     */
-    void setSourceFile(final File sourceFile);
 
     /**
      * Return the file of the data.
@@ -199,11 +176,9 @@ public interface StreamViewer {
 
     /**
      * Unload all data, to prepare for being closed. Essentially the opposite
-     * of setSourceFile. Call to reduce the data viewer to a low-resource state.
+     * of adjustFrameWithSourceFile. Call to reduce the data viewer to a low-resource state.
      */
-    void unsetSourceFile();
-
-    boolean isStepEnabled();
+    void close();
 
     /**
      * Did we assume the frames per second start back rate?
@@ -211,32 +186,4 @@ public interface StreamViewer {
      * @return True if we assumed the playback rate; otherwise false.
      */
     boolean isAssumedFramesPerSecond();
-
-    /**
-     * Use fake playback for this stream viewer.
-     *
-     * @return True if we can use fake start back; otherwise false.
-     */
-    boolean isEnableFakePlayback();
-
-    /**
-     * Enable fake start back.
-     *
-     * @param enableFakePlayback Boolean of fake start back.
-     */
-    void setEnableFakePlayback(boolean enableFakePlayback);
-
-    /**
-     * Is ths in fake start back.
-     *
-     * @return True if this viewer is in fake start back; otherwise false.
-     */
-    boolean isFakePlayback();
-
-    /**
-     * Set the fake start back.
-     *
-     * @param fakePlayback Fake start back state.
-     */
-    void setFakePlayback(boolean fakePlayback);
 }

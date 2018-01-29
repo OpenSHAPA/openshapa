@@ -23,10 +23,12 @@
 package org.datavyu.plugins;
 
 import org.datavyu.Datavyu;
+import org.datavyu.models.Identifier;
 import org.datavyu.util.VersionRange;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.util.List;
 
 
@@ -38,7 +40,8 @@ public interface Plugin {
     /**
      * @return A new instance of the plugins data viewer.
      */
-    StreamViewer getNewStreamViewer(Frame parent, boolean modal);
+    StreamViewer getNewStreamViewer(final Identifier identifier, final File sourceFile, final Frame parent,
+                                    boolean modal);
 
     /**
      * @return The data viewer class.

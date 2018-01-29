@@ -17,6 +17,7 @@ package org.datavyu.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.time.Clock;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Timer;
@@ -47,11 +48,11 @@ public final class ClockTimer {
 
     private static final long CHECK_BOUNDARY_DELAY = 0L;
 
-    private long minStreamTime;
+    /** Minimum playback time for this clock timer in milliseconds */
+    private long minTime;
 
-    private long maxStreamTime;
-
-    private float maxFramesPerSecond;
+    /** Maximum playback time for this clock timer in milliseconds */
+    private long maxTime;
 
     /** Current time of the clock in milliseconds */
     private double clockTime;
@@ -74,8 +75,8 @@ public final class ClockTimer {
     public ClockTimer() {
         clockTime = 0;
         lastTime = 0;
-        minStreamTime = Long.MAX_VALUE;
-        maxStreamTime = Long.MIN_VALUE;
+        minTime = 0;
+        maxTime = 0;
         isStopped = true;
         // Sync timer
         new Timer().scheduleAtFixedRate(new TimerTask() {
@@ -95,36 +96,19 @@ public final class ClockTimer {
     /**
      * Sets the minimum stream time
      *
-     * @param minStreamTime The minimum stream time
+     * @param minTime The minimum stream time
      */
-    public synchronized void setMinStreamTime(long minStreamTime) {
-        //this.minStreamTime = Long.min(minStreamTime, this.minStreamTime);
-        this.minStreamTime = minStreamTime;
+    public synchronized void setMinTime(long minTime) {
+        this.minTime = minTime;
     }
 
     /**
      * Sets the maximum stream time
      *
-     * @param maxStreamTime The maximum stream time
+     * @param maxTime The maximum stream time
      */
-    public synchronized void setMaxStreamTime(long maxStreamTime) {
-        //this.maxStreamTime = Long.max(maxStreamTime, this.maxStreamTime);
-        this.maxStreamTime = maxStreamTime;
-    }
-
-    public synchronized long getMinStreamTime() {
-        return minStreamTime;
-    }
-
-    /**
-     * Get the maximum stream time as defined through the boundaries for the play time
-     *
-     * This time can be altered through user-imposed boundaries
-     *
-     * @return Maximum stream time
-     */
-    public synchronized long getMaxStreamTime() {
-        return maxStreamTime;
+    public synchronized void setMaxTime(long maxTime) {
+        this.maxTime = maxTime;
     }
 
     /**
@@ -133,7 +117,7 @@ public final class ClockTimer {
      * @return Current stream time
      */
     public synchronized double getStreamTime() {
-        return (long) clockTime + minStreamTime;
+        return (long) clockTime + minTime;
     }
 
     /**
@@ -153,7 +137,7 @@ public final class ClockTimer {
      * @param time The new time
      */
     public synchronized void setTime(long time) {
-        if (minStreamTime <= time || time <= maxStreamTime) {
+        if (minTime <= time || time <= maxTime) {
             clockTime = time;
             // Don't notify a sync or force a sync
             // The time will be updated by a periodic sync
@@ -168,7 +152,7 @@ public final class ClockTimer {
      * @param time The new time
      */
     public synchronized void setForceTime(long time) {
-        if (minStreamTime <= time || time <= maxStreamTime) {
+        if (minTime <= time || time <= maxTime) {
             clockTime = time;
             // Notify a force sync
             notifyForceSync();
@@ -263,9 +247,15 @@ public final class ClockTimer {
 
     private synchronized void checkBoundary() {
         updateElapsedTime();
-        if (getStreamTime() > getMaxStreamTime() || getStreamTime() < getMinStreamTime()) {
+        if (getStreamTime() > maxTime || getStreamTime() < minTime) {
             logger.info("Reached boundary and stop player.");
             stop();
+        }
+    }
+
+    private void notifyCheckBoundary() {
+        for (ClockListener clockListener : clockListeners) {
+            clockListener.clockBoundaryCheck(clockTime);
         }
     }
 
@@ -318,6 +308,10 @@ public final class ClockTimer {
      * Listener interface for clock 'ticks'.
      */
     public interface ClockListener {
+        /**
+         * @param clockTime Current time in milliseconds
+         */
+        void clockBoundaryCheck(double clockTime);
 
         /**
          * @param clockTime Current time in milliseconds

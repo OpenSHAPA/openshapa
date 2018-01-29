@@ -22,7 +22,7 @@ public class MPlayerApplication extends Application {
 
     private static Logger logger = LogManager.getLogger(JavaFXStreamViewerDialog.class);
 
-    private File dataFile;
+    private File sourceFile;
     private boolean init = false;
     private MediaPlayer mp;
     private MediaView mv;
@@ -30,8 +30,8 @@ public class MPlayerApplication extends Application {
     private long duration = -1;
     private long lastSeekTime = -1;
 
-    public MPlayerApplication(File file) {
-        dataFile = file;
+    public MPlayerApplication(final File sourceFile) {
+        this.sourceFile = sourceFile;
     }
 
     public static void main(String[] args) {
@@ -144,7 +144,7 @@ public class MPlayerApplication extends Application {
     public void start(final Stage primaryStage) {
         stage = primaryStage;
 
-        final Media m = new Media(dataFile.toURI().toString());
+        final Media m = new Media(sourceFile.toURI().toString());
         mp = new MediaPlayer(m);
         mp.setOnReady(new Runnable() {
             @Override
@@ -169,7 +169,7 @@ public class MPlayerApplication extends Application {
                 scene.setFill(Color.BLACK);
 
                 primaryStage.setScene(scene);
-                primaryStage.setTitle(dataFile.getName());
+                primaryStage.setTitle(sourceFile.getName());
                 primaryStage.show();
 
                 init = true;

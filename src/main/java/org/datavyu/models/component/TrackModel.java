@@ -49,11 +49,11 @@ public final class TrackModel {
     /** Track identifier */
     private Identifier id;
 
-    /** The duration of the track in milliseconds */
+    /** This is the duration of the track in milliseconds */
     private long duration;
 
-    /** The offset of the track in milliseconds */
-    private long offset; // TODO: Is this the current time or the initial offset of this track to all others?
+    /** This is the offset of this track with respect to other tracks in milliseconds */
+    private long offset;
 
     /** Track markers location in milliseconds that are sorted at all times */
     private Set<Long> markers = new TreeSet<>(new Comparator<Long>() {
@@ -93,9 +93,9 @@ public final class TrackModel {
     /**
      * Copy constructor
      *
-     * @param trackModel Model to copy from.
+     * @param trackModel Model to copy from
      */
-    protected TrackModel(final TrackModel trackModel) {
+    TrackModel(final TrackModel trackModel) {
         change = new PropertyChangeSupport(this);
         duration = trackModel.duration;
         offset = trackModel.offset;
@@ -261,13 +261,6 @@ public final class TrackModel {
     		markers.clear();
 	        change.firePropertyChange("markers", null, markers);
     	}
-    }
-    
-    /**
-     * @return the trackName
-     */
-    public String getTrackName() {
-        return trackName;
     }
 
     /**

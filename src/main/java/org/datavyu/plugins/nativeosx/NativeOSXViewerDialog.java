@@ -16,6 +16,7 @@ package org.datavyu.plugins.nativeosx;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.datavyu.models.Identifier;
 import org.datavyu.plugins.StreamViewerDialog;
 
 import java.awt.*;
@@ -34,7 +35,7 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
      */
     private static Logger logger = LogManager.getLogger(NativeOSXViewerDialog.class);
 
-    long prevSeekTime = -1;
+    private long prevSeekTime = -1;
     /**
      * The quicktime movie this viewer is displaying.
      */
@@ -44,10 +45,9 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
 
     private long duration = 0;
 
-    public NativeOSXViewerDialog(final Frame parent, final boolean modal) {
-        super(parent, modal);
-
-        movie = null;
+    NativeOSXViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
+        super(identifier, parent, modal);
+        setPlayerSourceFile(sourceFile);
     }
 
     @Override
@@ -86,8 +86,7 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
         return duration;
     }
 
-    @Override
-    protected void setPlayerSourceFile(final File playerSourceFile) {
+    private void setPlayerSourceFile(final File playerSourceFile) {
 
         // Ensure that the native hierarchy is set up
         this.addNotify();
@@ -255,11 +254,6 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
     protected void cleanUp() {
         // TODO: Check if the release is required?
 //        movie.release();
-    }
-
-    @Override
-    public boolean isStepEnabled() {
-        return false;
     }
 
     @Override

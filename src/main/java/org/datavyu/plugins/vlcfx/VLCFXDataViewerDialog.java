@@ -25,28 +25,20 @@ public class VLCFXDataViewerDialog extends StreamViewerDialog {
     /** Logger for this class */
     private static Logger logger = LogManager.getLogger(NativeLibraryManager.class);
 
-    /** Data viewer Identifier */
-    private Identifier id;
-
-    /** Data viewer startTime */
-    private long startTime;
-
-    /** Data to visualize */
-    private File sourceFile;
-
     /** The last jog position, making sure we are only calling jog once VLC has issues when trying to go to the same
      * spot multiple times */
     private JDialog dialog = new JDialog();
 
     /** VLC application */
-    private VLCApplication vlcFxApp;
+    private VLCApplication vlcApp;
 
-    public VLCFXDataViewerDialog(final Frame parent, final boolean modal) {
-        super(parent, modal);
+    VLCFXDataViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
+        super(identifier, parent, modal);
         dialog.setVisible(false);
+        this.sourceFile = sourceFile;
     }
 
-    public static void runAndWait(final Runnable action) {
+    static void runAndWait(final Runnable action) {
         if (action == null) {
             throw new NullPointerException("Action object " + action + " is null!");
         }
@@ -82,40 +74,14 @@ public class VLCFXDataViewerDialog extends StreamViewerDialog {
     }
 
     protected void setPlayerVolume(float volume) {
-        vlcFxApp.setVolume(volume);
+        vlcApp.setVolume(volume);
     }
 
-    private void launchEdtTaskNow(Runnable edtTask) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            edtTask.run();
-        } else {
-            try {
-                SwingUtilities.invokeAndWait(edtTask);
-            } catch (Exception e) {
-                logger.error("Error: ", e);
-            }
-        }
-    }
-
-    private void launchEdtTaskLater(Runnable edtTask) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            edtTask.run();
-        } else {
-            try {
-                SwingUtilities.invokeLater(edtTask);
-            } catch (Exception e) {
-                logger.error("Error: ", e);
-            }
-        }
-    }
 
     @Override
     public JDialog getParentJDialog() {
         return dialog;
     }
-
-    @Override
-    protected void setPlayerSourceFile(File playerSourceFile) { }
 
     @Override
     protected Dimension getOriginalVideoSize() {
@@ -129,7 +95,7 @@ public class VLCFXDataViewerDialog extends StreamViewerDialog {
 
     @Override
     public float getFramesPerSecond() {
-        return vlcFxApp.getFrameRate();
+        return vlcApp.getFrameRate();
     }
 
     public void setFramesPerSecond(float framesPerSecond) {
@@ -139,70 +105,39 @@ public class VLCFXDataViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public float getDetectedFrameRate() {
-        // TODO: Correct to detect a frame rate
-        return 30;
-    }
-
-    @Override
-    public Identifier getIdentifier() {
-        return id;
-    }
-
-    @Override
-    public void setIdentifier(final Identifier id) {
-        this.id = id;
-    }
-
-    @Override
-    public long getStartTime() {
-        return startTime;
-    }
-
-    @Override
-    public void setStartTime(final long offset) {
-        this.startTime = offset;
-    }
-
-    @Override
     public TrackPainter getTrackPainter() {
         return new DefaultTrackPainter();
     }
 
     @Override
     public void setViewerVisible(final boolean isVisible) {
-        vlcFxApp.setVisible(isVisible);
+        vlcApp.setVisible(isVisible);
     }
 
     @Override
     public void setVisible(final boolean isVisible) {
-        vlcFxApp.setVisible(isVisible);
+        vlcApp.setVisible(isVisible);
     }
 
-    @Override
-    public File getSourceFile() {
-        return sourceFile;
-    }
 
     @Override
-    public void setSourceFile(final File sourceFile) {
-        this.sourceFile = sourceFile;
+    public void adjustFrameWithSourceFile(final File sourceFile) {
 
         // Needed to init JavaFX stuff
         new JFXPanel();
-        vlcFxApp = new VLCApplication(sourceFile);
+        vlcApp = new VLCApplication(sourceFile);
 
         runAndWait(new Runnable() {
             @Override
             public void run() {
-                vlcFxApp.start(new Stage());
+                vlcApp.start(new Stage());
             }
         });
 
 
         // Wait for javafx to initialize
         // TODO: We need to change this, because it can lead to hang-up (e.g. timeout)
-        while (!vlcFxApp.isInitialized()) {
+        while (!vlcApp.isInitialized()) {
         }
 
         // Hide our fake dialog box
@@ -212,75 +147,70 @@ public class VLCFXDataViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public long getDuration() { return vlcFxApp.getDuration(); }
+    public long getDuration() { return vlcApp.getDuration(); }
 
     @Override
     public long getCurrentTime() {
-        return vlcFxApp.getCurrentTime();
+        return vlcApp.getCurrentTime();
     }
 
     @Override
     public void setCurrentTime(final long time) {
-        vlcFxApp.seek(time);
+        vlcApp.seek(time);
     }
 
     @Override
     public boolean isPlaying() {
-        return vlcFxApp.isPlaying();
+        return vlcApp.isPlaying();
     }
 
     @Override
     public void stop() {
         super.stop();
-        vlcFxApp.pause();
+        vlcApp.pause();
     }
 
     @Override
     public void setRate(final float rate) {
-        vlcFxApp.setRate(rate);
+        vlcApp.setRate(rate);
     }
 
     @Override
     public void start() {
         super.start();
-        vlcFxApp.play();
+        vlcApp.play();
     }
 
     @Override
     protected void cleanUp() {
         VlcLibraryLoader.purge();
-        unsetSourceFile();
+        close();
     }
 
     @Override
-    public void unsetSourceFile() {
+    public void close() {
         stop();
-        vlcFxApp.setVisible(false);
-        vlcFxApp.closeAndDestroy();
+        vlcApp.setVisible(false);
+        vlcApp.closeAndDestroy();
     }
 
     public boolean isAssumedFramesPerSecond() {
-        return vlcFxApp.isAssumedFps();
+        return vlcApp.isAssumedFps();
     }
 
     @Override
     public void storeSettings(final OutputStream os) {
         try {
             Properties settings = new Properties();
-            settings.setProperty("startTime", Long.toString(getStartTime()));
+            settings.setProperty("startTime", Long.toString(getOffset()));
             settings.setProperty("volume", Float.toString(getVolume()));
-            settings.setProperty("visible", Boolean.toString(vlcFxApp.isVisible()));
-            settings.setProperty("height", Integer.toString(vlcFxApp.getHeight()));
-            settings.setProperty("fps", Float.toString(vlcFxApp.getFrameRate()));
+            settings.setProperty("visible", Boolean.toString(vlcApp.isVisible()));
+            settings.setProperty("height", Integer.toString(vlcApp.getHeight()));
+            settings.setProperty("fps", Float.toString(vlcApp.getFrameRate()));
             settings.store(os, null);
         } catch (IOException io) {
             logger.error("Unable to save the settings. Error: ", io);
         }
-    }
-
-    @Override
-    public boolean isStepEnabled() {
-        return false;
     }
 
     @Override

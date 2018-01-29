@@ -182,23 +182,6 @@ public class FFPlayer extends JPanel {
 	}
 
 	/**
-	 * Reset the streams to their original state after opening the file.
-	 */
-	public void reset() {
-		try {
-			// Stop the player before changing the window
-			movieStreamProvider.stop();
-			int w = movieStreamProvider.getWidthOfStream();
-			int h = movieStreamProvider.getHeightOfStream();
-			movieStreamProvider.setView(0, 0, w, h);
-		} catch (IndexOutOfBoundsException iob) {
-			System.err.println("Could not reset view. Error: " + iob);
-		} finally {
-			movieStreamProvider.start();
-		}
-	}
-
-	/**
 	 * Set the audio volume.
 	 *
 	 * @param volume New volume to set.

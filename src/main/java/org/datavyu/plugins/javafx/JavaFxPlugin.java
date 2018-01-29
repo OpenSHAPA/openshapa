@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.datavyu.Datavyu;
+import org.datavyu.models.Identifier;
 import org.datavyu.plugins.StreamViewer;
 import org.datavyu.plugins.Filter;
 import org.datavyu.plugins.FilterNames;
@@ -11,6 +12,7 @@ import org.datavyu.plugins.Plugin;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.io.FileFilter;
 import java.util.List;
 
@@ -58,9 +60,9 @@ public class JavaFxPlugin implements Plugin {
     }
 
     @Override
-    public StreamViewer getNewStreamViewer(final Frame parent,
-                                           final boolean modal) {
-        return new JavaFXStreamViewerDialog(parent, modal);
+    public StreamViewer getNewStreamViewer(final Identifier identifier, final File sourceFile, final Frame parent,
+                                           boolean modal) {
+        return new JavaFXStreamViewerDialog(identifier, sourceFile, parent, modal);
     }
 
     @Override

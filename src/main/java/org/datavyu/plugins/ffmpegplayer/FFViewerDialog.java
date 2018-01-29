@@ -23,12 +23,13 @@ public class FFViewerDialog extends StreamViewerDialog {
     /** Currently is seeking */
     private boolean isSeeking = false;
 
-    /** Identifier for this dialog */
-    private Identifier id;
-
-    FFViewerDialog(final Frame parent, final boolean modal) {
-        super(parent, modal);
+    FFViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
+        super(identifier, parent, modal);
+        logger.info("Opening file: " + sourceFile.getAbsolutePath());
         player = new FFPlayer();
+        player.openFile(sourceFile.getAbsolutePath());
+        this.add(player, BorderLayout.CENTER);
+        adjustFrameWithSourceFile(sourceFile);
     }
 
     private void launch(Runnable task) {
@@ -46,13 +47,6 @@ public class FFViewerDialog extends StreamViewerDialog {
     @Override
     protected void setPlayerVolume(float volume) {
         player.setVolume(volume);
-    }
-
-    @Override
-    protected void setPlayerSourceFile(File playerSourceFile) {
-        logger.info("Opening file: " + playerSourceFile.getAbsolutePath());
-        player.openFile(playerSourceFile.getAbsolutePath());
-        this.add(player, BorderLayout.CENTER);
     }
 
     @Override
@@ -79,14 +73,6 @@ public class FFViewerDialog extends StreamViewerDialog {
                 logger.error("Unable to find", e);
             }
         });
-    }
-
-    public void setId(Identifier id) {
-        this.id = id;
-    }
-
-    public Identifier getId() {
-        return id;
     }
 
     @Override
@@ -123,7 +109,7 @@ public class FFViewerDialog extends StreamViewerDialog {
 
     @Override
     protected float getPlayerFramesPerSecond() {
-        return 30; // TODO: Get this frame the native stream
+        return 30; // TODO: Get this frame rate from the native stream
     }
 
     @Override
@@ -139,11 +125,6 @@ public class FFViewerDialog extends StreamViewerDialog {
     @Override
     protected void cleanUp() {
         player.cleanUp();
-    }
-
-    @Override
-    public boolean isStepEnabled() {
-        return true;
     }
 
     @Override

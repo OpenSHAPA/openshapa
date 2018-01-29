@@ -21,6 +21,7 @@ import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
+import org.datavyu.models.Identifier;
 import org.datavyu.plugins.Filter;
 import org.datavyu.plugins.FilterNames;
 import org.datavyu.plugins.Plugin;
@@ -28,9 +29,9 @@ import org.datavyu.plugins.StreamViewer;
 import org.datavyu.util.NativeLibraryLoader;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.FileFilter;
-import java.net.URL;
 import java.util.List;
 
 
@@ -118,11 +119,10 @@ public final class QTPlugin implements Plugin {
     }
 
     @Override
-    public StreamViewer getNewStreamViewer(final java.awt.Frame parent,
+    public StreamViewer getNewStreamViewer(final Identifier identifier, final File sourceFile, final Frame parent,
                                            final boolean modal) {
-
         if (Platform.isMac() || Platform.isWindows()) {
-            return new QTDataViewerDialog(parent, modal);
+            return new QTDataViewerDialog(identifier, sourceFile, parent, modal);
         } else {
             return null;
         }
@@ -133,10 +133,7 @@ public final class QTPlugin implements Plugin {
      */
     @Override
     public ImageIcon getTypeIcon() {
-        URL typeIconURL = getClass().getResource(
-                "/icons/gstreamerplugin-icon.png");
-
-        return new ImageIcon(typeIconURL);
+        return new ImageIcon(getClass().getResource("/icons/gstreamerplugin-icon.png"));
     }
 
     @Override
@@ -156,12 +153,7 @@ public final class QTPlugin implements Plugin {
 
     @Override
     public Class<? extends StreamViewer> getViewerClass() {
-
-        if (Platform.isWindows()) {
-            return QTDataViewerDialog.class;
-        }
-
-        return null;
+        return Platform.isWindows() ? QTDataViewerDialog.class : null;
     }
 
     @Override

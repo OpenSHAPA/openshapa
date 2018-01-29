@@ -58,8 +58,9 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
 
     private boolean assumedFPS = false;
 
-    public VLCDataViewerDialog(final Frame parent, final boolean modal) {
-        super(parent, modal);
+    VLCDataViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
+        super(identifier, parent, modal);
+        this.sourceFile = sourceFile;
 
         isPlaying = false;
         vlcDialog = new JDialog(parent, modal);
@@ -101,15 +102,6 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
 
     }
 
-    public static void setFallbackFrameRate(float fallbackFrameRate) {
-        VLCDataViewerDialog.fallbackFrameRate = fallbackFrameRate;
-    }
-
-    @Override
-    protected void setPlayerSourceFile(File playerSourceFile) {
-        // TODO: implement
-    }
-
     @Override
     protected void setPlayerVolume(float volume) {
         // TODO: implement
@@ -124,18 +116,6 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
     @Override
     protected float getPlayerFramesPerSecond() {
         return fps;
-    }
-
-    private void launchEdtTaskNow(Runnable edtTask) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            edtTask.run();
-        } else {
-            try {
-                SwingUtilities.invokeAndWait(edtTask);
-            } catch (Exception e) {
-                logger.error("Failed edit task now. Error: ", e);
-            }
-        }
     }
 
     private void launchEdtTaskLater(Runnable edtTask) {
@@ -166,26 +146,6 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public Identifier getIdentifier() {
-        return id;
-    }
-
-    @Override
-    public void setIdentifier(final Identifier id) {
-        this.id = id;
-    }
-
-    @Override
-    public long getStartTime() {
-        return offset;
-    }
-
-    @Override
-    public void setStartTime(final long offset) {
-        this.offset = offset;
-    }
-
-    @Override
     public TrackPainter getTrackPainter() {
         return new DefaultTrackPainter();
     }
@@ -196,12 +156,7 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public File getSourceFile() {
-        return sourceFile;
-    }
-
-    @Override
-    public void setSourceFile(final File sourceFile) {
+    public void adjustFrameWithSourceFile(final File sourceFile) {
 
         // TODO: Standardize on where we load the libraries. For some plugins we load in the static section; others in the constructor and again others (like this one) in the setSource method
         VlcLibraryLoader.load();
@@ -347,7 +302,7 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
     public void storeSettings(final OutputStream os) {
         try {
             Properties settings = new Properties();
-            settings.setProperty("offset", Long.toString(getStartTime()));
+            settings.setProperty("offset", Long.toString(getOffset()));
             settings.setProperty("height", Integer.toString(vlcDialog.getHeight()));
             settings.setProperty("fps", Float.toString(fps));
             settings.store(os, null);
@@ -366,7 +321,7 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
             props.load(is);
             String property = props.getProperty("offset");
             if ((property != null) && !"".equals(property)) {
-                setStartTime(Long.parseLong(property));
+                setOffset(Long.parseLong(property));
             }
         } catch (IOException e) {
             logger.error("Failed to load settings. Error: ", e);
@@ -397,7 +352,7 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void unsetSourceFile() {
+    public void close() {
         stop();
         videoSurface.setVisible(false);
         vlcDialog.setVisible(false);
@@ -411,11 +366,6 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
 
     public boolean isAssumedFramesPerSecond() {
         return assumedFPS;
-    }
-
-    @Override
-    public boolean isStepEnabled() {
-        return false;
     }
 
     @Override

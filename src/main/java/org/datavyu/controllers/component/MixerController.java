@@ -36,6 +36,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
@@ -308,7 +309,7 @@ public final class MixerController implements PropertyChangeListener,
             constraints.put("wmin", Integer.toString(MIXER_MIN_WIDTH));
 
             // TODO Could probably use this same component to handle vertical resizing...
-            String template = "id filler, h 0!, grow 100 0, wmin ${wmin}, cell 0 0 ";
+            String template = "identifier filler, h 0!, grow 100 0, wmin ${wmin}, cell 0 0 ";
             StrSubstitutor sub = new StrSubstitutor(constraints);
 
             layeredPane.setLayer(filler, FILLER_DEPTH_ORDER);
@@ -330,7 +331,7 @@ public final class MixerController implements PropertyChangeListener,
             constraints.put("y2", "(tscale.y+${height})");
             constraints.put("height", Integer.toString(timescaleViewHeight));
 
-            String template = "id tscale, pos ${x} ${y} ${x2} ${y2}";
+            String template = "identifier tscale, pos ${x} ${y} ${x2} ${y2}";
             StrSubstitutor sub = new StrSubstitutor(constraints);
 
             // Must call setLayer first.
@@ -484,33 +485,20 @@ public final class MixerController implements PropertyChangeListener,
     }
 
     /**
-     * Sets the longest data feed duration.
-     *
-     * @param newMaxEnd duration in milliseconds
-     */
-/*    public void setMaxEnd(final long newMaxEnd, final boolean resetViewportWindow) {
-        viewportModel.setViewportMaxEnd(newMaxEnd, resetViewportWindow);
-        if (resetViewportWindow) {
-            regionModel.resetPlaybackRegion();
-        }
-    }*/
-
-    /**
      * Add a new track to the interface.
      *
      * @param id           Identifier of the track.
      * @param icon         Icon associated with the track.
      * @param mediaPath    Absolute path to the media file.
-     * @param trackName    Name of the track.
      * @param duration     The total duration of the track in milliseconds.
      * @param offset       The amount of playback offset in milliseconds.
      * @param trackPainter The track painter to use.
      */
     public void addNewTrack(final Identifier id, final ImageIcon icon,
-                            final String mediaPath, final String trackName, final long duration,
+                            final File mediaPath, final long duration,
                             final long offset, final TrackPainter trackPainter) {
 
-        // Check if the scale needs to be updated.
+        // Check if the scale needs to be updated
         final long trackEnd = duration + offset;
         final ViewportState viewport = viewportModel.getViewport();
 
@@ -519,7 +507,7 @@ public final class MixerController implements PropertyChangeListener,
             regionModel.resetPlaybackRegion();
         }
 
-        tracksEditorController.addNewTrack(id, icon, trackName, mediaPath, duration, offset, this, trackPainter);
+        tracksEditorController.addNewTrack(id, icon, mediaPath, duration, offset, this, trackPainter);
         tracksScrollPane.validate();
 
         updateGlobalLockToggle();
@@ -589,8 +577,7 @@ public final class MixerController implements PropertyChangeListener,
     }
 
     /**
-     * Zooms into the displayed region and re-adjusts the timing needle
-     * accordingly.
+     * Zooms into the displayed region and re-adjusts the timing needle accordingly
      *
      * @param evt
      */
@@ -600,8 +587,7 @@ public final class MixerController implements PropertyChangeListener,
 
         if (region.getRegionDuration() >= 1) {
             final int percentOfRegionToPadOutsideMarkers = 5;
-            assert (percentOfRegionToPadOutsideMarkers >= 0)
-                    && (percentOfRegionToPadOutsideMarkers <= 100);
+            assert (percentOfRegionToPadOutsideMarkers >= 0) && (percentOfRegionToPadOutsideMarkers <= 100);
 
             final long displayedAreaStart = Math.max(region.getRegionStart()
                     - (region.getRegionDuration()
@@ -647,13 +633,6 @@ public final class MixerController implements PropertyChangeListener,
         tracksPanel.repaint();
 
         updateGlobalLockToggle();
-    }
-
-    /**
-     * @return all track models used to represent the UI.
-     */
-    public Iterable<TrackModel> getAllTrackModels() {
-        return tracksEditorController.getAllTrackModels();
     }
 
     public TrackModel getTrackModel(final Identifier id) {
@@ -974,8 +953,7 @@ public final class MixerController implements PropertyChangeListener,
         }
     }
 
-    private void handleViewportChanged(final ViewportState oldViewport,
-                                       final ViewportState newViewport) {
+    private void handleViewportChanged(final ViewportState newViewport) {
         runInEDT(new Runnable() {
             @Override
             public void run() {
@@ -990,13 +968,10 @@ public final class MixerController implements PropertyChangeListener,
     public void propertyChange(final PropertyChangeEvent evt) {
 
         if (evt.getSource() == mixerModel.getViewportModel()) {
-            final ViewportState oldViewport =
-                    (evt.getOldValue() instanceof ViewportState)
-                            ? (ViewportState) evt.getOldValue() : null;
             final ViewportState newViewport =
                     (evt.getNewValue() instanceof ViewportState)
                             ? (ViewportState) evt.getNewValue() : null;
-            handleViewportChanged(oldViewport, newViewport);
+            handleViewportChanged(newViewport);
         }
     }
 
@@ -1014,7 +989,7 @@ public final class MixerController implements PropertyChangeListener,
     }
 
     /**
-     * Handles component resizing.
+     * Handles component resizing
      */
     private final class SizeHandler extends ComponentAdapter {
         @Override

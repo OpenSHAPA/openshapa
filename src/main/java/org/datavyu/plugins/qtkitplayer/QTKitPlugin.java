@@ -19,6 +19,7 @@ import com.sun.jna.Platform;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.datavyu.Datavyu;
+import org.datavyu.models.Identifier;
 import org.datavyu.plugins.StreamViewer;
 import org.datavyu.plugins.Filter;
 import org.datavyu.plugins.FilterNames;
@@ -26,8 +27,9 @@ import org.datavyu.plugins.Plugin;
 import org.datavyu.util.VersionRange;
 
 import javax.swing.*;
+import java.awt.*;
+import java.io.File;
 import java.io.FileFilter;
-import java.net.URL;
 import java.util.List;
 
 
@@ -62,11 +64,10 @@ public final class QTKitPlugin implements Plugin {
     };
 
     @Override
-    public StreamViewer getNewStreamViewer(final java.awt.Frame parent,
+    public StreamViewer getNewStreamViewer(final Identifier identifier, final File sourceFile, final Frame parent,
                                            final boolean modal) {
-
         if (Platform.isMac() || Platform.isWindows()) {
-            return new QTKitViewerDialog(parent, modal);
+            return new QTKitViewerDialog(identifier, sourceFile, parent, modal);
         } else {
             return null;
         }
@@ -77,10 +78,7 @@ public final class QTKitPlugin implements Plugin {
      */
     @Override
     public ImageIcon getTypeIcon() {
-        URL typeIconURL = getClass().getResource(
-                "/icons/gstreamerplugin-icon.png");
-
-        return new ImageIcon(typeIconURL);
+        return new ImageIcon(getClass().getResource("/icons/gstreamerplugin-icon.png"));
     }
 
     @Override
@@ -100,12 +98,7 @@ public final class QTKitPlugin implements Plugin {
 
     @Override
     public Class<? extends StreamViewer> getViewerClass() {
-
-        if (Platform.isMac()) {
-            return QTKitViewerDialog.class;
-        }
-
-        return null;
+        return Platform.isMac() ? QTKitViewerDialog.class : null;
     }
 
     @Override
