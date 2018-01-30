@@ -309,7 +309,7 @@ public final class MixerController implements PropertyChangeListener,
             constraints.put("wmin", Integer.toString(MIXER_MIN_WIDTH));
 
             // TODO Could probably use this same component to handle vertical resizing...
-            String template = "identifier filler, h 0!, grow 100 0, wmin ${wmin}, cell 0 0 ";
+            String template = "id filler, h 0!, grow 100 0, wmin ${wmin}, cell 0 0 ";
             StrSubstitutor sub = new StrSubstitutor(constraints);
 
             layeredPane.setLayer(filler, FILLER_DEPTH_ORDER);
@@ -331,7 +331,7 @@ public final class MixerController implements PropertyChangeListener,
             constraints.put("y2", "(tscale.y+${height})");
             constraints.put("height", Integer.toString(timescaleViewHeight));
 
-            String template = "identifier tscale, pos ${x} ${y} ${x2} ${y2}";
+            String template = "id tscale, pos ${x} ${y} ${x2} ${y2}";
             StrSubstitutor sub = new StrSubstitutor(constraints);
 
             // Must call setLayer first.
@@ -581,7 +581,7 @@ public final class MixerController implements PropertyChangeListener,
      *
      * @param evt
      */
-    public void zoomToRegion(final ActionEvent evt) {
+    private void zoomToRegion(final ActionEvent evt) {
         final ViewportState viewport = viewportModel.getViewport();
         final RegionState region = regionModel.getRegion();
 

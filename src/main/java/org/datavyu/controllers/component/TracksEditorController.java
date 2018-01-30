@@ -27,7 +27,6 @@ import org.datavyu.plugins.ViewerStateListener;
 import org.datavyu.views.component.TrackPainter;
 import org.datavyu.views.component.TracksEditorPainter;
 
-import javax.sound.midi.Track;
 import javax.swing.*;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -302,7 +301,7 @@ public final class TracksEditorController implements TrackMouseEventListener {
 
         // Compile track and candidate snap points
         for (TrackController trackController : tracks.values()) {
-            final List<Long> snapList = trackController.getTrackModel().getId().equals(trackId) ? snapPoints : snapCandidates;
+            final List<Long> snapList = trackController.getTrackModel().getIdentifier().equals(trackId) ? snapPoints : snapCandidates;
 
             // add the left side (start) of the track as a snap point
             final long startTime = trackController.getOffset();

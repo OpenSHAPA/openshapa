@@ -250,6 +250,8 @@ public final class ClockTimer {
         if (getStreamTime() > maxTime || getStreamTime() < minTime) {
             logger.info("Reached boundary and stop player.");
             stop();
+        } else {
+            notifyCheckBoundary();
         }
     }
 

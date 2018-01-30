@@ -417,8 +417,16 @@ public final class VideoController extends DatavyuDialog
      */
     public void clockStart(double clockTime) {
         logger.info("Start");
+        TracksEditorController tracksEditorController = mixerController.getTracksEditorController();
         for (StreamViewer streamViewer : streamViewers) {
-            streamViewer.start();
+            TrackModel trackModel = tracksEditorController.getTrackModel(streamViewer.getIdentifier());
+            // TODO: Ensure that there is a return value by tying it directly to the object
+            if (trackModel != null) {
+                if (clockTime >= trackModel.getOffset()) {
+                    logger.info("Starting track: " + trackModel.getIdentifier() + " at time: " + clockTime);
+                    streamViewer.start();
+                }
+            }
         }
     }
 
@@ -444,15 +452,16 @@ public final class VideoController extends DatavyuDialog
 
     @Override
     public void clockBoundaryCheck(double clockTime) {
-        logger.info("Boundary check whether we need to start/stop any plugins");
         TracksEditorController tracksEditorController = mixerController.getTracksEditorController();
         for (StreamViewer streamViewer : streamViewers) {
             TrackModel trackModel = tracksEditorController.getTrackModel(streamViewer.getIdentifier());
-            if (trackModel != null) {
-                if (trackModel.getOffset() > clockTime) {
+            if (trackModel != null && !clockTimer.isStopped()) {
+                if (clockTime >= trackModel.getOffset()) {
+                    logger.info("Starting track: " + trackModel.getIdentifier() + " at " + clockTime);
                     streamViewer.start();
                 }
-                if (trackModel.getOffset() + trackModel.getDuration() > clockTime) {
+                if (clockTime > trackModel.getOffset() + trackModel.getDuration()) {
+                    logger.info("Stopping track: " + trackModel.getIdentifier() + " at " + clockTime);
                     streamViewer.stop();
                 }
             }
@@ -463,12 +472,22 @@ public final class VideoController extends DatavyuDialog
      * @param clockTime Current clockTimer time in milliseconds.
      */
     public void clockPeriodicSync(double clockTime) {
+        TracksEditorController tracksEditorController = mixerController.getTracksEditorController();
         for (StreamViewer streamViewer : streamViewers) {
-            double difference = Math.abs(clockTime - streamViewer.getCurrentTime());
+            TrackModel trackModel = tracksEditorController.getTrackModel(streamViewer.getIdentifier());
+            if (trackModel != null) {
+                double trackTime = Math.min(Math.max(clockTime - trackModel.getOffset(), 0), trackModel.getDuration());
+                double difference = Math.abs(trackTime - streamViewer.getCurrentTime());
+                if (difference >= ClockTimer.SYNC_THRESHOLD) {
+                    streamViewer.setCurrentTime((long) trackTime);
+                    logger.info("Sync of clock with difference: " + difference + " milliseconds.");
+                }
+            }
+            /*
             if (difference >= ClockTimer.SYNC_THRESHOLD) {
                 logger.info("Sync of clock with difference: " + difference + " milliseconds.");
                 streamViewer.setCurrentTime((long) clockTime);
-            }
+            }*/
         }
         // Updates the position of the needle and label
         updateCurrentTimeLabelAndNeedle((long) clockTime);

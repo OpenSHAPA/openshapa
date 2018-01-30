@@ -47,7 +47,7 @@ public final class TrackModel {
     }
 
     /** Track identifier */
-    private Identifier id;
+    private Identifier identifier;
 
     /** This is the duration of the track in milliseconds */
     private long duration;
@@ -95,7 +95,7 @@ public final class TrackModel {
      *
      * @param trackModel Model to copy from
      */
-    TrackModel(final TrackModel trackModel) {
+    private TrackModel(final TrackModel trackModel) {
         change = new PropertyChangeSupport(this);
         duration = trackModel.duration;
         offset = trackModel.offset;
@@ -105,7 +105,7 @@ public final class TrackModel {
         trackName = trackModel.trackName;
         state = trackModel.state;
         locked = trackModel.locked;
-        id = trackModel.id;
+        identifier = trackModel.identifier;
     }
 
     /**
@@ -183,7 +183,7 @@ public final class TrackModel {
      * @param offset the new offset.
      */
     public void setOffset(final long offset) {
-        logger.info("For track " + id + " set offset to " + offset + " milliseconds");
+        logger.info("For track " + identifier + " set offset to " + offset + " milliseconds");
         long oldOffset = this.offset;
         this.offset = offset;
         change.firePropertyChange("offset", oldOffset, offset);
@@ -311,17 +311,17 @@ public final class TrackModel {
     }
 
     /**
-     * @param id Identifier to use.
+     * @param identifier Identifier to use.
      */
-    public void setId(final Identifier id) {
-        this.id = id;
+    public void setIdentifier(final Identifier identifier) {
+        this.identifier = identifier;
     }
 
     /**
      * @return Identifier of the track.
      */
-    public Identifier getId() {
-        return id;
+    public Identifier getIdentifier() {
+        return identifier;
     }
 
     /**

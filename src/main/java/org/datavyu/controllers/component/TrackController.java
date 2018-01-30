@@ -338,7 +338,7 @@ public final class TrackController implements ViewerStateListener, PropertyChang
         final String trackName = mediaPath.getName();
         final String trackPath = mediaPath.getAbsolutePath();
 
-        trackModel.setId(id);
+        trackModel.setIdentifier(id);
         trackModel.setTrackName(trackName);
         trackModel.setSourceFile(trackPath);
         trackModel.setDuration(duration);
@@ -680,7 +680,7 @@ public final class TrackController implements ViewerStateListener, PropertyChang
      * @param actionEvent The event to handle.
      */
     private void handleDeleteButtonEvent(final ActionEvent actionEvent) {
-        Datavyu.getVideoController().shutdown(trackModel.getId());
+        Datavyu.getVideoController().shutdown(trackModel.getIdentifier());
     }
 
     /**
@@ -692,7 +692,7 @@ public final class TrackController implements ViewerStateListener, PropertyChang
         isViewerVisible = !isViewerVisible;
 
         Datavyu.getVideoController().setStreamViewerVisibility(trackModel
-                .getId(), isViewerVisible);
+                .getIdentifier(), isViewerVisible);
 
         visibleButton.setIcon(getVisibleButtonIcon());
     }
@@ -774,7 +774,7 @@ public final class TrackController implements ViewerStateListener, PropertyChang
     private void fireCarriageOffsetChangeEvent(final long newOffset, final long time,
                                                final boolean hasModifiers) {
         synchronized (this) {
-            final CarriageEvent e = new CarriageEvent(this, trackModel.getId(), newOffset,
+            final CarriageEvent e = new CarriageEvent(this, trackModel.getIdentifier(), newOffset,
                     trackModel.getMarkers(), trackModel.getDuration(), time, EventType.OFFSET_CHANGE,
                     hasModifiers);
             final Object[] listeners = listenerList.getListenerList();
@@ -792,7 +792,7 @@ public final class TrackController implements ViewerStateListener, PropertyChang
      */
     private void fireCarriageMarkerRequestEvent() {
         synchronized (this) {
-            final CarriageEvent e = new CarriageEvent(this, trackModel.getId(), trackModel.getOffset(),
+            final CarriageEvent e = new CarriageEvent(this, trackModel.getIdentifier(), trackModel.getOffset(),
                     trackModel.getMarkers(), trackModel.getDuration(), 0, EventType.MARKER_REQUEST,
                     false);
             final Object[] listeners = listenerList.getListenerList();
@@ -810,7 +810,7 @@ public final class TrackController implements ViewerStateListener, PropertyChang
      */
     private void fireCarriageMarkerSaveEvent() {
         synchronized (this) {
-            final CarriageEvent e = new CarriageEvent(this, trackModel.getId(),
+            final CarriageEvent e = new CarriageEvent(this, trackModel.getIdentifier(),
                     trackModel.getOffset(), trackModel.getMarkers(),
                     trackModel.getDuration(), 0, EventType.MARKER_SAVE,
                     false);
@@ -831,7 +831,7 @@ public final class TrackController implements ViewerStateListener, PropertyChang
      */
     private void fireCarriageSelectionChangeEvent(final boolean hasModifiers) {
         synchronized (this) {
-            final CarriageEvent e = new CarriageEvent(this, trackModel.getId(),
+            final CarriageEvent e = new CarriageEvent(this, trackModel.getIdentifier(),
                     trackModel.getOffset(), trackModel.getMarkers(),
                     trackModel.getDuration(), 0, EventType.CARRIAGE_SELECTION,
                     hasModifiers);
@@ -850,7 +850,7 @@ public final class TrackController implements ViewerStateListener, PropertyChang
      */
     private void fireLockStateChangedEvent() {
         synchronized (this) {
-            final CarriageEvent carriageEvent = new CarriageEvent(this, trackModel.getId(),
+            final CarriageEvent carriageEvent = new CarriageEvent(this, trackModel.getIdentifier(),
                     trackModel.getOffset(), trackModel.getMarkers(), trackModel.getDuration(), 0,
                     EventType.CARRIAGE_LOCK, false);
             final Object[] listeners = listenerList.getListenerList();
@@ -890,7 +890,7 @@ public final class TrackController implements ViewerStateListener, PropertyChang
 
     public void attachAsWindowListener() {
         Datavyu.getVideoController().bindWindowListenerToStreamViewer(
-                trackModel.getId(), new WindowAdapter() {
+                trackModel.getIdentifier(), new WindowAdapter() {
 
             @Override
             public void windowClosing(final WindowEvent e) {
