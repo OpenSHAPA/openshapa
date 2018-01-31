@@ -145,7 +145,7 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
     @Override
     public void start() {
         super.start();
-        logger.info("Playing at speed: " + getPlaybackSpeed());
+        logger.info("Playing at speed: " + getRate());
 
         try {
             if (movie != null) {
@@ -154,7 +154,7 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
                         if (movie.getRate(movie.id) != 0) {
                             movie.stop(movie.id);
                         }
-                        movie.setRate(getPlaybackSpeed(), movie.id);
+                        movie.setRate(getRate(), movie.id);
                     }
                 });
             } else {
@@ -209,7 +209,7 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
                         public void run() {
                             logger.info("Seeking to position: " + time);
                             boolean wasPlaying = isPlaying();
-                            float prevRate = getPlaybackSpeed();
+                            float prevRate = getRate();
                             if (isPlaying()) {
                                 movie.stop(movie.id);
                             }
@@ -254,10 +254,5 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
     protected void cleanUp() {
         // TODO: Check if the release is required?
 //        movie.release();
-    }
-
-    @Override
-    public void step() {
-        // Nothing to do here
     }
 }

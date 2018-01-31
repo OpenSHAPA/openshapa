@@ -126,6 +126,13 @@ public interface StreamViewer {
     void setRate(float speed);
 
     /**
+     * Get the playback rate.
+     *
+     * @return playback rate.
+     */
+    float getRate();
+
+    /**
      * Set the stream time. If the time is out of range set to the next closest value in the stream.
      *
      * @param time Position in milliseconds.
@@ -186,4 +193,6 @@ public interface StreamViewer {
      * @return True if we assumed the playback rate; otherwise false.
      */
     boolean isAssumedFramesPerSecond();
+
+    boolean isStepEnabled();
 }

@@ -210,9 +210,4 @@ public class JavaFXStreamViewerDialog extends StreamViewerDialog {
         jfxApp.setVisible(false);
         jfxApp.closeAndDestroy();
     }
-
-    @Override
-    public void step() {
-        // Nothing to do here since the plugin does not provide this functionality
-    }
 }

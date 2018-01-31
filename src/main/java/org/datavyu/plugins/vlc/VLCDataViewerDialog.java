@@ -367,9 +367,4 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
     public boolean isAssumedFramesPerSecond() {
         return assumedFPS;
     }
-
-    @Override
-    public void step() {
-        // Nothing to do here
-    }
 }

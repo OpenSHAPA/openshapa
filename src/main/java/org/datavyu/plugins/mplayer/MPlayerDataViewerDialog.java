@@ -206,9 +206,4 @@ public class MPlayerDataViewerDialog extends StreamViewerDialog {
     public boolean isAssumedFramesPerSecond() {
         return assumedFPS;
     }
-
-    @Override
-    public void step() {
-        // Nothing to do here
-    }
 }

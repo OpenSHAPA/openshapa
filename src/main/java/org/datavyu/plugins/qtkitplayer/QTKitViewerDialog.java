@@ -98,14 +98,14 @@ public final class QTKitViewerDialog extends StreamViewerDialog {
     @Override
     public void start() {
         super.start();
-        logger.info("Playing at speed: " + getPlaybackSpeed());
+        logger.info("Playing at speed: " + getRate());
         try {
             if (player != null) {
                 EventQueue.invokeLater(() -> {
                     if (player.getRate(player.id) != 0) {
                         player.stop(player.id);
                     }
-                    player.setRate(getPlaybackSpeed(), player.id);
+                    player.setRate(getRate(), player.id);
                 });
             }
         } catch (Exception e) {
@@ -146,7 +146,7 @@ public final class QTKitViewerDialog extends StreamViewerDialog {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         boolean wasPlaying = isPlaying();
-                        float prevRate = getPlaybackSpeed();
+                        float prevRate = getRate();
                         if (isPlaying())
                             player.stop(player.id);
                         player.setTime(time, player.id);
@@ -179,10 +179,5 @@ public final class QTKitViewerDialog extends StreamViewerDialog {
     protected void cleanUp() {
         // TODO: Do we need to release the player here?
 //        player.release();
-    }
-
-    @Override
-    public void step() {
-        // Nothing to do here
     }
 }

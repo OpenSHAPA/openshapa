@@ -98,7 +98,7 @@ public class FFViewerDialog extends StreamViewerDialog {
     @Override
     public void setRate(float speed) {
         launch(() -> {
-            playBackSpeed = speed;
+            playBackRate = speed;
             if (speed == 0) {
                 player.stop();
             } else {
@@ -132,5 +132,10 @@ public class FFViewerDialog extends StreamViewerDialog {
         launch(() -> {
             player.step();
         });
+    }
+
+    @Override
+    public boolean isStepEnabled() {
+        return true;
     }
 }

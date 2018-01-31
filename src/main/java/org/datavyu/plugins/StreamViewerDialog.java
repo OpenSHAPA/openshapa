@@ -76,7 +76,7 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     private Dimension originalVideoSize;
 
     /** The playback speed */
-    protected float playBackSpeed = 0;
+    protected float playBackRate = 0;
 
     /** Frames per second */
     private float framesPerSecond = -1;
@@ -124,6 +124,7 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     private Identifier identifier;
 
     /** The offset of this stream viewer wrt to the others */
+    // Offset gets updated when the user pushes the bar through 'handleCarriageOffsetChangeEvent' in the VideoController
     private long offset;
 
     /**
@@ -284,8 +285,8 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
      *
      * @return
      */
-    public int getVideoHeight() {
-        // TODO:Have variables for JUST the video size
+    private int getVideoHeight() {
+        // TODO: Have variables for JUST the video size
         return getHeight() - getInsets().bottom - getInsets().top;
     }
 
@@ -319,6 +320,8 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
      * @param newOffset The playback startTime of the movie in milliseconds.
      */
     public void setOffset(final long newOffset) {
+        logger.info("Set offset of stream viewer with " + identifier + " to " + newOffset);
+        // TODO: This set is communicated to the TrackController (if it does not come from there)
         offset = newOffset;
     }
 
@@ -375,15 +378,17 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
         isAssumedFramesPerSecond = false;
     }
 
-    public float getPlaybackSpeed() {
-        return playBackSpeed;
+    @Override
+    public float getRate() {
+        return playBackRate;
     }
 
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setRate(final float speed) {
-        playBackSpeed = speed;
+        playBackRate = speed;
     }
 
     /**
@@ -559,5 +564,15 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
 
     public boolean isAssumedFramesPerSecond() {
         return isAssumedFramesPerSecond;
+    }
+
+    @Override
+    public boolean isStepEnabled() {
+        return false;
+    }
+
+    @Override
+    public void step() {
+        // Nothing to do here
     }
 }

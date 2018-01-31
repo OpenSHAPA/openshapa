@@ -199,7 +199,7 @@ public final class QTDataViewerDialog extends StreamViewerDialog {
             public void run() {
                 try {
                     if (movie != null) {
-                        movie.setRate(getPlaybackSpeed());
+                        movie.setRate(getRate());
                     }
                 } catch (QTException e) {
                     logger.error("Unable to start. Error: ", e);
@@ -261,10 +261,5 @@ public final class QTDataViewerDialog extends StreamViewerDialog {
     @Override
     protected void cleanUp() {
         // TODO: Check if we need to do some cleanup?
-    }
-
-    @Override
-    public void step() {
-        // Nothing to do here
     }
 }

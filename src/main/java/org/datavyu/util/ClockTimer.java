@@ -48,16 +48,16 @@ public final class ClockTimer {
 
     private static final long CHECK_BOUNDARY_DELAY = 0L;
 
-    /** Minimum playback time for this clock timer in milliseconds */
+    /** Minimum time for the clock in milliseconds */
     private long minTime;
 
-    /** Maximum playback time for this clock timer in milliseconds */
+    /** Maximum time for the clock in milliseconds */
     private long maxTime;
 
     /** Current time of the clock in milliseconds */
     private double clockTime;
 
-    /** Used to calculate elapsed time in nanoseconds */
+    /** Last time in nanoseconds; it is used to calculate the elapsed */
     private double lastTime;
 
     /** Is the clock stopped */
@@ -66,25 +66,30 @@ public final class ClockTimer {
     /** The rate factor for the clock updates */
     private float rate = 1F;
 
-    /** The set of objects that listen to this clock */
+    /** Listeners of this clock */
     private Set<ClockListener> clockListeners = new HashSet<>();
 
     /**
      * Default constructor.
      */
     public ClockTimer() {
+
+        // Initialize values
         clockTime = 0;
         lastTime = 0;
         minTime = 0;
         maxTime = 0;
         isStopped = true;
-        // Sync timer
+
+        // Sync timer at lower frequency
         new Timer().scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 periodicSync();
             }
         }, CLOCK_SYNC_DELAY, CLOCK_SYNC_INTERVAL);
+
+        // Boundary checker at higher frequency
         new Timer().scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -247,10 +252,12 @@ public final class ClockTimer {
 
     private synchronized void checkBoundary() {
         updateElapsedTime();
+        // Stop clock if we are outside the [min, max] range
         if (getStreamTime() > maxTime || getStreamTime() < minTime) {
             logger.info("Reached boundary and stop player.");
             stop();
         } else {
+            // If within the range [min, max] notify a boundary check
             notifyCheckBoundary();
         }
     }

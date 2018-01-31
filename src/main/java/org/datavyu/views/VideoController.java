@@ -73,7 +73,7 @@ public final class VideoController extends DatavyuDialog
     private static Logger logger = LogManager.getLogger(VideoController.class);
 
     /** One second in milliseconds */
-    private static final long ONE_SECOND = 1000L;
+    private static final long MILLI_IN_SEC = 1000L;
 
     /** Rate of playback for rewinding */
     private static final float REWIND_RATE = -32F;
@@ -159,6 +159,8 @@ public final class VideoController extends DatavyuDialog
 
     /** Determines whether or not 'control' key is being held */
     private boolean ctrlMask = false;
+
+    private SortedSet<Double> frameRates = new TreeSet<Double>();
 
     /** The set of streamViewers associated with this controller */
     private Set<StreamViewer> streamViewers = new LinkedHashSet<>();
@@ -321,6 +323,18 @@ public final class VideoController extends DatavyuDialog
         return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
     }
 
+    public double getHighestFramesPerSecond() {
+        return frameRates.isEmpty() ? 0 : frameRates.last();
+    }
+
+    private void addFramesPerSecond(double framesPerSecond) {
+        frameRates.add(framesPerSecond);
+    }
+
+    private void removeFramesPerSecond(double framesPerSecond) {
+        frameRates.remove(framesPerSecond);
+    }
+
     /**
      * Handles opening a data source.
      *
@@ -420,7 +434,7 @@ public final class VideoController extends DatavyuDialog
         TracksEditorController tracksEditorController = mixerController.getTracksEditorController();
         for (StreamViewer streamViewer : streamViewers) {
             TrackModel trackModel = tracksEditorController.getTrackModel(streamViewer.getIdentifier());
-            // TODO: Ensure that there is a return value by tying it directly to the object
+            // TODO: Ensure that there is a return value by tying offset/duration directly to the object
             if (trackModel != null) {
                 if (clockTime >= trackModel.getOffset()) {
                     logger.info("Starting track: " + trackModel.getIdentifier() + " at time: " + clockTime);
@@ -483,11 +497,6 @@ public final class VideoController extends DatavyuDialog
                     logger.info("Sync of clock with difference: " + difference + " milliseconds.");
                 }
             }
-            /*
-            if (difference >= ClockTimer.SYNC_THRESHOLD) {
-                logger.info("Sync of clock with difference: " + difference + " milliseconds.");
-                streamViewer.setCurrentTime((long) clockTime);
-            }*/
         }
         // Updates the position of the needle and label
         updateCurrentTimeLabelAndNeedle((long) clockTime);
@@ -605,7 +614,9 @@ public final class VideoController extends DatavyuDialog
 
         // DO SOMETHING CONCERNING STEP_SIZE
         if (streamViewers.isEmpty()) {
-            // TODO: Set highest frame rate
+            // TODO: Set highest frame rate, the right thing to do is keep all frame rates in a max tree
+            //setHighestFramesPerSecond();
+
             //playbackParameters.setHighestFramesPerSecond(0f);
             updateStepSizeTextField();
         }
@@ -1577,6 +1588,38 @@ public final class VideoController extends DatavyuDialog
     @Action
     public void jogBackAction() {
         logger.info("Jog back");
+        if (!clockTimer.isStopped()) {
+            clockTimer.stop();
+        } else {
+            TracksEditorController tracksEditorController = mixerController.getTracksEditorController();
+            for (StreamViewer streamViewer : streamViewers) {
+                // TODO: Tie offset & duration to stream viewer only and pull it in the track model
+                TrackModel trackModel = tracksEditorController.getTrackModel(streamViewer.getIdentifier());
+                if (streamViewer.isStepEnabled()) {
+                    float rate = streamViewer.getRate();
+                    // Make sure we step backward
+                    if (rate > 0) {
+                        streamViewer.setRate(-1);
+                    }
+                    streamViewer.step();
+                    // Restore rate
+                    streamViewer.setRate(rate);
+                } else if (trackModel != null){
+                    // Get the stream time
+                    long streamTime = (long) clockTimer.getStreamTime() - trackModel.getOffset();
+
+                    // step size is in milliseconds
+                    long stepSize = (long)(MILLI_IN_SEC / getHighestFramesPerSecond());
+
+                    // Notice that the new time is in jogs to frame markers by being modulo step size
+                    long newTime = Math.min(Math.max(streamTime - (streamTime % stepSize) - stepSize, 0),
+                            trackModel.getDuration());
+
+                    streamViewer.setCurrentTime(newTime);
+                }
+                // otherwise we can't step
+            }
+        }
         /*
         if (!clockTimer.isStopped()) {
             clockStop(clockTimer.getTime());
@@ -1592,7 +1635,7 @@ public final class VideoController extends DatavyuDialog
                 mul = CTRL_JOG;
             }
 
-            long stepSize = ((-ONE_SECOND) / (long) playbackParameters.getHighestFramesPerSecond());
+            long stepSize = ((-MILLI_IN_SEC) / (long) playbackParameters.getHighestFramesPerSecond());
             long nextTime = mul * stepSize;
 
             long mod = clockTimer.getTime() % stepSize;
@@ -1618,6 +1661,38 @@ public final class VideoController extends DatavyuDialog
     @Action
     public void jogForwardAction() {
         logger.info("Jog forward");
+        if (!clockTimer.isStopped()) {
+            clockTimer.stop();
+        } else {
+            TracksEditorController tracksEditorController = mixerController.getTracksEditorController();
+            for (StreamViewer streamViewer : streamViewers) {
+                // TODO: Tie offset & duration to stream viewer only and pull it in the track model
+                TrackModel trackModel = tracksEditorController.getTrackModel(streamViewer.getIdentifier());
+                if (streamViewer.isStepEnabled()) {
+                    float rate = streamViewer.getRate();
+                    // Make sure we step forward
+                    if (rate < 0) {
+                        streamViewer.setRate(+1);
+                    }
+                    streamViewer.step();
+                    // Restore the rate
+                    streamViewer.setRate(rate);
+                } else if (trackModel != null){
+                    // Get the stream time
+                    long streamTime = (long) clockTimer.getStreamTime() - trackModel.getOffset();
+
+                    // step size is in milliseconds
+                    long stepSize = (long)(MILLI_IN_SEC / getHighestFramesPerSecond());
+
+                    // Notice that the new time is in jogs to frame markers by being modulo step size
+                    long newTime = Math.min(Math.max(streamTime - (streamTime % stepSize) + stepSize, 0),
+                            trackModel.getDuration());
+
+                    streamViewer.setCurrentTime(newTime);
+                }
+                // otherwise we can't step
+            }
+        }
         /*
         if (!clockTimer.isStopped()) {
             clockStop(clockTimer.getTime());
@@ -1633,7 +1708,7 @@ public final class VideoController extends DatavyuDialog
                 mul = CTRL_JOG;
             }
 
-            long stepSize = ((ONE_SECOND) / (long) playbackParameters.getHighestFramesPerSecond());
+            long stepSize = ((MILLI_IN_SEC) / (long) playbackParameters.getHighestFramesPerSecond());
             long nextTime = mul * stepSize;
 
             // BugzID:1544 - Preserve precision - force jog to frame markers.
@@ -1671,8 +1746,12 @@ public final class VideoController extends DatavyuDialog
     @SuppressWarnings("unused")  // Called through actionMap
     public void createNewCellAction() {
         logger.info("New cell");
-        // TODO: Fix adjust clockTimer by calling sync event
-        //if (!clockTimer.isStopped()) adjustClock(getCurrentTime());
+
+        // Ensure precise sync up
+        if (!clockTimer.isStopped()) {
+            clockTimer.setForceTime(getCurrentTime());
+        }
+
         CreateNewCellController controller = new CreateNewCellController();
         controller.createDefaultCell(true);
     }
@@ -1684,9 +1763,14 @@ public final class VideoController extends DatavyuDialog
     @SuppressWarnings("unused")  // Called through actionMap
     public void createNewCellAndSetOffsetAction() {
         logger.info("New cell set offset");
-        // TODO: Fixme adjust clockTimer
-        //if (!clockTimer.isStopped()) adjustClock(getCurrentTime());
-        new CreateNewCellController(getCurrentTime(), true);
+
+        // Ensure precise sync up
+        long time = getCurrentTime();
+        if (!clockTimer.isStopped()) {
+            clockTimer.setForceTime(time);
+        }
+
+        new CreateNewCellController(time, true);
     }
 
     /**
@@ -1696,9 +1780,13 @@ public final class VideoController extends DatavyuDialog
     @SuppressWarnings("unused")  // Called through actionMap
     public void pointCellAction() {
         logger.info("Set new cell offset");
-        // TODO: Fixme adjust clockTimer
-        //adjustClock(getCurrentTime());
+
+        // Set precise clock
         long time = getCurrentTime();
+        if (!clockTimer.isStopped()) {
+            clockTimer.setForceTime(time);
+        }
+
         new CreateNewCellController(time, false);
         new SetNewCellStopTimeController(time);
         setOffsetField(time);
@@ -1714,11 +1802,6 @@ public final class VideoController extends DatavyuDialog
         } else if (source instanceof RegionModel) {
             handleRegionChange(((RegionModel) source).getRegion());
         }
-    }
-
-    public float getCurrentFPS() {
-        return 0f;
-        //return playbackParameters.getHighestFramesPerSecond();
     }
 
     public ClockTimer getClockTimer() {
