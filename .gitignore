@@ -35,3 +35,5 @@ QTKitPlayer/build
 QTKitPlayer/resources
 src/main/resources/doc
 src/main/resources/.yardoc
+quaqua64.jnilib
+NativeOSXCanvas.jnilib
