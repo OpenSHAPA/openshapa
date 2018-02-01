@@ -965,28 +965,21 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
 
     public void selectColumn(int newIndex, int oldIndex) {
         // Find currently selected cell, if there is one
-        SpreadsheetCell sc = lastSelectedCell;
-        SpreadsheetColumn selectedCol = null;
-        for(SpreadsheetColumn col : getColumns()) {
-            if(col.isSelected()) {
-                selectedCol = col;
-            }
-            for(SpreadsheetCell cell : col.getCellsTemporally()) {
+        if(0 <= newIndex && newIndex < getColumns().size()) {
+            SpreadsheetCell sc = lastSelectedCell;            
+            SpreadsheetColumn selectedCol = getColumns().get(oldIndex);
+            for(SpreadsheetCell cell : selectedCol.getCellsTemporally()) {
                 if(cell.getCell().isSelected()) {
                     sc = cell;
                     break;
                 }
             }
-            if(sc != null) {
-                break;
-            }
-        }
 
-        clearCellSelection();
-        clearColumnSelection();
-        requestFocus();
+            clearCellSelection();
+            clearColumnSelection();
+            requestFocus();
 
-        if(0 <= newIndex && newIndex < getColumns().size()) {
+
             getColumns().get(newIndex).setExclusiveSelected(true);
             getColumns().get(newIndex).requestFocus();
             if(sc != null) {
