@@ -817,8 +817,9 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     public void selectColumnLeft() {
         SpreadsheetColumn col = panel.getSelectedColumn();
         if(col != null) {
-            int index = panel.getColumns().indexOf(col);
-            panel.selectColumn(index-1);
+            int newIndex = panel.getColumns().indexOf(col)-1;
+            int oldIndex = panel.getColumns().indexOf(col);
+            panel.selectColumn(newIndex, oldIndex);
         }
     }
 
@@ -826,8 +827,9 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     public void selectColumnRight() {
         SpreadsheetColumn col = panel.getSelectedColumn();
         if(col != null) {
-            int index = panel.getColumns().indexOf(col);
-            panel.selectColumn(index+1);
+            int newIndex = panel.getColumns().indexOf(col)+1;
+            int oldIndex = panel.getColumns().indexOf(col);
+            panel.selectColumn(newIndex, oldIndex);
         }
     }
 
