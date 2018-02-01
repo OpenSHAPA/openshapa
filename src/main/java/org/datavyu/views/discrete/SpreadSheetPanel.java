@@ -978,23 +978,27 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
             clearCellSelection();
             clearColumnSelection();
             requestFocus();
-
-
-            getColumns().get(newIndex).setExclusiveSelected(true);
-            getColumns().get(newIndex).requestFocus();
+            
+            SpreadsheetColumn column = getColumns().get(newIndex);
+            column.setExclusiveSelected(true);
+            column.requestFocus();
             if(sc != null) {
                 if (Datavyu.getView().getSheetLayout() == SheetLayoutType.WeakTemporal) {
-                    getColumns().get(newIndex).getNearestCellTemporally(sc).requestFocus();
+//                    column.getNearestCellTemporally(sc).requestFocus();
+                    column.getNearestCellTemporally(sc).getCell().setHighlighted(true);
                 } else {
                     int ord = selectedCol.getCellsTemporally().indexOf(sc);
-                    if(getColumns().get(newIndex).getCellsTemporally().size() >= ord) {
-                        getColumns().get(newIndex).getCellsTemporally().get(ord).requestFocus();
+                    if(column.getCellsTemporally().size() >= ord) {
+//                        column.getCellsTemporally().get(ord).requestFocus();
+                        column.getCellsTemporally().get(ord).getCell().setHighlighted(true);
                     } else {
-                        getColumns().get(newIndex).getCellsTemporally().get(getColumns().get(newIndex).getCellsTemporally().size()-1);
+//                        column.getCellsTemporally().get(column.getCellsTemporally().size()-1);
+                        column.getCellsTemporally().get(column.getCellsTemporally().size()-1).getCell().setHighlighted(true);
                     }
                 }
             } else {
-                getColumns().get(newIndex).getCellTemporally(0).requestFocus();
+//                column.getCellTemporally(0).requestFocus();
+                column.getCellTemporally(0).getCell().setHighlighted(true);
             }
         }
     }
