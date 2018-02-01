@@ -963,7 +963,7 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
         return col;
     }
 
-    public void selectColumn(int index) {
+    public void selectColumn(int newIndex, int oldIndex) {
         // Find currently selected cell, if there is one
         SpreadsheetCell sc = lastSelectedCell;
         SpreadsheetColumn selectedCol = null;
@@ -986,22 +986,22 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
         clearColumnSelection();
         requestFocus();
 
-        if(0 <= index && index < getColumns().size()) {
-            getColumns().get(index).setExclusiveSelected(true);
-            getColumns().get(index).requestFocus();
+        if(0 <= newIndex && newIndex < getColumns().size()) {
+            getColumns().get(newIndex).setExclusiveSelected(true);
+            getColumns().get(newIndex).requestFocus();
             if(sc != null) {
                 if (Datavyu.getView().getSheetLayout() == SheetLayoutType.WeakTemporal) {
-                    getColumns().get(index).getNearestCellTemporally(sc).requestFocus();
+                    getColumns().get(newIndex).getNearestCellTemporally(sc).requestFocus();
                 } else {
                     int ord = selectedCol.getCellsTemporally().indexOf(sc);
-                    if(getColumns().get(index).getCellsTemporally().size() >= ord) {
-                        getColumns().get(index).getCellsTemporally().get(ord).requestFocus();
+                    if(getColumns().get(newIndex).getCellsTemporally().size() >= ord) {
+                        getColumns().get(newIndex).getCellsTemporally().get(ord).requestFocus();
                     } else {
-                        getColumns().get(index).getCellsTemporally().get(getColumns().get(index).getCellsTemporally().size()-1);
+                        getColumns().get(newIndex).getCellsTemporally().get(getColumns().get(newIndex).getCellsTemporally().size()-1);
                     }
                 }
             } else {
-                getColumns().get(index).getCellTemporally(0).requestFocus();
+                getColumns().get(newIndex).getCellTemporally(0).requestFocus();
             }
         }
     }
