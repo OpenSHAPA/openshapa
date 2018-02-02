@@ -668,7 +668,7 @@ public class SpreadsheetCell extends JPanel
             }
         }
         model.setSelected(false);
-//        parentColumn.setSelected(false);
+        parentColumn.setSelected(false);
     }
 
     @Override
