@@ -47,11 +47,13 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
+import javax.swing.text.BadLocationException;
 
 
 /**
@@ -379,7 +381,7 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
 
     /**
      * @return the vector of Spreadsheet columns.
-     * Need for UISpec4J testing
+         * Need for UISpec4J testing
      */
     public List<SpreadsheetColumn> getColumns() {
         return columns;
@@ -390,7 +392,11 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
      * Need for UISpec4J testing
      */
     public List<SpreadsheetColumn> getVisibleColumns() {
-        return columns.stream().filter(c -> c.isVisible()).collect(Collectors.toList());
+        List<SpreadsheetColumn> visibleColumns = new ArrayList<>();
+        for (SpreadsheetColumn column : columns){
+            if(column.isVisible()){ visibleColumns.add(column); }
+        }
+        return visibleColumns;
     }
 
     /**
@@ -481,10 +487,9 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
             // User is attempting to move to the column to the left.
             if ((e.getKeyCode() == KeyEvent.VK_LEFT)
                     && platformCellMovementMask(e)) {
-                System.out.println("GOING LEFT");
                 Datavyu.getView().selectColumnLeft();
                 e.consume();
-
+                
                 return true;
 
                 // User is attempting to move to the column to the right.
@@ -492,7 +497,7 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
                     && platformCellMovementMask(e)) {
                 Datavyu.getView().selectColumnRight();
                 e.consume();
-
+                
                 return true;
             }
         } else if (e.getID() == KeyEvent.KEY_PRESSED && !e.isMetaDown() && !e.isControlDown()) {
@@ -832,11 +837,14 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
 //            highlightedCell.getCell().setSelected(false);
             highlightedCell.invalidate();
         }
-
-        highlightedCell = cell;
-        lastSelectedCell = cell;
-        highlightedCell.getCell().setHighlighted(true);
-//        clearColumnSelection();
+        if(cell != null){
+            highlightedCell = cell;
+            lastSelectedCell = cell;
+            highlightedCell.getCell().setHighlighted(true);
+//          clearColumnSelection();
+        }else{            
+            highlightedCell.getCell().setHighlighted(false);            
+        }        
     }
 
     /**
@@ -954,7 +962,7 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
 
     public SpreadsheetColumn getSelectedColumn() {
         SpreadsheetColumn col = null;
-        for(SpreadsheetColumn c : getVisibleColumns()) {
+        for(SpreadsheetColumn c : this.getVisibleColumns()) {
             if(c.isSelected()) {
                 col = c;
                 break;
@@ -963,43 +971,56 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
         return col;
     }
 
-    public void selectColumn(int newIndex, int oldIndex) {
+    public void selectColumn(final int newIndex, final int oldIndex) {
         // Find currently selected cell, if there is one
-        if(0 <= newIndex && newIndex < getColumns().size()) {
-            SpreadsheetCell sc = lastSelectedCell;            
-            SpreadsheetColumn selectedCol = getColumns().get(oldIndex);
+        if(0 <= newIndex && newIndex < this.getColumns().size()) {         
+            SpreadsheetColumn selectedCol = this.getColumns().get(oldIndex);            
+            SpreadsheetCell sc = this.lastSelectedCell ;  
+
             for(SpreadsheetCell cell : selectedCol.getCellsTemporally()) {
                 if(cell.getCell().isSelected()) {
-                    sc = cell;
+                    sc = cell;                 
                     break;
                 }
             }
 
-            clearCellSelection();
-            clearColumnSelection();
-            requestFocus();
+            this.clearCellSelection();
+            this.clearColumnSelection();
+            this.requestFocus();
             
-            SpreadsheetColumn column = getColumns().get(newIndex);
+            SpreadsheetColumn column = this.getColumns().get(newIndex);            
             column.setExclusiveSelected(true);
-            column.requestFocus();
+            SpreadsheetCell newCell = null;
+            
             if(sc != null) {
-                if (Datavyu.getView().getSheetLayout() == SheetLayoutType.WeakTemporal) {
-//                    column.getNearestCellTemporally(sc).requestFocus();
-                    column.getNearestCellTemporally(sc).getCell().setHighlighted(true);
+                if (Datavyu.getView().getSheetLayout() == SheetLayoutType.WeakTemporal) { 
+                    newCell = column.getNearestCellTemporally(sc);
                 } else {
                     int ord = selectedCol.getCellsTemporally().indexOf(sc);
                     if(column.getCellsTemporally().size() >= ord) {
-//                        column.getCellsTemporally().get(ord).requestFocus();
-                        column.getCellsTemporally().get(ord).getCell().setHighlighted(true);
+                        newCell = column.getCellsTemporally().get(ord);
                     } else {
-//                        column.getCellsTemporally().get(column.getCellsTemporally().size()-1);
-                        column.getCellsTemporally().get(column.getCellsTemporally().size()-1).getCell().setHighlighted(true);
+                        newCell = column.getCellsTemporally().get(column.getCellsTemporally().size()-1);
                     }
                 }
-            } else {
-//                column.getCellTemporally(0).requestFocus();
-                column.getCellTemporally(0).getCell().setHighlighted(true);
+            } else {//                
+                newCell = column.getCellTemporally(0);
             }
+            this.setHighlightedCell(newCell);
+            // TODO: focus and unfocus on a cell
+//            EditorTracker et = newCell.getDataView().getEdTracker();
+//            EditorComponent ec = et.getCurrentEditor();
+//            try {
+//                JTextArea a = (JTextArea) ec.getParentComponent();
+//                if (a.getLineOfOffset(a.getCaretPosition()) == 0) {
+//                    et.setEditor(ec);                    
+//                    newCell.requestFocus();                    
+//                    newCell.getCell().setHighlighted(true);
+//                    newCell.getCell().setSelected(true);
+//                }
+//            } catch (BadLocationException be) {
+//                logger.error("can't shift", be);
+//            }
         }
     }
 
