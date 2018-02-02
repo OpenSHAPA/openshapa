@@ -983,13 +983,15 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
                     break;
                 }
             }
-
+            
             this.clearCellSelection();
             this.clearColumnSelection();
             this.requestFocus();
             
+            
+            
             SpreadsheetColumn column = this.getColumns().get(newIndex);            
-            column.setExclusiveSelected(true);
+            //column.setExclusiveSelected(true);
             SpreadsheetCell newCell = null;
             
             if(sc != null) {
@@ -1003,24 +1005,26 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
                         newCell = column.getCellsTemporally().get(column.getCellsTemporally().size()-1);
                     }
                 }
-            } else {//                
+            } else {                
                 newCell = column.getCellTemporally(0);
+                sc = selectedCol.getCellTemporally(0);
             }
-            this.setHighlightedCell(newCell);
-            // TODO: focus and unfocus on a cell
-//            EditorTracker et = newCell.getDataView().getEdTracker();
-//            EditorComponent ec = et.getCurrentEditor();
-//            try {
-//                JTextArea a = (JTextArea) ec.getParentComponent();
-//                if (a.getLineOfOffset(a.getCaretPosition()) == 0) {
-//                    et.setEditor(ec);                    
-//                    newCell.requestFocus();                    
-//                    newCell.getCell().setHighlighted(true);
-//                    newCell.getCell().setSelected(true);
-//                }
-//            } catch (BadLocationException be) {
-//                logger.error("can't shift", be);
-//            }
+//            this.setHighlightedCell(newCell);
+            EditorTracker etCur = sc.getDataView().getEdTracker();
+            EditorComponent ecCur = etCur.getCurrentEditor();
+            etCur.setEditor(ecCur);            
+            selectedCol.setSelected(true);
+            sc.requestFocus();
+            sc.getCell().setHighlighted(true);
+//            clearColumnSelection();
+            selectedCol.setSelected(false);
+            
+            EditorTracker etNew = newCell.getDataView().getEdTracker();
+            EditorComponent ecNew = etNew.getEditorAtIndex(etCur.indexOfCurrentEditor());
+            etNew.setEditor(ecNew);
+            column.setSelected(true);
+            newCell.requestFocus();
+            newCell.getCell().setHighlighted(true);
         }
     }
 
