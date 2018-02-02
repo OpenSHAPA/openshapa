@@ -988,8 +988,6 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
             this.clearColumnSelection();
             this.requestFocus();
             
-            
-            
             SpreadsheetColumn column = this.getColumns().get(newIndex);            
             //column.setExclusiveSelected(true);
             SpreadsheetCell newCell = null;
@@ -1010,19 +1008,22 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
                 sc = selectedCol.getCellTemporally(0);
             }
 //            this.setHighlightedCell(newCell);
+             
+//            selectedCol.setSelected(true);
+//            sc.getCell().setHighlighted(true);
+//            sc.requestFocus();
+            
             EditorTracker etCur = sc.getDataView().getEdTracker();
             EditorComponent ecCur = etCur.getCurrentEditor();
-            etCur.setEditor(ecCur);            
-            selectedCol.setSelected(true);
-            sc.requestFocus();
-            sc.getCell().setHighlighted(true);
+            etCur.setEditor(ecCur); 
+            
 //            clearColumnSelection();
-            selectedCol.setSelected(false);
             
             EditorTracker etNew = newCell.getDataView().getEdTracker();
-            EditorComponent ecNew = etNew.getEditorAtIndex(etCur.indexOfCurrentEditor());
-            etNew.setEditor(ecNew);
-            column.setSelected(true);
+//            EditorComponent ecNew = etNew.getEditorAtIndex(etCur.indexOfCurrentEditor());
+//            etNew.setEditor(ecNew);
+            
+//            column.setSelected(true);
             newCell.requestFocus();
             newCell.getCell().setHighlighted(true);
         }
