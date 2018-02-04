@@ -811,26 +811,6 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         new NewProjectController();
     }
 
-//    @Action
-//    public void selectColumnLeft() {
-//        SpreadsheetColumn col = panel.getSelectedColumn();
-//        if(col != null) {
-//            int newIndex = panel.getColumns().indexOf(col)-1;
-//            int oldIndex = panel.getColumns().indexOf(col);
-//            panel.selectColumn(newIndex, oldIndex);
-//        }
-//    }
-//
-//    @Action
-//    public void selectColumnRight() {
-//        SpreadsheetColumn col = panel.getSelectedColumn();
-//        if(col != null) {
-//            int newIndex = panel.getColumns().indexOf(col)+1;
-//            int oldIndex = panel.getColumns().indexOf(col);
-//            panel.selectColumn(newIndex, oldIndex);
-//        }
-//    }
-
     /**
      * Action for closing current tab
      */
