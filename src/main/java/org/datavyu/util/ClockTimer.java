@@ -48,6 +48,10 @@ public final class ClockTimer {
 
     private static final long CHECK_BOUNDARY_DELAY = 0L;
 
+    private static final long SEEK_PLAYBACK_INTERVAL = 31L; // milliseconds
+
+    private static final long SEEK_PLAYBACK_DELAY = 0L;
+
     /** Minimum time for the clock in milliseconds */
     private long minTime;
 
@@ -96,6 +100,14 @@ public final class ClockTimer {
                 checkBoundary();
             }
         }, CHECK_BOUNDARY_DELAY, CHECK_BOUNDARY_INTERVAL);
+
+        // Seek playback for fast, backward playback
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                notifySeekPlayback();
+            }
+        }, SEEK_PLAYBACK_DELAY, SEEK_PLAYBACK_INTERVAL);
     }
 
     /**
@@ -274,6 +286,16 @@ public final class ClockTimer {
         }
     }
 
+    private void notifySeekPlayback() {
+        // TODO: Remove this once plugin's support fast playback forward / backward playback
+        // Only activate the seek playback for rates < 0 or > 2x
+        if (rate > 2F || rate < 0F) {
+            for (ClockListener clockListener : clockListeners) {
+                clockListener.clockSeekPlayback(clockTime);
+            }
+        }
+    }
+
     private void notifyCheckBoundary() {
         for (ClockListener clockListener : clockListeners) {
             clockListener.clockBoundaryCheck(clockTime);
@@ -329,6 +351,11 @@ public final class ClockTimer {
      * Listener interface for clock 'ticks'.
      */
     public interface ClockListener {
+        /**
+         * @param clockTime Current time in milliseconds
+         */
+        void clockSeekPlayback(double clockTime);
+
         /**
          * @param clockTime Current time in milliseconds
          */

@@ -35,6 +35,7 @@ import org.datavyu.models.component.*;
 import org.datavyu.plugins.StreamViewer;
 import org.datavyu.plugins.Plugin;
 import org.datavyu.plugins.PluginManager;
+import org.datavyu.plugins.ffmpegplayer.StreamListener;
 import org.datavyu.plugins.quicktime.QtPlugin;
 import org.datavyu.util.ClockTimer;
 import org.datavyu.util.ClockTimer.ClockListener;
@@ -460,6 +461,19 @@ public final class VideoController extends DatavyuDialog
                 if (clockTime > trackModel.getOffset() + trackModel.getDuration() && streamViewer.isPlaying()) {
                     logger.info("Stopping track: " + trackModel.getIdentifier() + " at " + clockTime);
                     streamViewer.stop();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void clockSeekPlayback(double clockTime) {
+        TracksEditorController tracksEditorController = mixerController.getTracksEditorController();
+        for (StreamViewer streamViewer : streamViewers) {
+            if (streamViewer.isSeekPlaybackEnabled()) {
+                TrackModel trackModel = tracksEditorController.getTrackModel(streamViewer.getIdentifier());
+                if (trackModel != null) {
+                    streamViewer.setCurrentTime((long) clockTime - trackModel.getOffset());
                 }
             }
         }

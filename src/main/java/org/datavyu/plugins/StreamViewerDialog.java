@@ -550,4 +550,9 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     public void step() {
         // Nothing to do here
     }
+
+    @Override
+    public boolean isSeekPlaybackEnabled() {
+        return true;
+    }
 }

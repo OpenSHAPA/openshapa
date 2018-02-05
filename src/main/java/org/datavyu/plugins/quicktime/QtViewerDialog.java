@@ -78,7 +78,7 @@ public final class QtViewerDialog extends StreamViewerDialog {
         } catch (Throwable e) {
             logger.error("Unable to create " + this.getClass().getName() + ".\nError: ", e);
         }
-        setPlayerSourceFile(sourceFile);
+        //setPlayerSourceFile(sourceFile);
     }
 
     @Override

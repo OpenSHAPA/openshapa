@@ -196,4 +196,5 @@ public interface StreamViewer {
 
     boolean isStepEnabled();
 
+    boolean isSeekPlaybackEnabled();
 }

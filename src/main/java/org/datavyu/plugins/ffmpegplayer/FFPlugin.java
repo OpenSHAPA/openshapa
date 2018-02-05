@@ -45,12 +45,12 @@ public class FFPlugin implements Plugin {
     @Override
     public StreamViewer getNewStreamViewer(final Identifier identifier, final File sourceFile, final Frame parent,
                                            final boolean modal) {
-        return Platform.isWindows() ? new FFViewerDialog(identifier, sourceFile, parent, modal) : null;
+        return Platform.isWindows() ? new FFStreamViewerDialog(identifier, sourceFile, parent, modal) : null;
     }
 
     @Override
     public Class<? extends StreamViewer> getViewerClass() {
-        return Platform.isWindows() ? FFViewerDialog.class : null;
+        return Platform.isWindows() ? FFStreamViewerDialog.class : null;
     }
 
     @Override

@@ -719,4 +719,9 @@ public class SpreadsheetCell extends JPanel
     public void clockBoundaryCheck(double clockTime) {
 
     }
+
+    @Override
+    public void clockSeekPlayback(double clockTime) {
+
+    }
 }

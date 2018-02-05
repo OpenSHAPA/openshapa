@@ -779,4 +779,9 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
     public void clockBoundaryCheck(double clockTime) {
 
     }
+
+    @Override
+    public void clockSeekPlayback(double clockTime) {
+
+    }
 }

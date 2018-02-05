@@ -9,10 +9,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 
-public class FFViewerDialog extends StreamViewerDialog {
+public class FFStreamViewerDialog extends StreamViewerDialog {
 
     /** The logger for this class */
-    private static Logger logger = LogManager.getLogger(FFViewerDialog.class);
+    private static Logger logger = LogManager.getLogger(FFStreamViewerDialog.class);
 
     /** Previous setCurrentTime time */
     private long previousSeekTime = -1;
@@ -23,7 +23,7 @@ public class FFViewerDialog extends StreamViewerDialog {
     /** Currently is seeking */
     private boolean isSeeking = false;
 
-    FFViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
+    FFStreamViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
         super(identifier, parent, modal);
         logger.info("Opening file: " + sourceFile.getAbsolutePath());
         player = new FFPlayer();
@@ -140,5 +140,10 @@ public class FFViewerDialog extends StreamViewerDialog {
     @Override
     public boolean isPlaying() {
         return player != null && player.isPlaying();
+    }
+
+    @Override
+    public boolean isSeekPlaybackEnabled() {
+        return false;
     }
 }
