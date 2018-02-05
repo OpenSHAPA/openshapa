@@ -47,11 +47,13 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
+import javax.swing.text.BadLocationException;
 
 
 /**
@@ -379,7 +381,7 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
 
     /**
      * @return the vector of Spreadsheet columns.
-     * Need for UISpec4J testing
+         * Need for UISpec4J testing
      */
     public List<SpreadsheetColumn> getColumns() {
         return columns;
@@ -390,7 +392,11 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
      * Need for UISpec4J testing
      */
     public List<SpreadsheetColumn> getVisibleColumns() {
-        return columns.stream().filter(c -> c.isVisible()).collect(Collectors.toList());
+        List<SpreadsheetColumn> visibleColumns = new ArrayList<>();
+        for (SpreadsheetColumn column : columns){
+            if(column.isVisible()){ visibleColumns.add(column); }
+        }
+        return visibleColumns;
     }
 
     /**
@@ -477,22 +483,21 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
         if ((e.getID() == KeyEvent.KEY_PRESSED)
                 && ((e.getKeyCode() == KeyEvent.VK_LEFT)
                 || (e.getKeyCode() == KeyEvent.VK_RIGHT))) {
-
+            SpreadsheetColumn selectedColumn = Datavyu.getView().getSpreadsheetPanel().getSelectedColumn();
             // User is attempting to move to the column to the left.
             if ((e.getKeyCode() == KeyEvent.VK_LEFT)
                     && platformCellMovementMask(e)) {
-                System.out.println("GOING LEFT");
-                Datavyu.getView().selectColumnLeft();
+                selectColumn(selectedColumn,-1);
                 e.consume();
-
+                
                 return true;
 
                 // User is attempting to move to the column to the right.
             } else if ((e.getKeyCode() == KeyEvent.VK_RIGHT)
                     && platformCellMovementMask(e)) {
-                Datavyu.getView().selectColumnRight();
+                selectColumn(selectedColumn,+1);
                 e.consume();
-
+                
                 return true;
             }
         } else if (e.getID() == KeyEvent.KEY_PRESSED && !e.isMetaDown() && !e.isControlDown()) {
@@ -832,11 +837,14 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
 //            highlightedCell.getCell().setSelected(false);
             highlightedCell.invalidate();
         }
-
-        highlightedCell = cell;
-        lastSelectedCell = cell;
-        highlightedCell.getCell().setHighlighted(true);
-//        clearColumnSelection();
+        if(cell != null){
+            highlightedCell = cell;
+            lastSelectedCell = cell;
+            highlightedCell.getCell().setHighlighted(true);
+//          clearColumnSelection();
+        }else{            
+            highlightedCell.getCell().setHighlighted(false);            
+        }        
     }
 
     /**
@@ -954,7 +962,7 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
 
     public SpreadsheetColumn getSelectedColumn() {
         SpreadsheetColumn col = null;
-        for(SpreadsheetColumn c : getVisibleColumns()) {
+        for(SpreadsheetColumn c : this.getVisibleColumns()) {
             if(c.isSelected()) {
                 col = c;
                 break;
@@ -963,47 +971,52 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
         return col;
     }
 
-    public void selectColumn(int index) {
+    public void selectColumn(final SpreadsheetColumn selectedColumn, final int shift) {
         // Find currently selected cell, if there is one
+        List<SpreadsheetColumn> visibleColumns = Datavyu.getView().getSpreadsheetPanel().getVisibleColumns();
         SpreadsheetCell sc = lastSelectedCell;
-        SpreadsheetColumn selectedCol = null;
-        for(SpreadsheetColumn col : getColumns()) {
-            if(col.isSelected()) {
-                selectedCol = col;
-            }
-            for(SpreadsheetCell cell : col.getCellsTemporally()) {
-                if(cell.getCell().isSelected()) {
+        int vcIndex = visibleColumns.indexOf(selectedColumn);
+
+        if(0 <= vcIndex+shift
+                && vcIndex+shift < visibleColumns.size()) {
+
+            for (SpreadsheetCell cell : selectedColumn.getCellsTemporally()) {
+                if (cell.getCell().isSelected()) {
                     sc = cell;
                     break;
                 }
             }
-            if(sc != null) {
-                break;
-            }
-        }
 
-        clearCellSelection();
-        clearColumnSelection();
-        requestFocus();
+            clearCellSelection();
+            clearColumnSelection();
+            requestFocus();
 
-        if(0 <= index && index < getColumns().size()) {
-            getColumns().get(index).setExclusiveSelected(true);
-            getColumns().get(index).requestFocus();
-            if(sc != null) {
+            SpreadsheetColumn newColumn = visibleColumns.get(vcIndex+shift);
+            SpreadsheetCell newCell = null;
+
+            if(sc != null){
                 if (Datavyu.getView().getSheetLayout() == SheetLayoutType.WeakTemporal) {
-                    getColumns().get(index).getNearestCellTemporally(sc).requestFocus();
+                    newCell = newColumn.getNearestCellTemporally(sc);
                 } else {
-                    int ord = selectedCol.getCellsTemporally().indexOf(sc);
-                    if(getColumns().get(index).getCellsTemporally().size() >= ord) {
-                        getColumns().get(index).getCellsTemporally().get(ord).requestFocus();
+                    int ord = selectedColumn.getCellsTemporally().indexOf(sc);
+                    if(newColumn.getCellsTemporally().size() > ord) {
+                        newCell = newColumn.getCellsTemporally().get(ord);
                     } else {
-                        getColumns().get(index).getCellsTemporally().get(getColumns().get(index).getCellsTemporally().size()-1);
+                        newCell = newColumn.getCellsTemporally().get(newColumn.getCellsTemporally().size()-1);
                     }
                 }
-            } else {
-                getColumns().get(index).getCellTemporally(0).requestFocus();
+            }else{
+                newCell = newColumn.getCellTemporally(0);
+                selectedColumn.setSelected(false);
+                newColumn.setSelected(true);
+                sc = selectedColumn.getCellTemporally(0);
+                sc.requestFocus();
             }
+
+            newCell.requestFocus();
+            newCell.getCell().setHighlighted(true);
         }
+
     }
 
     /**
