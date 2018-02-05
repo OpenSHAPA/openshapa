@@ -35,13 +35,9 @@ import org.datavyu.models.component.*;
 import org.datavyu.plugins.StreamViewer;
 import org.datavyu.plugins.Plugin;
 import org.datavyu.plugins.PluginManager;
-import org.datavyu.plugins.ffmpegplayer.StreamListener;
 import org.datavyu.plugins.quicktime.QtPlugin;
-import org.datavyu.util.ClockTimer;
+import org.datavyu.util.*;
 import org.datavyu.util.ClockTimer.ClockListener;
-import org.datavyu.util.FloatingPointUtils;
-import org.datavyu.util.MacOS;
-import org.datavyu.util.WindowsOS;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -69,6 +65,10 @@ import java.util.*;
 public final class VideoController extends DatavyuDialog
         implements ClockListener, TracksControllerListener, PropertyChangeListener {
 
+    /** Sync threshold for HARD sync between */
+    private static final long SYNC_THRESHOLD = 31L; // milliseconds
+
+    /** Threshold used to compare frame rates */
     private static final double ALMOST_EQUAL_FRAME_RATES = 1e-1;
 
     /** The logger for this class */
@@ -143,8 +143,6 @@ public final class VideoController extends DatavyuDialog
 
     /** Determines whether or not 'control' key is being held */
     private boolean ctrlMask = false;
-
-    private SortedSet<Double> frameRates = new TreeSet<Double>();
 
     /** The set of streamViewers associated with this controller */
     private Set<StreamViewer> streamViewers = new LinkedHashSet<>();
@@ -242,6 +240,8 @@ public final class VideoController extends DatavyuDialog
 
     private boolean highlightAndFocus = false;
 
+    private FrameRateController frameRateController = new FrameRateController();
+
     /**
      * Create a new VideoController.
      *
@@ -305,18 +305,6 @@ public final class VideoController extends DatavyuDialog
      */
     private static String toRGBString(final Color color) {
         return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
-    }
-
-    public double getHighestFramesPerSecond() {
-        return frameRates.isEmpty() ? 0 : frameRates.last();
-    }
-
-    private void addFramesPerSecond(double framesPerSecond) {
-        frameRates.add(framesPerSecond);
-    }
-
-    private void removeFramesPerSecond(double framesPerSecond) {
-        frameRates.remove(framesPerSecond);
     }
 
     /**
@@ -504,6 +492,7 @@ public final class VideoController extends DatavyuDialog
      */
     public void clockStop(double clockTime) {
         for (StreamViewer streamViewer : streamViewers) {
+            // Sync streams at stop
             streamViewer.stop();
         }
         updateCurrentTimeLabelAndNeedle((long) clockTime);
@@ -594,42 +583,36 @@ public final class VideoController extends DatavyuDialog
      * @param id The identifier of the viewer to shutdown.
      */
     public void shutdown(final Identifier id) {
-        StreamViewer viewer = getStreamViewer(id);
+        StreamViewer streamViewer = getStreamViewer(id);
 
-        if ((viewer == null) || !shouldRemove()) {
+        if ((streamViewer == null) || !shouldRemove()) {
             return;
         }
 
-        streamViewers.remove(viewer);
+        streamViewers.remove(streamViewer);
 
-        viewer.stop();
-        viewer.close();
+        streamViewer.stop();
+        streamViewer.close();
 
-        JDialog viewDialog = viewer.getParentJDialog();
+        JDialog viewDialog = streamViewer.getParentJDialog();
 
         if (viewDialog != null) {
             viewDialog.dispose();
         }
 
-        // DO SOMETHING CONCERNING STEP_SIZE
-        if (streamViewers.isEmpty()) {
-            // TODO: Set highest frame rate, the right thing to do is keep all frame rates in a max tree
-            //setHighestFramesPerSecond();
-
-            //playbackParameters.setHighestFramesPerSecond(0f);
-            updateStepSizeTextField();
-        }
+        // Remove the frame rate, this is problematic if we have several tracks with the same frame rate
+        frameRateController.removeFrameRate(streamViewer.getIdentifier().asLong());
 
         // BugzID:2000
-        viewer.removeViewerStateListener(
+        streamViewer.removeViewerStateListener(
                 mixerController.getTracksEditorController().getViewerStateListener(
-                        viewer.getIdentifier()));
+                        streamViewer.getIdentifier()));
 
         // Recalculate the maximum playback duration
         updateMaxViewerDuration();
 
         // Remove the data viewer from the tracks panel
-        mixerController.deregisterTrack(viewer.getIdentifier());
+        mixerController.deregisterTrack(streamViewer.getIdentifier());
 
         // Data viewer removed, mark project as changed
         Datavyu.getProjectController().projectChanged();
@@ -967,7 +950,7 @@ public final class VideoController extends DatavyuDialog
     }
 
     private void addStepSizePanel() {
-        //Go back text field
+        // Go back text field
         stepSizeTextField.setHorizontalAlignment(SwingConstants.CENTER);
         stepSizeTextField.setName("stepSizeTextField");
         stepSizeTextField.setToolTipText("Double click to change");
@@ -985,16 +968,21 @@ public final class VideoController extends DatavyuDialog
             public void mouseExited(MouseEvent e) {}
             public void mouseReleased(MouseEvent e) {}
         });
+
         stepSizeTextField.addKeyListener(new KeyListener() {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    float newFramesPerSecond = Float.parseFloat(stepSizeTextField.getText());
-                    // TODO: Set highest frame rate
-                    //playbackParameters.setHighestFramesPerSecond(newFramesPerSecond);
-                    for (StreamViewer streamViewer : streamViewers) {
-                        streamViewer.setFramesPerSecond(newFramesPerSecond);
-                    }
+
+                    // Parse the new frame rate
+                    float newFramesPerSecond = 1F/Float.parseFloat(stepSizeTextField.getText());
+
+                    // Update the frame rate controller with the user defined frame rate
+                    frameRateController.addUserFrameRate(newFramesPerSecond);
+
+                    // Update the streams with the new rate
+                    clockTimer.setRate(newFramesPerSecond);
+
                     stepSizeTextField.setEnabled(false);
                     updateStepSizePanelColor();
                 }
@@ -1008,16 +996,17 @@ public final class VideoController extends DatavyuDialog
     }
 
     private void updateStepSizeTextField() {
-        // TODO: Fix the step size text field processing
-        /*
-        if (playbackParameters == null) {
+
+        // If we don't have any stream viewers, disable the label and remove the user-defined rate
+        if (streamViewers.isEmpty()) {
             stepSizeTextField.setEnabled(false);
-        } else if (playbackParameters.getHighestFramesPerSecond() == 0f) {
+            frameRateController.removeUserFrameRate();
+        } else if (frameRateController.isZeroRate()) {
             stepSizeTextField.setEnabled(false);
             stepSizeTextField.setText("");
         } else {
-            stepSizeTextField.setText(Float.toString(playbackParameters.getHighestFramesPerSecond()));
-        }*/
+            stepSizeTextField.setText(Float.toString(frameRateController.getFrameRate()));
+        }
     }
 
     private void updateStepSizePanelColor() {
@@ -1142,7 +1131,7 @@ public final class VideoController extends DatavyuDialog
         streamViewers.add(streamViewer);
 
         // Adjust the overall frame rate
-        addFramesPerSecond(streamViewer.getFramesPerSecond());
+        frameRateController.addFrameRate(streamViewer.getIdentifier().asLong(), streamViewer.getFramesPerSecond());
 
         updateStepSizeTextField();
         updateStepSizePanelColor();
@@ -1481,8 +1470,7 @@ public final class VideoController extends DatavyuDialog
             try {
                 logger.info("Finding to " + onsetTextField.getText() + " "
                         + CLOCK_FORMAT.parse(onsetTextField.getText()).getTime());
-                // TODO: Jump to
-                //jumpTo(CLOCK_FORMAT.parse(onsetTextField.getText()).getTime());
+                clockTimer.setForceTime(CLOCK_FORMAT.parse(onsetTextField.getText()).getTime());
             } catch (ParseException e) {
                 logger.error("unable to find within video", e);
             }
@@ -1576,16 +1564,17 @@ public final class VideoController extends DatavyuDialog
         if (!clockTimer.isStopped()) {
             clockTimer.stop();
         } else {
+            syncStreams();
             TracksEditorController tracksEditorController = mixerController.getTracksEditorController();
-            double highestFramesPerSecond = getHighestFramesPerSecond();
-            long streamTime = (long) clockTimer.getStreamTime();
-            long stepSize = (long)(MILLI_IN_SEC / highestFramesPerSecond); // step size is in milliseconds
+            double frameRate = frameRateController.getFrameRate();
+            long clockTime = (long) clockTimer.getStreamTime();
+            long stepSize = (long)(MILLI_IN_SEC / frameRate); // step size is in milliseconds
             for (StreamViewer streamViewer : streamViewers) {
                 // TODO: Tie offset & duration to stream viewer only and pull it in the track model
                 TrackModel trackModel = tracksEditorController.getTrackModel(streamViewer.getIdentifier());
                 // We can only use the step function if this frame rate is close enough to the highest frame rate
-                if (streamViewer.isStepEnabled() && almostEqual(streamViewer.getFramesPerSecond(),
-                        highestFramesPerSecond, ALMOST_EQUAL_FRAME_RATES)) {
+                if (streamViewer.isStepEnabled() && almostEqual(streamViewer.getFramesPerSecond(), frameRate,
+                        ALMOST_EQUAL_FRAME_RATES)) {
                     float rate = streamViewer.getRate();
                     // Make sure we step backward
                     if (rate >= 0) {
@@ -1596,7 +1585,7 @@ public final class VideoController extends DatavyuDialog
                     streamViewer.setRate(rate);
                 } else if (trackModel != null){
                     // Get the stream time
-                    long trackTime = streamTime - trackModel.getOffset();
+                    long trackTime = clockTime - trackModel.getOffset();
 
                     // Notice that the new time is in jogs to frame markers by being modulo step size
                     long newTime = Math.min(Math.max(trackTime - (trackTime % stepSize) - stepSize, 0),
@@ -1609,9 +1598,41 @@ public final class VideoController extends DatavyuDialog
                 // otherwise we can't step
             }
             // Update the clock timer with the new time
-            long newTime = streamTime - (streamTime % stepSize) - stepSize;
+            long newTime = clockTime - (clockTime % stepSize) - stepSize;
             clockTimer.setTime(newTime);
             updateCurrentTimeLabelAndNeedle(newTime);
+        }
+    }
+
+    /**
+     * Get the frame rate controller for this video controller
+     *
+     * @return The frame rate controller
+     */
+    public FrameRateController getFrameRateController() {
+        return frameRateController;
+    }
+
+    /**
+     * Force sync between streams up to a threshold
+     */
+    private void syncStreams() {
+        long clockTime = (long) clockTimer.getStreamTime();
+        double frameRate = frameRateController.getFrameRate();
+        long stepSize = (long)(MILLI_IN_SEC / frameRate);
+        TracksEditorController tracksEditorController = mixerController.getTracksEditorController();
+        for (StreamViewer streamViewer : streamViewers) {
+            TrackModel trackModel = tracksEditorController.getTrackModel(streamViewer.getIdentifier());
+            if (trackModel != null){
+                // Get the stream time
+                long trackTime = clockTime - trackModel.getOffset();
+                // Notice that the new time is in jogs to frame markers by being modulo step size
+                long newTime = Math.min(Math.max(trackTime - (trackTime % stepSize), 0),
+                        trackModel.getDuration());
+                if (Math.abs(newTime - streamViewer.getCurrentTime()) < SYNC_THRESHOLD) {
+                    streamViewer.setCurrentTime(newTime);
+                }
+            }
         }
     }
 
@@ -1624,15 +1645,16 @@ public final class VideoController extends DatavyuDialog
         if (!clockTimer.isStopped()) {
             clockTimer.stop();
         } else {
-            double highestFramesPerSecond = getHighestFramesPerSecond();
-            long streamTime = (long) clockTimer.getStreamTime();
-            long stepSize = (long)(MILLI_IN_SEC / highestFramesPerSecond); // step size is in milliseconds
+            syncStreams();
+            double frameRate = frameRateController.getFrameRate();
+            long clockTime = (long) clockTimer.getStreamTime();
+            long stepSize = (long)(MILLI_IN_SEC / frameRate); // step size is in milliseconds
             TracksEditorController tracksEditorController = mixerController.getTracksEditorController();
             for (StreamViewer streamViewer : streamViewers) {
                 // TODO: Tie offset & duration to stream viewer only and pull it in the track model
                 TrackModel trackModel = tracksEditorController.getTrackModel(streamViewer.getIdentifier());
-                if (streamViewer.isStepEnabled() && almostEqual(streamViewer.getFramesPerSecond(),
-                        highestFramesPerSecond, ALMOST_EQUAL_FRAME_RATES)) {
+                if (streamViewer.isStepEnabled() && almostEqual(streamViewer.getFramesPerSecond(), frameRate,
+                        ALMOST_EQUAL_FRAME_RATES)) {
                     float rate = streamViewer.getRate();
                     // Make sure we step forward
                     if (rate <= 0) {
@@ -1643,7 +1665,7 @@ public final class VideoController extends DatavyuDialog
                     streamViewer.setRate(rate);
                 } else if (trackModel != null){
                     // Get the stream time
-                    long trackTime = streamTime - trackModel.getOffset();
+                    long trackTime = clockTime - trackModel.getOffset();
 
                     // Notice that the new time is in jogs to frame markers by being modulo step size
                     long newTime = Math.min(Math.max(trackTime - (trackTime % stepSize) + stepSize, 0),
@@ -1656,7 +1678,7 @@ public final class VideoController extends DatavyuDialog
                 // otherwise we can't step
             }
             // Update the clock timer with the new time
-            long newTime = streamTime - (streamTime % stepSize) + stepSize;
+            long newTime = clockTime - (clockTime % stepSize) + stepSize;
             clockTimer.setTime(newTime);
             updateCurrentTimeLabelAndNeedle(newTime);
         }
