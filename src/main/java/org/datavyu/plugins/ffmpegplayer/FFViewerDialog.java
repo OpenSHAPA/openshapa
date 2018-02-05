@@ -29,7 +29,7 @@ public class FFViewerDialog extends StreamViewerDialog {
         player = new FFPlayer();
         player.openFile(sourceFile.getAbsolutePath());
         this.add(player, BorderLayout.CENTER);
-        adjustFrameWithSourceFile(sourceFile);
+        setSourceFile(sourceFile);
     }
 
     private void launch(Runnable task) {
@@ -78,9 +78,8 @@ public class FFViewerDialog extends StreamViewerDialog {
     @Override
     public void start() {
         launch(() -> {
-            if (!isPlaying) {
+            if (!isPlaying()) {
                 player.play();
-                FFViewerDialog.super.start();
             }
         });
     }
@@ -88,9 +87,8 @@ public class FFViewerDialog extends StreamViewerDialog {
     @Override
     public void stop() {
         launch(() -> {
-            if (isPlaying) {
+            if (isPlaying()) {
                 player.stop();
-                FFViewerDialog.super.stop();
             }
         });
     }
@@ -137,5 +135,10 @@ public class FFViewerDialog extends StreamViewerDialog {
     @Override
     public boolean isStepEnabled() {
         return true;
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return player != null && player.isPlaying();
     }
 }

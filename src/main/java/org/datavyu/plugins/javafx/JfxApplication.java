@@ -17,9 +17,9 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 
-public class JavaFXApplication extends Application {
+public class JfxApplication extends Application {
 
-    private static Logger logger = LogManager.getLogger(JavaFXApplication.class);
+    private static Logger logger = LogManager.getLogger(JfxApplication.class);
     private File dataFile;
     private boolean init = false;
     private MediaPlayer mp;
@@ -28,7 +28,7 @@ public class JavaFXApplication extends Application {
     private long duration = -1;
     private long lastSeekTime = -1;
 
-    public JavaFXApplication(File file) {
+    public JfxApplication(File file) {
         dataFile = file;
     }
 
@@ -88,9 +88,7 @@ public class JavaFXApplication extends Application {
         return mp.getMedia().getHeight();
     }
 
-    public double getAspectRatio() {
-        return mp.getMedia().getWidth() / mp.getMedia().getHeight();
-    }
+    public boolean isPlaying() { return mp.getStatus() == MediaPlayer.Status.PLAYING; }
 
     public void setScale(double scale) {
         stage.setHeight(mp.getMedia().getHeight() * scale);

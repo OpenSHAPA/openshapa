@@ -17,7 +17,7 @@ import java.io.FileFilter;
 import java.util.List;
 
 
-public class JavaFxPlugin implements Plugin {
+public class JfxPlugin implements Plugin {
 
     private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(
             Datavyu.Platform.WINDOWS, Datavyu.Platform.MAC, Datavyu.Platform.LINUX);
@@ -62,7 +62,7 @@ public class JavaFxPlugin implements Plugin {
     @Override
     public StreamViewer getNewStreamViewer(final Identifier identifier, final File sourceFile, final Frame parent,
                                            boolean modal) {
-        return new JavaFXStreamViewerDialog(identifier, sourceFile, parent, modal);
+        return new JfxStreamViewerDialog(identifier, sourceFile, parent, modal);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class JavaFxPlugin implements Plugin {
 
     @Override
     public Class<? extends StreamViewer> getViewerClass() {
-        return JavaFXStreamViewerDialog.class;
+        return JfxStreamViewerDialog.class;
     }
 
     @Override

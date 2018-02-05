@@ -24,19 +24,10 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
 
     private static Logger logger = LogManager.getLogger(StreamViewerDialog.class);
 
-    private static float fallbackFrameRate = 24.0f;
-
-    /** Data viewer Identifier */
-    private Identifier id;
+    private static final float DEFAULT_FRAME_RATE = 24.0f;
 
     /** Dialog for showing our visualizations */
     private JDialog vlcDialog;
-
-    /** Data viewer offset */
-    private long offset;
-
-    /** Data to visualize */
-    private File sourceFile;
 
     /** Data viewer state listeners */
     private List<ViewerStateListener> stateListeners;
@@ -60,9 +51,7 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
 
     VLCDataViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
         super(identifier, parent, modal);
-        this.sourceFile = sourceFile;
 
-        isPlaying = false;
         vlcDialog = new JDialog(parent, modal);
         vlcDialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
         vlcDialog.setName("VLCDataViewerDialog");
@@ -97,6 +86,7 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
         mediaPlayer.setVideoSurface(mediaPlayerFactory.newVideoSurface(videoSurface));
         mediaPlayer.setFullScreen(false);
 
+        setSourceFile(sourceFile);
 
         stateListeners = new ArrayList<>();
 
@@ -156,18 +146,17 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void adjustFrameWithSourceFile(final File sourceFile) {
+    public void setSourceFile(final File sourceFile) {
 
         // TODO: Standardize on where we load the libraries. For some plugins we load in the static section; others in the constructor and again others (like this one) in the setSource method
         VlcLibraryLoader.load();
 
-        this.sourceFile = sourceFile;
         vlcDialog.setVisible(true);
         vlcDialog.setName(vlcDialog.getName() + "-" + sourceFile.getName());
         mediaPlayer.startMedia(sourceFile.getAbsolutePath());
 
         // Because of the way VLC works, we have to wait for the metadata to become available a short time after we
-        // start isPlaying
+        // start playing
         // TODO: Reimplement this using the video output event
         try {
             int i = 0;
@@ -194,8 +183,6 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
         mediaPlayer.pause();
         mediaPlayer.setTime(0);
 
-        isPlaying = false;
-
         if (dimension != null) {
             vlcDialog.setSize(dimension);
         }
@@ -204,7 +191,7 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
         if (fps < 1.0) {
             // VLC can't read the frame rate for this video for some reason. Set it to the fallback rate so it is still
             // usable for coding.
-            fps = fallbackFrameRate;
+            fps = DEFAULT_FRAME_RATE;
         }
     }
 
@@ -220,7 +207,7 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
 
     @Override
     public void setCurrentTime(final long time) {
-        Runnable edtTask = new Runnable() {
+        launchEdtTaskLater(new Runnable() {
             @Override
             public void run() {
 
@@ -230,7 +217,7 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
                     return;
                 }
 
-                if (!isPlaying) {
+                if (!isPlaying()) {
                     if (time > 0) {
                         mediaPlayer.setTime(time);
                     } else {
@@ -238,64 +225,53 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
                     }
                 }
             }
-        };
-
-        launchEdtTaskLater(edtTask);
+        });
     }
 
     @Override
     public boolean isPlaying() {
-        return isPlaying;
+        return mediaPlayer != null && mediaPlayer.isPlaying();
     }
 
     @Override
     public void stop() {
-        Runnable edtTask = new Runnable() {
+        launchEdtTaskLater(new Runnable() {
             @Override
             public void run() {
-                if (isPlaying) {
+                if (isPlaying()) {
                     mediaPlayer.pause();
-                    isPlaying = false;
                 }
             }
-        };
-
-        launchEdtTaskLater(edtTask);
+        });
     }
 
     @Override
     public void setRate(final float rate) {
-        Runnable edtTask = new Runnable() {
+        launchEdtTaskLater(new Runnable() {
             @Override
             public void run() {
                 if (rate < 0) {
-                    // VLC cannot start in reverse, so we're going to rely
-                    // on the clock to do fake jumping
+                    // VLC cannot start in reverse, so we're going to rely on the clock to do fake jumping
                     mediaPlayer.setRate(0);
-                    if (isPlaying) {
+                    if (isPlaying()) {
                         mediaPlayer.pause();
-                        isPlaying = false;
                     }
                 }
                 mediaPlayer.setRate(rate);
             }
-        };
-        launchEdtTaskLater(edtTask);
+        });
     }
 
     @Override
     public void start() {
-        Runnable edtTask = new Runnable() {
+        launchEdtTaskLater(new Runnable() {
             @Override
             public void run() {
-                if (!isPlaying && mediaPlayer.getRate() > 0) {
+                if (!isPlaying() && mediaPlayer.getRate() > 0) {
                     mediaPlayer.play();
-                    isPlaying = true;
                 }
             }
-        };
-
-        launchEdtTaskLater(edtTask);
+        });
     }
 
     @Override
@@ -329,18 +305,14 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void addViewerStateListener(
-            final ViewerStateListener vsl) {
-
+    public void addViewerStateListener(final ViewerStateListener vsl) {
         if (vsl != null) {
             stateListeners.add(vsl);
         }
     }
 
     @Override
-    public void removeViewerStateListener(
-            final ViewerStateListener vsl) {
-
+    public void removeViewerStateListener(final ViewerStateListener vsl) {
         if (vsl != null) {
             stateListeners.remove(vsl);
         }

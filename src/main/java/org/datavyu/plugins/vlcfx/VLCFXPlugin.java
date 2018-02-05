@@ -62,7 +62,7 @@ public class VLCFXPlugin implements Plugin {
     @Override
     public StreamViewer getNewStreamViewer(final Identifier identifier, final File sourceFile, final Frame parent,
                                            final boolean modal) {
-        return new VLCFXDataViewerDialog(identifier, sourceFile, parent, modal);
+        return new VlcFxDataViewerDialog(identifier, sourceFile, parent, modal);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class VLCFXPlugin implements Plugin {
 
     @Override
     public Class<? extends StreamViewer> getViewerClass() {
-        return VLCFXDataViewerDialog.class;
+        return VlcFxDataViewerDialog.class;
     }
 
     @Override

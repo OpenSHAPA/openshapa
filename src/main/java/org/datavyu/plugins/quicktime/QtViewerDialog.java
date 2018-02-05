@@ -39,10 +39,10 @@ import java.io.File;
 
 
 /**
- * The viewer for a quicktime video file.
+ * The viewer for a quick time video file.
  * <b>Do not move this class, this is for backward compatibility with 1.07.</b>
  */
-public final class QTDataViewerDialog extends StreamViewerDialog {
+public final class QtViewerDialog extends StreamViewerDialog {
 
     /** How many milliseconds in a second? */
     private static final int MILLI = 1000;
@@ -51,20 +51,27 @@ public final class QTDataViewerDialog extends StreamViewerDialog {
     private static final int CORRECTION_FRAMES = 5;
 
     /** The logger for this class */
-    private static Logger logger = LogManager.getLogger(QTDataViewerDialog.class);
+    private static Logger logger = LogManager.getLogger(QtViewerDialog.class);
 
-    private static float FALLBACK_FRAME_RATE = 29.97f;
+    /** Default frame rate */
+    private static final float DEFAULT_FRAME_RATE = 29.97f;
 
-    /** The quicktime movie this viewer is displaying */
+    /** The quick time movie this viewer is displaying */
     private Movie movie;
 
-    /** The visual track for the above quicktime movie */
+    /** The visual track for the above quick time movie */
     private Track visualTrack;
 
     /** The visual media for the above visual track */
     private Media visualMedia;
 
-    QTDataViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
+    /** I'm using this boolean here because the documentation for the java quick time player does not show how to get
+     * the state of a player, see:
+     * http://programmer.97things.oreilly.com/wiki/index.php/QuickTime_for_Java:_A_Developer%27s_Notebook/Playing_Movies
+     */
+    private boolean isPlaying;
+
+    QtViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
         super(identifier, parent, modal);
         try {
             QTSession.open();
@@ -139,6 +146,7 @@ public final class QTDataViewerDialog extends StreamViewerDialog {
     @Override
     protected float getPlayerFramesPerSecond() {
         float fps = 0;
+        isAssumedFramesPerSecond = false;
         try {
             if (visualMedia != null) {
                 try {
@@ -154,9 +162,9 @@ public final class QTDataViewerDialog extends StreamViewerDialog {
                 }
             }
         } catch (QTException e) {
-            logger.warn("Unable to calculate FPS, assuming " + FALLBACK_FRAME_RATE + ". Error: ", e);
+            logger.warn("Unable to calculate FPS, assuming " + DEFAULT_FRAME_RATE + ". Error: ", e);
             isAssumedFramesPerSecond = true;
-            fps = FALLBACK_FRAME_RATE;
+            fps = DEFAULT_FRAME_RATE;
         }
         return fps;
     }
@@ -193,13 +201,13 @@ public final class QTDataViewerDialog extends StreamViewerDialog {
      */
     @Override
     public void start() {
-        super.start();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 try {
                     if (movie != null) {
                         movie.setRate(getRate());
+                        isPlaying = true;
                     }
                 } catch (QTException e) {
                     logger.error("Unable to start. Error: ", e);
@@ -213,13 +221,13 @@ public final class QTDataViewerDialog extends StreamViewerDialog {
      */
     @Override
     public void stop() {
-        super.stop();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 try {
                     if (movie != null) {
                         movie.stop();
+                        isPlaying = false;
                     }
                 } catch (QTException e) {
                     logger.error("Unable to stop. Error: ", e);
@@ -262,4 +270,11 @@ public final class QTDataViewerDialog extends StreamViewerDialog {
     protected void cleanUp() {
         // TODO: Check if we need to do some cleanup?
     }
+
+    @Override
+    public boolean isPlaying() {
+        return isPlaying;
+    }
+
+    // TODO: Requires seek playback because this player can't playback in reverse natively
 }

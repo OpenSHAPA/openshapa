@@ -81,9 +81,6 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     /** Frames per second */
     private float framesPerSecond = -1;
 
-    /** Is this movie currently isPlaying? */
-    protected boolean isPlaying;
-
     /** The current video file */
     protected File sourceFile;
 
@@ -135,7 +132,6 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
         super(parent, modal);
 
         this.identifier = identifier;
-        isPlaying = false;
         offset = 0;
 
         volumeButton = new JButton();
@@ -339,7 +335,7 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
         return sourceFile;
     }
 
-    protected void adjustFrameWithSourceFile(final File sourceFile) {
+    protected void setSourceFile(final File sourceFile) {
         this.sourceFile = sourceFile;
         setTitle(sourceFile.getName());
         setName(getClass().getSimpleName() + "-" + sourceFile.getName());
@@ -389,27 +385,6 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     @Override
     public void setRate(final float speed) {
         playBackRate = speed;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void start() {
-        isPlaying = true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void stop() {
-        isPlaying = false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public boolean isPlaying() {
-        return isPlaying;
     }
 
     /**

@@ -20,7 +20,7 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
 
-public class VLCFXDataViewerDialog extends StreamViewerDialog {
+public class VlcFxDataViewerDialog extends StreamViewerDialog {
 
     /** Logger for this class */
     private static Logger logger = LogManager.getLogger(NativeLibraryManager.class);
@@ -30,18 +30,15 @@ public class VLCFXDataViewerDialog extends StreamViewerDialog {
     private JDialog dialog = new JDialog();
 
     /** VLC application */
-    private VLCApplication vlcApp;
+    private VLCApplication vlcApplication;
 
-    VLCFXDataViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
+    VlcFxDataViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
         super(identifier, parent, modal);
         dialog.setVisible(false);
         this.sourceFile = sourceFile;
     }
 
-    static void runAndWait(final Runnable action) {
-        if (action == null) {
-            throw new NullPointerException("Action object " + action + " is null!");
-        }
+    private static void runAndWait(final Runnable action) {
 
         VlcLibraryLoader.load();
 
@@ -74,7 +71,7 @@ public class VLCFXDataViewerDialog extends StreamViewerDialog {
     }
 
     protected void setPlayerVolume(float volume) {
-        vlcApp.setVolume(volume);
+        vlcApplication.setVolume(volume);
     }
 
 
@@ -95,7 +92,7 @@ public class VLCFXDataViewerDialog extends StreamViewerDialog {
 
     @Override
     public float getFramesPerSecond() {
-        return vlcApp.getFrameRate();
+        return vlcApplication.getFrameRate();
     }
 
     public void setFramesPerSecond(float framesPerSecond) {
@@ -111,33 +108,33 @@ public class VLCFXDataViewerDialog extends StreamViewerDialog {
 
     @Override
     public void setViewerVisible(final boolean isVisible) {
-        vlcApp.setVisible(isVisible);
+        vlcApplication.setVisible(isVisible);
     }
 
     @Override
     public void setVisible(final boolean isVisible) {
-        vlcApp.setVisible(isVisible);
+        vlcApplication.setVisible(isVisible);
     }
 
 
     @Override
-    public void adjustFrameWithSourceFile(final File sourceFile) {
+    public void setSourceFile(final File sourceFile) {
 
         // Needed to init JavaFX stuff
         new JFXPanel();
-        vlcApp = new VLCApplication(sourceFile);
+        vlcApplication = new VLCApplication(sourceFile);
 
         runAndWait(new Runnable() {
             @Override
             public void run() {
-                vlcApp.start(new Stage());
+                vlcApplication.start(new Stage());
             }
         });
 
 
         // Wait for javafx to initialize
         // TODO: We need to change this, because it can lead to hang-up (e.g. timeout)
-        while (!vlcApp.isInitialized()) {
+        while (!vlcApplication.isInitialized()) {
         }
 
         // Hide our fake dialog box
@@ -147,38 +144,36 @@ public class VLCFXDataViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public long getDuration() { return vlcApp.getDuration(); }
+    public long getDuration() { return vlcApplication.getDuration(); }
 
     @Override
     public long getCurrentTime() {
-        return vlcApp.getCurrentTime();
+        return vlcApplication.getCurrentTime();
     }
 
     @Override
     public void setCurrentTime(final long time) {
-        vlcApp.seek(time);
+        vlcApplication.seek(time);
     }
 
     @Override
     public boolean isPlaying() {
-        return vlcApp.isPlaying();
+        return vlcApplication.isPlaying();
     }
 
     @Override
     public void stop() {
-        super.stop();
-        vlcApp.pause();
+        vlcApplication.pause();
     }
 
     @Override
     public void setRate(final float rate) {
-        vlcApp.setRate(rate);
+        vlcApplication.setRate(rate);
     }
 
     @Override
     public void start() {
-        super.start();
-        vlcApp.play();
+        vlcApplication.play();
     }
 
     @Override
@@ -190,12 +185,12 @@ public class VLCFXDataViewerDialog extends StreamViewerDialog {
     @Override
     public void close() {
         stop();
-        vlcApp.setVisible(false);
-        vlcApp.closeAndDestroy();
+        vlcApplication.setVisible(false);
+        vlcApplication.closeAndDestroy();
     }
 
     public boolean isAssumedFramesPerSecond() {
-        return vlcApp.isAssumedFps();
+        return vlcApplication.isAssumedFps();
     }
 
     @Override
@@ -204,9 +199,9 @@ public class VLCFXDataViewerDialog extends StreamViewerDialog {
             Properties settings = new Properties();
             settings.setProperty("startTime", Long.toString(getOffset()));
             settings.setProperty("volume", Float.toString(getVolume()));
-            settings.setProperty("visible", Boolean.toString(vlcApp.isVisible()));
-            settings.setProperty("height", Integer.toString(vlcApp.getHeight()));
-            settings.setProperty("fps", Float.toString(vlcApp.getFrameRate()));
+            settings.setProperty("visible", Boolean.toString(vlcApplication.isVisible()));
+            settings.setProperty("height", Integer.toString(vlcApplication.getHeight()));
+            settings.setProperty("fps", Float.toString(vlcApplication.getFrameRate()));
             settings.store(os, null);
         } catch (IOException io) {
             logger.error("Unable to save the settings. Error: ", io);

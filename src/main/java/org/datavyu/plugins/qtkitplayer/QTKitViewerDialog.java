@@ -97,7 +97,6 @@ public final class QTKitViewerDialog extends StreamViewerDialog {
      */
     @Override
     public void start() {
-        super.start();
         logger.info("Playing at speed: " + getRate());
         try {
             if (player != null) {
@@ -118,7 +117,6 @@ public final class QTKitViewerDialog extends StreamViewerDialog {
      */
     @Override
     public void stop() {
-        super.stop();
         logger.info("HIT STOP");
         final double time = System.currentTimeMillis();
         try {
@@ -179,5 +177,10 @@ public final class QTKitViewerDialog extends StreamViewerDialog {
     protected void cleanUp() {
         // TODO: Do we need to release the player here?
 //        player.release();
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return player.isPlaying(player.id);
     }
 }

@@ -117,6 +117,18 @@ public final class ClockTimer {
     }
 
     /**
+     * Get the clock time into the range for this clock timer
+     *
+     * @param clockTime Clock time
+     *
+     * @return Clock time in range for this clock timer
+     */
+    public synchronized long toRange(long clockTime) {
+        return Math.min(Math.max(clockTime, minTime), maxTime);
+    }
+
+
+    /**
      * Get the current stream time
      *
      * @return Current stream time
@@ -142,7 +154,7 @@ public final class ClockTimer {
      * @param time The new time
      */
     public synchronized void setTime(long time) {
-        if (minTime <= time || time <= maxTime) {
+        if (minTime <= time && time <= maxTime) {
             clockTime = time;
             // Don't notify a sync or force a sync
             // The time will be updated by a periodic sync
@@ -157,7 +169,7 @@ public final class ClockTimer {
      * @param time The new time
      */
     public synchronized void setForceTime(long time) {
-        if (minTime <= time || time <= maxTime) {
+        if (minTime <= time && time <= maxTime) {
             clockTime = time;
             // Notify a force sync
             notifyForceSync();

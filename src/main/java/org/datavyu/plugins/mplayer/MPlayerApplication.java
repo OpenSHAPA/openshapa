@@ -14,13 +14,13 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.plugins.javafx.JavaFXStreamViewerDialog;
+import org.datavyu.plugins.javafx.JfxStreamViewerDialog;
 
 import java.io.File;
 
 public class MPlayerApplication extends Application {
 
-    private static Logger logger = LogManager.getLogger(JavaFXStreamViewerDialog.class);
+    private static Logger logger = LogManager.getLogger(JfxStreamViewerDialog.class);
 
     private File sourceFile;
     private boolean init = false;

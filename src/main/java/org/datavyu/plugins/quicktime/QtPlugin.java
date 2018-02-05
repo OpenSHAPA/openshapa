@@ -35,10 +35,10 @@ import java.io.FileFilter;
 import java.util.List;
 
 
-public final class QTPlugin implements Plugin {
+public final class QtPlugin implements Plugin {
 
     /** The logger for this class */
-    private static Logger logger = LogManager.getLogger(QTPlugin.class);
+    private static Logger logger = LogManager.getLogger(QtPlugin.class);
 
     private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(Datavyu.Platform.WINDOWS);
 
@@ -67,18 +67,16 @@ public final class QTPlugin implements Plugin {
         }
     };
 
-    private static boolean librariersLoaded = false;
+    private static boolean librariesLoaded = false;
 
-    // TODO: Move this into the QTDataViewerDialog class!!
+    // TODO: Move this into the QtViewerDialog class!!
     public static boolean hasQuicktimeLibs() {
         boolean found = false;
-        if(VALID_OPERATING_SYSTEMS.contains(Datavyu.getPlatform())) {
-
-
+        if (VALID_OPERATING_SYSTEMS.contains(Datavyu.getPlatform())) {
             try {
                 Class.forName("quicktime.QTSession");
                 found = true;
-                librariersLoaded = true;
+                librariesLoaded = true;
             } catch (UnsatisfiedLinkError noLink) {
                 logger.error("No link: " + noLink.getMessage());
             } catch (NoClassDefFoundError noClass) {
@@ -89,14 +87,13 @@ public final class QTPlugin implements Plugin {
                 logger.error("General exception: " + e.getMessage());
             }
             return found;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
-    public static boolean isLibrariersLoaded() {
-        return librariersLoaded;
+    public static boolean isLibrariesLoaded() {
+        return librariesLoaded;
     }
 
     static {
@@ -109,8 +106,8 @@ public final class QTPlugin implements Plugin {
                     System.setProperty("java.library.path", System.getProperty("java.library.path") + File.pathSeparator
                             + libraryFile.getAbsolutePath());
                     NativeLibraryLoader.extractAndLoad("QTJavaNative");
-                    //QTDataViewerDialog.librariesFound = true;
-                    librariersLoaded = true;
+                    //QtViewerDialog.librariesFound = true;
+                    librariesLoaded = true;
                 }
             } catch (Exception e) {
                 logger.error("Could not load libraries for QT " + e);
@@ -122,7 +119,7 @@ public final class QTPlugin implements Plugin {
     public StreamViewer getNewStreamViewer(final Identifier identifier, final File sourceFile, final Frame parent,
                                            final boolean modal) {
         if (Platform.isMac() || Platform.isWindows()) {
-            return new QTDataViewerDialog(identifier, sourceFile, parent, modal);
+            return new QtViewerDialog(identifier, sourceFile, parent, modal);
         } else {
             return null;
         }
@@ -153,7 +150,7 @@ public final class QTPlugin implements Plugin {
 
     @Override
     public Class<? extends StreamViewer> getViewerClass() {
-        return Platform.isWindows() ? QTDataViewerDialog.class : null;
+        return Platform.isWindows() ? QtViewerDialog.class : null;
     }
 
     @Override

@@ -34,7 +34,7 @@ public class MPlayerDataViewerDialog extends StreamViewerDialog {
     MPlayerDataViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
         super(identifier, parent, modal);
         mPlayerApp = new MPlayerApplication(sourceFile);
-        adjustFrameWithSourceFile(sourceFile);
+        setSourceFile(sourceFile);
     }
 
     static void runAndWait(final Runnable action) {
@@ -89,7 +89,7 @@ public class MPlayerDataViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void adjustFrameWithSourceFile(final File sourceFile) {
+    public void setSourceFile(final File sourceFile) {
 
         logger.info("Set source file: " + sourceFile.getAbsolutePath());
 

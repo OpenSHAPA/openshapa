@@ -183,7 +183,7 @@ public interface StreamViewer {
 
     /**
      * Unload all data, to prepare for being closed. Essentially the opposite
-     * of adjustFrameWithSourceFile. Call to reduce the data viewer to a low-resource state.
+     * of setSourceFile. Call to reduce the data viewer to a low-resource state.
      */
     void close();
 
@@ -195,4 +195,5 @@ public interface StreamViewer {
     boolean isAssumedFramesPerSecond();
 
     boolean isStepEnabled();
+
 }

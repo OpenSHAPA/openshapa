@@ -167,13 +167,6 @@ public class FFPlayer extends JPanel {
 	}
 
 	/**
-	 * Rewind to the start/end of file depending if we start forward or backward, respectively.
-	 */
-	public void rewind() {
-		movieStreamProvider.reset();
-	}
-
-	/**
 	 * Instead of isPlaying a sequence of frames just step by one frame.
 	 */
 	public void step() {
@@ -189,4 +182,8 @@ public class FFPlayer extends JPanel {
 	public void setVolume(float volume) {
 		audioSound.setVolume(volume);
 	}
+
+	boolean isPlaying() {
+	    return movieStreamProvider.isPlaying();
+    }
 }

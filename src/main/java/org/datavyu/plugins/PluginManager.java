@@ -18,8 +18,8 @@ import com.google.common.collect.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
-import org.datavyu.plugins.javafx.JavaFxPlugin;
-import org.datavyu.plugins.quicktime.QTPlugin;
+import org.datavyu.plugins.javafx.JfxPlugin;
+import org.datavyu.plugins.quicktime.QtPlugin;
 import org.datavyu.util.MacOS;
 import org.jdesktop.application.LocalStorage;
 
@@ -393,7 +393,7 @@ public final class PluginManager {
                 @Override
                 public int compare(final Plugin o1, final Plugin o2) {
 
-                    if (QTPlugin.isLibrariersLoaded()) {
+                    if (QtPlugin.isLibrariesLoaded()) {
                         if ("QuickTime Video".equals(o1.getPluginName())) {
                             return -1;
                         }
@@ -458,13 +458,13 @@ public final class PluginManager {
             }
 
             if (Datavyu.getPlatform() == Datavyu.Platform.WINDOWS) {
-                QTPlugin qtPlugin = new QTPlugin();
+                QtPlugin qtPlugin = new QtPlugin();
                 logger.info("Loading windows plugin: " + qtPlugin.getPluginName());
                 return qtPlugin;
             }
 
             if (Datavyu.getPlatform() == Datavyu.Platform.LINUX) {
-                return new JavaFxPlugin();
+                return new JfxPlugin();
             }
         }
 
