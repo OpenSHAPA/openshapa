@@ -294,7 +294,7 @@ public final class ProjectController {
     public void loadProject() {
 
         // Use the plugin manager to load up the data viewers
-        PluginManager pm = PluginManager.getInstance();
+        PluginManager pluginManager = PluginManager.getInstance();
         VideoController videoController = spreadSheetPanel.getVideoController();
 
         // Load the plugins required for each media file
@@ -347,9 +347,9 @@ public final class ProjectController {
                 continue;
             }
 
-            Plugin plugin = pm.getAssociatedPlugin(setting.getPluginName());
+            Plugin plugin = pluginManager.getAssociatedPlugin(setting.getPluginName());
 
-            // BugzID:2110
+/*            // BugzID:2110
             if ((plugin == null) && (setting.getPluginClassifier() != null)) {
                 plugin = pm.getCompatiblePlugin(setting.getPluginClassifier(), file);
             }
@@ -360,7 +360,7 @@ public final class ProjectController {
                 missingPluginList.add(setting.getPluginName());
 
                 continue;
-            }
+            }*/
 
             final StreamViewer streamViewer = plugin.getNewStreamViewer(
                     Identifier.generateIdentifier(),

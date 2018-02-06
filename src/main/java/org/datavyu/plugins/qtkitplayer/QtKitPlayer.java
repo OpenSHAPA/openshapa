@@ -54,9 +54,9 @@ import org.datavyu.util.NativeLibraryLoader;
 import java.awt.*;
 import java.io.File;
 
-public class QTKitPlayer extends Canvas {
+public class QtKitPlayer extends Canvas {
 
-    private static Logger logger = LogManager.getLogger(QTKitPlayer.class);
+    private static Logger logger = LogManager.getLogger(QtKitPlayer.class);
 
     private static int playerCount = 0;
 
@@ -66,7 +66,7 @@ public class QTKitPlayer extends Canvas {
 
     private static final String LIB_NAME = "QTKitCanvas";
 
-    public QTKitPlayer(File sourceFile) {
+    public QtKitPlayer(File sourceFile) {
         super();
         try {
             logger.info("Trying to extract and load: " + LIB_NAME);
@@ -74,8 +74,8 @@ public class QTKitPlayer extends Canvas {
         } catch (Exception e) {
             logger.error("Failed loading: " + LIB_NAME + ". Error is: ", e);
         }
-        this.id = QTKitPlayer.playerCount;
-        QTKitPlayer.incPlayerCount();
+        this.id = QtKitPlayer.playerCount;
+        QtKitPlayer.incPlayerCount();
         this.sourceFile = sourceFile;
     }
 

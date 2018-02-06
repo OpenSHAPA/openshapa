@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Properties;
 
 
-public class VLCDataViewerDialog extends StreamViewerDialog {
+public class VlcDataViewerDialog extends StreamViewerDialog {
 
     private static Logger logger = LogManager.getLogger(StreamViewerDialog.class);
 
@@ -49,12 +49,12 @@ public class VLCDataViewerDialog extends StreamViewerDialog {
 
     private boolean assumedFPS = false;
 
-    VLCDataViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
+    VlcDataViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
         super(identifier, parent, modal);
 
         vlcDialog = new JDialog(parent, modal);
         vlcDialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
-        vlcDialog.setName("VLCDataViewerDialog");
+        vlcDialog.setName("VlcDataViewerDialog");
         vlcDialog.setResizable(true);
 
         // Set an initial size

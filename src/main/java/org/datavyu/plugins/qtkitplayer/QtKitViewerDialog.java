@@ -27,18 +27,18 @@ import java.io.File;
  * The viewer for a quicktime video file.
  * <b>Do not move this class, this is for backward compatibility with 1.07.</b>
  */
-public final class QTKitViewerDialog extends StreamViewerDialog {
+public final class QtKitViewerDialog extends StreamViewerDialog {
 
     /** The logger for this class */
-    private static Logger logger = LogManager.getLogger(QTKitViewerDialog.class);
+    private static Logger logger = LogManager.getLogger(QtKitViewerDialog.class);
 
     /** Last setCurrentTime time */
     private long lastSeekTime = -1;
 
     /** The player this viewer is displaying */
-    private QTKitPlayer player;
+    private QtKitPlayer player;
 
-    QTKitViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
+    QtKitViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
         super(identifier, parent, modal);
         setPlayerSourceFile(sourceFile);
     }
@@ -61,7 +61,7 @@ public final class QTKitViewerDialog extends StreamViewerDialog {
     private void setPlayerSourceFile(final File sourceFile) {
         // Ensure that the native hierarchy is set up
         this.addNotify();
-        player = new QTKitPlayer(sourceFile);
+        player = new QtKitPlayer(sourceFile);
         this.add(player, BorderLayout.CENTER);
         EventQueue.invokeLater(() -> {
             try {
@@ -69,7 +69,7 @@ public final class QTKitViewerDialog extends StreamViewerDialog {
                 player.setVolume(0.7F, player.id);
             } catch (Exception e) {
                 // Oops! Back out
-                QTKitPlayer.decPlayerCount();
+                QtKitPlayer.decPlayerCount();
                 throw e;
             }
         });

@@ -30,7 +30,7 @@ public class VlcFxDataViewerDialog extends StreamViewerDialog {
     private JDialog dialog = new JDialog();
 
     /** VLC application */
-    private VLCApplication vlcApplication;
+    private VlcApplication vlcApplication;
 
     VlcFxDataViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
         super(identifier, parent, modal);
@@ -122,7 +122,7 @@ public class VlcFxDataViewerDialog extends StreamViewerDialog {
 
         // Needed to init JavaFX stuff
         new JFXPanel();
-        vlcApplication = new VLCApplication(sourceFile);
+        vlcApplication = new VlcApplication(sourceFile);
 
         runAndWait(new Runnable() {
             @Override

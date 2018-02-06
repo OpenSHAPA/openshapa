@@ -27,23 +27,23 @@ import java.io.File;
  * The viewer for a quick time video file.
  * <b>Do not move this class, this is for backward compatibility with 1.07.</b>
  */
-public final class NativeOSXViewerDialog extends StreamViewerDialog {
+public final class NativeOSxViewerDialog extends StreamViewerDialog {
 
     //private long timeOfPrevSeek = 0;
 
     private static final int NUM_RETRY_FOR_DURATION = 2;
 
     /** The logger for this class */
-    private static Logger logger = LogManager.getLogger(NativeOSXViewerDialog.class);
+    private static Logger logger = LogManager.getLogger(NativeOSxViewerDialog.class);
 
     /** The quick time native OSXPlayer */
-    private NativeOSXPlayer nativeOSXPlayer;
+    private NativeOSxPlayer nativeOSXPlayer;
 
     private boolean seeking = false;
 
     private long duration = 0;
 
-    NativeOSXViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
+    NativeOSxViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
         super(identifier, parent, modal);
         setPlayerSourceFile(sourceFile);
     }
@@ -85,7 +85,7 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
         // Ensure that the native hierarchy is set up
         this.addNotify();
 
-        nativeOSXPlayer = new NativeOSXPlayer(playerSourceFile);
+        nativeOSXPlayer = new NativeOSxPlayer(playerSourceFile);
 
         this.add(nativeOSXPlayer, BorderLayout.CENTER);
 
@@ -96,7 +96,7 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
                     nativeOSXPlayer.setVolume(0.7F, nativeOSXPlayer.id);
                 } catch (Exception e) {
                     // Oops! Back out
-                    NativeOSXPlayer.decPlayerCount();
+                    NativeOSxPlayer.decPlayerCount();
                     throw e;
                 }
             }

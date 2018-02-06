@@ -28,10 +28,10 @@ import java.nio.ByteBuffer;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class VLCApplication extends Application {
+public class VlcApplication extends Application {
 
     /** Logger for this class */
-    private static Logger logger = LogManager.getLogger(VLCApplication.class);
+    private static Logger logger = LogManager.getLogger(VlcApplication.class);
 
     static {
         Platform.setImplicitExit(false);
@@ -98,7 +98,7 @@ public class VLCApplication extends Application {
     private boolean isAssumedFps = false;
 
 
-    public VLCApplication(File file) {
+    public VlcApplication(File file) {
         sourceFile = file;
         canvas = new Canvas();
 
@@ -337,8 +337,8 @@ public class VLCApplication extends Application {
                 width = sourceWidth;
                 height = sourceHeight;
             } else {
-                width = VLCApplication.this.width;
-                height = VLCApplication.this.height;
+                width = VlcApplication.this.width;
+                height = VlcApplication.this.height;
             }
             canvas.setWidth(width);
             canvas.setHeight(height);

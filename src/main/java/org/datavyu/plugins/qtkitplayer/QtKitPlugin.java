@@ -33,7 +33,7 @@ import java.io.FileFilter;
 import java.util.List;
 
 
-public final class QTKitPlugin implements Plugin {
+public final class QtKitPlugin implements Plugin {
 
     private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(Datavyu.Platform.MAC);
 
@@ -67,7 +67,7 @@ public final class QTKitPlugin implements Plugin {
     public StreamViewer getNewStreamViewer(final Identifier identifier, final File sourceFile, final Frame parent,
                                            final boolean modal) {
         if (Platform.isMac() || Platform.isWindows()) {
-            return new QTKitViewerDialog(identifier, sourceFile, parent, modal);
+            return new QtKitViewerDialog(identifier, sourceFile, parent, modal);
         } else {
             return null;
         }
@@ -98,7 +98,7 @@ public final class QTKitPlugin implements Plugin {
 
     @Override
     public Class<? extends StreamViewer> getViewerClass() {
-        return Platform.isMac() ? QTKitViewerDialog.class : null;
+        return Platform.isMac() ? QtKitViewerDialog.class : null;
     }
 
     @Override

@@ -11,13 +11,13 @@ import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.io.IOException;
 
-public class FFPlayer extends JPanel {
+public class FFmpegPlayer extends JPanel {
 
     /** Identifier for object serialization */
     private static final long serialVersionUID = 5109839668203738974L;
 
     /** The logger for this class */
-    private static Logger logger = LogManager.getLogger(FFPlayer.class);
+    private static Logger logger = LogManager.getLogger(FFmpegPlayer.class);
 
     /** Load the native library that interfaces to ffmpeg */
     static {
@@ -47,11 +47,11 @@ public class FFPlayer extends JPanel {
 	private AudioSoundStreamListener audioSound;
 
 	/**
-	 * Construct an FFPlayer by creating the underlying movie stream provider
+	 * Construct an FFmpegPlayer by creating the underlying movie stream provider
 	 * and registering stream listeners for the video and audio. The stream
 	 * listener for the video will show the image in this JPanel.
 	 */
-	FFPlayer() {
+	FFmpegPlayer() {
 		setLayout(new BorderLayout());
 		movieStreamProvider = new MovieStreamProvider();
 		audioSound = new AudioSoundStreamListener(movieStreamProvider);

@@ -9,24 +9,24 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 
-public class FFStreamViewerDialog extends StreamViewerDialog {
+public class FFmpegStreamViewerDialog extends StreamViewerDialog {
 
     /** The logger for this class */
-    private static Logger logger = LogManager.getLogger(FFStreamViewerDialog.class);
+    private static Logger logger = LogManager.getLogger(FFmpegStreamViewerDialog.class);
 
     /** Previous setCurrentTime time */
     private long previousSeekTime = -1;
 
     /** The player this viewer is displaying */
-    private FFPlayer player;
+    private FFmpegPlayer player;
 
     /** Currently is seeking */
     private boolean isSeeking = false;
 
-    FFStreamViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
+    FFmpegStreamViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
         super(identifier, parent, modal);
         logger.info("Opening file: " + sourceFile.getAbsolutePath());
-        player = new FFPlayer();
+        player = new FFmpegPlayer();
         player.openFile(sourceFile.getAbsolutePath());
         this.add(player, BorderLayout.CENTER);
         setSourceFile(sourceFile);

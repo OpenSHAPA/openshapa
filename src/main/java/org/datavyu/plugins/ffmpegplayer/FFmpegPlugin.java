@@ -18,7 +18,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.List;
 
-public class FFPlugin implements Plugin {
+public class FFmpegPlugin implements Plugin {
 
     private static final List<Datavyu.Platform> validOperatingSystem = Lists.newArrayList(Datavyu.Platform.WINDOWS);
 
@@ -45,12 +45,12 @@ public class FFPlugin implements Plugin {
     @Override
     public StreamViewer getNewStreamViewer(final Identifier identifier, final File sourceFile, final Frame parent,
                                            final boolean modal) {
-        return Platform.isWindows() ? new FFStreamViewerDialog(identifier, sourceFile, parent, modal) : null;
+        return Platform.isWindows() ? new FFmpegStreamViewerDialog(identifier, sourceFile, parent, modal) : null;
     }
 
     @Override
     public Class<? extends StreamViewer> getViewerClass() {
-        return Platform.isWindows() ? FFStreamViewerDialog.class : null;
+        return Platform.isWindows() ? FFmpegStreamViewerDialog.class : null;
     }
 
     @Override

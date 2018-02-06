@@ -9,7 +9,7 @@ import org.datavyu.util.NativeLibraryLoader;
 import java.awt.*;
 import java.io.File;
 
-public class NativeOSXPlayer extends Canvas {
+public class NativeOSxPlayer extends Canvas {
 
     private static Logger logger = LogManager.getLogger(MPlayerDataViewerDialog.class);
 
@@ -37,8 +37,8 @@ public class NativeOSXPlayer extends Canvas {
         playerCount--;
     }
 
-    public NativeOSXPlayer(File fileToLoad) {
-        this.id = NativeOSXPlayer.playerCount;
+    public NativeOSxPlayer(File fileToLoad) {
+        this.id = NativeOSxPlayer.playerCount;
         incPlayerCount();
         this.sourceFile = fileToLoad;
     }

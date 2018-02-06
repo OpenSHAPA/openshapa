@@ -1,4 +1,4 @@
-package org.datavyu.plugins.vlc;
+package org.datavyu.plugins.vlcfx;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.io.IOCase;
@@ -17,9 +17,10 @@ import java.io.FileFilter;
 import java.util.List;
 
 
-public class VLCPlugin implements Plugin {
+public class VlcFxPlugin implements Plugin {
 
-    private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(Datavyu.Platform.WINDOWS);
+    private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(Datavyu.Platform.WINDOWS,
+            Datavyu.Platform.MAC, Datavyu.Platform.LINUX);
 
     private static final Filter VIDEO_FILTER = new Filter() {
         final SuffixFileFilter ff;
@@ -61,12 +62,12 @@ public class VLCPlugin implements Plugin {
     @Override
     public StreamViewer getNewStreamViewer(final Identifier identifier, final File sourceFile, final Frame parent,
                                            final boolean modal) {
-        return new VLCDataViewerDialog(identifier, sourceFile, parent, modal);
+        return new VlcFxDataViewerDialog(identifier, sourceFile, parent, modal);
     }
 
     @Override
     public String getPluginName() {
-        return "VLC Video";
+        return "VLCFX Video";
     }
 
     @Override
@@ -76,7 +77,7 @@ public class VLCPlugin implements Plugin {
 
     @Override
     public Class<? extends StreamViewer> getViewerClass() {
-        return VLCDataViewerDialog.class;
+        return VlcFxDataViewerDialog.class;
     }
 
     @Override
