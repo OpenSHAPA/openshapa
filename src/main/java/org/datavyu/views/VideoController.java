@@ -452,6 +452,8 @@ public final class VideoController extends DatavyuDialog
                 }
             }
         }
+        // Updates the position of the needle and label
+        updateCurrentTimeLabelAndNeedle((long) clockTime);
     }
 
     @Override
