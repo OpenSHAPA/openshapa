@@ -86,12 +86,14 @@ public final class ClockTimer {
         isStopped = true;
 
         // Sync timer at lower frequency
+/*
         new Timer().scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 periodicSync();
             }
         }, CLOCK_SYNC_DELAY, CLOCK_SYNC_INTERVAL);
+*/
 
         // Boundary checker at higher frequency
         new Timer().scheduleAtFixedRate(new TimerTask() {
@@ -262,7 +264,8 @@ public final class ClockTimer {
      */
     private synchronized void updateElapsedTime() {
         double newTime = System.nanoTime();
-        clockTime += isStopped ? 0 : rate * (newTime - lastTime) / NANO_IN_MILLI;
+        clockTime = isStopped ? clockTime : Math.min(Math.max(
+                clockTime + rate * (newTime - lastTime) / NANO_IN_MILLI, minTime), maxTime);
         lastTime = newTime;
     }
 
@@ -276,14 +279,7 @@ public final class ClockTimer {
 
     private synchronized void checkBoundary() {
         updateElapsedTime();
-        // Stop clock if we are outside the [min, max] range
-        if (getStreamTime() > maxTime || getStreamTime() < minTime) {
-            logger.info("Reached boundary and stop player.");
-            stop();
-        } else {
-            // If within the range [min, max] notify a boundary check
-            notifyCheckBoundary();
-        }
+        notifyCheckBoundary();
     }
 
     private void notifySeekPlayback() {

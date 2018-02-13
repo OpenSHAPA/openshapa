@@ -68,6 +68,7 @@ public final class NeedleModelImpl extends MixerComponentModelImpl implements Ne
      * {@inheritDoc}
      */
     public void setCurrentTime(final long time) {
+        //logger.info("The current time is " + time + " msec.");
         final long oldTime;
         final long newTime;
 
@@ -80,7 +81,7 @@ public final class NeedleModelImpl extends MixerComponentModelImpl implements Ne
             this.currentTime = newTime;
         }
 
-        logger.info("Change time from " + oldTime + " to " + newTime);
+        //logger.info("Change time from " + oldTime + " to " + newTime);
         firePropertyChange(NeedleModel.NAME, oldTime, newTime);
     }
 
@@ -133,6 +134,8 @@ public final class NeedleModelImpl extends MixerComponentModelImpl implements Ne
 
     private long calculateRegionBoundedTime(final long time) {
         final RegionState region = mixerModel.getRegionModel().getRegion();
+        //logger.info("The time is " + time + " msec. The region is " + region.getRegionStart() + " msec to "
+        //        + region.getRegionEnd() + " msec.");
         return Math.min(Math.max(time, region.getRegionStart()), region.getRegionEnd());
     }
 

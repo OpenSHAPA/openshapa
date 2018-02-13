@@ -493,6 +493,7 @@ public final class VideoController extends DatavyuDialog
      * @param clockTime Current clockTimer time in milliseconds.
      */
     public void clockStop(double clockTime) {
+        logger.info("Stop clock at " + (long) clockTime + " msec.");
         for (StreamViewer streamViewer : streamViewers) {
             // Sync streams at stop
             streamViewer.stop();
@@ -522,6 +523,8 @@ public final class VideoController extends DatavyuDialog
 
         timeStampLabel.setText(tracksPanelVisible ? CLOCK_FORMAT_HTML.format(currentTimeInRange)
                                                   : CLOCK_FORMAT_HTML.format(currentTimeInRange));
+
+        //logger.info("Update label and needle with time " + currentTime + " msec.");
         mixerController.getMixerModel().getNeedleModel().setCurrentTime(currentTimeInRange);
     }
 
