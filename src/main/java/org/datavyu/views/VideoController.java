@@ -453,7 +453,10 @@ public final class VideoController extends DatavyuDialog
             }
         }
         // Updates the position of the needle and label
-        updateCurrentTimeLabelAndNeedle((long) clockTime);
+        // Check for visible to remove Java Null pointer exception for non-initialised Needle Model
+        if (visible) {
+            updateCurrentTimeLabelAndNeedle((long) clockTime);
+        }
     }
 
     @Override
@@ -523,8 +526,6 @@ public final class VideoController extends DatavyuDialog
 
         timeStampLabel.setText(tracksPanelVisible ? CLOCK_FORMAT_HTML.format(currentTimeInRange)
                                                   : CLOCK_FORMAT_HTML.format(currentTimeInRange));
-
-        //logger.info("Update label and needle with time " + currentTime + " msec.");
         mixerController.getMixerModel().getNeedleModel().setCurrentTime(currentTimeInRange);
     }
 
