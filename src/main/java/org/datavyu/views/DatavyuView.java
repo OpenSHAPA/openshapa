@@ -939,10 +939,50 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     }
 
 
-
+    /**
+     * Action for exposing the current SpreadSheet as a JSON File
+     */
     @Action
     public void exportToJSON(){
+        DatavyuFileChooser fileChooser = new DatavyuFileChooser();
+
+        fileChooser.addChoosableFileFilter(JSONFilter.INSTANCE);
+        fileChooser.setFileFilter(JSONFilter.INSTANCE);
+
+        int result = fileChooser.showSaveDialog(getComponent());
+
+        if (result == JFileChooser.APPROVE_OPTION){
+            exportJSON(fileChooser);;
+        }
+
     }
+
+    private void exportJSON(DatavyuFileChooser fc){
+        ProjectController projectController = Datavyu.getProjectController();
+
+        try{
+            ExportDatabaseFileController exportJSON = new ExportDatabaseFileController();
+
+            String dbFileName = fc.getSelectedFile().getPath();
+            if (!dbFileName.endsWith(".json")) {
+                dbFileName = dbFileName.concat(".json");
+            }
+
+            // Only save if the project file does not exists or if the user
+            // confirms a file overwrite in the case that the file exists.
+            if (!canSave(fc.getSelectedFile().getParent(), dbFileName)) {
+                return;
+            }
+            File file = new File(fc.getSelectedFile().getParent(), dbFileName);
+
+            exportJSON.exportAsJSON(dbFileName, projectController.getDataStore().getAllVariables());
+        } catch (Exception e) {
+            logger.error("Failed export to JSON. Error: ", e);
+        }
+
+    }
+
+
 
     /**
      * Action for exporting the current project as a particular file.
