@@ -14,18 +14,21 @@
  */
 package org.datavyu.controllers;
 
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.models.db.*;
 import org.datavyu.util.StringUtils;
+import org.datavyu.views.discrete.SpreadSheetPanel;
+import org.datavyu.views.discrete.SpreadsheetColumn;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -364,5 +367,60 @@ public final class ExportDatabaseFileController {
                 ps.println();
             }
         }
+    }
+
+    /**
+     * Save a Datavyu Spreadseet in a JSON File.
+     *
+     * @param dbFileName Target File
+     * @param dataStore DataStore to be saved as JSON
+     */
+
+    public void exportAsJSON(String dbFileName, DataStore dataStore) {
+        ObjectMapper mapper =  new ObjectMapper();
+        JsonFactory f = mapper.getFactory();
+        File jsonFile =  new File(dbFileName);
+        try {
+            JsonGenerator g = f.createGenerator(jsonFile, JsonEncoding.UTF8);
+
+            g.writeStartObject();
+
+                g.writeStringField("name", dataStore.getName());
+                g.writeArrayFieldStart("Passes");
+                    for (Variable column : dataStore.getAllVariables()){
+                        g.writeStartObject();
+                            g.writeStringField("name", column.getName());
+                            g.writeArrayFieldStart("Cells");
+                                for(Cell cell: column.getCellsTemporally()){
+                                    g.writeStartObject();
+                                        g.writeStringField("id",cell.getCellId().toString());
+                                        g.writeStringField("onset", cell.getOnsetString());
+                                        g.writeStringField("offset", cell.getOffsetString());
+                                            g.writeArrayFieldStart("values");
+
+                                                if (column.getRootNode().type == Argument.Type.MATRIX) {
+                                                    for (int k = 0; k < column.getRootNode().childArguments.size(); k++) {
+                                                        g.writeString(cell.getMatrixValue(k).toString());
+                                                    }
+                                                } else {
+                                                    g.writeString(cell.getCellValue().toString());
+                                                }
+
+                                            g.writeEndArray();
+                                    g.writeEndObject();
+                                }
+                            g.writeEndArray();
+
+                        g.writeEndObject();
+                    }
+                g.writeEndArray();
+            g.writeEndObject();
+
+            g.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }

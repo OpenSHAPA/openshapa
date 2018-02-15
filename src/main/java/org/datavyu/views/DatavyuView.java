@@ -959,6 +959,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
     private void exportJSON(DatavyuFileChooser fc){
         ProjectController projectController = Datavyu.getProjectController();
+//        projectController.updateProject();
 
         try{
             ExportDatabaseFileController exportJSON = new ExportDatabaseFileController();
@@ -975,7 +976,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
             }
             File file = new File(fc.getSelectedFile().getParent(), dbFileName);
 
-            exportJSON.exportAsJSON(dbFileName, projectController.getDataStore().getAllVariables());
+            exportJSON.exportAsJSON(dbFileName, projectController.getDataStore());
         } catch (Exception e) {
             logger.error("Failed export to JSON. Error: ", e);
         }
