@@ -158,6 +158,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     private ArrayList scriptMenuPermanentsList;
     private javax.swing.JMenuItem showSpreadsheetMenuItem;
     private javax.swing.JMenu spreadsheetMenu;
+    private javax.swing.JMenuItem exportJSON;
     private javax.swing.JMenuItem undoSpreadSheetMenuItem;
     private javax.swing.JMenuItem vocabEditorMenuItem;
     private javax.swing.JCheckBoxMenuItem weakTemporalAlignmentMenuItem;
@@ -937,6 +938,11 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         return fileSplitPane;
     }
 
+
+
+    @Action
+    public void exportToJSON(){
+    }
 
     /**
      * Action for exporting the current project as a particular file.
@@ -1911,6 +1917,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         hotkeysMenuItem = new javax.swing.JMenuItem();
         quickkeysMenuItem = new javax.swing.JMenuItem();
         highlightAndFocusMenuItem = new javax.swing.JMenuItem();
+        exportJSON = new javax.swing.JMenuItem();
 
         scriptMenuPermanentsList = new ArrayList();
 
@@ -2130,6 +2137,11 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
             }
         });
         spreadsheetMenu.add(weakTemporalAlignmentMenuItem);
+
+        exportJSON.setAction(actionMap.get("exportToJSON"));
+        exportJSON.setName("exportToJSON");
+        exportJSON.setText("JSON Export");
+        spreadsheetMenu.add(exportJSON);
 
         zoomMenu.setName("zoomMenu");
 
