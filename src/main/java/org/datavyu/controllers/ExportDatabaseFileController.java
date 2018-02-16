@@ -397,13 +397,28 @@ public final class ExportDatabaseFileController {
                 g.writeStartObject();
                 // Pass(Column/Variable) name
                 g.writeStringField("name", column.getName());
+
+                g.writeStringField("Type",column.getRootNode().type.toString());
+
+                g.writeArrayFieldStart("Arguments");
+
+                column.getRootNode().childArguments.forEach(argument -> {
+                    try {
+                        g.writeString(argument.type.name());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+                g.writeEndArray();
+
                 //Start an Array of Cells
                 g.writeArrayFieldStart("Cells");
+                int count = 1;
                 for (Cell cell : column.getCellsTemporally()) {
                     // Start an Object for each Cell
                     g.writeStartObject();
 
-                    g.writeStringField("id", cell.getCellId().toString());
+                    g.writeStringField("id", cell.getCellId());
                     g.writeStringField("onset", cell.getOnsetString());
                     g.writeStringField("offset", cell.getOffsetString());
                     g.writeArrayFieldStart("values");
@@ -419,6 +434,7 @@ public final class ExportDatabaseFileController {
                     g.writeEndArray();
                     // End Cell Object
                     g.writeEndObject();
+                    count++;
                 }
                 // End Cells Array
                 g.writeEndArray();

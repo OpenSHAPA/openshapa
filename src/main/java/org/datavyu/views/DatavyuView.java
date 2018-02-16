@@ -1010,21 +1010,16 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 //        projectController.updateProject();
 
         try{
-            ImportDatabaseFileController importJSON = new ImportDatabaseFileController();
+            OpenDataStoreFileController importJSON = new OpenDataStoreFileController();
 
             String dbFileName = fc.getSelectedFile().getPath();
             if (!dbFileName.endsWith(".json")) {
-                dbFileName = dbFileName.concat(".json");
+                logger.error("The selected file is not a JSON File.");
             }
 
-            // Only save if the project file does not exists or if the user
-            // confirms a file overwrite in the case that the file exists.
-            if (!canSave(fc.getSelectedFile().getParent(), dbFileName)) {
-                return;
-            }
             File file = new File(fc.getSelectedFile().getParent(), dbFileName);
 
-            importJSON.importJSONToSpreadsheet(dbFileName, getSpreadsheetPanel().getColumns());
+            importJSON.importJSONToSpreadsheet(file, getSpreadsheetPanel());
         } catch (Exception e) {
             logger.error("Failed export to JSON. Error: ", e);
         }
