@@ -17,7 +17,9 @@ package org.datavyu.controllers;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
@@ -376,50 +378,66 @@ public final class ExportDatabaseFileController {
      * @param dataStore DataStore to be saved as JSON
      */
 
-    public void exportAsJSON(String dbFileName, DataStore dataStore) {
-        ObjectMapper mapper =  new ObjectMapper();
+    public void exportAsJSON(String dbFileName, DataStore dataStore) throws UserWarningException{
+        ObjectMapper mapper = new ObjectMapper();
         JsonFactory f = mapper.getFactory();
-        File jsonFile =  new File(dbFileName);
+        File jsonFile = new File(dbFileName);
         try {
             JsonGenerator g = f.createGenerator(jsonFile, JsonEncoding.UTF8);
-
+            g.setPrettyPrinter(new DefaultPrettyPrinter());
+            //Start a Spreadsheet Object
             g.writeStartObject();
+            //Spreadsheet name Field
+            g.writeStringField("name", dataStore.getName());
 
-                g.writeStringField("name", dataStore.getName());
-                g.writeArrayFieldStart("Passes");
-                    for (Variable column : dataStore.getAllVariables()){
-                        g.writeStartObject();
-                            g.writeStringField("name", column.getName());
-                            g.writeArrayFieldStart("Cells");
-                                for(Cell cell: column.getCellsTemporally()){
-                                    g.writeStartObject();
-                                        g.writeStringField("id",cell.getCellId().toString());
-                                        g.writeStringField("onset", cell.getOnsetString());
-                                        g.writeStringField("offset", cell.getOffsetString());
-                                            g.writeArrayFieldStart("values");
+            //Start an Array of Passes (Column(Spreadsheet)/Variable(DataStore))
+            g.writeArrayFieldStart("Passes");
+            for (Variable column : dataStore.getAllVariables()) {
+                // Start an Object for each Pass(Column/Variable)
+                g.writeStartObject();
+                // Pass(Column/Variable) name
+                g.writeStringField("name", column.getName());
+                //Start an Array of Cells
+                g.writeArrayFieldStart("Cells");
+                for (Cell cell : column.getCellsTemporally()) {
+                    // Start an Object for each Cell
+                    g.writeStartObject();
 
-                                                if (column.getRootNode().type == Argument.Type.MATRIX) {
-                                                    for (int k = 0; k < column.getRootNode().childArguments.size(); k++) {
-                                                        g.writeString(cell.getMatrixValue(k).toString());
-                                                    }
-                                                } else {
-                                                    g.writeString(cell.getCellValue().toString());
-                                                }
+                    g.writeStringField("id", cell.getCellId().toString());
+                    g.writeStringField("onset", cell.getOnsetString());
+                    g.writeStringField("offset", cell.getOffsetString());
+                    g.writeArrayFieldStart("values");
 
-                                            g.writeEndArray();
-                                    g.writeEndObject();
-                                }
-                            g.writeEndArray();
-
-                        g.writeEndObject();
+                    if (column.getRootNode().type == Argument.Type.MATRIX) {
+                        for (int k = 0; k < column.getRootNode().childArguments.size(); k++) {
+                            g.writeString(cell.getMatrixValue(k).toString());
+                        }
+                    } else {
+                        g.writeString(cell.getCellValue().toString());
                     }
+
+                    g.writeEndArray();
+                    // End Cell Object
+                    g.writeEndObject();
+                }
+                // End Cells Array
                 g.writeEndArray();
+                // End Pass Object
+                g.writeEndObject();
+            }
+            // End the Passes Array
+            g.writeEndArray();
+
+            //End a Spreadsheet Object
             g.writeEndObject();
 
             g.close();
+            logger.info("JSON File has been successfully saved");
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Export as JSON failed. Error: ", e);
+            ResourceMap rMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
+            throw new UserWarningException(rMap.getString("UnableToSave.message", dbFileName), e);
         }
 
     }
