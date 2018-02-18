@@ -1581,14 +1581,7 @@ public final class VideoController extends DatavyuDialog
                 // We can only use the step function if this frame rate is close enough to the highest frame rate
                 if (streamViewer.isStepEnabled() && almostEqual(streamViewer.getFramesPerSecond(), frameRate,
                         ALMOST_EQUAL_FRAME_RATES)) {
-                    float rate = streamViewer.getRate();
-                    // Make sure we step backward
-                    if (rate >= 0) {
-                        streamViewer.setRate(-1);
-                    }
-                    streamViewer.step();
-                    // Restore rate
-                    streamViewer.setRate(rate);
+                    streamViewer.stepBackward();
                 } else if (trackModel != null){
                     // Get the stream time
                     long trackTime = clockTime - trackModel.getOffset();
@@ -1661,14 +1654,7 @@ public final class VideoController extends DatavyuDialog
                 TrackModel trackModel = tracksEditorController.getTrackModel(streamViewer.getIdentifier());
                 if (streamViewer.isStepEnabled() && almostEqual(streamViewer.getFramesPerSecond(), frameRate,
                         ALMOST_EQUAL_FRAME_RATES)) {
-                    float rate = streamViewer.getRate();
-                    // Make sure we step forward
-                    if (rate <= 0) {
-                        streamViewer.setRate(+1);
-                    }
-                    streamViewer.step();
-                    // Restore the rate
-                    streamViewer.setRate(rate);
+                    streamViewer.stepForward();
                 } else if (trackModel != null){
                     // Get the stream time
                     long trackTime = clockTime - trackModel.getOffset();

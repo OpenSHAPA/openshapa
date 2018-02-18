@@ -169,9 +169,14 @@ public class FFmpegPlayer extends JPanel {
 	/**
 	 * Instead of isPlaying a sequence of frames just step by one frame.
 	 */
-	public void step() {
-	    logger.info("Stepping.");
-	    movieStreamProvider.step();
+	public void stepForward() {
+	    logger.info("Step forward.");
+	    movieStreamProvider.stepForward();
+	}
+
+	public void stepBackward() {
+		logger.info("Step backward.");
+		movieStreamProvider.stepBackward();
 	}
 
 	/**

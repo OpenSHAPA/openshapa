@@ -109,9 +109,14 @@ public interface StreamViewer {
     void stop();
 
     /**
-     * Steps in the current playback direction; if at start/end repeats the first/last frame
+     * Steps foward
      */
-    void step();
+    void stepForward();
+
+    /**
+     * Steps backward
+     */
+    void stepBackward();
 
     /**
      * Does this viewer play?

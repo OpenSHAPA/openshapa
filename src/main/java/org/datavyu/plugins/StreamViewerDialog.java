@@ -547,7 +547,12 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     }
 
     @Override
-    public void step() {
+    public void stepForward() {
+        // Nothing to do here
+    }
+
+    @Override
+    public void stepBackward() {
         // Nothing to do here
     }
 

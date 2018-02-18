@@ -126,9 +126,16 @@ public class FFmpegStreamViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    public void step() {
+    public void stepForward() {
         launch(() -> {
-            player.step();
+            player.stepForward();
+        });
+    }
+
+    @Override
+    public void stepBackward() {
+        launch(() -> {
+            player.stepBackward();
         });
     }
 
