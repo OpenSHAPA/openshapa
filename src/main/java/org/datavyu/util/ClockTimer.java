@@ -14,10 +14,6 @@
  */
 package org.datavyu.util;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import java.time.Clock;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Timer;
@@ -29,14 +25,11 @@ import java.util.TimerTask;
  */
 public final class ClockTimer {
 
-    /** The logger for this class */
-    private static Logger logger = LogManager.getLogger(ClockTimer.class);
-
     /** Synchronization threshold in milliseconds */
     public static final long SYNC_THRESHOLD = 1500L; // 1.5 sec  (because some plugins are not very precise in seek)
 
     /** Clock tick period in milliseconds */
-    private static final long CLOCK_SYNC_INTERVAL = 500L;
+    private static final long CLOCK_SYNC_INTERVAL = 1500L;
 
     /** Clock initial delay in milliseconds */
     private static final long CLOCK_SYNC_DELAY = 0L;
@@ -86,14 +79,12 @@ public final class ClockTimer {
         isStopped = true;
 
         // Sync timer at lower frequency
-/*
         new Timer().scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 periodicSync();
             }
         }, CLOCK_SYNC_DELAY, CLOCK_SYNC_INTERVAL);
-*/
 
         // Boundary checker at higher frequency
         new Timer().scheduleAtFixedRate(new TimerTask() {
