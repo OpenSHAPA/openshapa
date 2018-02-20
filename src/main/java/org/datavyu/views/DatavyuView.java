@@ -956,7 +956,6 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         if (result == JFileChooser.APPROVE_OPTION){
             exportJSON(fileChooser);;
         }
-
     }
 
     private void exportJSON(DatavyuFileChooser fc){
@@ -996,11 +995,13 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         fileChooser.addChoosableFileFilter(JSONFilter.INSTANCE);
         fileChooser.setFileFilter(JSONFilter.INSTANCE);
 
-        int result = fileChooser.showSaveDialog(getComponent());
+        int result = fileChooser.showOpenDialog(getComponent());
 
         if (result == JFileChooser.APPROVE_OPTION){
-            importJSON(fileChooser);;
+            importJSON(fileChooser);
         }
+
+        Datavyu.getView().getSpreadsheetPanel().redrawCells();
 
     }
 
@@ -1023,7 +1024,6 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         } catch (Exception e) {
             logger.error("Failed export to JSON. Error: ", e);
         }
-
     }
 
 

@@ -165,9 +165,9 @@ public final class OpenDataStoreFileController {
         return null;
     }
 
-    public void importJSONToSpreadsheet(File file, SpreadSheetPanel spreadSheet) throws UserWarningException {
+    public void importJSONToSpreadsheet(File file, SpreadSheetPanel spreadSheet) throws UserWarningException,
+            IOException {
         if (file.getAbsolutePath().endsWith(".json")) {
-            try {
                 JsonFactory factory = new JsonFactory();
                 JsonParser parser = factory.createParser(file);
 
@@ -179,22 +179,24 @@ public final class OpenDataStoreFileController {
 
                         token = parser.nextToken();
                         if (JsonToken.FIELD_NAME.equals(token) && "passes".equals(parser.getCurrentName())) {
+
                             DataStore dataStore = spreadSheet.getDataStore();
 
                             token = parser.nextToken();
-                            if (!JsonToken.START_ARRAY.equals(token)) {
-                                break;
-                            }
-                            token = parser.nextToken();
-                            while (!JsonToken.END_ARRAY.equals(token)) {// for each pass
-                                token = parser.nextToken();
-                                if (token == null) {
-                                    break;
-                                }
+                            if (!JsonToken.START_ARRAY.equals(token)) { break; }
 
+                            while (!JsonToken.END_ARRAY.equals(token)) {// for each pass
+
+                                token = parser.nextToken();
+                                if (token == null) { break; }
+                                if (!JsonToken.START_OBJECT.equals(token)){ break; }
+
+                                token = parser.nextToken();
                                 if (JsonToken.FIELD_NAME.equals(token) && "name".equals(parser.getCurrentName())) {
+
                                     token = parser.nextToken();
                                     String columnName = parser.getValueAsString();
+
                                     // Check if we already have the same column name
                                     if (spreadSheet.getDataStore().getVariable(columnName) == null) {
 
@@ -205,11 +207,9 @@ public final class OpenDataStoreFileController {
 
                                             token = parser.nextToken();
                                             if (JsonToken.FIELD_NAME.equals(token) && "arguments".equals(parser.getCurrentName())) {
-
                                                 token = parser.nextToken();
-                                                if (token == null) {
-                                                    break;
-                                                }
+                                                if (token == null) { break; }
+                                                if (!JsonToken.START_OBJECT.equals(token)) { break; }
 
                                                 Variable newColumn = dataStore.createVariable(columnName, variableType, true);
                                                 Argument variableArg = newColumn.getRootNode();
@@ -218,6 +218,9 @@ public final class OpenDataStoreFileController {
                                                 while (!JsonToken.END_OBJECT.equals(token)) {
                                                     token = parser.nextToken();
                                                     if (token == null) { break; }
+                                                    if (JsonToken.START_OBJECT.equals(token)
+                                                            || JsonToken.START_OBJECT.equals(token)
+                                                            || JsonToken.END_OBJECT.equals(token)){ break; }
 
                                                     token = parser.nextToken();
                                                     if (variableType == Argument.Type.TEXT) {
@@ -229,7 +232,6 @@ public final class OpenDataStoreFileController {
                                                     if (variableType == Argument.Type.MATRIX) {
                                                         variableArg.childArguments.add(new Argument(parser.getValueAsString(), getVarType(parser.getCurrentName())));
                                                     }
-                                                    token = parser.nextToken();
                                                 }
                                                 newColumn.setRootNode(variableArg);
 
@@ -237,18 +239,14 @@ public final class OpenDataStoreFileController {
                                                 if (JsonToken.FIELD_NAME.equals(token) && "cells".equals(parser.getCurrentName())) {
 
                                                     token = parser.nextToken();
-                                                    if (!JsonToken.START_ARRAY.equals(token)) {
-                                                        break;
-                                                    }
+                                                    if (!JsonToken.START_ARRAY.equals(token)) { break; }
+
 
                                                     while (!JsonToken.END_ARRAY.equals(token)) { // for each cell
                                                         token = parser.nextToken();
-                                                        if (!JsonToken.START_OBJECT.equals(token)) {
-                                                            break;
-                                                        }
-                                                        if (token == null) {
-                                                            break;
-                                                        }
+                                                        if (!JsonToken.START_OBJECT.equals(token)) { break; }
+                                                        if (JsonToken.END_ARRAY.equals(token)) { break; }
+                                                        if (token == null) { break; }
 
                                                         Cell newCell = newColumn.createCell();
 
@@ -270,88 +268,36 @@ public final class OpenDataStoreFileController {
                                                                     token = parser.nextToken();
                                                                     if (JsonToken.FIELD_NAME.equals(token) && "values".equals(parser.getCurrentName())) {
                                                                         token = parser.nextToken();
-                                                                        if (!JsonToken.START_ARRAY.equals(token)) {
-                                                                            break;
-                                                                        }
+                                                                        if (!JsonToken.START_ARRAY.equals(token)) { break; }
 
                                                                         token = parser.nextToken();
                                                                         while (!JsonToken.END_ARRAY.equals(token)) {
-                                                                            if (token == null) {
-                                                                                break;
-                                                                            }
+                                                                            if (token == null) { break; }
 
                                                                             if (newColumn.getRootNode().type == Argument.Type.MATRIX) {
                                                                                 for (int k = 0; k < newColumn.getRootNode().childArguments.size(); k++) {
                                                                                     newCell.setMatrixValue(k, parser.getValueAsString());
-                                                                                    token = parser.nextToken();
                                                                                 }
-                                                                            } else {
-                                                                                newCell.getCellValue().set(parser.getValueAsString());
-                                                                                token = parser.nextToken();
-                                                                            }
+                                                                            } else { newCell.getCellValue().set(parser.getValueAsString()); }
+                                                                            token = parser.nextToken();
                                                                         }
-
-                                                                    } else {
-                                                                        logger.warn("A values field is needed");
-                                                                        break;
-                                                                    }
-                                                                } else {
-                                                                    logger.warn("An offset field is needed");
-                                                                    break;
-                                                                }
-
-                                                            } else {
-                                                                logger.warn("An onset field is needed");
-                                                                break;
-                                                            }
-
-                                                        } else {
-                                                            logger.warn("An id field is needed");
-                                                            break;
-                                                        }
+                                                                    } else { logger.warn("A values field is needed");break; }
+                                                                } else { logger.warn("An offset field is needed"); break; }
+                                                            } else { logger.warn("An onset field is needed"); break; }
+                                                        } else { logger.warn("An id field is needed"); break; }
                                                         token = parser.nextToken();
                                                     }
-
-                                                } else {
-                                                    logger.warn("A Cells field is needed");
-                                                    break;
-                                                }
-
-                                            } else {
-                                                logger.warn("The arguments for a column are expected");
-                                                break;
-                                            }
-
-
-                                        } else {
-                                            logger.warn("A type for a column is needed");
-                                            break;
-                                        }
-
-                                    } else {
-                                        logger.warn("The column " + columnName + " already exists in the current spreadsheet");
-                                    }
-
-                                } else {
-                                    logger.warn("A name for a column is needed");
-                                    break;
-                                }
+                                                } else { logger.warn("A Cells field is needed"); break; }
+                                            } else { logger.warn("The arguments for a column are expected"); break; }
+                                        } else { logger.warn("A type for a column is needed"); break; }
+                                    } else { logger.warn("The column " + columnName + " already exists in the current spreadsheet");}
+                                } else { logger.warn("A name for a column is needed"); break; }
                                 token = parser.nextToken();
                             }
-                        } else {
-                            logger.error("An Array of passes is needed, We support only passes import");
-                        }
+                        } else {logger.error("An Array of passes is needed, We support only passes import"); break;}
                     }
-
                 }
-            } catch (IOException e) {
-                logger.error("JSON File import Failed");
-                ResourceMap rMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
-                throw new UserWarningException(rMap.getString("UnableToLoadJSON.message", file.getAbsolutePath().toString()), e);
-            }
-        } else {
-            logger.error("The selected file is a not a JSON format");
-        }
+        } else { logger.error("The selected file is a not a JSON format"); }
     }
 
     /**

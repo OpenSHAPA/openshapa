@@ -5,7 +5,7 @@
     <groupId>org.datavyu</groupId>
     <artifactId>datavyu</artifactId>
     <packaging>jar</packaging>
-    <version>1.4.0-SNAPSHOT</version>
+    <version>1.4.0</version>
     <name>Datavyu</name>
     <url>http://datavyu.org</url>
 
@@ -235,11 +235,6 @@
 
     <!-- The location for generating the website. -->
     <distributionManagement>
-        <snapshotRepository>
-            <id>snapshots</id>
-            <name>ip-10-0-0-114-snapshots</name>
-            <url>https://projects.databrary.org/artifactory/libs-snapshot-local</url>
-        </snapshotRepository>
         <site>
             <id>website</id>
             <url>scp://hudson@datavyu.org/var/www/datavyu/</url>
