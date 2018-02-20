@@ -14,11 +14,17 @@
  */
 package org.datavyu.controllers;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.models.db.*;
 import org.datavyu.util.ConfigurationProperties;
+import org.datavyu.views.discrete.SpreadSheetPanel;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
 
 import javax.swing.*;
 import java.io.*;
@@ -157,6 +163,195 @@ public final class OpenDataStoreFileController {
 
         // Error encountered - return null.
         return null;
+    }
+
+    public void importJSONToSpreadsheet(File file, SpreadSheetPanel spreadSheet) throws UserWarningException {
+        if (file.getAbsolutePath().endsWith(".json")) {
+            try {
+                JsonFactory factory = new JsonFactory();
+                JsonParser parser = factory.createParser(file);
+
+                while (!parser.isClosed()) {
+                    JsonToken token = parser.nextToken();
+                    if (token == null) { break; }
+
+                    if(JsonToken.START_OBJECT.equals(token)) {
+
+                        token = parser.nextToken();
+                        if (JsonToken.FIELD_NAME.equals(token) && "passes".equals(parser.getCurrentName())) {
+                            DataStore dataStore = spreadSheet.getDataStore();
+
+                            token = parser.nextToken();
+                            if (!JsonToken.START_ARRAY.equals(token)) {
+                                break;
+                            }
+                            token = parser.nextToken();
+                            while (!JsonToken.END_ARRAY.equals(token)) {// for each pass
+                                token = parser.nextToken();
+                                if (token == null) {
+                                    break;
+                                }
+
+                                if (JsonToken.FIELD_NAME.equals(token) && "name".equals(parser.getCurrentName())) {
+                                    token = parser.nextToken();
+                                    String columnName = parser.getValueAsString();
+                                    // Check if we already have the same column name
+                                    if (spreadSheet.getDataStore().getVariable(columnName) == null) {
+
+                                        token = parser.nextToken();
+                                        if (JsonToken.FIELD_NAME.equals(token) && "type".equals(parser.getCurrentName())) {
+                                            token = parser.nextToken();
+                                            Argument.Type variableType = getVarType(parser.getValueAsString());
+
+                                            token = parser.nextToken();
+                                            if (JsonToken.FIELD_NAME.equals(token) && "arguments".equals(parser.getCurrentName())) {
+
+                                                token = parser.nextToken();
+                                                if (token == null) {
+                                                    break;
+                                                }
+
+                                                Variable newColumn = dataStore.createVariable(columnName, variableType, true);
+                                                Argument variableArg = newColumn.getRootNode();
+                                                variableArg.clearChildArguments();
+
+                                                while (!JsonToken.END_OBJECT.equals(token)) {
+                                                    token = parser.nextToken();
+                                                    if (token == null) { break; }
+
+                                                    token = parser.nextToken();
+                                                    if (variableType == Argument.Type.TEXT) {
+                                                        variableArg.name = parser.getValueAsString();
+                                                    }
+                                                    if (variableType == Argument.Type.NOMINAL) {
+                                                        variableArg.name = parser.getValueAsString();
+                                                    }
+                                                    if (variableType == Argument.Type.MATRIX) {
+                                                        variableArg.childArguments.add(new Argument(parser.getValueAsString(), getVarType(parser.getCurrentName())));
+                                                    }
+                                                    token = parser.nextToken();
+                                                }
+                                                newColumn.setRootNode(variableArg);
+
+                                                token = parser.nextToken();
+                                                if (JsonToken.FIELD_NAME.equals(token) && "cells".equals(parser.getCurrentName())) {
+
+                                                    token = parser.nextToken();
+                                                    if (!JsonToken.START_ARRAY.equals(token)) {
+                                                        break;
+                                                    }
+
+                                                    while (!JsonToken.END_ARRAY.equals(token)) { // for each cell
+                                                        token = parser.nextToken();
+                                                        if (!JsonToken.START_OBJECT.equals(token)) {
+                                                            break;
+                                                        }
+                                                        if (token == null) {
+                                                            break;
+                                                        }
+
+                                                        Cell newCell = newColumn.createCell();
+
+                                                        token = parser.nextToken();
+                                                        if (JsonToken.FIELD_NAME.equals(token) && "id".equals(parser.getCurrentName())) {
+                                                            token = parser.nextToken(); // we skip the id value
+                                                            token = parser.nextToken();
+                                                            if (JsonToken.FIELD_NAME.equals(token) && "onset".equals(parser.getCurrentName())) {
+                                                                token = parser.nextToken();
+                                                                String cellONSET = parser.getValueAsString();
+                                                                newCell.setOnset(cellONSET);
+
+                                                                token = parser.nextToken();
+                                                                if (JsonToken.FIELD_NAME.equals(token) && "offset".equals(parser.getCurrentName())) {
+                                                                    token = parser.nextToken();
+                                                                    String cellOFFSET = parser.getValueAsString();
+                                                                    newCell.setOffset(cellOFFSET);
+
+                                                                    token = parser.nextToken();
+                                                                    if (JsonToken.FIELD_NAME.equals(token) && "values".equals(parser.getCurrentName())) {
+                                                                        token = parser.nextToken();
+                                                                        if (!JsonToken.START_ARRAY.equals(token)) {
+                                                                            break;
+                                                                        }
+
+                                                                        token = parser.nextToken();
+                                                                        while (!JsonToken.END_ARRAY.equals(token)) {
+                                                                            if (token == null) {
+                                                                                break;
+                                                                            }
+
+                                                                            if (newColumn.getRootNode().type == Argument.Type.MATRIX) {
+                                                                                for (int k = 0; k < newColumn.getRootNode().childArguments.size(); k++) {
+                                                                                    newCell.setMatrixValue(k, parser.getValueAsString());
+                                                                                    token = parser.nextToken();
+                                                                                }
+                                                                            } else {
+                                                                                newCell.getCellValue().set(parser.getValueAsString());
+                                                                                token = parser.nextToken();
+                                                                            }
+                                                                        }
+
+                                                                    } else {
+                                                                        logger.warn("A values field is needed");
+                                                                        break;
+                                                                    }
+                                                                } else {
+                                                                    logger.warn("An offset field is needed");
+                                                                    break;
+                                                                }
+
+                                                            } else {
+                                                                logger.warn("An onset field is needed");
+                                                                break;
+                                                            }
+
+                                                        } else {
+                                                            logger.warn("An id field is needed");
+                                                            break;
+                                                        }
+                                                        token = parser.nextToken();
+                                                    }
+
+                                                } else {
+                                                    logger.warn("A Cells field is needed");
+                                                    break;
+                                                }
+
+                                            } else {
+                                                logger.warn("The arguments for a column are expected");
+                                                break;
+                                            }
+
+
+                                        } else {
+                                            logger.warn("A type for a column is needed");
+                                            break;
+                                        }
+
+                                    } else {
+                                        logger.warn("The column " + columnName + " already exists in the current spreadsheet");
+                                    }
+
+                                } else {
+                                    logger.warn("A name for a column is needed");
+                                    break;
+                                }
+                                token = parser.nextToken();
+                            }
+                        } else {
+                            logger.error("An Array of passes is needed, We support only passes import");
+                        }
+                    }
+
+                }
+            } catch (IOException e) {
+                logger.error("JSON File import Failed");
+                ResourceMap rMap = Application.getInstance(Datavyu.class).getContext().getResourceMap(Datavyu.class);
+                throw new UserWarningException(rMap.getString("UnableToLoadJSON.message", file.getAbsolutePath().toString()), e);
+            }
+        } else {
+            logger.error("The selected file is a not a JSON format");
+        }
     }
 
     /**

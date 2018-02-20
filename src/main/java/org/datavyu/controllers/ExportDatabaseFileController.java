@@ -391,34 +391,34 @@ public final class ExportDatabaseFileController {
             g.writeStringField("name", dataStore.getName());
 
             //Start an Array of Passes (Column(Spreadsheet)/Variable(DataStore))
-            g.writeArrayFieldStart("Passes");
+            g.writeArrayFieldStart("passes");
             for (Variable column : dataStore.getAllVariables()) {
                 // Start an Object for each Pass(Column/Variable)
                 g.writeStartObject();
                 // Pass(Column/Variable) name
                 g.writeStringField("name", column.getName());
 
-                g.writeStringField("Type",column.getRootNode().type.toString());
+                g.writeStringField("type",column.getRootNode().type.toString());
 
-                g.writeArrayFieldStart("Arguments");
+                g.writeObjectFieldStart("arguments");
 
                 column.getRootNode().childArguments.forEach(argument -> {
                     try {
-                        g.writeString(argument.type.name());
+                        g.writeStringField(argument.type.name(), argument.name);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 });
-                g.writeEndArray();
+                g.writeEndObject();
 
                 //Start an Array of Cells
-                g.writeArrayFieldStart("Cells");
+                g.writeArrayFieldStart("cells");
                 int count = 1;
                 for (Cell cell : column.getCellsTemporally()) {
                     // Start an Object for each Cell
                     g.writeStartObject();
 
-                    g.writeStringField("id", cell.getCellId());
+                    g.writeNumberField("id", count);
                     g.writeStringField("onset", cell.getOnsetString());
                     g.writeStringField("offset", cell.getOffsetString());
                     g.writeArrayFieldStart("values");

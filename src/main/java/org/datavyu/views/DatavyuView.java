@@ -1017,7 +1017,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
                 logger.error("The selected file is not a JSON File.");
             }
 
-            File file = new File(fc.getSelectedFile().getParent(), dbFileName);
+            File file = fc.getSelectedFile();
 
             importJSON.importJSONToSpreadsheet(file, getSpreadsheetPanel());
         } catch (Exception e) {
@@ -2221,8 +2221,8 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         exportJSON.setText("JSON Export");
         spreadsheetMenu.add(exportJSON);
 
-        importJSON.setAction(actionMap.get("importJSON"));
-        importJSON.setName("importJSON");
+        importJSON.setAction(actionMap.get("importJSONToSpreadsheet"));
+        importJSON.setName("importJSONToSpreadsheet");
         importJSON.setText("JSON Import");
         spreadsheetMenu.add(importJSON);
 
