@@ -271,13 +271,14 @@ public final class OpenDataStoreFileController {
                                                                         if (!JsonToken.START_ARRAY.equals(token)) { break; }
 
                                                                         token = parser.nextToken();
+                                                                        int k = 0; // keep track of the matrix value
+                                                                        // number
                                                                         while (!JsonToken.END_ARRAY.equals(token)) {
                                                                             if (token == null) { break; }
 
                                                                             if (newColumn.getRootNode().type == Argument.Type.MATRIX) {
-                                                                                for (int k = 0; k < newColumn.getRootNode().childArguments.size(); k++) {
                                                                                     newCell.setMatrixValue(k, parser.getValueAsString());
-                                                                                }
+                                                                                    k++;
                                                                             } else { newCell.getCellValue().set(parser.getValueAsString()); }
                                                                             token = parser.nextToken();
                                                                         }
