@@ -388,7 +388,7 @@ public final class ExportDatabaseFileController {
             //Start a Spreadsheet Object
             g.writeStartObject();
             //Spreadsheet name Field
-            g.writeStringField("name", dataStore.getName());
+//            g.writeStringField("name", dataStore.getName());
 
             //Start an Array of Passes (Column(Spreadsheet)/Variable(DataStore))
             g.writeArrayFieldStart("passes");

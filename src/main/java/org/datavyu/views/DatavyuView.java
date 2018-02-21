@@ -2226,12 +2226,12 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
         exportJSON.setAction(actionMap.get("exportToJSON"));
         exportJSON.setName("exportToJSON");
-        exportJSON.setText("JSON Spreadsheet Export");
+        exportJSON.setText("Export Passes To JSON");
         spreadsheetMenu.add(exportJSON);
 
         importJSON.setAction(actionMap.get("importJSONToSpreadsheet"));
         importJSON.setName("importJSONToSpreadsheet");
-        importJSON.setText("JSON Passes Import");
+        importJSON.setText("Import Passes From JSON");
         spreadsheetMenu.add(importJSON);
 
         jSeparator9.setName("jSeparator9");
