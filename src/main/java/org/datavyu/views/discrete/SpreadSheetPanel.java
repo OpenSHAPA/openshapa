@@ -476,14 +476,14 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
      */
     @Override
     public boolean dispatchKeyEvent(final KeyEvent e) {
-
+        SpreadsheetColumn selectedColumn = Datavyu.getView().getSpreadsheetPanel().getSelectedColumn();
         // Quick filter - if we aren't dealing with a key press and left or
         // right arrow. Forget about it - just chuck it back to Java to deal
         // with.
         if ((e.getID() == KeyEvent.KEY_PRESSED)
                 && ((e.getKeyCode() == KeyEvent.VK_LEFT)
                 || (e.getKeyCode() == KeyEvent.VK_RIGHT))) {
-            SpreadsheetColumn selectedColumn = Datavyu.getView().getSpreadsheetPanel().getSelectedColumn();
+
             // User is attempting to move to the column to the left.
             if ((e.getKeyCode() == KeyEvent.VK_LEFT)
                     && platformCellMovementMask(e)) {
@@ -504,16 +504,9 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
             if ((Datavyu.getView().isQuickKeyMode() &&
                     (Character.isAlphabetic(e.getKeyChar()) || Character.isDigit(e.getKeyChar()))
             )) {
-                // Find the currently selected column
-                SpreadsheetColumn col = null;
-                for(SpreadsheetColumn c : getVisibleColumns()) {
-                    if(c.isSelected()) {
-                        col = c;
-                        break;
-                    }
-                }
-                if(col != null) {
-                    Cell c = col.getVariable().createCell();
+
+                if(selectedColumn != null) {
+                    Cell c = selectedColumn.getVariable().createCell();
                     CellValue v = c.getCellValue();
                     if(v instanceof MatrixCellValue) {
                         List<CellValue> vals = ((MatrixCellValue) v).getArguments();
@@ -527,11 +520,8 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
                     e.consume();
                 }
                 // Add a cell to that column with this key in the first argument
-
-
             }
         }
-
         return false;
     }
 
@@ -980,12 +970,7 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
         if(0 <= vcIndex+shift
                 && vcIndex+shift < visibleColumns.size()) {
 
-            for (SpreadsheetCell cell : selectedColumn.getCellsTemporally()) {
-                if (cell.getCell().isSelected()) {
-                    sc = cell;
-                    break;
-                }
-            }
+            sc = selectedColumn.getDataPanel().getSelectedCell();
 
             clearCellSelection();
             clearColumnSelection();
