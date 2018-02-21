@@ -12,7 +12,7 @@ import java.io.File;
 public class FFmpegStreamViewerDialog extends StreamViewerDialog {
 
     /** The logger for this class */
-    private static Logger logger = LogManager.getLogger(FFmpegStreamViewerDialog.class);
+    private static Logger logger = LogManager.getFormatterLogger(FFmpegStreamViewerDialog.class);
 
     /** Previous setCurrentTime time */
     private long previousSeekTime = -1;
@@ -137,6 +137,14 @@ public class FFmpegStreamViewerDialog extends StreamViewerDialog {
         launch(() -> {
             player.stepBackward();
         });
+    }
+
+    @Override
+    protected void resizeVideo(float scale) {
+        super.resizeVideo(scale);
+        logger.info("Resizing video to scale %2.2f", scale);
+        player.setScale(scale);
+        notifyChange();
     }
 
     @Override

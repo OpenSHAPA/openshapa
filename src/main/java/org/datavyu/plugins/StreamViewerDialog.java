@@ -246,17 +246,20 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
 
     @Override
     public void validate() {
-
         // BugzID:753 - Locks the window to the videos aspect ratio.
         int newHeight = getHeight();
         int newWidth = (int) (getVideoHeight() * getAspectRatio()) + getInsets().left + getInsets().right;
         setSize(newWidth, newHeight);
-
         super.validate();
     }
 
     /**
      * Resize the video to the desired scale.
+     *
+     * Note, this resize is ONLY used by the zoom functions in the dialog.
+     *
+     * The plugins are responsible for detecting any changes that happen on the window and adjusting their size
+     * accordingly. A resize is NOT handled through this method.
      *
      * @param scale The new ratio to scale to, where 1.0 = original size, 2.0 = 200% zoom, etc.
      */

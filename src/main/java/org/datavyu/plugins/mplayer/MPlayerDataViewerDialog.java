@@ -131,7 +131,6 @@ public class MPlayerDataViewerDialog extends StreamViewerDialog {
         // TODO Add in function to guess frame rate
     }
 
-
     /**
      * Scales the video to the desired ratio.
      *

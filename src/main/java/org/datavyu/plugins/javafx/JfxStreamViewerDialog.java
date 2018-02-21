@@ -15,7 +15,7 @@ import java.util.concurrent.CountDownLatch;
 
 public class JfxStreamViewerDialog extends StreamViewerDialog {
 
-    private static Logger logger = LogManager.getLogger(JfxStreamViewerDialog.class);
+    private static Logger logger = LogManager.getFormatterLogger(JfxStreamViewerDialog.class);
 
     /** Data to visualize */
     private File sourceFile;
@@ -145,6 +145,7 @@ public class JfxStreamViewerDialog extends StreamViewerDialog {
      */
     @Override
     protected void resizeVideo(final float scale) {
+        logger.info("Resize with scale %2.2f", scale);
         jfxApplication.setScale(scale);
         notifyChange();
     }

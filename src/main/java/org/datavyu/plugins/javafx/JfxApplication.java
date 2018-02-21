@@ -19,7 +19,7 @@ import java.io.File;
 
 public class JfxApplication extends Application {
 
-    private static Logger logger = LogManager.getLogger(JfxApplication.class);
+    private static Logger logger = LogManager.getFormatterLogger(JfxApplication.class);
     private File dataFile;
     private boolean init = false;
     private MediaPlayer mp;
@@ -91,6 +91,7 @@ public class JfxApplication extends Application {
     public boolean isPlaying() { return mp.getStatus() == MediaPlayer.Status.PLAYING; }
 
     public void setScale(double scale) {
+        logger.info("Setting scale to %2.2f", scale);
         stage.setHeight(mp.getMedia().getHeight() * scale);
         stage.setWidth(mp.getMedia().getWidth() * scale);
     }
@@ -141,13 +142,11 @@ public class JfxApplication extends Application {
                 logger.info("Creating a new media view.");
                 mv = new MediaView(mp);
 
-
                 final DoubleProperty width = mv.fitWidthProperty();
                 final DoubleProperty height = mv.fitHeightProperty();
 
                 width.bind(Bindings.selectDouble(mv.sceneProperty(), "width"));
                 height.bind(Bindings.selectDouble(mv.sceneProperty(), "height"));
-
 
                 mv.setPreserveRatio(true);
 
