@@ -1019,6 +1019,29 @@
             <version>2.9.0</version>
         </dependency>
 
+        <!-- JSON Parser -->
+        <!-- Artifact: https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+        <!-- Updated here: 02/15/2018  -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.4</version>
+        </dependency>
+
+        <dependency>
+            <!-- Note: core-annotations version x.y.0 is generally compatible with
+                 (identical to) version x.y.1, x.y.2, etc. -->
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.9.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.9.4</version>
+        </dependency>
+
         <dependency>
             <groupId>datavyu</groupId>
             <artifactId>ffmpeg-libs</artifactId>

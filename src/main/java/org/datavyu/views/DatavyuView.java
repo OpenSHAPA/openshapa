@@ -14,6 +14,7 @@
  */
 package org.datavyu.views;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import javafx.embed.swing.JFXPanel;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
@@ -130,6 +131,7 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     private javax.swing.JSeparator jSeparator7;
     private javax.swing.JPopupMenu.Separator jSeparator8;
     private javax.swing.JPopupMenu.Separator jSeparator9;
+    private javax.swing.JSeparator jSeparator11;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem newCellLeftMenuItem;
@@ -158,6 +160,8 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     private ArrayList scriptMenuPermanentsList;
     private javax.swing.JMenuItem showSpreadsheetMenuItem;
     private javax.swing.JMenu spreadsheetMenu;
+    private javax.swing.JMenuItem exportJSON;
+    private javax.swing.JMenuItem importJSON;
     private javax.swing.JMenuItem undoSpreadSheetMenuItem;
     private javax.swing.JMenuItem vocabEditorMenuItem;
     private javax.swing.JCheckBoxMenuItem weakTemporalAlignmentMenuItem;
@@ -936,6 +940,100 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
     public JSplitPane getFileSplitPane() {
         return fileSplitPane;
     }
+
+
+    /**
+     * Action for exporting the current SpreadSheet as a JSON File
+     */
+    @Action
+    public void exportToJSON(){
+        DatavyuFileChooser fileChooser = new DatavyuFileChooser();
+
+        fileChooser.addChoosableFileFilter(JSONFilter.INSTANCE);
+        fileChooser.setFileFilter(JSONFilter.INSTANCE);
+
+        int result = fileChooser.showSaveDialog(getComponent());
+
+        if (result == JFileChooser.APPROVE_OPTION){
+            exportJSON(fileChooser);;
+        }
+    }
+
+    private void exportJSON(DatavyuFileChooser fc){
+        ProjectController projectController = Datavyu.getProjectController();
+        //TODO: why the project controller can't update (Have to Check it!)
+//        projectController.updateProject();
+
+        try{
+            ExportDatabaseFileController exportJSON = new ExportDatabaseFileController();
+
+            String dbFileName = fc.getSelectedFile().getPath();
+            if (!dbFileName.endsWith(".json")) {
+                dbFileName = dbFileName.concat(".json");
+            }
+
+            // Only save if the project file does not exists or if the user
+            // confirms a file overwrite in the case that the file exists.
+            if (!canSave(fc.getSelectedFile().getParent(), dbFileName)) {
+                return;
+            }
+            File file = new File(fc.getSelectedFile().getParent(), dbFileName);
+
+            exportJSON.exportAsJSON(dbFileName, projectController.getDataStore());
+        } catch (Exception e) {
+            logger.error("Failed export to JSON. Error: ", e);
+        }
+
+    }
+
+    /**
+     * Action for exposing the current SpreadSheet as a JSON File
+     */
+    @Action
+    public void importJSONToSpreadsheet(){
+        DatavyuFileChooser fileChooser = new DatavyuFileChooser();
+
+        fileChooser.addChoosableFileFilter(JSONFilter.INSTANCE);
+        fileChooser.setFileFilter(JSONFilter.INSTANCE);
+
+        int result = fileChooser.showOpenDialog(getComponent());
+
+        if (result == JFileChooser.APPROVE_OPTION){
+            importJSON(fileChooser);
+        }
+
+        Datavyu.getView().getSpreadsheetPanel().redrawCells();
+
+    }
+
+    private void importJSON(DatavyuFileChooser fc){
+        ProjectController projectController = Datavyu.getProjectController();
+        //TODO: why the project controller can't update (Have to Check it!)
+//        projectController.updateProject();
+
+        try{
+            OpenDataStoreFileController importJSON = new OpenDataStoreFileController();
+
+            String dbFileName = fc.getSelectedFile().getPath();
+            if (!dbFileName.endsWith(".json")) {
+                logger.error("The selected file is not a JSON File.");
+            }
+
+            File file = fc.getSelectedFile();
+
+            importJSON.importJSONToSpreadsheet(file, getSpreadsheetPanel());
+        } catch (UserWarningException e) {
+            logger.error("Failed export to JSON. Error: ", e);
+            Datavyu.getApplication().showWarningDialog(e);
+        } catch (JsonParseException e) {
+            logger.error("Failed export to JSON. Error: ", e);
+            Datavyu.getApplication().showWarningDialog(e.getMessage());
+        } catch (IOException e) {
+            logger.error("Failed export to JSON. Error: ", e);
+            Datavyu.getApplication().showWarningDialog(e.getMessage());
+        }
+    }
+
 
 
     /**
@@ -1911,6 +2009,9 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         hotkeysMenuItem = new javax.swing.JMenuItem();
         quickkeysMenuItem = new javax.swing.JMenuItem();
         highlightAndFocusMenuItem = new javax.swing.JMenuItem();
+        jSeparator11 = new javax.swing.JSeparator();
+        exportJSON = new javax.swing.JMenuItem();
+        importJSON = new javax.swing.JMenuItem();
 
         scriptMenuPermanentsList = new ArrayList();
 
@@ -2119,6 +2220,19 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
         redoSpreadSheetMenuItem.setAction(actionMap.get("redo"));
         redoSpreadSheetMenuItem.setName("redoSpreadSheetMenuItem");
         spreadsheetMenu.add(redoSpreadSheetMenuItem);
+
+        jSeparator11.setName("jSeparator11");
+        spreadsheetMenu.add(jSeparator11);
+
+        exportJSON.setAction(actionMap.get("exportToJSON"));
+        exportJSON.setName("exportToJSON");
+        exportJSON.setText("Export Passes To JSON");
+        spreadsheetMenu.add(exportJSON);
+
+        importJSON.setAction(actionMap.get("importJSONToSpreadsheet"));
+        importJSON.setName("importJSONToSpreadsheet");
+        importJSON.setText("Import Passes From JSON");
+        spreadsheetMenu.add(importJSON);
 
         jSeparator9.setName("jSeparator9");
         spreadsheetMenu.add(jSeparator9);
@@ -2449,8 +2563,12 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
         if (totalNumberOfColumns == 0) {
             newCellMenuItem.setEnabled(false);
+            exportJSON.setEnabled(false);
+            importJSON.setEnabled(false);
         } else {
             newCellMenuItem.setEnabled(true);
+            exportJSON.setEnabled(true);
+            importJSON.setEnabled(true);
         }
 
         List<Variable> selectedCols = Datavyu.getProjectController().getDataStore().getSelectedVariables();
