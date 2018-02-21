@@ -15,6 +15,7 @@
 package org.datavyu.controllers;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import org.apache.logging.log4j.LogManager;
@@ -165,62 +166,66 @@ public final class OpenDataStoreFileController {
         return null;
     }
 
-    public void importJSONToSpreadsheet(File file, SpreadSheetPanel spreadSheet) throws UserWarningException,
-            IOException {
+    public void importJSONToSpreadsheet(File file, SpreadSheetPanel spreadSheet) throws UserWarningException,  JsonParseException, IOException {
         if (file.getAbsolutePath().endsWith(".json")) {
-                JsonFactory factory = new JsonFactory();
-                JsonParser parser = factory.createParser(file);
+            JsonFactory factory = new JsonFactory();
+            JsonParser parser = factory.createParser(file);
 
-                while (!parser.isClosed()) {
-                    JsonToken token = parser.nextToken();
-                    if (token == null) { break; }
+            while (!parser.isClosed()) {
+                JsonToken token = parser.nextToken();
+                if (token == null) { break; }
 
-                    if(JsonToken.START_OBJECT.equals(token)) {
+                if (JsonToken.START_OBJECT.equals(token)) {
+
+                    token = parser.nextToken();
+                    if (JsonToken.FIELD_NAME.equals(token) && "passes".equals(parser.getCurrentName())) {
+
+                        DataStore dataStore = spreadSheet.getDataStore();
 
                         token = parser.nextToken();
-                        if (JsonToken.FIELD_NAME.equals(token) && "passes".equals(parser.getCurrentName())) {
+                        if (!JsonToken.START_ARRAY.equals(token)) { break; }
 
-                            DataStore dataStore = spreadSheet.getDataStore();
+                        while (!JsonToken.END_ARRAY.equals(token)) { // for each pass
 
                             token = parser.nextToken();
-                            if (!JsonToken.START_ARRAY.equals(token)) { break; }
+                            if (token == null) { break; }
+                            if (!JsonToken.START_OBJECT.equals(token)) { break; }
 
-                            while (!JsonToken.END_ARRAY.equals(token)) {// for each pass
-
-                                token = parser.nextToken();
-                                if (token == null) { break; }
-                                if (!JsonToken.START_OBJECT.equals(token)){ break; }
+                            token = parser.nextToken();
+                            if (JsonToken.FIELD_NAME.equals(token) && "name".equals(parser.getCurrentName())) {
 
                                 token = parser.nextToken();
-                                if (JsonToken.FIELD_NAME.equals(token) && "name".equals(parser.getCurrentName())) {
+                                String columnName = parser.getValueAsString();
+
+                                // Check if we already have the same column name
+                                if (spreadSheet.getDataStore().getVariable(columnName) == null) {
 
                                     token = parser.nextToken();
-                                    String columnName = parser.getValueAsString();
-
-                                    // Check if we already have the same column name
-                                    if (spreadSheet.getDataStore().getVariable(columnName) == null) {
-
+                                    if (JsonToken.FIELD_NAME.equals(token) && "type".equals(parser.getCurrentName())) {
                                         token = parser.nextToken();
-                                        if (JsonToken.FIELD_NAME.equals(token) && "type".equals(parser.getCurrentName())) {
-                                            token = parser.nextToken();
-                                            Argument.Type variableType = getVarType(parser.getValueAsString());
+                                        Argument.Type variableType = getVarType(parser.getValueAsString());
 
+                                        if (variableType != null) {
                                             token = parser.nextToken();
-                                            if (JsonToken.FIELD_NAME.equals(token) && "arguments".equals(parser.getCurrentName())) {
+                                            if (JsonToken.FIELD_NAME.equals(token) && "arguments".equals(parser
+                                                    .getCurrentName())) {
                                                 token = parser.nextToken();
                                                 if (token == null) { break; }
                                                 if (!JsonToken.START_OBJECT.equals(token)) { break; }
 
-                                                Variable newColumn = dataStore.createVariable(columnName, variableType, true);
+                                                Variable newColumn = dataStore.createVariable(columnName,
+                                                        variableType, true);
                                                 Argument variableArg = newColumn.getRootNode();
                                                 variableArg.clearChildArguments();
 
                                                 while (!JsonToken.END_OBJECT.equals(token)) {
                                                     token = parser.nextToken();
                                                     if (token == null) { break; }
-                                                    if (JsonToken.START_OBJECT.equals(token)
-                                                            || JsonToken.START_OBJECT.equals(token)
-                                                            || JsonToken.END_OBJECT.equals(token)){ break; }
+                                                    if (JsonToken.START_OBJECT.equals(token) || JsonToken
+                                                            .START_OBJECT.equals(token) || JsonToken.END_OBJECT
+                                                            .equals(token)) {
+                                                        break;
+                                                    }
 
                                                     token = parser.nextToken();
                                                     if (variableType == Argument.Type.TEXT) {
@@ -230,13 +235,24 @@ public final class OpenDataStoreFileController {
                                                         variableArg.name = parser.getValueAsString();
                                                     }
                                                     if (variableType == Argument.Type.MATRIX) {
-                                                        variableArg.childArguments.add(new Argument(parser.getValueAsString(), getVarType(parser.getCurrentName())));
+                                                        if (getVarType(parser.getCurrentName()) != null) {
+                                                            variableArg.childArguments.add(new Argument(parser
+                                                                    .getValueAsString(), getVarType(parser
+                                                                    .getCurrentName())));
+                                                        } else {
+                                                            logger.warn("Unknown argument ('" + parser.getCurrentName
+                                                                    () + "' line " + parser.getCurrentLocation()
+                                                                    .getLineNr() + " ): was expecting " + "argument "
+                                                                    + "(NOMINAL, TEXT or MATRIX)" + " field name");
+                                                            break;
+                                                        }
                                                     }
                                                 }
                                                 newColumn.setRootNode(variableArg);
 
                                                 token = parser.nextToken();
-                                                if (JsonToken.FIELD_NAME.equals(token) && "cells".equals(parser.getCurrentName())) {
+                                                if (JsonToken.FIELD_NAME.equals(token) && "cells".equals(parser
+                                                        .getCurrentName())) {
 
                                                     token = parser.nextToken();
                                                     if (!JsonToken.START_ARRAY.equals(token)) { break; }
@@ -251,24 +267,30 @@ public final class OpenDataStoreFileController {
                                                         Cell newCell = newColumn.createCell();
 
                                                         token = parser.nextToken();
-                                                        if (JsonToken.FIELD_NAME.equals(token) && "id".equals(parser.getCurrentName())) {
+                                                        if (JsonToken.FIELD_NAME.equals(token) && "id".equals(parser
+                                                                .getCurrentName())) {
                                                             token = parser.nextToken(); // we skip the id value
                                                             token = parser.nextToken();
-                                                            if (JsonToken.FIELD_NAME.equals(token) && "onset".equals(parser.getCurrentName())) {
+                                                            if (JsonToken.FIELD_NAME.equals(token) && "onset".equals
+                                                                    (parser.getCurrentName())) {
                                                                 token = parser.nextToken();
                                                                 String cellONSET = parser.getValueAsString();
                                                                 newCell.setOnset(cellONSET);
 
                                                                 token = parser.nextToken();
-                                                                if (JsonToken.FIELD_NAME.equals(token) && "offset".equals(parser.getCurrentName())) {
+                                                                if (JsonToken.FIELD_NAME.equals(token) && "offset"
+                                                                        .equals(parser.getCurrentName())) {
                                                                     token = parser.nextToken();
                                                                     String cellOFFSET = parser.getValueAsString();
                                                                     newCell.setOffset(cellOFFSET);
 
                                                                     token = parser.nextToken();
-                                                                    if (JsonToken.FIELD_NAME.equals(token) && "values".equals(parser.getCurrentName())) {
+                                                                    if (JsonToken.FIELD_NAME.equals(token) &&
+                                                                            "values".equals(parser.getCurrentName())) {
                                                                         token = parser.nextToken();
-                                                                        if (!JsonToken.START_ARRAY.equals(token)) { break; }
+                                                                        if (!JsonToken.START_ARRAY.equals(token)) {
+                                                                            break;
+                                                                        }
 
                                                                         token = parser.nextToken();
                                                                         int k = 0; // keep track of the matrix value
@@ -276,29 +298,132 @@ public final class OpenDataStoreFileController {
                                                                         while (!JsonToken.END_ARRAY.equals(token)) {
                                                                             if (token == null) { break; }
 
-                                                                            if (newColumn.getRootNode().type == Argument.Type.MATRIX) {
-                                                                                    newCell.setMatrixValue(k, parser.getValueAsString());
-                                                                                    k++;
-                                                                            } else { newCell.getCellValue().set(parser.getValueAsString()); }
+                                                                            if (newColumn.getRootNode().type ==
+                                                                                    Argument.Type.MATRIX) {
+
+                                                                                newCell.setMatrixValue(k, parser
+                                                                                        .getValueAsString());
+                                                                                k++;
+                                                                            } else {
+                                                                                newCell.getCellValue().set(parser
+                                                                                        .getValueAsString());
+                                                                            }
                                                                             token = parser.nextToken();
                                                                         }
-                                                                    } else { logger.warn("A values field is needed");break; }
-                                                                } else { logger.warn("An offset field is needed"); break; }
-                                                            } else { logger.warn("An onset field is needed"); break; }
-                                                        } else { logger.warn("An id field is needed"); break; }
+                                                                    } else {
+                                                                        dataStore.removeVariable(newColumn);
+                                                                        String msg = "Unexpected character ('" +
+                                                                                parser.getCurrentName() + "' line " +
+                                                                                parser.getCurrentLocation().getLineNr
+                                                                                        () + " ): " + "was expecting " +
+                                                                                "" + "values field name";
+                                                                        logger.warn(msg);
+                                                                        Datavyu.getApplication().showWarningDialog(msg);
+                                                                        break;
+                                                                    }
+                                                                } else {
+                                                                    dataStore.removeVariable(newColumn);
+                                                                    String msg = "Unexpected character ('" + parser
+                                                                            .getCurrentName() + "' line " + parser
+                                                                            .getCurrentLocation().getLineNr() + " ): " +
+                                                                            "" + "was " + "expecting offset field " +
+                                                                            "name";
+                                                                    logger.warn(msg);
+                                                                    Datavyu.getApplication().showWarningDialog(msg);
+                                                                    break;
+                                                                }
+                                                            } else {
+                                                                dataStore.removeVariable(newColumn);
+                                                                String msg = "Unexpected character ('" + parser
+                                                                        .getCurrentName() + "' line " + parser
+                                                                        .getCurrentLocation().getLineNr() + " ): was " +
+                                                                        "" + "" + "expecting onset field name";
+                                                                logger.warn(msg);
+                                                                Datavyu.getApplication().showWarningDialog(msg);
+                                                                break;
+                                                            }
+                                                        } else {
+                                                            dataStore.removeVariable(newColumn);
+                                                            String msg = "Unexpected character ('" + parser
+                                                                    .getCurrentName() + "' line " + parser
+                                                                    .getCurrentLocation().getLineNr() + " ): was " +
+                                                                    "expecting " + "id field name";
+                                                            logger.warn(msg);
+                                                            Datavyu.getApplication().showWarningDialog(msg);
+                                                            break;
+                                                        }
                                                         token = parser.nextToken();
                                                     }
-                                                } else { logger.warn("A Cells field is needed"); break; }
-                                            } else { logger.warn("The arguments for a column are expected"); break; }
-                                        } else { logger.warn("A type for a column is needed"); break; }
-                                    } else { logger.warn("The column " + columnName + " already exists in the current spreadsheet");}
-                                } else { logger.warn("A name for a column is needed"); break; }
-                                token = parser.nextToken();
+                                                } else {
+                                                    dataStore.removeVariable(newColumn);
+                                                    String msg = "Unexpected character ('" + parser.getCurrentName() +
+                                                            "' line " + parser.getCurrentLocation().getLineNr() + " )" +
+                                                            ": was expecting cells " + "field name";
+                                                    logger.warn(msg);
+                                                    Datavyu.getApplication().showWarningDialog(msg);
+                                                    break;
+                                                    }
+                                            } else {
+                                                String msg = "Unexpected character ('" + parser.getCurrentName() + "' "
+                                                        + "line " + parser.getCurrentLocation().getLineNr() +
+                                                        " ):" + " was expecting arguments field name";
+                                                logger.warn(msg);
+                                                Datavyu.getApplication().showWarningDialog(msg);
+                                                break;
+                                            }
+                                        } else {
+                                            String msg = "Unknown argument ('" + parser.getCurrentName() + "' line " +
+                                                    parser.getCurrentLocation().getLineNr() + " ): was expecting " +
+                                                    "argument (NOMINAL, TEXT or MATRIX) field name";
+                                            logger.warn(msg);
+                                            Datavyu.getApplication().showWarningDialog(msg);
+                                            break;
+                                        }
+                                    } else {
+                                        String msg = "Unexpected character ('" + parser.getCurrentName() + "' line " +
+                                                parser.getCurrentLocation().getLineNr() + " ): was expecting type " +
+                                                "field name";
+                                        logger.warn(msg);
+                                        Datavyu.getApplication().showWarningDialog(msg);
+                                        break;
+                                    }
+                                } else {
+                                    String msg = "The column " + columnName + " already exists in the current" + " " +
+                                            "spreadsheet";
+                                    logger.warn(msg);
+                                    Datavyu.getApplication().showWarningDialog(msg);
+                                    break;
+                                }
+                            } else {
+                                String msg = "Unexpected character ('" + parser.getCurrentName() + "' line " + parser
+                                        .getCurrentLocation().getLineNr() + " ): was expecting name field name";
+                                logger.warn(msg);
+                                Datavyu.getApplication().showWarningDialog(msg);
+                                break;
                             }
-                        } else {logger.error("An Array of passes is needed, We support only passes import"); break;}
+                            token = parser.nextToken();
+                        }
+                        parser.close();
+                    } else {
+                        String msg = "Unexpected character ('" + parser.getCurrentName() + "' line " + parser
+                                .getCurrentLocation().getLineNr() + " ): was expecting passes field name";
+                        logger.error(msg);
+                        Datavyu.getApplication().showWarningDialog(msg);
+                        break;
                     }
+                } else {
+                    String msg ="Unexpected character ('" + parser.getCurrentName() + "' line " + parser
+                            .getCurrentLocation().getLineNr() + " ): was expecting '{'";
+                    logger.error(msg);
+                    Datavyu.getApplication().showWarningDialog(msg);
+                    break;
                 }
-        } else { logger.error("The selected file is a not a JSON format"); }
+            }
+        } else {
+            String msg = "The selected file is a not a JSON format";
+            logger.error(msg);
+            Datavyu.getApplication().showWarningDialog(msg);
+        }
     }
 
     /**

@@ -14,6 +14,7 @@
  */
 package org.datavyu.views;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import javafx.embed.swing.JFXPanel;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
@@ -1021,8 +1022,15 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
             File file = fc.getSelectedFile();
 
             importJSON.importJSONToSpreadsheet(file, getSpreadsheetPanel());
-        } catch (Exception e) {
+        } catch (UserWarningException e) {
             logger.error("Failed export to JSON. Error: ", e);
+            Datavyu.getApplication().showWarningDialog(e);
+        } catch (JsonParseException e) {
+            logger.error("Failed export to JSON. Error: ", e);
+            Datavyu.getApplication().showWarningDialog(e.getMessage());
+        } catch (IOException e) {
+            logger.error("Failed export to JSON. Error: ", e);
+            Datavyu.getApplication().showWarningDialog(e.getMessage());
         }
     }
 
@@ -2218,12 +2226,12 @@ public final class DatavyuView extends FrameView implements FileDropEventListene
 
         exportJSON.setAction(actionMap.get("exportToJSON"));
         exportJSON.setName("exportToJSON");
-        exportJSON.setText("JSON Export");
+        exportJSON.setText("JSON Spreadsheet Export");
         spreadsheetMenu.add(exportJSON);
 
         importJSON.setAction(actionMap.get("importJSONToSpreadsheet"));
         importJSON.setName("importJSONToSpreadsheet");
-        importJSON.setText("JSON Import");
+        importJSON.setText("JSON Passes Import");
         spreadsheetMenu.add(importJSON);
 
         jSeparator9.setName("jSeparator9");
