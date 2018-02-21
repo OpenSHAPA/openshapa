@@ -27,25 +27,25 @@ import java.io.File;
  * The viewer for a quick time video file.
  * <b>Do not move this class, this is for backward compatibility with 1.07.</b>
  */
-public final class NativeOSxViewerDialog extends StreamViewerDialog {
+public final class NativeOSXViewerDialog extends StreamViewerDialog {
 
     //private long timeOfPrevSeek = 0;
 
     private static final int NUM_RETRY_FOR_DURATION = 2;
 
     /** The logger for this class */
-    private static Logger logger = LogManager.getLogger(NativeOSxViewerDialog.class);
+    private static Logger logger = LogManager.getLogger(NativeOSXViewerDialog.class);
 
     /** The quick time native OSXPlayer */
-    private NativeOSxPlayer nativeOSXPlayer;
+    private NativeOSXPlayer nativeOSXPlayer;
 
     private boolean seeking = false;
 
     private long duration = 0;
 
-    NativeOSxViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
+    NativeOSXViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
         super(identifier, parent, modal);
-        setPlayerSourceFile(sourceFile);
+        setSourceFile(sourceFile);
     }
 
     @Override
@@ -80,12 +80,15 @@ public final class NativeOSxViewerDialog extends StreamViewerDialog {
         return duration;
     }
 
-    private void setPlayerSourceFile(final File playerSourceFile) {
+    @Override
+    public void setSourceFile(final File playerSourceFile) {
+        logger.info("Set source file: "+ playerSourceFile.getAbsolutePath());
 
+        this.sourceFile = playerSourceFile;
         // Ensure that the native hierarchy is set up
         this.addNotify();
 
-        nativeOSXPlayer = new NativeOSxPlayer(playerSourceFile);
+        nativeOSXPlayer = new NativeOSXPlayer(playerSourceFile);
 
         this.add(nativeOSXPlayer, BorderLayout.CENTER);
 
@@ -96,7 +99,7 @@ public final class NativeOSxViewerDialog extends StreamViewerDialog {
                     nativeOSXPlayer.setVolume(0.7F, nativeOSXPlayer.id);
                 } catch (Exception e) {
                     // Oops! Back out
-                    NativeOSxPlayer.decPlayerCount();
+                    NativeOSXPlayer.decPlayerCount();
                     throw e;
                 }
             }
