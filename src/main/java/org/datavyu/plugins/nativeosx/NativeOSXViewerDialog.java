@@ -45,7 +45,8 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
 
     NativeOSXViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
         super(identifier, parent, modal);
-        setSourceFile(sourceFile);
+        setPlayerSourceFile(sourceFile);
+        super.setSourceFile(sourceFile);
     }
 
     @Override
@@ -80,11 +81,9 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
         return duration;
     }
 
-    @Override
-    public void setSourceFile(final File playerSourceFile) {
+    private void setPlayerSourceFile(final File playerSourceFile) {
         logger.info("Set source file: "+ playerSourceFile.getAbsolutePath());
 
-        this.sourceFile = playerSourceFile;
         // Ensure that the native hierarchy is set up
         this.addNotify();
 
