@@ -16,10 +16,12 @@ package org.datavyu.plugins.nativeosx;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.datavyu.Datavyu;
 import org.datavyu.models.Identifier;
 import org.datavyu.plugins.StreamViewerDialog;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.File;
 
 
@@ -45,6 +47,7 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
 
     NativeOSXViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
         super(identifier, parent, modal);
+
         logger.info("Set source file: "+ sourceFile.getAbsolutePath());
         nativeOSXPlayer = new NativeOSXPlayer(sourceFile);
         this.addNotify();
@@ -82,30 +85,6 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
             }
         }
         return duration;
-    }
-
-    private void setPlayerSourceFile(final File playerSourceFile) {
-
-
-        // Ensure that the native hierarchy is set up
-        this.addNotify();
-
-        nativeOSXPlayer = new NativeOSXPlayer(playerSourceFile);
-
-        this.add(nativeOSXPlayer, BorderLayout.CENTER);
-
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    // Make sure nativeOSXPlayer is actually loaded
-                    nativeOSXPlayer.setVolume(0.7F, nativeOSXPlayer.id);
-                } catch (Exception e) {
-                    // Oops! Back out
-                    NativeOSXPlayer.decPlayerCount();
-                    throw e;
-                }
-            }
-        });
     }
 
     @Override

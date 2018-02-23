@@ -139,7 +139,6 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
             }
         });
 
-
         this.identifier = identifier;
         offset = 0;
 
