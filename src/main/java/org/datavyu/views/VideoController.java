@@ -408,8 +408,8 @@ public final class VideoController extends DatavyuDialog
             TrackModel trackModel = tracksEditorController.getTrackModel(streamViewer.getIdentifier());
             // TODO: Ensure that there is a return value by tying offset/duration directly to the object
             if (trackModel != null) {
-                if (clockTime >= trackModel.getOffset() && !streamViewer.isPlaying()) {
-                    logger.info("Starts track: " + trackModel.getIdentifier() + " at time: " + clockTime);
+                if (clockTime >= trackModel.getOffset()) {
+                    logger.info("Clock Start Starts track: " + trackModel.getIdentifier() + " at time: " + clockTime);
                     streamViewer.start();
                 }
             }
@@ -442,11 +442,12 @@ public final class VideoController extends DatavyuDialog
         for (StreamViewer streamViewer : streamViewers) {
             TrackModel trackModel = tracksEditorController.getTrackModel(streamViewer.getIdentifier());
             if (trackModel != null && !clockTimer.isStopped()) {
-                if (clockTime >= trackModel.getOffset() && !streamViewer.isPlaying()) {
-                    logger.info("Starting track: " + trackModel.getIdentifier() + " at " + clockTime);
-                    streamViewer.start();
+                if (clockTime > trackModel.getOffset() && clockTime < mixerController.getRegionController().getModel().getRegion().getRegionEnd()) {
+                    logger.info("Clock Boundary Starting track: " + trackModel.getIdentifier() + " at " + clockTime);
+                     streamViewer.start();
                 }
-                if (clockTime > trackModel.getOffset() + trackModel.getDuration() && streamViewer.isPlaying()) {
+                if (clockTime >= trackModel.getOffset() + trackModel.getDuration()
+                        || clockTime >= mixerController.getRegionController().getModel().getRegion().getRegionEnd()) {
                     logger.info("Stopping track: " + trackModel.getIdentifier() + " at " + clockTime);
                     streamViewer.stop();
                 }

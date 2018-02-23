@@ -45,8 +45,11 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
 
     NativeOSXViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
         super(identifier, parent, modal);
-        setPlayerSourceFile(sourceFile);
-        super.setSourceFile(sourceFile);
+        logger.info("Set source file: "+ sourceFile.getAbsolutePath());
+        nativeOSXPlayer = new NativeOSXPlayer(sourceFile);
+        this.addNotify();
+        this.add(nativeOSXPlayer, BorderLayout.CENTER);
+        setSourceFile(sourceFile);
     }
 
     @Override
@@ -82,7 +85,7 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
     }
 
     private void setPlayerSourceFile(final File playerSourceFile) {
-        logger.info("Set source file: "+ playerSourceFile.getAbsolutePath());
+
 
         // Ensure that the native hierarchy is set up
         this.addNotify();
@@ -146,7 +149,7 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
             if (nativeOSXPlayer != null) {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        if (nativeOSXPlayer.getRate(nativeOSXPlayer.id) != 0) {
+                        if (nativeOSXPlayer.getRate(nativeOSXPlayer.id) == 0) {
                             nativeOSXPlayer.stop(nativeOSXPlayer.id);
                         }
                         nativeOSXPlayer.setRate(getRate(), nativeOSXPlayer.id);

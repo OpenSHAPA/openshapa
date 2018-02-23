@@ -38,6 +38,7 @@ public class NativeOSXPlayer extends Canvas {
 
     public NativeOSXPlayer(File fileToLoad) {
         this.id = NativeOSXPlayer.playerCount;
+        this.stop(this.id);
         incPlayerCount();
         this.sourceFile = fileToLoad;
     }
