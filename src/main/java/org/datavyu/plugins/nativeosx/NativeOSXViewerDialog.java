@@ -16,10 +16,12 @@ package org.datavyu.plugins.nativeosx;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.datavyu.Datavyu;
 import org.datavyu.models.Identifier;
 import org.datavyu.plugins.StreamViewerDialog;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.File;
 
 
@@ -27,25 +29,30 @@ import java.io.File;
  * The viewer for a quick time video file.
  * <b>Do not move this class, this is for backward compatibility with 1.07.</b>
  */
-public final class NativeOSxViewerDialog extends StreamViewerDialog {
+public final class NativeOSXViewerDialog extends StreamViewerDialog {
 
     //private long timeOfPrevSeek = 0;
 
     private static final int NUM_RETRY_FOR_DURATION = 2;
 
     /** The logger for this class */
-    private static Logger logger = LogManager.getLogger(NativeOSxViewerDialog.class);
+    private static Logger logger = LogManager.getLogger(NativeOSXViewerDialog.class);
 
     /** The quick time native OSXPlayer */
-    private NativeOSxPlayer nativeOSXPlayer;
+    private NativeOSXPlayer nativeOSXPlayer;
 
     private boolean seeking = false;
 
     private long duration = 0;
 
-    NativeOSxViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
+    NativeOSXViewerDialog(final Identifier identifier, final File sourceFile, final Frame parent, final boolean modal) {
         super(identifier, parent, modal);
-        setPlayerSourceFile(sourceFile);
+
+        logger.info("Set source file: "+ sourceFile.getAbsolutePath());
+        nativeOSXPlayer = new NativeOSXPlayer(sourceFile);
+        this.addNotify();
+        this.add(nativeOSXPlayer, BorderLayout.CENTER);
+        setSourceFile(sourceFile);
     }
 
     @Override
@@ -78,29 +85,6 @@ public final class NativeOSxViewerDialog extends StreamViewerDialog {
             }
         }
         return duration;
-    }
-
-    private void setPlayerSourceFile(final File playerSourceFile) {
-
-        // Ensure that the native hierarchy is set up
-        this.addNotify();
-
-        nativeOSXPlayer = new NativeOSxPlayer(playerSourceFile);
-
-        this.add(nativeOSXPlayer, BorderLayout.CENTER);
-
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    // Make sure nativeOSXPlayer is actually loaded
-                    nativeOSXPlayer.setVolume(0.7F, nativeOSXPlayer.id);
-                } catch (Exception e) {
-                    // Oops! Back out
-                    NativeOSxPlayer.decPlayerCount();
-                    throw e;
-                }
-            }
-        });
     }
 
     @Override
@@ -144,7 +128,7 @@ public final class NativeOSxViewerDialog extends StreamViewerDialog {
             if (nativeOSXPlayer != null) {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        if (nativeOSXPlayer.getRate(nativeOSXPlayer.id) != 0) {
+                        if (nativeOSXPlayer.getRate(nativeOSXPlayer.id) == 0) {
                             nativeOSXPlayer.stop(nativeOSXPlayer.id);
                         }
                         nativeOSXPlayer.setRate(getRate(), nativeOSXPlayer.id);

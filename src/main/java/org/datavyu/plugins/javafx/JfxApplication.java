@@ -4,7 +4,10 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -14,7 +17,11 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.datavyu.Datavyu;
+import org.datavyu.views.VideoController;
 
+
+import java.awt.event.InputEvent;
 import java.io.File;
 
 public class JfxApplication extends Application {
@@ -161,6 +168,107 @@ public class JfxApplication extends Application {
                 primaryStage.show();
 
                 init = true;
+                handler();
+            }
+        });
+    }
+
+    private void handler(){
+        stage.getScene().setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                VideoController videoController = Datavyu.getVideoController();
+                switch (event.getCode()){
+                    case DIVIDE: {
+                        if(Datavyu.getPlatform().equals(Datavyu.Platform.MAC)){
+                            videoController.pressShowTracksSmall();
+                        }else{
+                            videoController.pressPointCell();
+                        }
+                        break;
+                    }
+                    case EQUALS:{
+                        if(Datavyu.getPlatform().equals(Datavyu.Platform.MAC)){
+                            videoController.pressPointCell();
+                        }
+                        break;
+                    }
+                    case MULTIPLY:{
+                        if (!Datavyu.getPlatform().equals(Datavyu.Platform.MAC)) {
+                            videoController.pressShowTracksSmall();
+                        }
+                        break;
+                    }
+                    case NUMPAD7:{
+                        videoController.pressSetCellOnset();
+                        break;
+                    }
+                    case NUMPAD8:{
+                        videoController.pressPlay();
+                        break;
+                    }
+                    case NUMPAD9:{
+                        videoController.pressSetCellOffsetNine();
+                        break;
+                    }
+                    case NUMPAD4:{
+                        videoController.pressShuttleBack();
+                        break;
+                    }
+                    case NUMPAD5:{
+                        videoController.pressStop();
+                        break;
+                    }
+                    case NUMPAD6:{
+                        videoController.pressShuttleForward();
+                        break;
+                    }
+                    case NUMPAD1:{
+                        videoController.jogBackAction();
+                        break;
+                    }
+                    case NUMPAD2:{
+                        videoController.pressPause();
+                        break;
+                    }
+                    case NUMPAD3:{
+                        videoController.jogForwardAction();
+                        break;
+                    }
+                    case NUMPAD0:{
+                        videoController.pressCreateNewCellSettingOffset();
+                        break;
+                    }
+                    case DECIMAL:{
+                        videoController.pressSetCellOffsetPeriod();
+                        break;
+                    }
+                    case SUBTRACT:{
+                        if(event.getCode() == KeyCode.CONTROL){
+                            videoController.clearRegionOfInterestAction();
+                        } else {
+                            videoController.pressGoBack();
+                        }
+                    }
+                    case ADD:{
+                        if (event.getCode() == KeyCode.SHIFT){
+                            videoController.pressFind();
+                            videoController.findOffsetAction();
+                        } else if(event.getCode() == KeyCode.CONTROL){
+                            videoController.pressFind();
+                            videoController.setRegionOfInterestAction();
+                        } else {
+                            videoController.pressFind();
+                        }
+                    }
+                    case ENTER:{
+                        videoController.pressCreateNewCell();
+                        break;
+                    }
+                    default:{
+                        break;
+                    }
+                }
             }
         });
     }

@@ -4,7 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.plugins.Plugin;
-import org.datavyu.plugins.nativeosx.NativeOSxPlugin;
+import org.datavyu.plugins.nativeosx.NativeOSXPlugin;
 import org.datavyu.plugins.qtkitplayer.QtKitPlugin;
 
 import java.io.BufferedReader;
@@ -232,13 +232,13 @@ public class MacOS {
             String osVersion = System.getProperty("os.version");
             int major = Integer.valueOf(osVersion.split("\\.")[1]);
             if(major >= 12) {
-                return new NativeOSxPlugin();
+                return new NativeOSXPlugin();
             } else {
                 return new QtKitPlugin();
             }
         } catch (Exception e) {
             logger.error("Could create plugin. Error: ", e);
         }
-        return new NativeOSxPlugin();
+        return new NativeOSXPlugin();
     }
 }

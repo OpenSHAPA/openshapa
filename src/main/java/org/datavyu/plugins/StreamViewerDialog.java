@@ -17,6 +17,7 @@ package org.datavyu.plugins;
 import net.miginfocom.swing.MigLayout;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.datavyu.Datavyu;
 import org.datavyu.models.Identifier;
 import org.datavyu.views.DatavyuDialog;
 import org.datavyu.views.component.DefaultTrackPainter;
@@ -130,6 +131,13 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
     public StreamViewerDialog(Identifier identifier, final Frame parent, final boolean modal) {
 
         super(parent, modal);
+
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
+            @Override
+            public boolean dispatchKeyEvent(final KeyEvent e) {
+                return Datavyu.getApplication().dispatchKeyEvent(e);
+            }
+        });
 
         this.identifier = identifier;
         offset = 0;
