@@ -244,10 +244,22 @@ public class JfxApplication extends Application {
                         break;
                     }
                     case SUBTRACT:{
-
+                        if(event.getCode() == KeyCode.CONTROL){
+                            videoController.clearRegionOfInterestAction();
+                        } else {
+                            videoController.pressGoBack();
+                        }
                     }
                     case ADD:{
-
+                        if (event.getCode() == KeyCode.SHIFT){
+                            videoController.pressFind();
+                            videoController.findOffsetAction();
+                        } else if(event.getCode() == KeyCode.CONTROL){
+                            videoController.pressFind();
+                            videoController.setRegionOfInterestAction();
+                        } else {
+                            videoController.pressFind();
+                        }
                     }
                     case ENTER:{
                         videoController.pressCreateNewCell();
