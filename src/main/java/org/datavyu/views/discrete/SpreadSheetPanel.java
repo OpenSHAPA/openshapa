@@ -518,6 +518,7 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
                     c.setOffset(Datavyu.getVideoController().getCurrentTime());
                     Datavyu.getProjectController().getSpreadSheetPanel().redrawCells();
                     e.consume();
+                    return true;
                 }
                 // Add a cell to that column with this key in the first argument
             }
