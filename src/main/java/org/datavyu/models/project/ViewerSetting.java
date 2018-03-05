@@ -19,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
+import java.util.UUID;
 
 
 /**
@@ -32,13 +33,16 @@ public final class ViewerSetting {
 
     /** Version number */
     // TODO: Tie this back to the overall version numbers!! This is a design mistake.
-    public static final int VERSION = 3;
+    public static final int VERSION = 3; // May change it to 4
 
     /** Track settings associated with this data viewer */
     private TrackSettings trackSettings;
 
     /** Fully qualified name of the plugin */
     private String pluginName;
+
+    /** Fully qualified UUID of the plugin */
+    private UUID pluginUUID;
 
     /** Plugin classifier */
     // TODO: Consider refactoring this name. I remember this has to do with the file name matching to plugin but unused.
@@ -58,7 +62,6 @@ public final class ViewerSetting {
 
     /** Output stream */
     private ByteArrayOutputStream settingsOutput;
-
     public ViewerSetting() { }
 
     /**
@@ -130,6 +133,10 @@ public final class ViewerSetting {
     public void setPluginName(final String pluginName) {
         this.pluginName = pluginName;
     }
+
+    public UUID getPluginUUID() { return pluginUUID;}
+
+    public void setPluginUUID(final UUID pluginUUID) { this.pluginUUID =  pluginUUID; }
 
     /**
      * @return the pluginClassifier
