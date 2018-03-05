@@ -72,6 +72,7 @@ public final class ViewerSetting {
     private ViewerSetting(final ViewerSetting viewerSetting) {
         trackSettings = viewerSetting.trackSettings.copy();
         pluginName = viewerSetting.pluginName;
+        pluginUUID = viewerSetting.pluginUUID;
         pluginClassifier = viewerSetting.pluginClassifier;
         filePath = viewerSetting.filePath;
         offset = viewerSetting.offset;
