@@ -24,6 +24,7 @@ import org.yaml.snakeyaml.nodes.Node;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 
 /**
@@ -86,7 +87,8 @@ public class DatavyuProjectConstructor extends Constructor {
             Map values = constructMapping(mnode);
             ViewerSetting vs = new ViewerSetting();
             vs.setFilePath((String) values.get("feed"));
-            vs.setPluginName((String) values.get("plugin"));
+//            vs.setPluginName((String) values.get("plugin"));
+            vs.setPluginUUID(UUID.fromString((String) values.get("plugin")));
 
             // WARNING: SnakeYAML refuses to parse this as a Long.
             // TODO: remove this
