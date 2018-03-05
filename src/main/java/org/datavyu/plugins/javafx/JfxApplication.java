@@ -43,9 +43,9 @@ public class JfxApplication extends Application {
         if (lastSeekTime != time) {
             logger.info("Seeking to: " + time);
             double rate = 0;
-            if (mp.getCurrentRate() != 0) {
+            if (mp.getRate() != 0) {
                 mp.pause();
-                rate = mp.getCurrentRate();
+                rate = mp.getRate();
             }
             // NOTE: JavaFX only seems to be able to setCurrentTime accurately in 2.2 when the rate != 0, so lets fake that here.
             mp.setRate(1);

@@ -443,12 +443,12 @@ public final class VideoController extends DatavyuDialog
             TrackModel trackModel = tracksEditorController.getTrackModel(streamViewer.getIdentifier());
             if (trackModel != null && !clockTimer.isStopped()) {
                 if (clockTime > trackModel.getOffset() && clockTime < mixerController.getRegionController().getModel().getRegion().getRegionEnd()) {
-                    logger.info("Clock Boundary Starting track: " + trackModel.getIdentifier() + " at " + clockTime);
+                    logger.info("Clock Boundary Starting track: " + trackModel.getIdentifier() + " Master Clock at " + clockTime +" and Streamviewer clock at "+ streamViewer.getCurrentTime());
                      streamViewer.start();
                 }
                 if (clockTime >= trackModel.getOffset() + trackModel.getDuration()
                         || clockTime >= mixerController.getRegionController().getModel().getRegion().getRegionEnd()) {
-                    logger.info("Stopping track: " + trackModel.getIdentifier() + " at " + clockTime);
+                    logger.info("Clock Boundray Stopping track: " + trackModel.getIdentifier() + " Master Clock at " + clockTime +" and Streamviewer clock at "+ streamViewer.getCurrentTime());
                     streamViewer.stop();
                 }
             }
@@ -1696,8 +1696,9 @@ public final class VideoController extends DatavyuDialog
         logger.info("New cell");
 
         // Ensure precise sync up
+        long time = getCurrentTime();
         if (!clockTimer.isStopped()) {
-            clockTimer.setForceTime(getCurrentTime());
+            clockTimer.setForceTime(time);
         }
 
         CreateNewCellController controller = new CreateNewCellController();
