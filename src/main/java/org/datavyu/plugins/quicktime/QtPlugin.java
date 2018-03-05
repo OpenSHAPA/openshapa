@@ -33,12 +33,15 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.List;
+import java.util.UUID;
 
 
 public final class QtPlugin implements Plugin {
 
     /** The logger for this class */
     private static Logger logger = LogManager.getLogger(QtPlugin.class);
+
+    private static final UUID pluginUUID = UUID.nameUUIDFromBytes("plugin.qtplugin".getBytes());
 
     private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(Datavyu.Platform.WINDOWS);
 
@@ -147,6 +150,9 @@ public final class QtPlugin implements Plugin {
     public String getPluginName() {
         return "QuickTime Video";
     }
+
+    @Override
+    public UUID getPluginUUID() {return pluginUUID; }
 
     @Override
     public Class<? extends StreamViewer> getViewerClass() {
