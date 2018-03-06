@@ -14,9 +14,12 @@
  */
 package org.datavyu.models.project;
 
+import com.sun.istack.internal.localization.NullLocalizable;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.datavyu.plugins.Plugin;
+import org.datavyu.plugins.PluginManager;
 
 import java.io.*;
 import java.util.UUID;
@@ -133,11 +136,29 @@ public final class ViewerSetting {
 
     public void setPluginName(final String pluginName) {
         this.pluginName = pluginName;
+        if(pluginUUID == null){
+            for(Plugin p : PluginManager.getInstance().getPlugins()){
+                if(pluginName.equals(p.getViewerClass().getName())){
+                    setPluginUUID(p.getPluginUUID());
+                    break;
+                }
+            }
+        }
     }
 
     public UUID getPluginUUID() { return pluginUUID;}
 
-    public void setPluginUUID(final UUID pluginUUID) { this.pluginUUID =  pluginUUID; }
+    public void setPluginUUID(final UUID pluginUUID) {
+        this.pluginUUID =  pluginUUID;
+        if(pluginName == null){
+            for(Plugin p : PluginManager.getInstance().getPlugins()){
+                if(pluginUUID.equals(pluginUUID)){
+                    setPluginName(p.getViewerClass().getName());
+                    break;
+                }
+            }
+        }
+    }
 
     /**
      * @return the pluginClassifier

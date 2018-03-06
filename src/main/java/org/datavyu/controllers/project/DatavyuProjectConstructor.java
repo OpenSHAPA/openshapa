@@ -88,7 +88,11 @@ public class DatavyuProjectConstructor extends Constructor {
             ViewerSetting vs = new ViewerSetting();
             vs.setFilePath((String) values.get("feed"));
 //            vs.setPluginName((String) values.get("plugin"));
-            vs.setPluginUUID(UUID.fromString((String) values.get("plugin")));
+            try {
+                vs.setPluginUUID(UUID.fromString((String) values.get("plugin"))); // Look for an UUID
+            }catch (IllegalArgumentException e){
+                vs.setPluginName((String) values.get("plugin")); //if not an UUID try regular plugin name
+            }
 
             // WARNING: SnakeYAML refuses to parse this as a Long.
             // TODO: remove this
