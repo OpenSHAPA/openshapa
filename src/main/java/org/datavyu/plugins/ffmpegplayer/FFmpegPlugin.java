@@ -17,10 +17,13 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.List;
+import java.util.UUID;
 
 public class FFmpegPlugin implements Plugin {
 
     private static final List<Datavyu.Platform> validOperatingSystem = Lists.newArrayList(Datavyu.Platform.WINDOWS);
+
+    private static final UUID pluginUUID = UUID.nameUUIDFromBytes("plugin.ffmpeg".getBytes());
 
     private static final Filter videoFilter = new Filter() {
         final List<String> fileEndings = Lists.newArrayList(".avi", ".mov", ".mpg", ".mp4");
@@ -62,6 +65,9 @@ public class FFmpegPlugin implements Plugin {
     public String getPluginName() {
         return "FFmpeg Plugin";
     }
+
+    @Override
+    public UUID getPluginUUID() {return pluginUUID; }
 
     @Override
     public String getNamespace() {

@@ -15,12 +15,15 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.List;
+import java.util.UUID;
 
 
 public class VlcFxPlugin implements Plugin {
 
     private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(Datavyu.Platform.WINDOWS,
             Datavyu.Platform.MAC, Datavyu.Platform.LINUX);
+
+    private static final UUID pluginUUID = UUID.nameUUIDFromBytes("plugin.vlcfx".getBytes());
 
     private static final Filter VIDEO_FILTER = new Filter() {
         final SuffixFileFilter ff;
@@ -69,6 +72,9 @@ public class VlcFxPlugin implements Plugin {
     public String getPluginName() {
         return "VLCFX Video";
     }
+
+    @Override
+    public UUID getPluginUUID() {return pluginUUID; }
 
     @Override
     public ImageIcon getTypeIcon() {

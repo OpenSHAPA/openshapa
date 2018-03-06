@@ -31,12 +31,14 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.List;
+import java.util.UUID;
 
 
 public final class QtKitPlugin implements Plugin {
 
     private static final List<Datavyu.Platform> VALID_OPERATING_SYSTEMS = Lists.newArrayList(Datavyu.Platform.MAC);
 
+    private static final UUID pluginUUID = UUID.nameUUIDFromBytes("plugin.qtkit".getBytes());
 
     private static final Filter VIDEO_FILTER = new Filter() {
         final SuffixFileFilter ff;
@@ -85,6 +87,9 @@ public final class QtKitPlugin implements Plugin {
     public String getNamespace() {
         return "datavyu.video";
     }
+
+    @Override
+    public UUID getPluginUUID() {return pluginUUID; }
 
     @Override
     public Filter[] getFilters() {

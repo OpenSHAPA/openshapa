@@ -502,10 +502,13 @@ public final class ProjectController {
             viewerSetting.setFilePath(viewer.getSourceFile().getAbsolutePath());
             viewerSetting.setPluginName(viewer.getClass().getName());
 
+
             // BugzID:2108
             Plugin p = PluginManager.getInstance().getAssociatedPlugin(viewerSetting.getPluginName());
             assert p.getNamespace() != null;
             assert !"".equals(p.getNamespace());
+
+            viewerSetting.setPluginUUID(p.getPluginUUID());
 
             viewerSetting.setPluginClassifier(p.getNamespace());
 

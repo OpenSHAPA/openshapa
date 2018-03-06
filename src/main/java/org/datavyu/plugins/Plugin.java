@@ -30,6 +30,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.util.List;
+import java.util.UUID;
 
 
 /**
@@ -58,6 +59,11 @@ public interface Plugin {
      * @return Plugin name.
      */
     String getPluginName();
+
+    /**
+     * @return Plugin UUID.
+     */
+    UUID getPluginUUID();
 
     /**
      *<p>A classifier string is a string representing the class of your plugin
