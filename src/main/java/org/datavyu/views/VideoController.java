@@ -449,7 +449,8 @@ public final class VideoController extends DatavyuDialog
                      streamViewer.start();
                 }
                 if ((clockTime >= trackModel.getOffset() + trackModel.getDuration()
-                        || clockTime >= mixerController.getRegionController().getModel().getRegion().getRegionEnd())
+                        || clockTime >= mixerController.getRegionController().getModel().getRegion().getRegionEnd()
+                        || clockTime < trackModel.getOffset() )
                         && streamViewer.isPlaying()) {
                     logger.info("Clock Boundray Stopping track: " + trackModel.getIdentifier() + " Master Clock at " + clockTime +" and Streamviewer clock at "+ streamViewer.getCurrentTime());
                     streamViewer.stop();

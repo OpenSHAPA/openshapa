@@ -154,9 +154,9 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
             if (nativeOSXPlayer != null) {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        logger.info("STOPPING EXECUTING AT: " + (System.currentTimeMillis() - time));
+                        logger.info("STOPPING EXECUTING AT: " + (System.currentTimeMillis() - time) + " is playing: "+ isPlaying());
                         nativeOSXPlayer.stop(nativeOSXPlayer.id);
-                        logger.info("STOPPED EXECUTION AT: " + (System.currentTimeMillis() - time));
+                        logger.info("STOPPED EXECUTION AT: " + (System.currentTimeMillis() - time) + " rate: "+ isPlaying());
                     }
                 });
             }
@@ -183,9 +183,9 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
                 if (nativeOSXPlayer != null) {
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
-                            logger.info("Seeking to position: " + time);
+                            logger.info("Seeking to position: " + time +" Is playing: "+ isPlaying());
                             boolean wasPlaying = isPlaying();
-                            float prevRate = getRate();
+                            float prevRate = nativeOSXPlayer.getRate(nativeOSXPlayer.id);
                             if (isPlaying()) {
                                 nativeOSXPlayer.stop(nativeOSXPlayer.id);
                             }
@@ -232,6 +232,7 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
 
     @Override
     public boolean isPlaying() {
-        return nativeOSXPlayer.isPlaying(nativeOSXPlayer.id);
+        return !nativeOSXPlayer.isPlaying(nativeOSXPlayer.id); // the native os plugin return false when is playing
+//        return (getRate() == 0 ? true : false);
     }
 }
