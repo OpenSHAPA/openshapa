@@ -183,9 +183,9 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
                 if (nativeOSXPlayer != null) {
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
-                            logger.info("Seeking to position: " + time);
+                            logger.info("Seeking to position: " + time +" Is playing: "+ isPlaying());
                             boolean wasPlaying = isPlaying();
-                            float prevRate = getRate();
+                            float prevRate = nativeOSXPlayer.getRate(nativeOSXPlayer.id);
                             if (isPlaying()) {
                                 nativeOSXPlayer.stop(nativeOSXPlayer.id);
                             }
@@ -232,6 +232,6 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
 
     @Override
     public boolean isPlaying() {
-        return nativeOSXPlayer.isPlaying(nativeOSXPlayer.id);
+        return !nativeOSXPlayer.isPlaying(nativeOSXPlayer.id); // the native os plugin return false when is playing
     }
 }
