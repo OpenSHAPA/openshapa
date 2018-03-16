@@ -115,6 +115,7 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
     @Override
     public void setRate(final float rate) {
         super.setRate(rate);
+        nativeOSXPlayer.setRate(rate, nativeOSXPlayer.id);
     }
 
     /**
@@ -128,7 +129,7 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
             if (nativeOSXPlayer != null) {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        if (nativeOSXPlayer.getRate(nativeOSXPlayer.id) == 0) {
+                        if(nativeOSXPlayer.getRate(nativeOSXPlayer.id) != 0){
                             nativeOSXPlayer.stop(nativeOSXPlayer.id);
                         }
                         nativeOSXPlayer.setRate(getRate(), nativeOSXPlayer.id);
@@ -185,7 +186,7 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
                         public void run() {
                             logger.info("Seeking to position: " + time +" Is playing: "+ isPlaying());
                             boolean wasPlaying = isPlaying();
-                            float prevRate = nativeOSXPlayer.getRate(nativeOSXPlayer.id);
+                            float prevRate = getRate();
                             if (isPlaying()) {
                                 nativeOSXPlayer.stop(nativeOSXPlayer.id);
                             }
@@ -234,4 +235,5 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
     public boolean isPlaying() {
         return !nativeOSXPlayer.isPlaying(nativeOSXPlayer.id); // the native os plugin return false when is playing
     }
+
 }
