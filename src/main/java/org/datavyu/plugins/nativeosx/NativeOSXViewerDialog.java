@@ -129,7 +129,8 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
             if (nativeOSXPlayer != null) {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        if(nativeOSXPlayer.getRate(nativeOSXPlayer.id) != 0){
+                        //We don't need this if statement
+                        if(nativeOSXPlayer.getRate(nativeOSXPlayer.id) == 0){
                             nativeOSXPlayer.stop(nativeOSXPlayer.id);
                         }
                         nativeOSXPlayer.setRate(getRate(), nativeOSXPlayer.id);
