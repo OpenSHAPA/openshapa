@@ -14,7 +14,6 @@
  */
 package org.datavyu.models.project;
 
-import com.sun.istack.internal.localization.NullLocalizable;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
