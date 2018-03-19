@@ -1,6 +1,7 @@
 package org.datavyu.plugins.javafx;
 
 import javafx.application.Platform;
+import javafx.scene.media.MediaException;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,8 +40,6 @@ public class JfxStreamViewerDialog extends StreamViewerDialog {
     private static void runAndWait(final Runnable action) {
         if (action == null)
             throw new NullPointerException("action");
-
-        VlcLibraryLoader.load();
 
         // run synchronously on JavaFX thread
         if (Platform.isFxApplicationThread()) {
@@ -110,7 +109,12 @@ public class JfxStreamViewerDialog extends StreamViewerDialog {
         runAndWait(new Runnable() {
             @Override
             public void run() {
-                jfxApplication.start(new Stage());
+                try {
+                    jfxApplication.start(new Stage());
+                } catch (MediaException me) {
+                    // TODO: Possibly open a dialog with an error that the file format is not supported
+                    logger.warn("Could not open media file: " + sourceFile + "\nException: " + me);
+                }
                 latch.countDown();
             }
         });
@@ -196,9 +200,7 @@ public class JfxStreamViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    protected void cleanUp() {
-        VlcLibraryLoader.purge();
-    }
+    protected void cleanUp() { }
 
     @Override
     public void close() {
