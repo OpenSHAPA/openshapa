@@ -441,9 +441,10 @@ public final class VideoController extends DatavyuDialog
         for (StreamViewer streamViewer : streamViewers) {
             TrackModel trackModel = tracksEditorController.getTrackModel(streamViewer.getIdentifier());
             if (trackModel != null && !clockTimer.isStopped()) {
+                // Only if in range and not already playing and not in seek playback
                 if (clockTime < mixerController.getRegionController().getModel().getRegion().getRegionEnd()
                         && clockTime >= trackModel.getOffset()
-                        && !streamViewer.isPlaying()) {
+                        && !streamViewer.isPlaying() && !streamViewer.isSeekPlaybackEnabled()) {
                     logger.info("Clock Boundary Starting track: " + trackModel.getIdentifier() + " Master Clock at " + clockTime +" and Streamviewer clock at "+ streamViewer.getCurrentTime());
                      streamViewer.start();
                 }
@@ -451,7 +452,7 @@ public final class VideoController extends DatavyuDialog
                         || clockTime >= trackModel.getOffset() + trackModel.getDuration()
                         || clockTime >= mixerController.getRegionController().getModel().getRegion().getRegionEnd())
                         && streamViewer.isPlaying()) {
-                    logger.info("Clock Boundray Stopping track: " + trackModel.getIdentifier() + " Master Clock at " + clockTime +" and Streamviewer clock at "+ streamViewer.getCurrentTime());
+                    logger.info("Clock Boundary Stopping track: " + trackModel.getIdentifier() + " Master Clock at " + clockTime +" and Streamviewer clock at "+ streamViewer.getCurrentTime());
                     streamViewer.stop();
                 }
             }
@@ -1112,17 +1113,6 @@ public final class VideoController extends DatavyuDialog
      */
     public Set<StreamViewer> getStreamViewers() {
         return streamViewers;
-    }
-
-
-    /**
-     * Add a viewer to the data controller with the given startTime
-     *
-     * @param viewer The data viewer to add
-     * @param startTime The startTime value in milliseconds
-     */
-    public void addViewer(final StreamViewer viewer, final long startTime) {
-
     }
 
     /**

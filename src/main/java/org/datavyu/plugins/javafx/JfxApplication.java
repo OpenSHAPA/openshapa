@@ -20,8 +20,6 @@ import org.apache.logging.log4j.Logger;
 import org.datavyu.Datavyu;
 import org.datavyu.views.VideoController;
 
-
-import java.awt.event.InputEvent;
 import java.io.File;
 
 public class JfxApplication extends Application {

@@ -30,7 +30,6 @@ public class JfxStreamViewerDialog extends StreamViewerDialog {
 
     private boolean assumedFPS = false;
 
-
     JfxStreamViewerDialog(Identifier identifier, File sourceFile, final Frame parent, final boolean modal) {
         super(identifier, parent, modal);
         jfxApplication = new JfxApplication(sourceFile);
@@ -128,7 +127,7 @@ public class JfxStreamViewerDialog extends StreamViewerDialog {
             try {
                 Thread.sleep(1000);
             } catch (Exception e) {
-                logger.error("Thread awakened. Error: ", e);
+                logger.info("Waiting for jfx application to initialize", e);
             }
         }
 
@@ -137,7 +136,6 @@ public class JfxStreamViewerDialog extends StreamViewerDialog {
 
         // Hide our fake dialog box
         dialog.setVisible(false);
-
         // TODO Add in function to guess frame rate
     }
 
@@ -191,6 +189,8 @@ public class JfxStreamViewerDialog extends StreamViewerDialog {
 
     @Override
     public void setRate(final float rate) {
+        logger.info("Set the rate to: " + rate);
+        super.setRate(rate);
         jfxApplication.setRate(rate);
     }
 
@@ -207,5 +207,10 @@ public class JfxStreamViewerDialog extends StreamViewerDialog {
         stop();
         jfxApplication.setVisible(false);
         jfxApplication.closeAndDestroy();
+    }
+
+    @Override
+    public boolean isSeekPlaybackEnabled() {
+        return playBackRate > 2F || playBackRate < 0F;
     }
 }

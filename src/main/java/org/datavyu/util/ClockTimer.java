@@ -276,10 +276,9 @@ public final class ClockTimer {
     private void notifySeekPlayback() {
         // TODO: Remove this once plugin's support fast playback forward / backward playback
         // Only activate the seek playback for rates < 0 or > 2x
-        if (rate > 2F || rate < 0F) {
-            for (ClockListener clockListener : clockListeners) {
-                clockListener.clockSeekPlayback(clockTime);
-            }
+        //if (rate > 2F || rate < 0F) { }
+        for (ClockListener clockListener : clockListeners) {
+            clockListener.clockSeekPlayback(clockTime);
         }
     }
 

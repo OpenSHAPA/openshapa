@@ -569,6 +569,6 @@ public abstract class StreamViewerDialog extends DatavyuDialog implements Stream
 
     @Override
     public boolean isSeekPlaybackEnabled() {
-        return true;
+        return false;
     }
 }

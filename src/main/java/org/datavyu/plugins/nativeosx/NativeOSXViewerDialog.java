@@ -16,22 +16,17 @@ package org.datavyu.plugins.nativeosx;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.datavyu.Datavyu;
 import org.datavyu.models.Identifier;
 import org.datavyu.plugins.StreamViewerDialog;
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.io.File;
 
 
 /**
- * The viewer for a quick time video file.
- * <b>Do not move this class, this is for backward compatibility with 1.07.</b>
+ * The viewer for a quick time video file
  */
 public final class NativeOSXViewerDialog extends StreamViewerDialog {
-
-    //private long timeOfPrevSeek = 0;
 
     private static final int NUM_RETRY_FOR_DURATION = 2;
 
@@ -227,14 +222,15 @@ public final class NativeOSXViewerDialog extends StreamViewerDialog {
     }
 
     @Override
-    protected void cleanUp() {
-        // TODO: Check if the release is required?
-//        nativeOSXPlayer.release();
-    }
+    protected void cleanUp() { }
 
     @Override
     public boolean isPlaying() {
         return !nativeOSXPlayer.isPlaying(nativeOSXPlayer.id); // the native os plugin return false when is playing
     }
 
+    @Override
+    public boolean isSeekPlaybackEnabled() {
+        return playBackRate > 2F || playBackRate < 0F;
+    }
 }
