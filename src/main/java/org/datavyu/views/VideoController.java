@@ -242,6 +242,11 @@ public final class VideoController extends DatavyuDialog
     private FrameRateController frameRateController = new FrameRateController();
 
     /**
+     * A variable to check the video controller state, to change the rate when we stop the streams
+     */
+    private boolean isStopped;
+
+    /**
      * Create a new VideoController.
      *
      * @param parent The parent of this form.
@@ -284,6 +289,7 @@ public final class VideoController extends DatavyuDialog
         showTracksPanel(tracksPanelVisible);
 
         visible = true;
+        isStopped = false;
     }
 
     /**
@@ -503,8 +509,14 @@ public final class VideoController extends DatavyuDialog
     public void clockStop(double clockTime) {
         logger.info("Stop clock at " + (long) clockTime + " msec.");
         for (StreamViewer streamViewer : streamViewers) {
-            // Sync streams at stop
-            streamViewer.stop();
+            if(isStopped){
+                // we change the rate to 0 if the stop button is pressed
+                clockRate(0);
+                streamViewer.stop();
+            }else{
+                // Sync streams at stop
+                streamViewer.stop();
+            }
         }
         updateCurrentTimeLabelAndNeedle((long) clockTime);
     }
@@ -1386,6 +1398,7 @@ public final class VideoController extends DatavyuDialog
     @SuppressWarnings("unused")  // Called through actionMap
     public void startAction() {
         logger.info("Play");
+        isStopped = false;
         clockTimer.setRate(1f);
     }
 
@@ -1413,6 +1426,8 @@ public final class VideoController extends DatavyuDialog
     @Action
     public void stopAction() {
         logger.info("Stop.");
+        isStopped = true;
+        clockRate(0);
         clockTimer.stop();
     }
 
