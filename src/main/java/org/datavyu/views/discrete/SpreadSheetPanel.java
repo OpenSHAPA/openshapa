@@ -980,27 +980,31 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
             SpreadsheetColumn newColumn = visibleColumns.get(vcIndex+shift);
             SpreadsheetCell newCell = null;
 
-            if(sc != null){
-                if (Datavyu.getView().getSheetLayout() == SheetLayoutType.WeakTemporal) {
-                    newCell = newColumn.getNearestCellTemporally(sc);
-                } else {
-                    int ord = selectedColumn.getCellsTemporally().indexOf(sc);
-                    if(newColumn.getCellsTemporally().size() > ord) {
-                        newCell = newColumn.getCellsTemporally().get(ord);
+            if(newColumn != null && !newColumn.getCells().isEmpty()) {
+                if (sc != null) {
+                    if (Datavyu.getView().getSheetLayout() == SheetLayoutType.WeakTemporal) {
+                        newCell = newColumn.getNearestCellTemporally(sc);
                     } else {
-                        newCell = newColumn.getCellsTemporally().get(newColumn.getCellsTemporally().size()-1);
+                        int ord = selectedColumn.getCellsTemporally().indexOf(sc);
+                        if (newColumn.getCellsTemporally().size() > ord) {
+                            newCell = newColumn.getCellsTemporally().get(ord);
+                        } else {
+                            newCell = newColumn.getCellsTemporally().get(newColumn.getCellsTemporally().size() - 1);
+                        }
                     }
+                } else {
+                    newCell = newColumn.getCellTemporally(0);
+                    selectedColumn.setSelected(false);
+                    newColumn.setSelected(true);
                 }
-            }else{
-                newCell = newColumn.getCellTemporally(0);
+                newCell.requestFocus();
+                newCell.getCell().setHighlighted(true);
+            }else if (newColumn != null){
+                sc.getCell().setHighlighted(false);
                 selectedColumn.setSelected(false);
                 newColumn.setSelected(true);
-                sc = selectedColumn.getCellTemporally(0);
-                sc.requestFocus();
+                newColumn.requestFocus();
             }
-
-            newCell.requestFocus();
-            newCell.getCell().setHighlighted(true);
         }
 
     }
