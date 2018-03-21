@@ -14,6 +14,7 @@
  */
 package org.datavyu.views.discrete.layouts;
 
+import org.datavyu.views.discrete.ColumnDataPanel;
 import org.datavyu.views.discrete.SpreadsheetCell;
 import org.datavyu.views.discrete.SpreadsheetColumn;
 import org.datavyu.views.discrete.SpreadsheetView;
@@ -205,6 +206,12 @@ public class SheetLayoutWeakTemporal extends SheetLayout {
                     new Point((int) pane.getViewport().getViewRect().getX(),
                             cellMin));
         }
+
+    }
+
+    @Override
+    public void reorientView(SpreadsheetColumn column) {
+
     }
 
     /**

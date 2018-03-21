@@ -15,6 +15,7 @@
 package org.datavyu.views.discrete.layouts;
 
 import org.datavyu.Datavyu;
+import org.datavyu.views.discrete.ColumnDataPanel;
 import org.datavyu.views.discrete.SpreadsheetCell;
 import org.datavyu.views.discrete.SpreadsheetColumn;
 import org.datavyu.views.discrete.SpreadsheetView;
@@ -166,26 +167,44 @@ public class SheetLayoutOrdinal extends SheetLayout {
     public void reorientView(SpreadsheetCell cell) {
         // Set the new position of the scroll window.
 
-        double viewMaxHeight = pane.getViewport().getViewRect().getY() + pane.getViewport().getViewRect().getHeight();
-        double viewMinHeight = pane.getViewport().getViewRect().getY();
-        int cellMaxHeight = cell.getY() + cell.getHeight();
-        int cellMinHeight = cell.getY();
+        double viewMax = pane.getViewport().getViewRect().getY() + pane.getViewport().getViewRect().getHeight();
+        double viewMin = pane.getViewport().getViewRect().getY();
+        int cellMax = cell.getY() + cell.getHeight();
+        int cellMin = cell.getY();
 
-        double viewMaxWidth = pane.getViewport().getViewRect().getX() + pane.getViewport().getViewRect().getWidth();
-        double viewMinWidth = pane.getViewport().getViewRect().getX();
-        int cellMaxWidth = cell.getX() + cell.getWidth();
-        int cellMinWidth = cell.getX();
-
-        if (viewMaxHeight < cellMaxHeight
-                && viewMaxWidth < cellMaxWidth) {
+        if (viewMax < cellMax) {
             pane.getViewport().setViewPosition(
-                    new Point(cellMaxWidth - pane.getViewport().getWidth(),
-                            cellMaxHeight - pane.getViewport().getHeight()));
+                    new Point((int) pane.getViewport().getViewRect().getX(),
+                            cellMax - pane.getViewport().getHeight()));
 //                pane.getVerticalScrollBar().setValue(cellMax);
-        } else if (viewMinHeight > cellMinHeight
-                    && cellMinWidth < viewMinWidth ) {
-            pane.getViewport().setViewPosition( new Point( cellMinWidth, cellMinHeight));
+        } else if (viewMin > cellMin) {
+            pane.getViewport().setViewPosition(
+                    new Point((int) pane.getViewport().getViewRect().getX(),
+                            cellMin));
         }
 
     }
+
+    @Override
+    public void reorientView(SpreadsheetColumn column) {
+
+        double viewMax = pane.getViewport().getViewRect().getY() + pane.getViewport().getViewRect().getHeight();
+        double viewMin = pane.getViewport().getViewRect().getY();
+        int columnMax = column.getX() + column.getWidth();
+        int columnMin = column.getX();
+
+        //Check if we have to shift to the left or right
+        if (viewMax <= columnMin){
+            pane.getViewport().setViewPosition(
+                    new Point(columnMax - pane.getViewport().getHeight(),
+                            (int) pane.getViewport().getViewRect().getY()));
+        }else if(viewMin >= columnMax){
+            pane.getViewport().setViewPosition(
+                    new Point(columnMin,
+                            (int) pane.getViewport().getViewRect().getY()));
+        }
+
+    }
+
+
 }

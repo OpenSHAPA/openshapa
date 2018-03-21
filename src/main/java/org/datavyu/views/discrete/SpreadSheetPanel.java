@@ -899,6 +899,10 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
         ((SheetLayout) scrollPane.getLayout()).reorientView(cell);
     }
 
+    public void reorientView(SpreadsheetColumn column) {
+        ((SheetLayout) scrollPane.getLayout()).reorientView(column);
+    }
+
     /**
      * Add a listener interested in file drop events.
      *
@@ -995,6 +999,7 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
                 } else {
                     newCell = newColumn.getCellTemporally(0);
                     selectedColumn.setSelected(false);
+                    newColumn.requestFocus();
                     newColumn.setSelected(true);
                 }
                 newCell.requestFocus();
@@ -1002,8 +1007,8 @@ public final class SpreadSheetPanel extends JPanel implements DataStoreListener,
             }else if (newColumn != null){
                 sc.getCell().setHighlighted(false);
                 selectedColumn.setSelected(false);
-                newColumn.setSelected(true);
                 newColumn.requestFocus();
+                newColumn.setSelected(true);
             }
         }
 

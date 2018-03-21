@@ -541,7 +541,6 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
     // *************************************************************************
     @Override
     public void requestFocus() {
-
         /**
          * Request focus for this column. It will request focus for the first
          * SpreadsheetCell in the column if one exists. If no cells exist it
@@ -552,6 +551,7 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
         } else {
             datapanel.requestFocusInWindow();
         }
+
     }
 
     // *************************************************************************
