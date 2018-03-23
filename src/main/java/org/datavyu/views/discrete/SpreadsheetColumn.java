@@ -28,10 +28,7 @@ import org.jdesktop.application.Action;
 import javax.swing.*;
 import javax.swing.undo.UndoableEdit;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -541,17 +538,20 @@ public final class SpreadsheetColumn extends JLabel implements VariableListener,
     // *************************************************************************
     @Override
     public void requestFocus() {
-
+        Datavyu.getView().getSpreadsheetPanel().revalidate();
+        Datavyu.getView().getSpreadsheetPanel().reorientView(this);
         /**
          * Request focus for this column. It will request focus for the first
          * SpreadsheetCell in the column if one exists. If no cells exist it
          * will request focus for the datapanel of the column.
          */
         if (datapanel.getCells().size() > 0) {
-            datapanel.getCells().get(0).requestFocusInWindow();
+//            datapanel.getCells().get(0).requestFocusInWindow();
+            datapanel.getSelectedCell().requestFocus();
         } else {
             datapanel.requestFocusInWindow();
         }
+
     }
 
     // *************************************************************************

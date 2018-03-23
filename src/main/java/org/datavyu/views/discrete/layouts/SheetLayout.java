@@ -14,7 +14,9 @@
  */
 package org.datavyu.views.discrete.layouts;
 
+import org.datavyu.views.discrete.ColumnDataPanel;
 import org.datavyu.views.discrete.SpreadsheetCell;
+import org.datavyu.views.discrete.SpreadsheetColumn;
 
 import javax.swing.*;
 
@@ -30,4 +32,6 @@ public abstract class SheetLayout extends ScrollPaneLayout {
     }
 
     public abstract void reorientView(SpreadsheetCell cell);
+
+    public abstract void reorientView(SpreadsheetColumn column);
 }

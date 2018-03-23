@@ -36,7 +36,6 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Locale;
 
 
 /**
@@ -500,11 +499,6 @@ public class SpreadsheetCell extends JPanel
         } else {
             cellPanel.setBackground(ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor());
         }
-
-
-
-
-
     }
 
     // *************************************************************************

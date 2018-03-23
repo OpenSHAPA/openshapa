@@ -15,6 +15,7 @@
 package org.datavyu.views.discrete.layouts;
 
 import org.datavyu.Datavyu;
+import org.datavyu.views.discrete.ColumnDataPanel;
 import org.datavyu.views.discrete.SpreadsheetCell;
 import org.datavyu.views.discrete.SpreadsheetColumn;
 import org.datavyu.views.discrete.SpreadsheetView;
@@ -181,7 +182,25 @@ public class SheetLayoutOrdinal extends SheetLayout {
                     new Point((int) pane.getViewport().getViewRect().getX(),
                             cellMin));
         }
+    }
 
+    @Override
+    public void reorientView(SpreadsheetColumn column) {
+
+        double viewMax = pane.getViewport().getViewRect().getX() + pane.getViewport().getViewRect().getWidth();
+        double viewMin = pane.getViewport().getViewRect().getX();
+        int columnMax = column.getX() + column.getWidth();
+        int columnMin = column.getX();
+
+        if (viewMax < columnMax){
+            pane.getViewport().setViewPosition(
+                    new Point(columnMax - pane.getViewport().getWidth(), (int) pane.getViewport().getViewRect().getY()));
+        }else if (viewMin > columnMin){
+            pane.getViewport().setViewPosition(
+                    new Point(columnMin, (int) pane.getViewport().getViewRect().getY()));
+        }
 
     }
+
+
 }
