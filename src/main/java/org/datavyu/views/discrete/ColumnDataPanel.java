@@ -309,20 +309,22 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
     public boolean dispatchKeyEvent(final KeyEvent e) {
         if ((e.getID() == KeyEvent.KEY_PRESSED) && ((e.getKeyCode() == KeyEvent.VK_UP)
                 || (e.getKeyCode() == KeyEvent.VK_DOWN))) {
-            SpreadsheetCell selectedCell = getSelectedCell();
-            if (getSelectedCell() != null) {
 
-                int cellId = cells.indexOf(selectedCell);
+            SpreadsheetCell selectedCell = getSelectedCell();
+
+            if (selectedCell != null) {
+
+                int cellId = getCellsTemporally().indexOf(selectedCell);
 
                 if (e.getKeyCode() == KeyEvent.VK_UP) {
 
-                    if (0 <= cellId - 1 && cellId - 1 < cells.size()) {
+                    if (0 <= cellId - 1 && cellId - 1 < getCellsTemporally().size()) {
 
                         selectedCell.getCell().setHighlighted(false);
                         selectedCell.getCell().setSelected(false);
                         requestFocus();
 
-                        SpreadsheetCell cellUP = cells.get(cellId - 1);
+                        SpreadsheetCell cellUP = getCellsTemporally().get(cellId - 1);
 
                         cellUP.getCell().setHighlighted(true);
                         cellUP.requestFocus();
@@ -331,18 +333,17 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
                         e.consume();
 
                         return true;
-
                     }
                 }
                 if (e.getKeyCode() == KeyEvent.VK_DOWN) {
 
-                    if (0 <= cellId + 1 && cellId + 1 < cells.size()) {
+                    if (0 <= cellId + 1 && cellId + 1 < getCellsTemporally().size()) {
 
                         selectedCell.getCell().setHighlighted(false);
                         selectedCell.getCell().setSelected(false);
                         requestFocus();
 
-                        SpreadsheetCell cellDOWN = cells.get(cellId + 1);
+                        SpreadsheetCell cellDOWN = getCellsTemporally().get(cellId + 1);
 
                         cellDOWN.getCell().setHighlighted(true);
                         cellDOWN.requestFocus();
