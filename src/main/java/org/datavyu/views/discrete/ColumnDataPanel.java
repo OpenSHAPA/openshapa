@@ -22,7 +22,6 @@ import org.datavyu.models.db.Variable;
 import org.datavyu.util.Constants;
 
 import javax.swing.*;
-import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.*;

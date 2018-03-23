@@ -182,26 +182,22 @@ public class SheetLayoutOrdinal extends SheetLayout {
                     new Point((int) pane.getViewport().getViewRect().getX(),
                             cellMin));
         }
-
     }
 
     @Override
     public void reorientView(SpreadsheetColumn column) {
 
-        double viewMax = pane.getViewport().getViewRect().getY() + pane.getViewport().getViewRect().getHeight();
-        double viewMin = pane.getViewport().getViewRect().getY();
+        double viewMax = pane.getViewport().getViewRect().getX() + pane.getViewport().getViewRect().getWidth();
+        double viewMin = pane.getViewport().getViewRect().getX();
         int columnMax = column.getX() + column.getWidth();
         int columnMin = column.getX();
 
-        //Check if we have to shift to the left or right
-        if (viewMax <= columnMin){
+        if (viewMax < columnMax){
             pane.getViewport().setViewPosition(
-                    new Point(columnMax - pane.getViewport().getHeight(),
-                            (int) pane.getViewport().getViewRect().getY()));
-        }else if(viewMin >= columnMax){
+                    new Point(columnMax - pane.getViewport().getWidth(), (int) pane.getViewport().getViewRect().getY()));
+        }else if (viewMin > columnMin){
             pane.getViewport().setViewPosition(
-                    new Point(columnMin,
-                            (int) pane.getViewport().getViewRect().getY()));
+                    new Point(columnMin, (int) pane.getViewport().getViewRect().getY()));
         }
 
     }
