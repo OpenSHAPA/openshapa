@@ -309,8 +309,9 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
     public boolean dispatchKeyEvent(final KeyEvent e) {
         if ((e.getID() == KeyEvent.KEY_PRESSED) && ((e.getKeyCode() == KeyEvent.VK_UP)
                 || (e.getKeyCode() == KeyEvent.VK_DOWN))) {
+
             SpreadsheetCell selectedCell = getSelectedCell();
-                    getSelectedCell();
+
             if (selectedCell != null) {
 
                 int cellId = getCellsTemporally().indexOf(selectedCell);
@@ -332,12 +333,11 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
                         e.consume();
 
                         return true;
-
                     }
                 }
                 if (e.getKeyCode() == KeyEvent.VK_DOWN) {
 
-                    if (0 <= cellId + 1 && cellId + 1 < cells.size()) {
+                    if (0 <= cellId + 1 && cellId + 1 < getCellsTemporally().size()) {
 
                         selectedCell.getCell().setHighlighted(false);
                         selectedCell.getCell().setSelected(false);
@@ -354,7 +354,6 @@ public final class ColumnDataPanel extends JPanel implements KeyEventDispatcher 
                         return true;
                     }
                 }
-
             }
         }
         return false;
