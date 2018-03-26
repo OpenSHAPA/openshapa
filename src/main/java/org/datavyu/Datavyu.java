@@ -66,10 +66,10 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
      */
     private static DatavyuView datavyuView;
 
-    /** The view to use for the video controller */
+    /** The video controller */
     private static VideoController videoController;
 
-    /** The project controller instance */
+    /** The project controller */
     private static ProjectController projectController;
 
     // Load native libraries
@@ -374,15 +374,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
                 videoController.setShiftMask(true);
             } else {
                 videoController.setShiftMask(false);
-            }
-        }
-
-        // BugzID:736 - Control key is passed to Data Controller.
-        if (evt.getKeyCode() == KeyEvent.VK_CONTROL) {
-            if (evt.getID() == KeyEvent.KEY_PRESSED) {
-                videoController.setCtrlMask(true);
-            } else {
-                videoController.setCtrlMask(false);
             }
         }
 

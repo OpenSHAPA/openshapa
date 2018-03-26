@@ -249,7 +249,7 @@ public class SpreadsheetCell extends JPanel
         stretcher = new Filler(d, d, d);
         cellPanel.add(stretcher, BorderLayout.SOUTH);
 
-        Datavyu.getVideoController().getClock().registerListener(this);
+        Datavyu.getVideoController().getClockTimer().registerListener(this);
 
         brandNew = true;
     }
@@ -329,10 +329,10 @@ public class SpreadsheetCell extends JPanel
     /**
      * Set the ordinal value.
      *
-     * @param ord The new ordinal value to use with this cell.
+     * @param ordinal The new ordinal value to use with this cell.
      */
-    public void setOrdinal(final Integer ordInt) {
-        ord.setText(ordInt.toString());
+    public void setOrdinal(final Integer ordinal) {
+        ord.setText(ordinal.toString());
     }
 
     /**
@@ -499,11 +499,6 @@ public class SpreadsheetCell extends JPanel
         } else {
             cellPanel.setBackground(ConfigurationProperties.getInstance().getSpreadSheetBackgroundColor());
         }
-
-
-
-
-
     }
 
     // *************************************************************************
@@ -668,7 +663,7 @@ public class SpreadsheetCell extends JPanel
             }
         }
         model.setSelected(false);
-//        parentColumn.setSelected(false);
+        parentColumn.setSelected(false);
     }
 
     @Override
@@ -693,17 +688,20 @@ public class SpreadsheetCell extends JPanel
     }
 
     @Override
-    public void clockTick(long time) {
+    public void clockForceSync(double clockTime) {}
+
+    @Override
+    public void clockPeriodicSync(double clockTime) {
         updateSelectionDisplay();
     }
 
     @Override
-    public void clockStart(long time) {
+    public void clockStop(double clockTime) {
 
     }
 
     @Override
-    public void clockStop(long time) {
+    public void clockStart(double clockTime) {
 
     }
 
@@ -713,7 +711,12 @@ public class SpreadsheetCell extends JPanel
     }
 
     @Override
-    public void clockStep(long time) {
-        updateSelectionDisplay();
+    public void clockBoundaryCheck(double clockTime) {
+
+    }
+
+    @Override
+    public void clockSeekPlayback(double clockTime) {
+
     }
 }
