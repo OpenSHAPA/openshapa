@@ -377,15 +377,6 @@ public final class Datavyu extends SingleFrameApplication implements KeyEventDis
             }
         }
 
-        // BugzID:736 - Control key is passed to Data Controller.
-        if (evt.getKeyCode() == KeyEvent.VK_CONTROL) {
-            if (evt.getID() == KeyEvent.KEY_PRESSED) {
-                videoController.setCtrlMask(true);
-            } else {
-                videoController.setCtrlMask(false);
-            }
-        }
-
         /**
          * The following cases handle numpad keystrokes.
          */

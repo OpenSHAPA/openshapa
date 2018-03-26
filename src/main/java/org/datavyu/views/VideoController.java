@@ -131,7 +131,7 @@ public final class VideoController extends DatavyuDialog
     private static RateController shuttleRates = new RateController();
 
     /**
-     * // TODO: What is this doing?
+     * // TODO: What is this doing here?
      *
      * Visible?
      */
@@ -139,9 +139,6 @@ public final class VideoController extends DatavyuDialog
 
     /** Determines whether or not the 'shift' key is being held */
     private boolean shiftMask = false;
-
-    /** Determines whether or not 'control' key is being held */
-    private boolean ctrlMask = false;
 
     /** The set of streamViewers associated with this controller */
     private Set<StreamViewer> streamViewers = new LinkedHashSet<>();
@@ -227,8 +224,6 @@ public final class VideoController extends DatavyuDialog
     /** */
     private JPanel tracksPanel;
 
-    private boolean qtWarningShown = false;
-
     private ResourceMap resourceMap;
 
     private ActionMap actionMap;
@@ -240,11 +235,6 @@ public final class VideoController extends DatavyuDialog
     private boolean highlightAndFocus = false;
 
     private FrameRateController frameRateController = new FrameRateController();
-
-    /**
-     * A variable to check the video controller state, to change the rate when we stop the streams
-     */
-    private boolean isStopped;
 
     /**
      * Create a new VideoController.
@@ -289,7 +279,6 @@ public final class VideoController extends DatavyuDialog
         showTracksPanel(tracksPanelVisible);
 
         visible = true;
-        isStopped = false;
     }
 
     /**
@@ -392,15 +381,6 @@ public final class VideoController extends DatavyuDialog
      */
     public void setShiftMask(boolean shift) {
         shiftMask = shift;
-    }
-
-    /**
-     * Tells the Data Controller if ctrl is being held or not.
-     *
-     * @param ctrl True for ctrl held; false otherwise.
-     */
-    public void setCtrlMask(boolean ctrl) {
-        ctrlMask = ctrl;
     }
 
     /**
@@ -509,14 +489,8 @@ public final class VideoController extends DatavyuDialog
     public void clockStop(double clockTime) {
         logger.info("Stop clock at " + (long) clockTime + " msec.");
         for (StreamViewer streamViewer : streamViewers) {
-            if(isStopped){
-                // we change the rate to 0 if the stop button is pressed
-                clockRate(0);
-                streamViewer.stop();
-            }else{
-                // Sync streams at stop
-                streamViewer.stop();
-            }
+            // Sync streams at stop
+            streamViewer.stop();
         }
         updateCurrentTimeLabelAndNeedle((long) clockTime);
     }
@@ -1398,7 +1372,6 @@ public final class VideoController extends DatavyuDialog
     @SuppressWarnings("unused")  // Called through actionMap
     public void startAction() {
         logger.info("Play");
-        isStopped = false;
         clockTimer.setRate(1f);
     }
 
@@ -1426,9 +1399,7 @@ public final class VideoController extends DatavyuDialog
     @Action
     public void stopAction() {
         logger.info("Stop.");
-        isStopped = true;
-        clockRate(0);
-        clockTimer.stop();
+        clockTimer.setRate(0f);
     }
 
     /**
@@ -1551,9 +1522,9 @@ public final class VideoController extends DatavyuDialog
     @SuppressWarnings("unused")  // Called through actionMap
     public void goBackAction() {
         try {
-            long j = -CLOCK_FORMAT.parse(goBackTextField.getText()).getTime();
-            logger.info("Jump back by " + j);
-            clockTimer.setForceTime(j);
+            long oldTime = -CLOCK_FORMAT.parse(goBackTextField.getText()).getTime();
+            logger.info("Jump back by " + oldTime);
+            clockTimer.setForceTime(oldTime);
 
             //Bugzilla bug #179 - undoes the behavior from FogBugz BugzID:721
             // BugzID:721 - After going back - start isPlaying again.
@@ -1574,7 +1545,7 @@ public final class VideoController extends DatavyuDialog
     public void jogBackAction() {
         logger.info("Jog back");
         if (!clockTimer.isStopped()) {
-            clockTimer.stop();
+            clockTimer.setRate(0f);
         } else {
             syncStreams();
             TracksEditorController tracksEditorController = mixerController.getTracksEditorController();
@@ -1648,7 +1619,7 @@ public final class VideoController extends DatavyuDialog
     public void jogForwardAction() {
         logger.info("Jog forward");
         if (!clockTimer.isStopped()) {
-            clockTimer.stop();
+            clockTimer.setRate(0);
         } else {
             syncStreams();
             double frameRate = frameRateController.getFrameRate();

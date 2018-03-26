@@ -225,6 +225,9 @@ public final class ClockTimer {
     /**
      * If the clock is not stopped, then this stops the clock and fires a notify
      * stop event with the current clock time
+     *
+     * WARNING: If you want to influence the rate as well you need to set the rate to 0
+     * instead of calling stop directly!
      */
     public synchronized void stop() {
         if (!isStopped) {
