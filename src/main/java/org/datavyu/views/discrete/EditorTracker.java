@@ -340,10 +340,18 @@ public final class EditorTracker
         switch (e.getKeyCode()) {
 
             case KeyEvent.VK_BACK_SLASH:
-                if((e.getModifiers() & KeyEvent.META_MASK) != 0) {
-                    Datavyu.getView().deleteCells();
-                    e.consume();
-                    break;
+                if(Datavyu.getPlatform() == Datavyu.Platform.MAC) {
+                    if (e.getModifiers() == KeyEvent.META_MASK) {
+                        Datavyu.getView().deleteCells();
+                        e.consume();
+                        break;
+                    }
+                }else if(Datavyu.getPlatform() == Datavyu.Platform.WINDOWS){
+                    if (e.getModifiers() == KeyEvent.CTRL_MASK) {
+                        Datavyu.getView().deleteCells();
+                        e.consume();
+                        break;
+                    }
                 }
             case KeyEvent.VK_BACK_SPACE:
                 if (!gotKeyUp) {
