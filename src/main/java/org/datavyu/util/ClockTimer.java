@@ -143,6 +143,15 @@ public final class ClockTimer {
     }
 
     /**
+     * Get the current Clock time
+     *
+     * @return Current clock time
+     */
+    public synchronized double getClockTime() {
+        return clockTime;
+    }
+
+    /**
      * @return Current clock rate.
      */
     public synchronized float getRate() {
