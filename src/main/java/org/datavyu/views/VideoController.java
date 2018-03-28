@@ -1523,8 +1523,9 @@ public final class VideoController extends DatavyuDialog
     public void goBackAction() {
         try {
             long backTime = -CLOCK_FORMAT.parse(goBackTextField.getText()).getTime();
-            logger.info("Jump back by " +  backTime);
-            clockTimer.setForceTime((long) clockTimer.getStreamTime() + backTime);
+            long newTime = (long) clockTimer.getClockTime() + backTime;
+            logger.info("Jump back by " +  backTime + " From: " + clockTimer.getStreamTime() + " To: " + newTime);
+            clockTimer.setForceTime(newTime);
 
             //Bugzilla bug #179 - undoes the behavior from FogBugz BugzID:721
             // BugzID:721 - After going back - start isPlaying again.
